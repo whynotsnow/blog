@@ -4,6 +4,7 @@ import type { Page } from "astro";
 import { siteConfig } from "../config";
 import { widgetManager } from "../utils/widget-manager";
 import PostCard from "./PostCard.astro";
+import PostNavigator from "./PostNavigator.astro";
 
 interface Props {
 	page: Page<CollectionEntry<"posts">>;
@@ -21,7 +22,9 @@ const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
 const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 ---
 
-<div
+<div>
+	<PostNavigator />
+	<div
 	id="post-list-container"
 	class={`transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
 	data-default-layout={defaultLayout}
@@ -36,6 +39,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 			/>
 		))
 	}
+</div>
 </div>
 
 <script>

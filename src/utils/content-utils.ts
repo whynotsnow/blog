@@ -136,3 +136,70 @@ export async function getCategoryList(): Promise<Category[]> {
 	}
 	return ret;
 }
+
+type PostNavigatorCategory = {
+	slug: string;
+	name: string;
+	count: number;
+	tags: {
+		slug: string;
+		name: string;
+		count: number;
+	}[];
+};
+function toSlug(str: string) {
+	return str.toLowerCase().trim().replace(/\s+/g, "-");
+}
+
+export async function getPostNavigatorData(): Promise<PostNavigatorCategory[]> {
+	const posts = await getCollection<"posts">("posts", ({ data }) => {
+		return import.meta.env.PROD ? data.draft !== true : true;
+	});
+
+	const map = new Map<
+		string,
+		{
+			name: string;
+			count: number;
+			tags: Map<string, { name: string; count: number }>;
+		}
+	>();
+
+	for (const post of posts) {
+		const rawCategory = post.data.category?.trim() ?? "Uncategorized";
+		const categoryKey = rawCategory;
+
+		if (!map.has(categoryKey)) {
+			map.set(categoryKey, {
+				name: rawCategory,
+				count: 0,
+				tags: new Map(),
+			});
+		}
+
+		const category = map.get(categoryKey)!;
+		category.count++;
+
+		for (const tag of post.data.tags ?? []) {
+			if (!category.tags.has(tag)) {
+				category.tags.set(tag, { name: tag, count: 0 });
+			}
+			category.tags.get(tag)!.count++;
+		}
+	}
+
+	return Array.from(map.values())
+		.map((cat) => ({
+			slug: toSlug(cat.name),
+			name: cat.name,
+			count: cat.count,
+			tags: Array.from(cat.tags.values())
+				.map((tag) => ({
+					slug: toSlug(tag.name),
+					name: tag.name,
+					count: tag.count,
+				}))
+				.sort((a, b) => a.name.localeCompare(b.name)),
+		}))
+		.sort((a, b) => a.name.localeCompare(b.name));
+}

@@ -1,0 +1,161 @@
+---
+import { getPostNavigatorData } from "@utils/content-utils"
+
+const categories = await getPostNavigatorData();
+---
+
+<nav
+  class="post-navigator mb-4 rounded-xl border border-gray-200 bg-white p-4"
+  data-post-navigator
+>
+  <!-- 分类按钮区 -->
+  <ul class="categories flex flex-wrap gap-2">
+    {categories.map((cat) => (
+      <li class="relative">
+        <button
+          type="button"
+          class="category-btn btn-regular h-8 px-3 pr-6 rounded-lg text-sm
+                 inline-flex items-center transition
+                 hover:bg-[var(--btn-regular-bg-hover)]"
+          data-category={cat.slug}
+        >
+          {cat.name}
+
+          <!-- 右上角数量徽标 -->
+          <span
+            class="absolute -top-1 -right-1 min-w-[1.2rem] h-5 px-1
+                   rounded-full bg-[var(--btn-content)]
+                   text-xs leading-5 text-white text-center"
+          >
+            {cat.count}
+          </span>
+        </button>
+      </li>
+    ))}
+  </ul>
+
+  <!-- Tag 展开区（独立） -->
+  <div class="tag-panels ">
+    {categories.map((cat) => (
+      <div
+        class="tag-panel"
+        data-tags-for={cat.slug}
+        hidden
+      >
+        <ul class="tags flex flex-wrap gap-2">
+            {cat.tags.map((tag) => (
+            <li class="relative overflow-visible">
+                <a
+                    href={`/category/${cat.slug}?tag=${tag.slug}`}
+                    class="btn-regular h-7 px-2 rounded-md text-xs
+                            inline-flex items-center
+                            transition hover:bg-[var(--btn-regular-bg-hover)]
+                            overflow-visible"
+                >
+                    <span class="opacity-60 mr-0.5">#</span>
+                    {tag.name}
+                </a>
+
+                <span
+                    class="absolute -top-1.5 -right-1.5
+                        min-w-[1.1rem] h-4 px-1
+                        rounded-full
+                        bg-[var(--btn-content)]
+                        text-[9px] leading-4
+                        text-white text-center
+                        shadow-sm"
+                >
+                    {tag.count}
+                </span>
+                </li>
+            ))}
+        </ul>
+
+        <a
+          class="mt-4 inline-block text-sm font-medium text-gray-700 transition hover:text-gray-900"
+          href={`/category/${cat.slug}`}
+        >
+          查看「{cat.name}」下的全部文章 →
+        </a>
+      </div>
+    ))}
+  </div>
+</nav>
+
+
+<script is:inline>
+  document
+    .querySelectorAll('[data-post-navigator]')
+    .forEach((root) => {
+      if (root.__initialized) return
+      root.__initialized = true
+
+      const buttons = root.querySelectorAll('.category-btn')
+      const panels = root.querySelectorAll('.tag-panel')
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const slug = btn.dataset.category
+          const targetPanel = root.querySelector( `.tag-panel[data-tags-for="${slug}"]`)
+          const isActive = btn.classList.contains('active')
+
+          // 关闭其它 panel（不包括目标）
+          panels.forEach((p) => {
+            if (p === targetPanel) return
+
+            if (!p.hidden) {
+              p.classList.remove('is-open')
+              setTimeout(() => {
+                p.hidden = true
+              }, 400)
+            }
+          })
+
+          // 取消所有 active
+          buttons.forEach((b) => b.classList.remove('active'))
+
+          // 再点同一个 = 关闭当前
+          if (isActive) {
+            targetPanel.classList.remove('is-open')
+            setTimeout(() => {
+              targetPanel.hidden = true
+              targetPanel.classList.remove('mt-4')
+            }, 400)
+            return
+          }
+
+          // 打开当前
+            btn.classList.add('active')
+            targetPanel.classList.add('mt-4')
+            targetPanel.hidden = false
+
+          requestAnimationFrame(() => {
+            targetPanel.classList.add('is-open')
+          })
+        })
+      })
+    })
+</script>
+
+
+<style>
+    .tag-panel {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition:
+            max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.3s ease-out,
+            transform 0.3s ease-out;
+    }
+
+    .tag-panel.is-open {
+        max-height: 600px; /* 稍微给大点 */
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .tag-panel .tags span {
+        pointer-events: none;
+    }
+</style>
