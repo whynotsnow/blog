@@ -12,18 +12,18 @@ function initPageLayout(pageType) {
 
 	// 如果默认布局是网格模式，则隐藏右侧边栏
 	if (defaultPostListLayout === "grid") {
-		hideRightSidebar();
+		hideLeftSidebar();
 	} else {
-		showRightSidebar();
+		showLeftSidebar();
 	}
 
 	// 监听布局切换事件
 	window.addEventListener("layoutChange", (event) => {
 		const layout = event.detail.layout;
 		if (layout === "grid") {
-			hideRightSidebar();
+			hideLeftSidebar();
 		} else {
-			showRightSidebar();
+			showLeftSidebar();
 		}
 	});
 
@@ -31,9 +31,9 @@ function initPageLayout(pageType) {
 	window.addEventListener("storage", (event) => {
 		if (event.key === "postListLayout") {
 			if (event.newValue === "grid") {
-				hideRightSidebar();
+				hideLeftSidebar();
 			} else {
-				showRightSidebar();
+				showLeftSidebar();
 			}
 		}
 	});
@@ -44,9 +44,9 @@ function initPageLayout(pageType) {
 			const currentLayout =
 				localStorage.getItem("postListLayout") || "list";
 			if (currentLayout === "grid") {
-				hideRightSidebar();
+				hideLeftSidebar();
 			} else {
-				showRightSidebar();
+				showLeftSidebar();
 			}
 		}, 100);
 	});
@@ -57,9 +57,9 @@ function initPageLayout(pageType) {
 			const currentLayout =
 				localStorage.getItem("postListLayout") || "list";
 			if (currentLayout === "grid") {
-				hideRightSidebar();
+				hideLeftSidebar();
 			} else {
-				showRightSidebar();
+				showLeftSidebar();
 			}
 		}, 100);
 	});
@@ -68,19 +68,16 @@ function initPageLayout(pageType) {
 /**
  * 隐藏右侧边栏
  */
-function hideRightSidebar() {
-	const rightSidebar = document.querySelector(".right-sidebar-container");
-	if (rightSidebar) {
+function hideLeftSidebar() {
+	const leftSidebar = document.querySelector(".left-sidebar-container");
+	if (leftSidebar) {
 		// 添加隐藏类
-		rightSidebar.classList.add("hidden-in-grid-mode");
-
-		// 设置显示为none以完全隐藏
-		rightSidebar.style.display = "none";
+		leftSidebar.classList.add("hidden-in-grid-mode");
 
 		// 调整主网格布局
 		const mainGrid = document.getElementById("main-grid");
 		if (mainGrid) {
-			mainGrid.style.gridTemplateColumns = "17.5rem 1fr";
+			mainGrid.style.gridTemplateColumns = "1fr 17.5rem";
 			mainGrid.setAttribute("data-layout-mode", "grid");
 		}
 	}
@@ -89,14 +86,11 @@ function hideRightSidebar() {
 /**
  * 显示右侧边栏
  */
-function showRightSidebar() {
-	const rightSidebar = document.querySelector(".right-sidebar-container");
-	if (rightSidebar) {
+function showLeftSidebar() {
+	const leftSidebar = document.querySelector(".left-sidebar-container");
+	if (leftSidebar) {
 		// 移除隐藏类
-		rightSidebar.classList.remove("hidden-in-grid-mode");
-
-		// 恢复显示
-		rightSidebar.style.display = "";
+		leftSidebar.classList.remove("hidden-in-grid-mode");
 
 		// 恢复主网格布局
 		const mainGrid = document.getElementById("main-grid");
@@ -124,8 +118,8 @@ if (document.readyState === "loading") {
 if (typeof module !== "undefined" && module.exports) {
 	module.exports = {
 		initPageLayout,
-		hideRightSidebar,
-		showRightSidebar,
+		hideLeftSidebar,
+		showLeftSidebar,
 	};
 }
 
@@ -133,7 +127,7 @@ if (typeof module !== "undefined" && module.exports) {
 if (typeof window !== "undefined") {
 	window.rightSidebarLayout = {
 		initPageLayout,
-		hideRightSidebar,
-		showRightSidebar,
+		hideLeftSidebar,
+		showLeftSidebar,
 	};
 }

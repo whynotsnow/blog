@@ -89,26 +89,36 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 			container.classList.add("grid-mode");
 
 			// Grid 模式下隐藏右侧栏
-			const rightSidebar = document.querySelector(
-				".right-sidebar-container",
-			);
-			if (rightSidebar) rightSidebar.classList.add("hidden-in-grid-mode");
+			// const rightSidebar = document.querySelector(
+			// 	".right-sidebar-container",
+			// );
+			// if (rightSidebar) rightSidebar.classList.add("hidden-in-grid-mode");
 
 			const mainGrid = document.getElementById("main-grid");
 			if (mainGrid) mainGrid.setAttribute("data-layout-mode", "grid");
+
+			const leftSidebar = document.querySelector(".left-sidebar-container");
+			if (leftSidebar) leftSidebar.classList.add("hidden-in-grid-mode");
+
+			
 		} else {
 			container.classList.remove("grid-mode");
 			container.classList.add("list-mode");
 
 			// List 模式下显示右侧栏
-			const rightSidebar = document.querySelector(
-				".right-sidebar-container",
-			);
-			if (rightSidebar)
-				rightSidebar.classList.remove("hidden-in-grid-mode");
+			// const rightSidebar = document.querySelector(
+			// 	".right-sidebar-container",
+			// );
+			// if (rightSidebar)
+			// 	rightSidebar.classList.remove("hidden-in-grid-mode");
 
 			const mainGrid = document.getElementById("main-grid");
 			if (mainGrid) mainGrid.setAttribute("data-layout-mode", "list");
+
+
+
+			const leftSidebar = document.querySelector(".left-sidebar-container");
+			if (leftSidebar) leftSidebar.classList.remove("hidden-in-grid-mode");
 		}
 
 		container.classList.add("js-initialized");

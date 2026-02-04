@@ -158,12 +158,7 @@ const desktopShowSidebar = hasLeftSidebarComponents || hasRightSidebarComponents
 const desktopShowLeftSidebar = hasLeftSidebarComponents;
 const desktopShowRightSidebar = hasRightSidebarComponents;
 
-// 平板端侧边栏最终显示状态
-const tabletShowLeftSidebar = hasTabletLeftSidebarComponents;
-// 如果左侧有组件，则平板端不显示右侧侧栏；只有当左侧为空且右侧有组件时，才显示右侧侧栏（会被移到左侧）
-// 注意：现在 getComponentsByPosition("left", "tablet") 已经包含了这个逻辑
-const tabletShowRightSidebar = false; // 平板端不再有独立的右侧栏，如果右移左了，它就在 tabletShowLeftSidebar 中显示
-const tabletAnySidebar = tabletShowLeftSidebar;
+
 
 // 检查默认布局模式，如果是 grid 模式，右侧边栏初始就应该隐藏
 const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
@@ -179,24 +174,23 @@ if (desktopShowLeftSidebar && desktopShowRightSidebar) {
 	desktopGridCols = "lg:grid-cols-[1fr_17.5rem]";
 }
 
+// 平板两栏布局main + right sidebar
+const tableGridCols = 'md:grid-cols-[1fr_17.5rem]'
+// 移动端1栏布局
+const mobileGridCols = 'grid-cols-1'
+
+
 const gridCols = `
-	${mobileShowSidebar ? "grid-cols-1" : "grid-cols-1"}
-	${tabletAnySidebar ? "md:grid-cols-[17.5rem_1fr]" : "md:grid-cols-1"}
+	${mobileGridCols}
+	${tableGridCols}
 	${desktopGridCols}
 `
 	.trim()
 	.replace(/\s+/g, " ");
 
-// 侧边栏容器类名 - 始终在左侧
-const sidebarClass = `
-	onload-animation
-	${mobileShowSidebar && hasMobileDrawerComponents ? "block" : "hidden"}
-	${tabletShowLeftSidebar ? "md:block md:mb-4 md:max-w-[17.5rem]" : "md:hidden"}
-	${desktopShowLeftSidebar ? "lg:block lg:mb-4 lg:row-start-1 lg:row-end-2 lg:max-w-[17.5rem] lg:col-start-1 lg:col-end-2" : "lg:hidden"}
-`
-	.trim()
-	.replace(/\s+/g, " ");
 
+const tableRightSideBar = "md:block md:mb-4 md:max-w-[17.5rem]"
+const mobileRightSideBar = "hidden"
 // 右侧边栏容器类名
 // 手机端：隐藏（手机端只通过 drawer 显示组件）
 // 平板端：根据简化逻辑显示（只有当左侧为空时才显示并移到左侧）
@@ -204,17 +198,41 @@ const sidebarClass = `
 // 如果默认是 grid 模式，初始就隐藏
 const rightSidebarClass = `
 	onload-animation
-	hidden
-	${tabletShowRightSidebar ? "md:block md:mb-4 md:max-w-[17.5rem]" : "md:hidden"}
-	${desktopShowRightSidebar ? `lg:block lg:mb-4 lg:row-start-1 lg:row-end-2 lg:max-w-[17.5rem] ${desktopShowLeftSidebar ? "lg:col-start-3 lg:col-end-4" : "lg:col-start-2 lg:col-end-3"} lg:col-span-1` : "lg:hidden"}
+    ${mobileRightSideBar}
+	${tableRightSideBar}
+	${
+        desktopShowRightSidebar 
+            ? `lg:block lg:mb-4 lg:row-start-1 lg:row-end-2 lg:max-w-[17.5rem] ${
+                desktopShowLeftSidebar 
+                    ? "lg:col-start-3 lg:col-end-4" 
+                    : "lg:col-start-2 lg:col-end-3"
+                    } 
+                lg:col-span-1` 
+            : "lg:hidden"
+    }
 	${initialRightSidebarHidden ? "hidden-in-grid-mode" : ""}
 `
 	.trim()
 	.replace(/\s+/g, " ");
 
-// 主内容区域类名 - 根据侧边栏模式调整grid-column
-// 平板设备和手机端：主内容在最上方row-1，侧边栏在下方
-// 桌面端：主内容和侧边栏并排显示
+
+const mobileLeftSidebar = "block";
+const tabletLeftSidebar = "md:hidden";
+const desktopLeftSidebar = `${desktopShowLeftSidebar 
+            ? `lg:block lg:mb-4 lg:row-start-1 lg:row-end-2 lg:max-w-[17.5rem] lg:col-span-1` 
+            : "lg:hidden"}`;
+const leftSidebarClass = `
+	onload-animation
+	${mobileLeftSidebar}
+    ${tabletLeftSidebar}
+	${desktopLeftSidebar}
+`
+	.trim()
+	.replace(/\s+/g, " ");
+
+
+
+// 桌面端：默认3栏布局，页面可改为2栏
 let desktopMainPos = "lg:col-span-1";
 if (desktopShowLeftSidebar && desktopShowRightSidebar) {
 	desktopMainPos = "lg:col-start-2 lg:col-end-3";
@@ -224,10 +242,13 @@ if (desktopShowLeftSidebar && desktopShowRightSidebar) {
 	desktopMainPos = "lg:col-start-1 lg:col-end-2";
 }
 
+// 平板端始终第一列开始
+const tableMainContent="md:col-start-1 md:col-end-2"
+
 const mainContentClass = `
 	transition-swup-fade overflow-hidden w-full
 	col-span-1 row-start-1 row-end-2
-	${tabletAnySidebar ? "md:col-start-2 md:col-end-3" : "md:col-start-1 md:col-end-2"}
+	${tableMainContent}
 	${desktopShowSidebar ? desktopMainPos : "lg:col-span-1"}
 `
 	.trim()
@@ -296,14 +317,14 @@ const transparentClass = shouldEnableTransparency
 				mainGrid.setAttribute('data-layout-mode', currentLayout);
 				
 				// 根据布局模式显示或隐藏右侧边栏
-				const rightSidebar = document.querySelector('.right-sidebar-container');
-				if (rightSidebar) {
-					if (currentLayout === 'grid') {
-						rightSidebar.classList.add('hidden-in-grid-mode');
-					} else {
-						rightSidebar.classList.remove('hidden-in-grid-mode');
-					}
-				}
+				// const rightSidebar = document.querySelector('.right-sidebar-container');
+				// if (rightSidebar) {
+				// 	if (currentLayout === 'grid') {
+				// 		rightSidebar.classList.add('hidden-in-grid-mode');
+				// 	} else {
+				// 		rightSidebar.classList.remove('hidden-in-grid-mode');
+				// 	}
+				// }
 				
 				// 同时更新文章列表容器的CSS类
 				const postListContainer = document.getElementById('post-list-container');
@@ -487,14 +508,14 @@ const transparentClass = shouldEnableTransparency
 					const currentLayout = window.__pendingLayoutMode || localStorage.getItem('postListLayout') || defaultPostListLayout;
 					mainGrid.setAttribute('data-layout-mode', currentLayout);
 					
-					const rightSidebar = document.querySelector('.right-sidebar-container');
-					if (rightSidebar) {
-						if (currentLayout === 'grid') {
-							rightSidebar.classList.add('hidden-in-grid-mode');
-						} else {
-							rightSidebar.classList.remove('hidden-in-grid-mode');
-						}
-					}
+					// const rightSidebar = document.querySelector('.right-sidebar-container');
+					// if (rightSidebar) {
+					// 	if (currentLayout === 'grid') {
+					// 		rightSidebar.classList.add('hidden-in-grid-mode');
+					// 	} else {
+					// 		rightSidebar.classList.remove('hidden-in-grid-mode');
+					// 	}
+					// }
 					
 					// 关键：同时更新文章列表容器的CSS类
 					const postListContainer = document.getElementById('post-list-container');
@@ -549,17 +570,17 @@ const transparentClass = shouldEnableTransparency
 				const currentLayout = savedLayout || defaultPostListLayout;
 				mainGrid.setAttribute('data-layout-mode', currentLayout);
 				
-				if (currentLayout === 'grid') {
-					const rightSidebar = document.querySelector('.right-sidebar-container');
-					if (rightSidebar) {
-						rightSidebar.classList.add('hidden-in-grid-mode');
-					}
-				} else {
-					const rightSidebar = document.querySelector('.right-sidebar-container');
-					if (rightSidebar) {
-						rightSidebar.classList.remove('hidden-in-grid-mode');
-					}
-				}
+				// if (currentLayout === 'grid') {
+				// 	const rightSidebar = document.querySelector('.right-sidebar-container');
+				// 	if (rightSidebar) {
+				// 		rightSidebar.classList.add('hidden-in-grid-mode');
+				// 	}
+				// } else {
+				// 	const rightSidebar = document.querySelector('.right-sidebar-container');
+				// 	if (rightSidebar) {
+				// 		rightSidebar.classList.remove('hidden-in-grid-mode');
+				// 	}
+				// }
 			}
 		});
 	});
@@ -572,12 +593,12 @@ const transparentClass = shouldEnableTransparency
 				const currentLayout = savedLayout || defaultPostListLayout;
 				mainGrid.setAttribute('data-layout-mode', currentLayout);
 				
-				if (currentLayout === 'grid') {
-					const rightSidebar = document.querySelector('.right-sidebar-container');
-					if (rightSidebar) {
-						rightSidebar.classList.add('hidden-in-grid-mode');
-					}
-				}
+				// if (currentLayout === 'grid') {
+				// 	const rightSidebar = document.querySelector('.right-sidebar-container');
+				// 	if (rightSidebar) {
+				// 		rightSidebar.classList.add('hidden-in-grid-mode');
+				// 	}
+				// }
 			}
 		});
 	}
@@ -813,9 +834,11 @@ const transparentClass = shouldEnableTransparency
             {/* 侧边栏和主内容区域容器 */}
             <div class="contents">
                 {(mobileShowSidebar || tabletShowSidebar || desktopShowSidebar) && (
-                    <SideBar class={`${sidebarClass} ${transparentClass}`} headings={headings}></SideBar>
+                    <div class={`left-sidebar-container ${leftSidebarClass} ${transparentClass}`}>
+                        <SideBar headings={headings}></SideBar>
+                    </div>
                 )}
-                
+
                 {hasRightSidebarComponents && (
                     <div class={`right-sidebar-container ${rightSidebarClass} ${transparentClass}`}>
                         <RightSideBar headings={headings}></RightSideBar>
@@ -1392,6 +1415,10 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 .right-sidebar-container.hidden-in-grid-mode {
     display: none !important;
 }
+.left-sidebar-container.hidden-in-grid-mode {
+    display: none !important;
+}
+
 
 /* Grid 模式下调整主网格布局 */
 #main-grid[data-layout-mode="grid"] {
@@ -1414,24 +1441,14 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* 桌面设备Grid模式：使用双列布局 */
 @media (min-width: 1280px) {
     #main-grid[data-layout-mode="grid"] {
-        grid-template-columns: 17.5rem 1fr !important;
+        grid-template-columns:1fr 17.5rem ;
     }
     
     #main-grid[data-layout-mode="grid"] #swup-container {
-        grid-column: 2 / 3;
+        grid-column: 1 / 3;
     }
 }
 
-/* 确保大屏桌面设备Grid模式配置 */
-@media (min-width: 1280px) {
-    #main-grid[data-layout-mode="grid"] {
-        grid-template-columns: 17.5rem 1fr !important;
-    }
-    
-    #main-grid[data-layout-mode="grid"] #swup-container {
-        grid-column: 2 / 3;
-    }
-}
 
 /* 移动端当banner被禁用时的布局样式 */
 @media (max-width: 1279px) {
@@ -1731,3 +1748,4 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
         max-height: 40px !important;
     }
 }
+</style>

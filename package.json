@@ -7,7 +7,7 @@
 		"init-content": "node scripts/init-content-repo.js",
 		"predev": "node scripts/sync-content.js || true",
 		"prebuild": "node scripts/sync-content.js || true",
-		"dev": "astro dev",
+		"dev": "astro dev --host 0.0.0.0",
 		"start": "astro dev",
 		"check": "astro check",
 		"update-anime": "node scripts/update-anime.mjs",
