@@ -1,6 +1,6 @@
 ---
 title: Vue 学习笔记 2
-published: 2026-02-02
+published: 2026-01-09
 description: '关于Vue的第2篇学习笔记，记录了一些重要概念和实践经验。'
 image: ''
 tags: ["Vue","学习","笔记"]

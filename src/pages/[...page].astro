@@ -13,7 +13,6 @@ export const getStaticPaths = (async ({ paginate }) => {
 	initPostIdMap(allBlogPosts);
 	return paginate(allBlogPosts, { pageSize: PAGE_SIZE });
 }) satisfies GetStaticPaths;
-// https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
 
 const { page } = Astro.props;
 
@@ -21,6 +20,5 @@ const len = page.data.length;
 ---
 
 <MainGridLayout>
-    <PostPage page={page}></PostPage>
-    <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+    <PostPage posts={page.data}></PostPage>
 </MainGridLayout>

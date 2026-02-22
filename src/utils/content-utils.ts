@@ -1,8 +1,13 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { getCategoryUrl, getPostUrl } from "@utils/url-utils";
+import {
+	getCategoryUrl,
+	getPostUrl,
+	resolveCategorySlug,
+} from "@utils/url-utils";
 import { initPostIdMap } from "@utils/permalink-utils";
+import { PostNavigatorCategory, toSlug } from "./client-utils";
 
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
@@ -137,20 +142,6 @@ export async function getCategoryList(): Promise<Category[]> {
 	return ret;
 }
 
-type PostNavigatorCategory = {
-	slug: string;
-	name: string;
-	count: number;
-	tags: {
-		slug: string;
-		name: string;
-		count: number;
-	}[];
-};
-function toSlug(str: string) {
-	return str.toLowerCase().trim().replace(/\s+/g, "-");
-}
-
 export async function getPostNavigatorData(): Promise<PostNavigatorCategory[]> {
 	const posts = await getCollection<"posts">("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
@@ -160,6 +151,7 @@ export async function getPostNavigatorData(): Promise<PostNavigatorCategory[]> {
 		string,
 		{
 			name: string;
+			slug: string;
 			count: number;
 			tags: Map<string, { name: string; count: number }>;
 		}
@@ -167,35 +159,44 @@ export async function getPostNavigatorData(): Promise<PostNavigatorCategory[]> {
 
 	for (const post of posts) {
 		const rawCategory = post.data.category?.trim() ?? "Uncategorized";
-		const categoryKey = rawCategory;
 
-		if (!map.has(categoryKey)) {
-			map.set(categoryKey, {
+		//  统一通过映射函数
+		const categorySlug = resolveCategorySlug(rawCategory);
+
+		if (!map.has(categorySlug)) {
+			map.set(categorySlug, {
 				name: rawCategory,
+				slug: categorySlug,
 				count: 0,
 				tags: new Map(),
 			});
 		}
 
-		const category = map.get(categoryKey)!;
+		const category = map.get(categorySlug)!;
 		category.count++;
 
-		for (const tag of post.data.tags ?? []) {
-			if (!category.tags.has(tag)) {
-				category.tags.set(tag, { name: tag, count: 0 });
+		for (const tagName of post.data.tags ?? []) {
+			const tagKey = tagName.trim();
+
+			if (!category.tags.has(tagKey)) {
+				category.tags.set(tagKey, {
+					name: tagKey,
+					count: 0,
+				});
 			}
-			category.tags.get(tag)!.count++;
+
+			category.tags.get(tagKey)!.count++;
 		}
 	}
 
 	return Array.from(map.values())
 		.map((cat) => ({
-			slug: toSlug(cat.name),
+			slug: cat.slug, // 不再现场算
 			name: cat.name,
 			count: cat.count,
 			tags: Array.from(cat.tags.values())
 				.map((tag) => ({
-					slug: toSlug(tag.name),
+					slug: toSlug(tag.name), // tag 仍然自动
 					name: tag.name,
 					count: tag.count,
 				}))

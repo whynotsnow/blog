@@ -1,0 +1,159 @@
+---
+import type { Page } from "astro";
+import { render } from "astro:content";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import PostPage from "@/components/PostPage.astro";
+import Pagination from "@/components/control/Pagination.astro";
+import { PAGE_SIZE } from "@/constants/constants";
+import { buildCategoryIndex } from "@/utils/category-page";
+import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
+import { UIPost } from "@components/post/useCategoryPagination";
+import { toSlug } from "@utils/client-utils";
+import { CollectionEntry } from "astro:content";
+import { getPostUrl, resolveImageUrl } from "@utils/url-utils";
+import { getPostNavigatorData } from "@utils/content-utils";
+
+
+/** 
+ * static paths
+ */
+export const getStaticPaths = async () => {
+  const categoryMap = await buildCategoryIndex();
+
+  return [...categoryMap.keys()].map((slug) => ({
+    params: { slug },
+  }));
+};
+
+/**
+ * params
+ */
+const { slug } = Astro.params;
+// 只有分类没有 slug 重定向为404，例如/category/
+if (!slug) return Astro.redirect("/404");
+
+/**
+ * data source
+ */
+const categoryMap = await buildCategoryIndex();
+const entry = categoryMap.get(slug);
+
+if (!entry) return Astro.redirect("/404");
+
+const { posts: allPosts } = entry;
+const categories = await getPostNavigatorData();
+
+export async function toUIPost(
+  post: CollectionEntry<"posts">
+): Promise<UIPost> {
+  const { id, data } = post;
+
+  const { remarkPluginFrontmatter } = await render(post);
+  const imageUrl = resolveImageUrl(post);
+  
+  return {
+    id,
+    slug: toSlug(data.category|| ''),
+    url: getPostUrl(post),
+     // TODO: render 后补
+
+    title: data.title,
+    description: data.description,
+
+    published: data.published.toISOString(),
+    updated: data.updated?.toISOString(),
+
+    category: {
+          label: data.category || '',
+          slug: toSlug(data.category || ''),
+        },
+
+    tags:
+      data.tags?.map((t) => ({
+        label: t,
+        slug: toSlug(t),
+      })) ?? [],
+
+     meta: {
+      id,
+      published: data.published.toISOString(),
+      updated: data.updated?.toISOString(),
+
+      category: {
+            label: data.category|| '',
+            slug: toSlug(data.category || ''),
+          },
+
+      tags:
+        data.tags?.map((t) => ({
+          label: t,
+          slug: toSlug(t),
+        })) ?? [],
+      // build 阶段注入
+      words: remarkPluginFrontmatter?.words,
+      excerpt: remarkPluginFrontmatter?.excerpt,
+    },
+    hasCoverImage: Boolean(data.image), // 仅作 UI 判断
+    // image: data.image, // 兼容client端 URL
+    image: imageUrl, // 兼容client端 URL
+    source: "client",
+  };
+}
+
+
+/**
+ * pagination (page 1)
+ */
+
+const lastPageNumber = Math.ceil(allPosts.length / PAGE_SIZE);
+
+const page:Page<(typeof allPosts)[number]> = {
+    data: allPosts.slice(0, PAGE_SIZE),
+    start: 0,
+    end: PAGE_SIZE,
+    size: PAGE_SIZE,
+    total: allPosts.length,
+    currentPage: 1,
+    lastPage: Math.max(1, lastPageNumber),
+    url: {
+      current: `/category/${slug}/`,
+      first: `/category/${slug}/`,
+      last: lastPageNumber > 1
+        ? `/category/${slug}/page/${lastPageNumber}/`
+        : `/category/${slug}/`,
+      prev: undefined,
+      next: allPosts.length > PAGE_SIZE
+        ? `/category/${slug}/page/2/`
+        : undefined,
+    },
+  };
+const posts = await Promise.all(allPosts.map(toUIPost));  
+---
+<MainGridLayout>
+  <CategoryPostListClient
+      client:load
+      posts={posts}
+      categories={categories}
+  >
+    <PostPage
+      posts={page!.data}
+    />
+
+    <Pagination
+      page={page}
+      class="mx-auto"
+      style={`animation-delay: calc(var(--content-delay) + ${(page.data.length)*50}ms)`}
+    />
+  </CategoryPostListClient>
+</MainGridLayout>
+
+<style>
+  [data-ssg] {
+    display: block;
+  }
+  #ssg-post.client-ready[data-ssg] {
+    /* display: none; */
+    border: 1px solid red;
+  }
+</style>
+

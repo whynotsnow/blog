@@ -1,0 +1,97 @@
+---
+import type { GetStaticPaths, Page } from "astro";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import PostPage from "@/components/PostPage.astro";
+import Pagination from "@/components/control/Pagination.astro";
+import { buildCategoryIndex } from "@utils/category-page";
+import { CollectionEntry } from "astro:content";
+import { PAGE_SIZE } from "@constants/constants";
+import { getPostNavigatorData } from "@utils/content-utils";
+import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
+import { toUIPost } from "../index.astro";
+
+/**
+ * props injected by Astro pagination
+ */
+export interface Props {
+  page: Page<CollectionEntry<"posts">>;
+}
+
+/**
+ * static paths
+ * 保持原有完整分页逻辑
+ */
+export const getStaticPaths = (async ({ paginate }) => {
+  const categoryMap = await buildCategoryIndex();
+
+  return Array.from(categoryMap.entries()).flatMap(
+    ([slug, { posts }]) =>
+      paginate(posts, {
+        pageSize: PAGE_SIZE,
+        params: { slug },
+      })
+  );
+}) satisfies GetStaticPaths;
+
+/**
+ * params & props
+ */
+const { slug } = Astro.params;
+const { page } = Astro.props;
+
+if (!slug) return Astro.redirect("/404");
+
+/**
+ * data source
+ */
+const categoryMap = await buildCategoryIndex();
+const entry = categoryMap.get(slug);
+
+if (!entry) return Astro.redirect("/404");
+
+const { posts: allPosts } = entry;
+
+/**
+ * 分类导航数据
+ * 
+ */
+const categories = await getPostNavigatorData();
+
+const posts = await Promise.all(allPosts.map(toUIPost));
+---
+
+<MainGridLayout>
+  <CategoryPostListClient
+      client:load
+      posts={posts}
+      categories={categories}
+  >
+    <PostPage posts={page.data} />
+
+    <Pagination
+      page={page}
+      class="mx-auto"
+      style={`animation-delay: calc(var(--content-delay) + ${(page.data.length)*50}ms)`}
+    />
+  </CategoryPostListClient>
+</MainGridLayout>
+
+
+<!-- 全部分类下 posts JSON 数据 -->
+<script
+  id="category-post-index"
+  type="application/json"
+  set:html={JSON.stringify(allPosts.map(toUIPost))}
+>
+</script>
+
+<style>
+  [data-ssg] {
+    display: block;
+  }
+
+  #ssg-post.client-ready[data-ssg] {
+    /* 可用于 client hydration 后隐藏 */
+    /* display: none; */
+  }
+</style>

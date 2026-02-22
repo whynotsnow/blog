@@ -46,8 +46,10 @@ const categories = await getPostNavigatorData();
             {cat.tags.map((tag) => (
             <li class="relative overflow-visible">
                 <a
-                    href={`/category/${cat.slug}?tag=${tag.slug}`}
-                    class="btn-regular h-7 px-2 rounded-md text-xs
+                    href={`/category/${cat.slug}/?tag=${tag.slug}`}
+                    data-tag-slug={tag.slug}
+                    data-category-slug={cat.slug}
+                    class="tag-link btn-regular h-7 px-2 rounded-md text-xs
                             inline-flex items-center
                             transition hover:bg-[var(--btn-regular-bg-hover)]
                             overflow-visible"
@@ -73,7 +75,7 @@ const categories = await getPostNavigatorData();
 
         <a
           class="mt-4 inline-block text-sm font-medium text-gray-700 transition hover:text-gray-900"
-          href={`/category/${cat.slug}`}
+          href={`/category/${cat.slug}/`}
         >
           查看「{cat.name}」下的全部文章 →
         </a>
@@ -83,7 +85,8 @@ const categories = await getPostNavigatorData();
 </nav>
 
 
-<script is:inline>
+<script is:inline >
+  // 配合 css 处理切换分类时的动画效果
   document
     .querySelectorAll('[data-post-navigator]')
     .forEach((root) => {

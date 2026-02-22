@@ -1,16 +1,16 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import type { Page } from "astro";
 import { siteConfig } from "../config";
 import { widgetManager } from "../utils/widget-manager";
 import PostCard from "./PostCard.astro";
-import PostNavigator from "./PostNavigator.astro";
+import { getPostNavigatorData } from "@utils/content-utils";
+import PostNavigator from "./post/PostNavigator.svelte";
 
 interface Props {
-	page: Page<CollectionEntry<"posts">>;
+  posts: CollectionEntry<"posts">[];
 }
 
-const { page } = Astro.props;
+const { posts  } = Astro.props;
 
 // 检查是否启用右侧边栏（通过检查右侧是否有组件）
 const hasRightSidebars =
@@ -20,26 +20,27 @@ const hasRightSidebars =
 // 根据配置设置初始布局模式
 const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
 const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
+
+const categories = await getPostNavigatorData();
 ---
 
-<div>
-	<PostNavigator />
-	<div
-	id="post-list-container"
-	class={`transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
-	data-default-layout={defaultLayout}
-	data-both-sidebars={hasRightSidebars}
->
-	{
-		page.data.map((entry, index) => (
-			<PostCard
-				entry={entry}
-				class:list="onload-animation"
-				style={`--i: ${index}; --interval: 50ms;`}
-			/>
-		))
-	}
-</div>
+<div id="page-content">
+  <PostNavigator categories={categories} client:load />
+
+  <div
+    id="post-list-container"
+    class={`transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
+    data-default-layout={defaultLayout}
+    data-both-sidebars={hasRightSidebars}
+  >
+    {posts.map((entry, index) => (
+      <PostCard
+        entry={entry}
+        class:list="onload-animation"
+        style={`--i: ${index}; --interval: 50ms;`}
+      />
+    ))}
+  </div>
 </div>
 
 <script>

@@ -3,6 +3,7 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { permalinkConfig } from "../config";
 import { generatePermalinkSlug } from "./permalink-utils";
+import { categories, Category } from "@/data/categories";
 
 /**
  * 移除文件扩展名（.md, .mdx, .markdown）
@@ -35,11 +36,6 @@ export function getPostUrlByAlias(alias: string): string {
 	return url(`/posts/${cleanAlias}/`);
 }
 
-export function getPostUrl(post: CollectionEntry<"posts">): string;
-export function getPostUrl(post: {
-	id: string;
-	data: { alias?: string; permalink?: string };
-}): string;
 export function getPostUrl(post: any): string {
 	// 如果文章有自定义 permalink，优先使用（在根目录下）
 	if (post.data.permalink) {
@@ -96,4 +92,124 @@ export function getFileDirFromPath(filePath: string): string {
 
 export function url(path: string) {
 	return joinUrl("", import.meta.env.BASE_URL, path);
+}
+
+export function toCategorySlug(name: string) {
+	return name
+		.toLowerCase()
+		.trim()
+		.replace(/\s+/g, "-")
+		.replace(/[^\w-]/g, "");
+}
+
+// 分类slug映射 TODO可能存在重复 map
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+	技术: "tech",
+	前端: "frontend",
+	随笔: "notes",
+	生活: "life",
+	学习: "learn",
+	工作: "work",
+	教程: "tutorials",
+	Guides: "guides",
+	Technology: "technology",
+};
+
+export function resolveCategorySlug(name: string) {
+	return CATEGORY_SLUG_MAP[name] ?? toCategorySlug(name);
+}
+
+export function getCategoryBySlug(slug: string) {
+	return categories.find((c) => c.slug === slug);
+}
+
+export function getCategoryByName(name: string) {
+	return categories.find((c) => c.name === name);
+}
+
+export function getTagBySlug(category: Category, tagSlug: string) {
+	return category.tags?.find((t) => t.slug === tagSlug);
+}
+
+export function createFallbackCategory(name: string) {
+	return {
+		name,
+		// fallback 使用createFallbackCategory解析
+		slug: resolveCategorySlug(name) || name,
+		isFallback: true,
+	};
+}
+
+/**
+ * 静态图片映射表。
+ *
+ * 由 Vite 在构建阶段生成：
+ * - key: 以 "/" 开头的项目相对路径
+ *   例如: "/src/content/posts/guide/cover.webp"
+ * - value: 构建后可访问的 URL
+ *   例如: "/assets/cover.abc123.webp"
+ */
+const imageMap: Record<string, string> = import.meta.glob(
+	"/src/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+	{
+		eager: true,
+		import: "default",
+	},
+);
+
+/**
+ * 规范化路径：
+ * - 去掉 "./"
+ * - 统一为正斜杠
+ * - 移除多余的重复斜杠
+ */
+function normalizePath(path: string): string {
+	return path
+		.replace(/\\/g, "/") // Windows 兼容
+		.replace(/^\.\//, "") // 去掉开头 "./"
+		.replace(/\/+/g, "/"); // 去掉重复斜杠
+}
+
+/**
+ * 解析文章封面图片 URL
+ *
+ * @param post - Astro CollectionEntry<"posts">
+ * @returns 构建后可访问的图片 URL
+ *
+ * @remarks
+ * - 假设文章文件名为 index.md
+ * - 图片与文章位于同一目录
+ * - 仅支持 content 目录内图片
+ * - 构建期运行，不可在纯客户端环境使用
+ */
+export function resolveImageUrl(
+	post: CollectionEntry<"posts">,
+): string | undefined {
+	const image = post.data.image;
+	const filePath = post.filePath;
+
+	if (!image || !filePath) return image;
+
+	// 文章所在目录
+	const articleDir = filePath.replace(/\\/g, "/").replace(/\/[^\/]+$/, ""); // 去掉文件名
+
+	// 规范化 image
+	const normalizedImage = normalizePath(image);
+
+	// 构造 glob key
+	const imageKey = `/${articleDir}/${normalizedImage}`;
+
+	const imageUrl = imageMap[imageKey];
+
+	if (!imageUrl) {
+		console.warn(
+			`[resolveImageUrl] 图片未找到:
+		key: ${imageKey}
+		原始 image: ${image}
+		文章: ${filePath}`,
+		);
+		return image;
+	}
+
+	return imageUrl;
 }
