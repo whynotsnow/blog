@@ -7,7 +7,7 @@ import {
 	resolveCategorySlug,
 } from "@utils/url-utils";
 import { initPostIdMap } from "@utils/permalink-utils";
-import { PostNavigatorCategory, toSlug } from "./client-utils";
+import { getTagUrl, PostNavigatorCategory, toSlug } from "./client-utils";
 
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
@@ -196,9 +196,10 @@ export async function getPostNavigatorData(): Promise<PostNavigatorCategory[]> {
 			count: cat.count,
 			tags: Array.from(cat.tags.values())
 				.map((tag) => ({
-					slug: toSlug(tag.name), // tag 仍然自动
+					slug: toSlug(tag.name),
 					name: tag.name,
 					count: tag.count,
+					url: getTagUrl(tag.name),
 				}))
 				.sort((a, b) => a.name.localeCompare(b.name)),
 		}))

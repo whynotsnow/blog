@@ -85,13 +85,3 @@ const posts = await Promise.all(allPosts.map(toUIPost));
 >
 </script>
 
-<style>
-  [data-ssg] {
-    display: block;
-  }
-
-  #ssg-post.client-ready[data-ssg] {
-    /* 可用于 client hydration 后隐藏 */
-    /* display: none; */
-  }
-</style>

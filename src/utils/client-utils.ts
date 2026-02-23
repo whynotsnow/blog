@@ -11,6 +11,7 @@ export type PostNavigatorCategory = {
 		slug: string;
 		name: string;
 		count: number;
+		url: string;
 	}[];
 };
 
@@ -18,9 +19,19 @@ export function toSlug(str: string) {
 	return str.toLowerCase().trim().replace(/\s+/g, "-");
 }
 
-export function url(path: string) {
+export function url(path: string): string {
 	const base = import.meta.env.BASE_URL ?? "/";
-	return new URL(path, base).pathname;
+	// 移除 base 末尾的斜杠（如果有）
+	const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+	// 确保 path 以斜杠开头（方便拼接）
+	const normalizedPath = path.startsWith("/") ? path : "/" + path;
+	// 拼接并返回
+	return normalizedBase + normalizedPath;
+}
+
+export function getTagUrl(tag: string): string {
+	if (!tag) return url("/archive/");
+	return url(`/archive/?tag=${tag.trim()}`);
 }
 
 const HIDDEN = -1; // 用于表示省略号

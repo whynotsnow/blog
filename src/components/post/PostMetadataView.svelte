@@ -163,7 +163,7 @@
               </div>
             {/if}
             <a
-              href={getTagUrl(tag.label)}
+              href={tag.url}
               class="link-lg transition text-50 text-sm font-medium
                      hover:text-[var(--primary)] whitespace-nowrap"
             >

@@ -22,6 +22,7 @@ export interface UIPagination<T> {
 interface TagItem {
 	label: string;
 	slug: string;
+	url: string;
 }
 
 export interface UIPost {

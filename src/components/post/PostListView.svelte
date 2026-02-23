@@ -5,7 +5,7 @@
   import { widgetManager } from "@/utils/widget-manager";
   import PostCardView from "./PostCardView.svelte";
 	import PostNavigator from "./PostNavigator.svelte";
-	import { url, type PostNavigatorCategory } from "@utils/client-utils";
+	import type { PostNavigatorCategory } from "@utils/client-utils";
 
 
   export let posts: UIPost[];

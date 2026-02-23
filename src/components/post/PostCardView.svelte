@@ -92,7 +92,7 @@
       {#if post.tags && post.tags.length > 0}
         {#each post.tags as tag}
           <a
-            href={`/tag/${tag.slug}/`}
+            href={tag.url}
             class={
               siteConfig.tagStyle?.useNewStyle
                 ? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-[var(--primary)] active:text-[var(--primary)] whitespace-nowrap"
