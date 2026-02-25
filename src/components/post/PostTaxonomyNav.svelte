@@ -1,49 +1,41 @@
 <script lang="ts">
-	import { toSlug, url } from "@utils/client-utils";
+  import { toSlug, url } from "@utils/client-utils";
 
-	interface TagItem {
-		name: string;
-		slug: string;
-		count: number;
-	}
+  interface TagItem {
+    name: string;
+    slug: string;
+    count: number;
+  }
 
-	interface CategoryItem {
-		name: string;
-		slug: string;
-		count: number;
-		tags: TagItem[];
-	}
+  interface CategoryItem {
+    name: string;
+    slug: string;
+    count: number;
+    tags: TagItem[];
+  }
 
-	export let categories: CategoryItem[] = [];
-	export let currentCategory: string | undefined = undefined;
-	export let currentTag: string | undefined = undefined;
+  export let categories: CategoryItem[] = [];
+  export let currentCategory: string | undefined = undefined;
+  export let currentTag: string | undefined = undefined;
 
-	const categorySlug = toSlug(currentCategory || "");
-	const tagSlug = toSlug(currentTag || "");
+  const categorySlug = toSlug(currentCategory || "");
+  const tagSlug = toSlug(currentTag || "");
 
-	$: activeCategory =
-		categories.find((c) => c.slug === categorySlug) ?? undefined;
+  $: activeCategory = categories.find((c) => c.slug === categorySlug) ?? undefined;
 
-	const isActiveCategory = (slug: string) => slug === categorySlug;
-	const isActiveTag = (slug: string) => slug === tagSlug;
+  const isActiveCategory = (slug: string) => slug === categorySlug;
+  const isActiveTag = (slug: string) => slug === tagSlug;
 </script>
 
 <nav class="post-taxonomy-nav mb-4">
-
   <!-- ================= 统一 Card ================= -->
   <div class="rounded-xl bg-[var(--card-bg-transparent)] p-4">
-
     <!-- ================= 面包屑 ================= -->
     <div
       class="flex items-center gap-2 text-sm font-medium mb-4"
       style="color: var(--content-meta);"
     >
-      <a
-        href={url("/")}
-        class="transition hover:text-[var(--primary)] font-semibold"
-      >
-        全部分类
-      </a>
+      <a href={url("/")} class="transition hover:text-[var(--primary)] font-semibold"> 全部分类 </a>
 
       {#if activeCategory}
         <span class="opacity-40">›</span>
@@ -72,7 +64,6 @@
           class="relative group text-[var(--btn-content)]"
           class:text-white={isActiveCategory(cat.slug)}
         >
-
           <a
             href={url(`/category/${cat.slug}/`)}
             class="btn-regular h-8 text-sm px-3 rounded-lg transition"
@@ -98,24 +89,19 @@
           >
             {cat.count}
           </span>
-
         </div>
       {/each}
-
     </div>
 
     <!-- ================= 当前分类 Tags ================= -->
     {#if activeCategory}
       <div class="mt-5 pt-4 border-t border-[var(--line-divider)]">
-
         <div class="flex flex-wrap gap-2">
-
           {#each activeCategory.tags as tag}
             <div
               class="relative group text-[var(--btn-content)]"
               class:text-white={isActiveTag(tag.slug)}
             >
-
               <a
                 href={url(`/category/${activeCategory.slug}/?tag=${tag.slug}`)}
                 class="btn-regular h-7 text-xs px-2 rounded-lg transition"
@@ -141,14 +127,10 @@
               >
                 {tag.count}
               </span>
-
             </div>
           {/each}
-
         </div>
       </div>
     {/if}
-
   </div>
-
 </nav>
