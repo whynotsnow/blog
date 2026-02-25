@@ -4,13 +4,14 @@ import { siteConfig } from "../config";
 import { widgetManager } from "../utils/widget-manager";
 import PostCard from "./PostCard.astro";
 import { getPostNavigatorData } from "@utils/content-utils";
-import PostNavigator from "./post/PostNavigator.svelte";
+import PostTaxonomyNav from "./post/PostTaxonomyNav.svelte";
 
 interface Props {
   posts: CollectionEntry<"posts">[];
 }
 
 const { posts  } = Astro.props;
+const { slug } = Astro.params;
 
 // 检查是否启用右侧边栏（通过检查右侧是否有组件）
 const hasRightSidebars =
@@ -25,7 +26,10 @@ const categories = await getPostNavigatorData();
 ---
 
 <div id="page-content">
-  <PostNavigator categories={categories} client:load />
+  <PostTaxonomyNav
+    categories={categories} 
+	currentCategory={slug}
+  />
 
   <div
     id="post-list-container"

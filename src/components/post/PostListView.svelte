@@ -4,17 +4,15 @@
   import { siteConfig } from "@/config";
   import { widgetManager } from "@/utils/widget-manager";
   import PostCardView from "./PostCardView.svelte";
-	import PostNavigator from "./PostNavigator.svelte";
 	import type { PostNavigatorCategory } from "@utils/client-utils";
-
+	import PostTaxonomyNav from "./PostTaxonomyNav.svelte";
 
   export let posts: UIPost[];
-
   export let categories: PostNavigatorCategory[];
+  export let categorySlug: string;
+  export let tag: string | undefined = undefined;
 
   let container: HTMLDivElement | null = null;
-
-  
 
   /* ================= 侧边栏检测 ================= */
 
@@ -169,8 +167,11 @@
 
 <div id="page-content">
 
-  <PostNavigator categories={categories} />
-  <!-- ============================= -->
+  <PostTaxonomyNav
+    categories={categories}
+    currentCategory={categorySlug}
+    currentTag={tag}
+  />
 
   <div
     bind:this={container}

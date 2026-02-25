@@ -4,13 +4,13 @@ import { render } from "astro:content";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import PostPage from "@/components/PostPage.astro";
 import Pagination from "@/components/control/Pagination.astro";
-import { PAGE_SIZE } from "@/constants/constants";
+import { PAGE_SIZE, UNCATEGORIZED } from "@/constants/constants";
 import { buildCategoryIndex } from "@/utils/category-page";
 import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
-import { UIPost } from "@components/post/useCategoryPagination";
+import type { CategoryItem, TagItem, UIPost } from "@components/post/useCategoryPagination";
 import { toSlug } from "@utils/client-utils";
 import { CollectionEntry } from "astro:content";
-import { getPostUrl, resolveImageUrl } from "@utils/url-utils";
+import { getPostUrl, getTagUrl, resolveImageUrl } from "@utils/url-utils";
 import { getPostNavigatorData } from "@utils/content-utils";
 
 
@@ -43,61 +43,72 @@ if (!entry) return Astro.redirect("/404");
 const { posts: allPosts } = entry;
 const categories = await getPostNavigatorData();
 
-export async function toUIPost(
-  post: CollectionEntry<"posts">
-): Promise<UIPost> {
-  const { id, data } = post;
+/**
+ * 将 Astro 内容集合中的文章条目转换为前端 UI 所需的统一格式（UIPost）
+ * @param post - Astro 内容集合中的文章条目（类型 `CollectionEntry<"posts">`）
+ * @returns 符合前端组件使用的标准化文章对象（`Promise<UIPost>`）
+ */
+export async function toUIPost(post: CollectionEntry<"posts">): Promise<UIPost> {
+    const { id, data } = post;
 
-  const { remarkPluginFrontmatter } = await render(post);
-  const imageUrl = resolveImageUrl(post);
-  
-  return {
-    id,
-    slug: toSlug(data.category|| ''),
-    url: getPostUrl(post),
-     // TODO: render 后补
+    // 渲染文章以获取 remark 插件生成的数据（字数、摘要等）
+    const { remarkPluginFrontmatter } = await render(post);
 
-    title: data.title,
-    description: data.description,
+    // 解析文章的封面图片 URL（客户端可访问）
+    const imageUrl = resolveImageUrl(post);
 
-    published: data.published.toISOString(),
-    updated: data.updated?.toISOString(),
+    // 构造分类对象（复用公共类型 BaseSlug）
+    const category: CategoryItem = {
+        label: data.category?.trim() || UNCATEGORIZED,
+        slug: toSlug(data.category || ''),
+    };
 
-    category: {
-          label: data.category || '',
-          slug: toSlug(data.category || ''),
+    // 构造标签数组（每个标签对象包含预计算的 URL）
+    const tags: TagItem[] = (data.tags ?? [])
+        .map((t: string) => ({
+            label: t.trim(),
+            slug: toSlug(t),
+            // 此处 url 由 getTagUrl 预计算，确保与全局标签链接规则一致
+            // 注意：需要导入 getTagUrl 或确保它在此作用域可用
+            url: getTagUrl(t), 
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)); // 按字母排序，保持一致性
+
+    return {
+        // 基础标识
+        id,
+        slug: category.slug,                // 文章所属分类的 slug（用于归档链接）
+        url: getPostUrl(post),              // 文章本身的 URL
+
+        // 文本内容
+        title: data.title,
+        description: data.description,
+
+        // 时间（ISO 字符串格式，便于前端展示和排序）
+        published: data.published.toISOString(),
+        updated: data.updated?.toISOString(),
+
+        // 分类与标签
+        category,
+        tags,
+
+        // 元数据（用于文章信息栏）
+        meta: {
+            id,
+            published: data.published.toISOString(),
+            updated: data.updated?.toISOString(),
+            category,
+            tags,
+            words: remarkPluginFrontmatter?.words,
+            excerpt: remarkPluginFrontmatter?.excerpt,
         },
 
-    tags:
-      data.tags?.map((t) => ({
-        label: t,
-        slug: toSlug(t),
-      })) ?? [],
+        // 封面图相关
+        hasCoverImage: Boolean(data.image), // 基于原始字段判断，仅用于 UI 提示
+        image: imageUrl,                     // 客户端可访问的图片 URL
 
-     meta: {
-      id,
-      published: data.published.toISOString(),
-      updated: data.updated?.toISOString(),
-
-      category: {
-            label: data.category|| '',
-            slug: toSlug(data.category || ''),
-          },
-
-      tags:
-        data.tags?.map((t) => ({
-          label: t,
-          slug: toSlug(t),
-        })) ?? [],
-      // build 阶段注入
-      words: remarkPluginFrontmatter?.words,
-      excerpt: remarkPluginFrontmatter?.excerpt,
-    },
-    hasCoverImage: Boolean(data.image), // 仅作 UI 判断
-    // image: data.image, // 兼容client端 URL
-    image: imageUrl, // 兼容client端 URL
-    source: "client",
-  };
+        source: 'client',                    // 标识数据来源（client 表示用于客户端渲染）
+    };
 }
 
 
@@ -134,6 +145,7 @@ const posts = await Promise.all(allPosts.map(toUIPost));
       client:load
       posts={posts}
       categories={categories}
+      categorySlug={slug}
   >
     <PostPage
       posts={page!.data}

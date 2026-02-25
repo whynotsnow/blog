@@ -18,11 +18,16 @@ export interface UIPagination<T> {
 		next?: string;
 	};
 }
-
-interface TagItem {
+interface BaseSlug {
 	label: string;
 	slug: string;
-	url: string;
+}
+
+export interface CategoryItem extends BaseSlug {}
+
+// 标签类型（带 URL）
+export interface TagItem extends BaseSlug {
+	url: string; // 标签特有字段
 }
 
 export interface UIPost {
@@ -40,7 +45,7 @@ export interface UIPost {
 	updated?: string;
 
 	// 分类 & 标签
-	category: TagItem;
+	category: CategoryItem;
 
 	tags: TagItem[];
 	pinned?: boolean;
@@ -65,7 +70,7 @@ export interface PostMeta {
 	published: string; // ISO
 	updated?: string;
 
-	category: TagItem;
+	category: CategoryItem;
 
 	tags: TagItem[];
 
