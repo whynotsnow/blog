@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from "@iconify/svelte";
   import PostMetadataView from "./PostMetadataView.svelte";
-  import type { UIPost } from "./useCategoryPagination";
+  import type { UIPost } from "./types";
   import { siteConfig } from "@/config";
   import ImageWrapper from "./ImageWrapper.svelte";
 
