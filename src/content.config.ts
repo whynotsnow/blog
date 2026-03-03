@@ -3,47 +3,81 @@ import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
 const postsCollection = defineCollection({
-	loader: glob({ pattern: "**/*.md", base: "./src/content/posts" }),
-	schema: z.object({
-		title: z.string(),
-		published: z.date(),
-		updated: z.date().optional(),
-		draft: z.boolean().optional().default(false),
-		description: z.string().optional().default(""),
-		image: z.string().optional().default(""),
-		tags: z.array(z.string()).optional().default([]),
-		category: z.string().optional().nullable().default(""),
-		lang: z.string().optional().default(""),
-		pinned: z.boolean().optional().default(false),
-		comment: z.boolean().optional().default(true),
-		priority: z.number().optional(),
-		author: z.string().optional().default(""),
-		sourceLink: z.string().optional().default(""),
-		licenseName: z.string().optional().default(""),
-		licenseUrl: z.string().optional().default(""),
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/posts",
+  }),
 
-		/* Page encryption fields */
-		encrypted: z.boolean().optional().default(false),
-		password: z.string().optional().default(""),
+  schema: z.object({
+    /* Core */
+    title: z.string(),
+    published: z.coerce.date(),
+    updated: z.coerce.date().optional(),
 
-		/* Posts alias */
-		alias: z.string().optional(),
+    /* Basic flags */
+    draft: z.boolean().optional().default(false),
+    pinned: z.boolean().optional().default(false),
+    priority: z.number().optional(),
 
-		/* Custom permalink - 自定义固定链接，优先级高于 alias */
-		permalink: z.string().optional(),
+    /* Meta */
+    description: z.string().optional().default(""),
+    image: z.string().optional().default(""),
+    author: z.string().optional().default(""),
+    lang: z.string().optional().default(""),
 
-		/* For internal use */
-		prevTitle: z.string().default(""),
-		prevSlug: z.string().default(""),
-		nextTitle: z.string().default(""),
-		nextSlug: z.string().default(""),
-	}),
+    /* Classification */
+    tags: z.array(z.string()).optional().default([]),
+    category: z.string().optional().default(""),
+
+    /* Interaction */
+    comment: z.boolean().optional().default(true),
+
+    /* Source & License */
+    sourceLink: z.string().optional().default(""),
+    licenseName: z.string().optional().default(""),
+    licenseUrl: z.string().optional().default(""),
+
+    /* Encryption */
+    encrypted: z.boolean().optional().default(false),
+    password: z.string().optional().default(""),
+
+    /* Routing */
+    alias: z.string().optional(),
+    permalink: z.string().optional(),
+
+    /* 推荐权重 */
+    recommendScore: z.number().optional().default(0),
+
+    /* =========================
+       Deprecated fields
+       为兼容旧版本保留
+       不再使用
+    ========================= */
+
+    prevTitle: z.string().optional(),
+    prevSlug: z.string().optional(),
+    nextTitle: z.string().optional(),
+    nextSlug: z.string().optional(),
+  }),
 });
+
+/* =========================
+   Spec Collection
+========================= */
+
 const specCollection = defineCollection({
-	loader: glob({ pattern: "**/*.md", base: "./src/content/spec" }),
-	schema: z.object({}),
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/spec",
+  }),
+  schema: z.object({}),
 });
+
+/* =========================
+   Export
+========================= */
+
 export const collections = {
-	posts: postsCollection,
-	spec: specCollection,
+  posts: postsCollection,
+  spec: specCollection,
 };

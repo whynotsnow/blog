@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Icon  from "@iconify/svelte";
+  import Icon from "@iconify/svelte";
   import PostMetadataView from "./PostMetadataView.svelte";
   import type { UIPost } from "./useCategoryPagination";
   import { siteConfig } from "@/config";
-	import ImageWrapper from "./ImageWrapper.svelte";
+  import ImageWrapper from "./ImageWrapper.svelte";
 
   // ========= props =========
   export let post: UIPost;
@@ -11,13 +11,13 @@
   export let style: string | undefined = undefined;
 
   // ========= 派生数据 =========
-  const hasCover = !!post.image;
+  const hasCover = !!post.image?.src;
   const coverWidth = "28%";
 
   const url = post.url;
 
   // data-tags
-  const dataTags = post.tags?.map(t => t.label).join(",") ?? "";
+  const dataTags = post.tags?.map((t) => t.label).join(",") ?? "";
 </script>
 
 <div
@@ -29,9 +29,11 @@
   <!-- ================= 内容区域 ================= -->
   <div
     class={`pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative
-      ${!hasCover
-        ? "w-full md:w-[calc(100%_-_3.25rem_-_0.75rem)]"
-        : "w-full md:w-[calc(100%_-_var(--coverWidth)_-_0.75rem)]"}`}
+      ${
+        !hasCover
+          ? "w-full md:w-[calc(100%_-_3.25rem_-_0.75rem)]"
+          : "w-full md:w-[calc(100%_-_var(--coverWidth)_-_0.75rem)]"
+      }`}
   >
     <!-- ================= 标题 ================= -->
     <a
@@ -45,10 +47,7 @@
         before:hidden md:before:block"
     >
       {#if post.pinned}
-        <Icon
-          icon="mdi:pin"
-          class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5"
-        />
+        <Icon icon="mdi:pin" class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5" />
       {/if}
 
       {post.title}
@@ -93,11 +92,9 @@
         {#each post.tags as tag}
           <a
             href={tag.url}
-            class={
-              siteConfig.tagStyle?.useNewStyle
-                ? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-[var(--primary)] active:text-[var(--primary)] whitespace-nowrap"
-                : "btn-regular h-6 text-xs px-2 rounded-lg"
-            }
+            class={siteConfig.tagStyle?.useNewStyle
+              ? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-[var(--primary)] active:text-[var(--primary)] whitespace-nowrap"
+              : "btn-regular h-6 text-xs px-2 rounded-lg"}
             aria-label={`View all posts tagged with ${tag.label}`}
           >
             <span class="transition-transform group-hover/tag:translate-x-0.5">
@@ -124,12 +121,16 @@
         rounded-xl overflow-hidden active:scale-95"
     >
       <!-- hover 蒙层 -->
-      <div class="absolute pointer-events-none z-10 w-full h-full
-        group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
+      <div
+        class="absolute pointer-events-none z-10 w-full h-full
+        group-hover:bg-black/30 group-active:bg-black/50 transition"
+      ></div>
 
       <!-- 中心箭头 -->
-      <div class="absolute pointer-events-none z-20 w-full h-full
-        flex items-center justify-center">
+      <div
+        class="absolute pointer-events-none z-20 w-full h-full
+        flex items-center justify-center"
+      >
         <Icon
           icon="material-symbols:chevron-right-rounded"
           class="transition opacity-0 group-hover:opacity-100

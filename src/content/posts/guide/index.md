@@ -5,6 +5,7 @@ description: "How to use this blog template."
 image: "./cover.webp"
 tags: ["Mizuki", "Blogging", "Customization"]
 category: Guides
+recommendScore: 20
 draft: false
 ---
 

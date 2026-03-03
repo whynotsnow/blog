@@ -1,0 +1,11 @@
+---
+import PostPage from "../components/PostPage.astro";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { getHomeList } from "@/services/home";
+
+const { posts, categories } = await getHomeList();
+---
+
+<MainGridLayout>
+  <PostPage posts={posts} categories={categories} />
+</MainGridLayout>

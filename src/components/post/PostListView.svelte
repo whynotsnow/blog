@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import type { UIPost } from "./useCategoryPagination";
+  import type { UIPost } from "./types";
   import { siteConfig } from "@/config";
   import { widgetManager } from "@/utils/widget-manager";
   import PostCardView from "./PostCardView.svelte";
-	import type { PostNavigatorCategory } from "@utils/client-utils";
-	import PostTaxonomyNav from "./PostTaxonomyNav.svelte";
+  import type { PostNavigatorCategory } from "@utils/client-utils";
+  import PostTaxonomyNav from "./PostTaxonomyNav.svelte";
 
   export let posts: UIPost[];
   export let categories: PostNavigatorCategory[];
@@ -36,25 +36,16 @@
       container.classList.remove("list-mode");
       container.classList.add("grid-mode");
 
-      document
-        .getElementById("main-grid")
-        ?.setAttribute("data-layout-mode", "grid");
+      document.getElementById("main-grid")?.setAttribute("data-layout-mode", "grid");
 
-      document
-        .querySelector(".left-sidebar-container")
-        ?.classList.add("hidden-in-grid-mode");
-
+      document.querySelector(".left-sidebar-container")?.classList.add("hidden-in-grid-mode");
     } else {
       container.classList.remove("grid-mode");
       container.classList.add("list-mode");
 
-      document
-        .getElementById("main-grid")
-        ?.setAttribute("data-layout-mode", "list");
+      document.getElementById("main-grid")?.setAttribute("data-layout-mode", "list");
 
-      document
-        .querySelector(".left-sidebar-container")
-        ?.classList.remove("hidden-in-grid-mode");
+      document.querySelector(".left-sidebar-container")?.classList.remove("hidden-in-grid-mode");
     }
 
     container.classList.add("js-initialized");
@@ -67,31 +58,22 @@
   function publishLayoutInit() {
     if (!container) return;
 
-    const layout = container.classList.contains("grid-mode")
-      ? "grid"
-      : "list";
+    const layout = container.classList.contains("grid-mode") ? "grid" : "list";
 
-    window.dispatchEvent(
-      new CustomEvent("layoutInit", { detail: { layout } })
-    );
+    window.dispatchEvent(new CustomEvent("layoutInit", { detail: { layout } }));
   }
 
   function initLayout() {
     requestAnimationFrame(() => {
       if (!container) return;
 
-      const savedLayout = localStorage.getItem("postListLayout") as
-        | "grid"
-        | "list"
-        | null;
+      const savedLayout = localStorage.getItem("postListLayout") as "grid" | "list" | null;
 
       const layout = savedLayout || defaultLayout;
 
       const hasGridClass = container.classList.contains("grid-mode");
 
-      const isCorrect =
-        (layout === "grid" && hasGridClass) ||
-        (layout === "list" && !hasGridClass);
+      const isCorrect = (layout === "grid" && hasGridClass) || (layout === "list" && !hasGridClass);
 
       if (isCorrect) {
         container.classList.add("js-initialized");
@@ -118,9 +100,7 @@
 
     resizeTimeout = window.setTimeout(() => {
       if (window.innerWidth >= 769) {
-        const saved =
-          (localStorage.getItem("postListLayout") as "grid" | "list") ||
-          defaultLayout;
+        const saved = (localStorage.getItem("postListLayout") as "grid" | "list") || defaultLayout;
 
         updatePostListLayout(saved);
       }
@@ -162,16 +142,10 @@
     window.removeEventListener("resize", handleResize);
     window.removeEventListener("layoutChange", handleLayoutChange);
   });
-
 </script>
 
 <div id="page-content">
-
-  <PostTaxonomyNav
-    categories={categories}
-    currentCategory={categorySlug}
-    currentTag={tag}
-  />
+  <PostTaxonomyNav {categories} currentCategory={categorySlug} currentTag={tag} />
 
   <div
     bind:this={container}
@@ -183,10 +157,7 @@
     data-both-sidebars={hasRightSidebars}
   >
     {#each posts as post}
-      <PostCardView
-        post={post}
-        className="onload-animation"
-      />
+      <PostCardView {post} className="onload-animation" />
     {/each}
   </div>
 </div>
@@ -248,5 +219,4 @@
       transform: translateX(0);
     }
   }
-
 </style>

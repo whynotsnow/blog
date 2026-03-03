@@ -1,6 +1,4 @@
 ---
-import type { CollectionEntry } from "astro:content";
-import { render } from "astro:content";
 import path from "node:path";
 import Comment from "@components/comment/index.astro";
 import License from "@components/misc/License.astro";
@@ -9,177 +7,33 @@ import SharePoster from "@components/misc/SharePoster.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPosts } from "@utils/content-utils";
-import {
-	getFileDirFromPath,
-	getPostUrlBySlug,
-	removeFileExtension,
-} from "@utils/url-utils";
-import {
-	hasCustomPermalink,
-	initPostIdMap,
-} from "@utils/permalink-utils";
+import {getFileDirFromPath, getPostUrlBySlug} from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { licenseConfig, permalinkConfig, shareConfig } from "src/config";
+import { licenseConfig, shareConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 import Encryptor from "../../components/Encryptor.astro";
+import { buildPostDetailStaticPaths }from "@/services/post-detail";
+import { PostDetailPageProps } from "@/services/post-detail/types";
 
-export async function getStaticPaths() {
-	const blogEntries = await getSortedPosts();
+export const getStaticPaths = buildPostDetailStaticPaths;
 
-	// 初始化文章 ID 映射（用于 %post_id% 占位符）
-	initPostIdMap(blogEntries);
+export interface Props extends PostDetailPageProps{}
 
-	const paths: {
-		params: { slug: string };
-		props: { entry: CollectionEntry<"posts"> };
-	}[] = [];
+const {
+  entry,
+  Content,
+  headings,
+  isEncrypted,
+  lastModified,
+  jsonLd,
+  posterCoverUrl,
+  posterAvatarUrl,
+} = Astro.props;
+const {words,minutes} = entry
 
-	for (const entry of blogEntries) {
-		// 将 id 转换为 slug（移除扩展名）以匹配路由参数
-		const defaultSlug = removeFileExtension(entry.id);
-
-		// 如果文章有自定义 permalink，不在 /posts/ 下创建路径
-		// 而是通过根目录的 [permalink].astro 处理
-		if (hasCustomPermalink(entry)) {
-			// 仍然需要在 /posts/ 下创建默认路径以便兼容旧链接
-			paths.push({
-				params: { slug: defaultSlug },
-				props: { entry },
-			});
-			continue;
-		}
-
-		// 如果全局 permalink 功能启用，不在 /posts/ 下创建路径
-		// 而是通过根目录的 [permalink].astro 处理
-		if (permalinkConfig.enable) {
-			// 仍然保留默认 slug 路径以便兼容旧链接
-			paths.push({
-				params: { slug: defaultSlug },
-				props: { entry },
-			});
-		} else {
-			// 全局 permalink 功能未启用
-			// 为每篇文章创建默认的 slug 路径
-			paths.push({
-				params: { slug: defaultSlug },
-				props: { entry },
-			});
-
-			// 如果文章有 alias，也创建对应的路径
-			if (entry.data.alias) {
-				// 移除开头的斜杠和结尾的斜杠
-				// 同时移除可能的 "posts/" 前缀，避免重复
-				let alias = entry.data.alias
-					.replace(/^\/+/, "")
-					.replace(/\/+$/, "");
-				if (alias.startsWith("posts/")) {
-					alias = alias.replace(/^posts\//, "");
-				}
-				paths.push({
-					params: { slug: alias },
-					props: { entry },
-				});
-			}
-		}
-	}
-
-	return paths;
-}
-
-const { entry } = Astro.props;
-const { Content, headings } = await render(entry);
-const { remarkPluginFrontmatter } = await render(entry);
-
-// Process cover image for SharePoster
-let posterCoverUrl = entry.data.image;
-if (entry.data.image) {
-	const isLocal = !(
-		entry.data.image.startsWith("/") ||
-		entry.data.image.startsWith("http") ||
-		entry.data.image.startsWith("https") ||
-		entry.data.image.startsWith("data:")
-	);
-	if (isLocal) {
-		const basePath = getFileDirFromPath(entry.filePath || "");
-		const files = import.meta.glob<ImageMetadata>("../../**", {
-			import: "default",
-		});
-		let normalizedPath = path
-			.normalize(path.join("../../", basePath, entry.data.image))
-			.replace(/\\/g, "/");
-		const file = files[normalizedPath];
-		if (file) {
-			const img = await file();
-			posterCoverUrl = img.src;
-		}
-	} else if (entry.data.image.startsWith("http")) {
-		try {
-			const response = await fetch(entry.data.image);
-			const arrayBuffer = await response.arrayBuffer();
-			const base64 = Buffer.from(arrayBuffer).toString("base64");
-			const contentType = response.headers.get("content-type") || "image/jpeg";
-			posterCoverUrl = `data:${contentType};base64,${base64}`;
-		} catch {
-			posterCoverUrl = entry.data.image;
-		}
-	}
-}
-
-// Process avatar image for SharePoster
-let posterAvatarUrl = profileConfig.avatar;
-if (profileConfig.avatar) {
-	const isLocal = !(
-		profileConfig.avatar.startsWith("/") ||
-		profileConfig.avatar.startsWith("http") ||
-		profileConfig.avatar.startsWith("https") ||
-		profileConfig.avatar.startsWith("data:")
-	);
-	if (isLocal) {
-		const files = import.meta.glob<ImageMetadata>("../../**", {
-			import: "default",
-		});
-		let normalizedPath = path
-			.normalize(path.join("../../", profileConfig.avatar))
-			.replace(/\\/g, "/");
-		const file = files[normalizedPath];
-		if (file) {
-			const img = await file();
-			posterAvatarUrl = img.src;
-		}
-	}
-}
-
-// 判断是否为加密文章
-let isEncrypted = entry.data.encrypted && entry.data.password;
-
-dayjs.extend(utc);
-const lastModified = dayjs(entry.data.updated || entry.data.published)
-	.utc()
-	.format("YYYY-MM-DDTHH:mm:ss");
-
-const jsonLd = {
-	"@context": "https://schema.org",
-	"@type": "BlogPosting",
-	headline: entry.data.title,
-	description: entry.data.description || entry.data.title,
-	keywords: entry.data.tags,
-	author: {
-		"@type": "Person",
-		name: profileConfig.name,
-		url: Astro.site,
-	},
-	datePublished: formatDateToYYYYMMDD(entry.data.published),
-	inLanguage: entry.data.lang
-		? entry.data.lang.replace("_", "-")
-		: siteConfig.lang.replace("_", "-"),
-	// TODO include cover image here
-};
 ---
 
 <MainGridLayout
@@ -217,7 +71,7 @@ const jsonLd = {
                         <Icon name="material-symbols:notes-rounded" />
                     </div>
                     <div class="text-sm">
-                        {remarkPluginFrontmatter.words}
+                        {words}
                         {" " + i18n(I18nKey.wordsCount)}
                     </div>
                 </div>
@@ -230,11 +84,11 @@ const jsonLd = {
                         />
                     </div>
                     <div class="text-sm">
-                        {remarkPluginFrontmatter.minutes}
+                        {minutes}
                         {
                             " " +
                                 i18n(
-                                    remarkPluginFrontmatter.minutes === 1
+                                    minutes === 1
                                         ? I18nKey.minuteCount
                                         : I18nKey.minutesCount,
                                 )
