@@ -15,7 +15,6 @@ import PasswordProtection from "@components/PasswordProtection.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPosts } from "@utils/content-utils";
 import { getFileDirFromPath, getPostUrlBySlug } from "@utils/url-utils";
 import { initPostIdMap, hasCustomPermalink, generatePermalinkSlug } from "@utils/permalink-utils";
 import { permalinkConfig } from "@/config";
@@ -28,9 +27,10 @@ import ImageWrapper from "../components/misc/ImageWrapper.astro";
 import PostMetadata from "../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../config";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
+import { getContentStore } from "@/services/core/content-store";
 
 export async function getStaticPaths() {
-	const blogEntries = await getSortedPosts();
+    const {posts: blogEntries} = await getContentStore();
 
 	// 初始化文章 ID 映射
 	initPostIdMap(blogEntries);
@@ -104,6 +104,7 @@ const jsonLd = {
 		? entry.data.lang.replace("_", "-")
 		: siteConfig.lang.replace("_", "-"),
 };
+const store = await getContentStore();
 ---
 
 <MainGridLayout
@@ -114,6 +115,7 @@ const jsonLd = {
     setOGTypeArticle={true}
     postSlug={entry.id}
     headings={headings}
+    store={store}
 >
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script>

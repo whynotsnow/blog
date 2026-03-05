@@ -1,4 +1,5 @@
 ---
+import { getContentStore } from "@/services/core/content-store";
 import { siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -12,9 +13,11 @@ if (!siteConfig.featurePages.albums) {
 
 // 获取所有相册
 const albumsData = await scanAlbums();
+
+const store = await getContentStore();
 ---
 
-<MainGridLayout title={i18n(I18nKey.albums)} description={i18n(I18nKey.albumsSubtitle)}>
+<MainGridLayout title={i18n(I18nKey.albums)} description={i18n(I18nKey.albumsSubtitle)} store={store}>
     <!-- 引入右侧边栏布局管理器 -->
   <script>
     import('../scripts/right-sidebar-layout.js');

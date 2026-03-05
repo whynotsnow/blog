@@ -4,38 +4,43 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import PostPage from "@/components/PostPage.astro";
 import Pagination from "@/components/control/Pagination.astro";
 import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
-import { PostNavigatorCategory } from "@utils/client-utils";
-import type { CategoryEntry, UIPost } from "@/services/core/types";
+import type {
+	CategoryEntry,
+	PostNavigatorCategory,
+	UIPost,
+} from "@/services/core/types";
 import { getCategoryStaticPaths } from "@/services/category";
 import { toUIPost } from "@/services/core/inject";
+import { getContentStore } from "@/services/core/content-store";
 
 interface Props {
-  posts: UIPost[];
-  page: Page;
-  categories: PostNavigatorCategory[];
-  categorySlug: string;
-  categoryAllPosts: CategoryEntry;
+	posts: UIPost[];
+	page: Page;
+	categories: PostNavigatorCategory[];
+	categorySlug: string;
+	categoryAllPosts: CategoryEntry;
 }
 export const getStaticPaths = getCategoryStaticPaths;
 
 // 从 props 中直接获取数据
 const { posts, page, categories, categorySlug, categoryAllPosts } = Astro.props;
 const allPosts = await Promise.all(categoryAllPosts.posts.map(toUIPost));
+const store = await getContentStore();
 ---
 
-<MainGridLayout>
-  <CategoryPostListClient
-    client:load
-    posts={allPosts}
-    categories={categories}
-    categorySlug={categorySlug}
-  >
-    <PostPage posts={posts} categories={categories} />
+<MainGridLayout store={store}>
+	<CategoryPostListClient
+		client:load
+		posts={allPosts}
+		categories={categories}
+		categorySlug={categorySlug}
+	>
+		<PostPage posts={posts} categories={categories} />
 
-    <Pagination
-      page={page}
-      class="mx-auto"
-      style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`}
-    />
-  </CategoryPostListClient>
+		<Pagination
+			page={page}
+			class="mx-auto"
+			style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`}
+		/>
+	</CategoryPostListClient>
 </MainGridLayout>

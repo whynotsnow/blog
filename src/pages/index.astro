@@ -2,10 +2,20 @@
 import PostPage from "../components/PostPage.astro";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getHomeList } from "@/services/home";
+import { getContentStore } from "@/services/core/content-store";
+import { toUIPost } from "@/services/core/inject";
+import { PAGE_SIZE } from "@constants/constants";
 
-const { posts, categories } = await getHomeList();
+// const { posts, categories } = await getHomeList();
+
+const store = await getContentStore();
+const { posts, categories } = store;
+
+const uiPosts = await Promise.all(posts.map(toUIPost));
+
+const sliced = uiPosts.slice(0, PAGE_SIZE);
 ---
 
-<MainGridLayout>
-  <PostPage posts={posts} categories={categories} />
+<MainGridLayout store={store}>
+	<PostPage posts={sliced} categories={categories} />
 </MainGridLayout>

@@ -19,6 +19,7 @@ import { BlogPostingJsonLd } from "@/services/post-detail/types";
 import { ListPost } from "@/services/core/types";
 import { MarkdownHeading } from "astro";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
+import { getContentStore } from "@/services/core/content-store";
 
 export const getStaticPaths = buildPostDetailStaticPaths;
 
@@ -44,6 +45,7 @@ const {
 	posterAvatarUrl,
 } = Astro.props;
 const { words, minutes } = entry;
+const store = await getContentStore();
 ---
 
 <MainGridLayout
@@ -54,6 +56,7 @@ const { words, minutes } = entry;
 	setOGTypeArticle={true}
 	postSlug={entry.id}
 	headings={headings}
+	store={store}
 >
 	<script
 		is:inline

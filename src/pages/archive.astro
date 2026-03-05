@@ -5,15 +5,18 @@ import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { buildArchivePageData } from "@/services/archive";
 
-const { posts, tags, categories } = await buildArchivePageData();
+const { posts, tags, categories, store } = await buildArchivePageData();
 ---
 
-<MainGridLayout title={i18n(I18nKey.archive)}>
-  <!-- 引入右侧边栏布局管理器 -->
-  <script>
-    import("../scripts/right-sidebar-layout.js");
-  </script>
+<MainGridLayout title={i18n(I18nKey.archive)} store={store}>
+	<script>
+		import("../scripts/right-sidebar-layout.js");
+	</script>
 
-  <!-- 修复：补全缺失的 tags 和 categories 属性 -->
-  <ArchivePanel sortedPosts={posts} tags={tags} categories={categories} client:only="svelte" />
+	<ArchivePanel
+		sortedPosts={posts}
+		tags={tags}
+		categories={categories}
+		client:only="svelte"
+	/>
 </MainGridLayout>

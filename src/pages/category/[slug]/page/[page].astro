@@ -1,28 +1,34 @@
 ---
 import type { GetStaticPaths, Page } from "astro";
-import type { CategoryEntry, RawPost } from "@/services/core/types";
+import type {
+	CategoryEntry,
+	PostNavigatorCategory,
+	RawPost,
+} from "@/services/core/types";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import PostPage from "@/components/PostPage.astro";
 import Pagination from "@/components/control/Pagination.astro";
 import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
 import { toUIPost } from "@/services/core/inject";
 import { getCategoryPaginatedStaticPaths } from "@/services/category-page";
-import { PostNavigatorCategory } from "@utils/client-utils";
+import { getContentStore } from "@/services/core/content-store";
 
 export interface Props {
-  page: Page<RawPost>;
-  categorySlug: string;
-  categories: PostNavigatorCategory[];
-  categoryAllPosts: CategoryEntry;
+	page: Page<RawPost>;
+	categorySlug: string;
+	categories: PostNavigatorCategory[];
+	categoryAllPosts: CategoryEntry;
 }
 
-export const getStaticPaths = getCategoryPaginatedStaticPaths satisfies GetStaticPaths;
+export const getStaticPaths =
+	getCategoryPaginatedStaticPaths satisfies GetStaticPaths;
 
 /**
  * params & props
  */
 const { slug } = Astro.params;
-const { page, categorySlug, categories, categoryAllPosts } = Astro.props as Props;
+const { page, categorySlug, categories, categoryAllPosts } =
+	Astro.props as Props;
 
 if (!slug) return Astro.redirect("/404");
 
@@ -33,21 +39,23 @@ if (!slug) return Astro.redirect("/404");
  */
 const posts = await Promise.all(page.data.map(toUIPost));
 const allPosts = await Promise.all(categoryAllPosts.posts.map(toUIPost));
+
+const store = await getContentStore();
 ---
 
-<MainGridLayout>
-  <CategoryPostListClient
-    client:load
-    posts={allPosts}
-    categories={categories}
-    categorySlug={categorySlug}
-  >
-    <PostPage posts={posts} categories={categories} />
+<MainGridLayout store={store}>
+	<CategoryPostListClient
+		client:load
+		posts={allPosts}
+		categories={categories}
+		categorySlug={categorySlug}
+	>
+		<PostPage posts={posts} categories={categories} />
 
-    <Pagination
-      page={page}
-      class="mx-auto"
-      style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`}
-    />
-  </CategoryPostListClient>
+		<Pagination
+			page={page}
+			class="mx-auto"
+			style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`}
+		/>
+	</CategoryPostListClient>
 </MainGridLayout>

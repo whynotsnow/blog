@@ -21,6 +21,7 @@ import {
 } from "../constants/constants";
 import { widgetManager } from "../utils/widget-manager";
 import Layout from "./Layout.astro";
+import { ContentStore } from "@/services/core/types";
 
 // TOC模式配置
 const tocMode = siteConfig.toc.mode || "float";
@@ -35,6 +36,7 @@ interface Props {
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 	headings?: MarkdownHeading[];
+	store: ContentStore;
 }
 
 // 类型守卫函数
@@ -103,6 +105,7 @@ const {
 	setOGTypeArticle,
 	postSlug,
 	headings = [],
+	store,
 } = Astro.props;
 const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
@@ -833,7 +836,7 @@ const transparentClass = shouldEnableTransparency
 				<div
 					id="banner-single-container"
 					class="relative h-full w-full"
-				></div>
+				/>
 			)
 		}
 		<script
@@ -983,7 +986,7 @@ const transparentClass = shouldEnableTransparency
 							<path
 								id="gentle-wave"
 								d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v48h-352z"
-							></path>
+							/>
 						</defs>
 						<g class="parallax" style="transform: translateZ(0);">
 							<use
@@ -1069,7 +1072,7 @@ const transparentClass = shouldEnableTransparency
 									},
 								]}
 								name="fa7-solid:arrow-up-right-from-square"
-							></Icon>
+							/>
 						</a>
 					)
 				}
@@ -1083,7 +1086,7 @@ const transparentClass = shouldEnableTransparency
 							<div
 								class={`left-sidebar-container ${leftSidebarClass} ${transparentClass}`}
 							>
-								<SideBar headings={headings} />
+								<SideBar headings={headings} store={store} />
 							</div>
 						)
 					}
@@ -1093,7 +1096,10 @@ const transparentClass = shouldEnableTransparency
 							<div
 								class={`right-sidebar-container ${rightSidebarClass} ${transparentClass}`}
 							>
-								<RightSideBar headings={headings} />
+								<RightSideBar
+									headings={headings}
+									store={store}
+								/>
 							</div>
 						)
 					}

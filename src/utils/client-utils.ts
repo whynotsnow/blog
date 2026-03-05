@@ -7,6 +7,7 @@ export type PostNavigatorCategory = {
 	slug: string;
 	name: string;
 	count: number;
+	url: string;
 	tags: {
 		slug: string;
 		name: string;
