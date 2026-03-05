@@ -8,10 +8,7 @@
 
 	$: pages = generatePages(currentPage, lastPage);
 
-	function go(p: number, e: MouseEvent) {
-		e.preventDefault();
-		if (p === currentPage) return;
-
+	function buildUrl(p: number): string {
 		const url = new URL(window.location.href);
 
 		if (tag) {
@@ -19,24 +16,24 @@
 			url.searchParams.set("tagPage", String(p));
 		}
 
-		window.location.assign(url.toString());
+		return url.toString();
 	}
-
 </script>
 
-<div
-	id="category-pagination"
-	class="flex flex-row gap-3 justify-center"
->
+<div id="category-pagination" class="flex flex-row gap-3 justify-center">
 	<!-- Prev -->
 	<a
-		href="#"
+		href={currentPage > 1 ? buildUrl(currentPage - 1) : "#"}
 		aria-label="Previous Page"
 		class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"
 		class:disabled={currentPage <= 1}
-		on:click={(e) => currentPage > 1 && go(currentPage - 1, e)}
+		aria-disabled={currentPage <= 1}
+		tabindex={currentPage <= 1 ? -1 : 0}
 	>
-		<Icon icon="material-symbols:chevron-left-rounded" class="text-[1.75rem]" />
+		<Icon
+			icon="material-symbols:chevron-left-rounded"
+			class="text-[1.75rem]"
+		/>
 	</a>
 
 	<!-- Page numbers -->
@@ -47,7 +44,6 @@
 		{#each pages as p}
 			{#if p === HIDDEN}
 				<Icon icon="material-symbols:more-horiz" class="mx-1" />
-
 			{:else if p === currentPage}
 				<div
 					class="h-11 w-11 rounded-lg bg-[var(--primary)]
@@ -56,13 +52,11 @@
 				>
 					{p}
 				</div>
-
 			{:else}
 				<a
-					href="#"
+					href={buildUrl(p)}
 					aria-label={`Page ${p}`}
 					class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
-					on:click={(e) => go(p, e)}
 				>
 					{p}
 				</a>
@@ -72,14 +66,16 @@
 
 	<!-- Next -->
 	<a
-		href="#"
+		href={currentPage < lastPage ? buildUrl(currentPage + 1) : "#"}
 		aria-label="Next Page"
 		class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"
 		class:disabled={currentPage >= lastPage}
-		on:click={(e) =>{
-			if(currentPage < lastPage) go(currentPage + 1, e)
-		}}
+		aria-disabled={currentPage >= lastPage}
+		tabindex={currentPage >= lastPage ? -1 : 0}
 	>
-		<Icon icon="material-symbols:chevron-right-rounded" class="text-[1.75rem]" />
+		<Icon
+			icon="material-symbols:chevron-right-rounded"
+			class="text-[1.75rem]"
+		/>
 	</a>
 </div>
