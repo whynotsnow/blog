@@ -20,6 +20,7 @@ import { ListPost } from "@/services/core/types";
 import { MarkdownHeading } from "astro";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { getContentStore } from "@/services/core/content-store";
+import { buildCategoryItems, buildTagItems } from "@/services/core/inject";
 
 export const getStaticPaths = buildPostDetailStaticPaths;
 
@@ -137,8 +138,8 @@ const store = await getContentStore();
 					className="mb-5"
 					published={entry.data.published}
 					updated={entry.data.updated}
-					tags={entry.data.tags}
-					category={entry.data.category || undefined}
+					tags={buildTagItems(entry.data.tags)}
+					category={buildCategoryItems(entry.data.category)}
 					id={entry.id}
 				/>
 				{

@@ -102,11 +102,11 @@
 		<div class="flex flex-row flex-nowrap items-center">
 			{#if meta.category}
 				<a
-					href={getCategoryUrl(meta.category.label)}
+					href={getCategoryUrl(meta.category.name)}
 					class="link-lg transition text-50 text-sm font-medium
                  hover:text-[var(--primary)] whitespace-nowrap"
 				>
-					{meta.category.label}
+					{meta.category.name}
 				</a>
 			{:else}
 				<span class="text-50 text-sm font-medium">
@@ -160,7 +160,7 @@
 							class="link-lg transition text-50 text-sm font-medium
                      hover:text-[var(--primary)] whitespace-nowrap"
 						>
-							{tag.label}
+							{tag.name}
 						</a>
 					{/each}
 				{:else}

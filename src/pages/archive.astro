@@ -4,8 +4,11 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { buildArchivePageData } from "@/services/archive";
+import { getContentStore } from "@/services/core/content-store";
 
-const { posts, tags, categories, store } = await buildArchivePageData();
+const store = await getContentStore();
+
+const { groups } = await buildArchivePageData(store.posts);
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)} store={store}>
@@ -13,10 +16,5 @@ const { posts, tags, categories, store } = await buildArchivePageData();
 		import("../scripts/right-sidebar-layout.js");
 	</script>
 
-	<ArchivePanel
-		sortedPosts={posts}
-		tags={tags}
-		categories={categories}
-		client:only="svelte"
-	/>
+	<ArchivePanel groups={groups} client:only="svelte" />
 </MainGridLayout>

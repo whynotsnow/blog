@@ -1,222 +1,244 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
-  import type { UIPost } from "./types";
-  import { siteConfig } from "@/config";
-  import { widgetManager } from "@/utils/widget-manager";
-  import PostCardView from "./PostCardView.svelte";
-  import type { PostNavigatorCategory } from "@utils/client-utils";
-  import PostTaxonomyNav from "./PostTaxonomyNav.svelte";
+	import { onMount, onDestroy } from "svelte";
+	import type { UIPost } from "./types";
+	import { siteConfig } from "@/config";
+	import { widgetManager } from "@/utils/widget-manager";
+	import PostCardView from "./PostCardView.svelte";
+	import type { PostNavigatorCategory } from "@utils/client-utils";
+	import PostTaxonomyNav from "./PostTaxonomyNav.svelte";
 
-  export let posts: UIPost[];
-  export let categories: PostNavigatorCategory[];
-  export let categorySlug: string;
-  export let tag: string | undefined = undefined;
+	export let posts: UIPost[];
+	export let categories: PostNavigatorCategory[];
+	export let categorySlug: string;
+	export let tag: string | undefined = undefined;
 
-  let container: HTMLDivElement | null = null;
+	let container: HTMLDivElement | null = null;
 
-  /* ================= 侧边栏检测 ================= */
+	const hasRightSidebars =
+		widgetManager.getComponentsByPosition("top", "right", "desktop")
+			.length > 0 ||
+		widgetManager.getComponentsByPosition("sticky", "right", "desktop")
+			.length > 0;
 
-  const hasRightSidebars =
-    widgetManager.getComponentsByPosition("top", "right", "desktop").length > 0 ||
-    widgetManager.getComponentsByPosition("sticky", "right", "desktop").length > 0;
+	const defaultLayout: "grid" | "list" =
+		siteConfig.postListLayout.defaultMode === "grid" ? "grid" : "list";
 
-  /* ================= 默认布局 ================= */
+	function updatePostListLayout(layout: "grid" | "list") {
+		if (!container) return;
 
-  const defaultLayout: "grid" | "list" =
-    siteConfig.postListLayout.defaultMode === "grid" ? "grid" : "list";
+		container.classList.add("layout-switching");
 
-  /* ================= 核心逻辑 ================= */
+		if (layout === "grid") {
+			container.classList.remove("list-mode");
+			container.classList.add("grid-mode");
 
-  function updatePostListLayout(layout: "grid" | "list") {
-    if (!container) return;
+			document
+				.getElementById("main-grid")
+				?.setAttribute("data-layout-mode", "grid");
 
-    container.classList.add("layout-switching");
+			document
+				.querySelector(".left-sidebar-container")
+				?.classList.add("hidden-in-grid-mode");
+		} else {
+			container.classList.remove("grid-mode");
+			container.classList.add("list-mode");
 
-    if (layout === "grid") {
-      container.classList.remove("list-mode");
-      container.classList.add("grid-mode");
+			document
+				.getElementById("main-grid")
+				?.setAttribute("data-layout-mode", "list");
 
-      document.getElementById("main-grid")?.setAttribute("data-layout-mode", "grid");
+			document
+				.querySelector(".left-sidebar-container")
+				?.classList.remove("hidden-in-grid-mode");
+		}
 
-      document.querySelector(".left-sidebar-container")?.classList.add("hidden-in-grid-mode");
-    } else {
-      container.classList.remove("grid-mode");
-      container.classList.add("list-mode");
+		container.classList.add("js-initialized");
 
-      document.getElementById("main-grid")?.setAttribute("data-layout-mode", "list");
+		setTimeout(() => {
+			container?.classList.remove("layout-switching");
+		}, 500);
+	}
 
-      document.querySelector(".left-sidebar-container")?.classList.remove("hidden-in-grid-mode");
-    }
+	function publishLayoutInit() {
+		if (!container) return;
 
-    container.classList.add("js-initialized");
+		const layout = container.classList.contains("grid-mode")
+			? "grid"
+			: "list";
 
-    setTimeout(() => {
-      container?.classList.remove("layout-switching");
-    }, 500);
-  }
+		window.dispatchEvent(
+			new CustomEvent("layoutInit", { detail: { layout } }),
+		);
+	}
 
-  function publishLayoutInit() {
-    if (!container) return;
+	function initLayout() {
+		requestAnimationFrame(() => {
+			if (!container) return;
 
-    const layout = container.classList.contains("grid-mode") ? "grid" : "list";
+			const savedLayout = localStorage.getItem("postListLayout") as
+				| "grid"
+				| "list"
+				| null;
 
-    window.dispatchEvent(new CustomEvent("layoutInit", { detail: { layout } }));
-  }
+			const layout = savedLayout || defaultLayout;
 
-  function initLayout() {
-    requestAnimationFrame(() => {
-      if (!container) return;
+			const hasGridClass = container.classList.contains("grid-mode");
 
-      const savedLayout = localStorage.getItem("postListLayout") as "grid" | "list" | null;
+			const isCorrect =
+				(layout === "grid" && hasGridClass) ||
+				(layout === "list" && !hasGridClass);
 
-      const layout = savedLayout || defaultLayout;
+			if (isCorrect) {
+				container.classList.add("js-initialized");
+				publishLayoutInit();
+				return;
+			}
 
-      const hasGridClass = container.classList.contains("grid-mode");
+			if (window.innerWidth >= 769) {
+				updatePostListLayout(layout);
+			} else {
+				container.classList.add("js-initialized");
+			}
 
-      const isCorrect = (layout === "grid" && hasGridClass) || (layout === "list" && !hasGridClass);
+			publishLayoutInit();
+		});
+	}
 
-      if (isCorrect) {
-        container.classList.add("js-initialized");
-        publishLayoutInit();
-        return;
-      }
+	/* ================= Resize 防抖 ================= */
 
-      if (window.innerWidth >= 769) {
-        updatePostListLayout(layout);
-      } else {
-        container.classList.add("js-initialized");
-      }
+	let resizeTimeout: number;
 
-      publishLayoutInit();
-    });
-  }
+	function handleResize() {
+		clearTimeout(resizeTimeout);
 
-  /* ================= Resize 防抖 ================= */
+		resizeTimeout = window.setTimeout(() => {
+			if (window.innerWidth >= 769) {
+				const saved =
+					(localStorage.getItem("postListLayout") as
+						| "grid"
+						| "list") || defaultLayout;
 
-  let resizeTimeout: number;
+				updatePostListLayout(saved);
+			}
+		}, 100);
+	}
 
-  function handleResize() {
-    clearTimeout(resizeTimeout);
+	/* ================= layoutChange 监听 ================= */
 
-    resizeTimeout = window.setTimeout(() => {
-      if (window.innerWidth >= 769) {
-        const saved = (localStorage.getItem("postListLayout") as "grid" | "list") || defaultLayout;
+	function handleLayoutChange(e: Event) {
+		const detail = (e as CustomEvent).detail;
+		if (detail?.layout) {
+			updatePostListLayout(detail.layout);
+		}
+	}
 
-        updatePostListLayout(saved);
-      }
-    }, 100);
-  }
+	/* ================= Swup 集成 ================= */
 
-  /* ================= layoutChange 监听 ================= */
+	function setupSwupListeners() {
+		const swup = (window as any).swup;
 
-  function handleLayoutChange(e: Event) {
-    const detail = (e as CustomEvent).detail;
-    if (detail?.layout) {
-      updatePostListLayout(detail.layout);
-    }
-  }
+		if (!swup) return;
 
-  /* ================= Swup 集成 ================= */
+		swup.hooks.on("content:replace", initLayout);
+	}
 
-  function setupSwupListeners() {
-    const swup = (window as any).swup;
+	/* ================= 生命周期 ================= */
 
-    if (!swup) return;
+	onMount(() => {
+		initLayout();
 
-    swup.hooks.on("content:replace", initLayout);
-  }
+		window.addEventListener("resize", handleResize);
+		window.addEventListener("layoutChange", handleLayoutChange);
 
-  /* ================= 生命周期 ================= */
+		setTimeout(setupSwupListeners, 200);
+		setTimeout(publishLayoutInit, 150);
+	});
 
-  onMount(() => {
-    initLayout();
-
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("layoutChange", handleLayoutChange);
-
-    setTimeout(setupSwupListeners, 200);
-    setTimeout(publishLayoutInit, 150);
-  });
-
-  onDestroy(() => {
-    window.removeEventListener("resize", handleResize);
-    window.removeEventListener("layoutChange", handleLayoutChange);
-  });
+	onDestroy(() => {
+		window.removeEventListener("resize", handleResize);
+		window.removeEventListener("layoutChange", handleLayoutChange);
+	});
 </script>
 
 <div id="page-content">
-  <PostTaxonomyNav {categories} currentCategory={categorySlug} currentTag={tag} />
+	<PostTaxonomyNav
+		{categories}
+		currentCategory={categorySlug}
+		currentTag={tag}
+	/>
 
-  <div
-    bind:this={container}
-    id="post-list-container"
-    class="transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4"
-    class:grid-mode={defaultLayout === "grid"}
-    class:list-mode={defaultLayout !== "grid"}
-    data-default-layout={defaultLayout}
-    data-both-sidebars={hasRightSidebars}
-  >
-    {#each posts as post}
-      <PostCardView {post} className="onload-animation" />
-    {/each}
-  </div>
+	<div
+		bind:this={container}
+		id="post-list-container"
+		class="transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4"
+		class:grid-mode={defaultLayout === "grid"}
+		class:list-mode={defaultLayout !== "grid"}
+		data-default-layout={defaultLayout}
+		data-both-sidebars={hasRightSidebars}
+	>
+		{#each posts as post}
+			<PostCardView {post} className="onload-animation" />
+		{/each}
+	</div>
 </div>
 
 <style>
-  #post-list-container {
-    min-height: 200px;
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+	#post-list-container {
+		min-height: 200px;
+		transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+	}
 
-  #post-list-container.list-mode {
-    @apply flex flex-col gap-4;
-  }
+	#post-list-container.list-mode {
+		@apply flex flex-col gap-4;
+	}
 
-  #post-list-container.grid-mode {
-    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
-  }
+	#post-list-container.grid-mode {
+		@apply grid grid-cols-1 md:grid-cols-2 gap-6;
+	}
 
-  #post-list-container > :global(*) {
-    content-visibility: auto;
-    contain-intrinsic-size: 200px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0;
-    animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    animation-delay: calc(var(--content-delay) + var(--i) * var(--interval));
-  }
+	#post-list-container > :global(*) {
+		content-visibility: auto;
+		contain-intrinsic-size: 200px;
+		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		opacity: 0;
+		animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+		animation-delay: calc(
+			var(--content-delay) + var(--i) * var(--interval)
+		);
+	}
 
-  #post-list-container.grid-mode > :global(*) {
-    animation-name: fadeInScale;
-  }
+	#post-list-container.grid-mode > :global(*) {
+		animation-name: fadeInScale;
+	}
 
-  #post-list-container.layout-switching {
-    opacity: 0.95;
-  }
+	#post-list-container.layout-switching {
+		opacity: 0.95;
+	}
 
-  #post-list-container.layout-switching > :global(*) {
-    animation-delay: calc(var(--i) * 50ms);
-    transform: scale(0.98);
-  }
+	#post-list-container.layout-switching > :global(*) {
+		animation-delay: calc(var(--i) * 50ms);
+		transform: scale(0.98);
+	}
 
-  @keyframes fadeInScale {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
+	@keyframes fadeInScale {
+		from {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
 
-  @keyframes fadeInSlide {
-    from {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
+	@keyframes fadeInSlide {
+		from {
+			opacity: 0;
+			transform: translateX(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
 </style>

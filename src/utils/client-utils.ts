@@ -3,21 +3,37 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 */
 
+import { CATEGORY_SLUG_MAP } from "@/config";
+
 export type PostNavigatorCategory = {
 	slug: string;
 	name: string;
 	count: number;
-	url: string;
+	url?: string;
 	tags: {
 		slug: string;
 		name: string;
 		count: number;
-		url: string;
+		url?: string;
 	}[];
 };
 
 export function toSlug(str: string) {
 	return str.toLowerCase().trim().replace(/\s+/g, "-");
+}
+
+export function generateCategorySlug(name: string) {
+	const trimmed = name.trim();
+
+	if (CATEGORY_SLUG_MAP[trimmed]) {
+		return CATEGORY_SLUG_MAP[trimmed];
+	}
+
+	return toSlug(trimmed);
+}
+// 统一使用这个函数解析
+export function generateTagSlug(name: string) {
+	return toSlug(name);
 }
 
 export function url(path: string): string {

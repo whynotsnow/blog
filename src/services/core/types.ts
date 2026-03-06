@@ -1,25 +1,9 @@
 import type { CollectionEntry } from "astro:content";
 
-/* =========================
-   基础类型
-========================= */
-
+//基础类型
 export type RawPost = CollectionEntry<"posts">;
 
-export type NavItem = {
-	id: string;
-	title: string;
-};
-
-export type CategoryMeta = {
-	name: string;
-	slug: string;
-	isFallback?: boolean;
-};
-
-/* =========================
-   List 页面数据结构
-========================= */
+/* List 页面数据结构 */
 
 export type ListPost = RawPost & {
 	words: number;
@@ -27,18 +11,6 @@ export type ListPost = RawPost & {
 	score: number;
 	minutes: number;
 	views?: number;
-};
-
-/* =========================
-   Detail 页面数据结构
-========================= */
-
-export type PostDetail = ListPost & {
-	navigator: {
-		prev?: NavItem;
-		next?: NavItem;
-	};
-	related: NavItem[];
 };
 
 export interface UIPagination<T> {
@@ -57,27 +29,30 @@ export interface UIPagination<T> {
 		next?: string;
 	};
 }
-interface BaseSlug {
-	label: string;
+export interface BaseSlug {
 	slug: string;
+	name: string;
+	count: number;
+	url?: string;
 }
 
-export interface CategoryItem extends BaseSlug {
+export interface UIMeta {
+	slug: string;
+	name: string;
 	url: string;
 }
 
-// 标签类型（带 URL）
-export interface TagItem extends BaseSlug {
-	url: string; // 标签特有字段
-}
+export interface CategoryItem extends BaseSlug {}
+
+export interface TagItem extends BaseSlug {}
 
 export interface PostMeta {
 	published: Date;
 	updated?: Date;
 
-	category: CategoryItem;
+	category: UIMeta;
 
-	tags: TagItem[];
+	tags: UIMeta[];
 
 	words?: number;
 	excerpt?: string;
@@ -101,9 +76,9 @@ export interface UIPost {
 	updated?: Date;
 
 	// 分类 & 标签
-	category: CategoryItem;
+	category: UIMeta;
 
-	tags: TagItem[];
+	tags: UIMeta[];
 	pinned?: boolean;
 	// 统计信息（PostMetadataView）
 	meta: PostMeta;
@@ -126,15 +101,10 @@ export interface UIPost {
 	};
 }
 
-export interface CategoryInfo {
-	name: string;
-	slug: string;
-}
-
 export interface CategoryEntry {
-	category: CategoryInfo;
+	category: CategoryItem;
 	posts: ListPost[];
-	tags: Map<string, { name: string; count: number }>;
+	tags: Map<string, TagItem>;
 }
 
 export type CategoryMap = Map<string, CategoryEntry>;
@@ -143,15 +113,9 @@ export type PostNavigatorCategory = {
 	slug: string;
 	name: string;
 	count: number;
-	url: string;
-	tags: {
-		slug: string;
-		name: string;
-		count: number;
-		url: string;
-	}[];
+	url?: string;
+	tags: TagItem[];
 };
-
 export interface CategoryTaxonomy {
 	categoryMap: CategoryMap;
 	categories: PostNavigatorCategory[];

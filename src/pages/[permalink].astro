@@ -28,6 +28,7 @@ import PostMetadata from "../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../config";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import { getContentStore } from "@/services/core/content-store";
+import { buildTagItems, buildCategoryItems } from "@/services/core/inject";
 
 export async function getStaticPaths() {
     const {posts: blogEntries} = await getContentStore();
@@ -190,8 +191,8 @@ const store = await getContentStore();
                     className="mb-5"
                     published={entry.data.published}
                     updated={entry.data.updated}
-                    tags={entry.data.tags}
-                    category={entry.data.category || undefined}
+                    tags={buildTagItems(entry.data.tags)}
+					category={buildCategoryItems(entry.data.category)}
                     id={entry.id}
                 />
                 {

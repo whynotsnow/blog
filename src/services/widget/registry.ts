@@ -9,6 +9,7 @@ import Calendar from "@components/widget/Calendar.astro";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import type { MarkdownHeading } from "astro";
 import type {
+	BaseSlug,
 	ContentStore,
 	ListPost,
 	PostNavigatorCategory,
@@ -79,11 +80,6 @@ export type WidgetComponentMap = {
 	announcement: ResolvedWidget<AnnouncementProps>;
 };
 
-export type Tag = {
-	name: string;
-	count: number;
-};
-
 /**
  * 计算总字数
  */
@@ -127,7 +123,7 @@ function buildSiteStats({
 }: {
 	posts: ListPost[];
 	categories: PostNavigatorCategory[];
-	tags: Tag[];
+	tags: BaseSlug[];
 	totalWords: number;
 }) {
 	return [
@@ -225,12 +221,7 @@ function buildCalendarData(posts: ListPost[]): CalendarData {
  */
 export function getWidgetComponentMap(ctx: SidebarContext): WidgetComponentMap {
 	const { categories, posts } = ctx.store;
-	const tags: Tag[] = categories.flatMap((category) =>
-		category.tags.map((tag) => ({
-			name: tag.name,
-			count: tag.count,
-		})),
-	);
+	const tags: BaseSlug[] = categories.flatMap((category) => category.tags);
 
 	// 计算总字数
 	const totalWords = calculateTotalWords(posts);
