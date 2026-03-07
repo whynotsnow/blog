@@ -102,7 +102,7 @@
 		<div class="flex flex-row flex-nowrap items-center">
 			{#if meta.category}
 				<a
-					href={getCategoryUrl(meta.category.name)}
+					href={meta.category.url}
 					class="link-lg transition text-50 text-sm font-medium
                  hover:text-[var(--primary)] whitespace-nowrap"
 				>

@@ -49,12 +49,11 @@ const yearSuffix = isChinese ? "年" : " ";
 	id="calendar-widget"
 	class={`hidden md:block ${className}`}
 	style={style}
+	name={i18n(I18nKey.updateCalendar)}
 >
-	<div class="flex justify-between items-center mb-2 mt-2">
+	<div class="flex justify-between items-center">
 		<div
-			class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-4 flex items-center
-					before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
-					before:absolute before:left-[-16px] before:top-[13.5px]"
+			class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative flex items-center"
 		>
 			<div
 				id="calendar-title-container"

@@ -292,6 +292,7 @@ export const zh_TW: Translation = {
 	[Key.siteStatsDays]: "{days} 天",
 
 	// 日曆組件
+	[Key.updateCalendar]: "更新日曆",
 	[Key.calendarSunday]: "日",
 	[Key.calendarMonday]: "一",
 	[Key.calendarTuesday]: "二",

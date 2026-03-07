@@ -305,6 +305,7 @@ export const ja: Translation = {
 	[Key.siteStatsDays]: "{days}日",
 
 	// カレンダーコンポーネント
+	[Key.updateCalendar]: "カレンダーの更新",
 	[Key.calendarSunday]: "日",
 	[Key.calendarMonday]: "月",
 	[Key.calendarTuesday]: "火",

@@ -302,6 +302,7 @@ export const en: Translation = {
 	[Key.siteStatsDays]: "{days} days",
 
 	// Calendar Component
+	[Key.updateCalendar]: "Update Calendar",
 	[Key.calendarSunday]: "Sun",
 	[Key.calendarMonday]: "Mon",
 	[Key.calendarTuesday]: "Tue",

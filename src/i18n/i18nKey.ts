@@ -283,6 +283,7 @@ enum I18nKey {
 	siteStatsDays = "siteStatsDays",
 
 	// 日历组件
+	updateCalendar = "updateCalendar",
 	calendarSunday = "calendarSunday",
 	calendarMonday = "calendarMonday",
 	calendarTuesday = "calendarTuesday",
