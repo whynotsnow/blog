@@ -2,16 +2,15 @@
 	import { onMount } from "svelte";
 	import Icon from "@iconify/svelte";
 
-	import type { PostMeta } from "./types";
+	import type { UIPostMeta } from "./types";
 
 	import { umamiConfig } from "@/config";
 	import I18nKey from "@/i18n/i18nKey";
 	import { i18n } from "@/i18n/translation";
 	import { formatDateToYYYYMMDD } from "@/utils/date-utils";
-	import { getCategoryUrl, getTagUrl } from "@/utils/url-utils";
 
 	// ================== props ==================
-	export let meta: PostMeta;
+	export let meta: UIPostMeta;
 
 	export let hideUpdateDate = false;
 	export let hideTagsForMobile = false;

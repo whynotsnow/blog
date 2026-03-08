@@ -45,7 +45,7 @@ const {
 	posterCoverUrl,
 	posterAvatarUrl,
 } = Astro.props;
-const { words, minutes } = entry;
+const { words, minutes } = entry.meta;
 const store = await getContentStore();
 ---
 
@@ -355,23 +355,23 @@ const store = await getContentStore();
 		class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full"
 	>
 		<a
-			href={entry.data.nextSlug
-				? getPostUrlBySlug(entry.data.nextSlug)
+			href={entry.meta.nextSlug
+				? getPostUrlBySlug(entry.meta.nextSlug)
 				: "#"}
 			class:list={[
 				"w-full font-bold overflow-hidden active:scale-95",
-				{ "pointer-events-none": !entry.data.nextSlug },
+				{ "pointer-events-none": !entry.meta.nextSlug },
 			]}
 		>
 			{
-				entry.data.nextSlug && (
+				entry.meta.nextSlug && (
 					<div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-start gap-4">
 						<Icon
 							name="material-symbols:chevron-left-rounded"
 							class="text-[2rem] text-[var(--primary)]"
 						/>
 						<div class="overflow-hidden transition overflow-ellipsis whitespace-nowrap max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">
-							{entry.data.nextTitle}
+							{entry.meta.nextTitle}
 						</div>
 					</div>
 				)
@@ -379,19 +379,19 @@ const store = await getContentStore();
 		</a>
 
 		<a
-			href={entry.data.prevSlug
-				? getPostUrlBySlug(entry.data.prevSlug)
+			href={entry.meta.prevSlug
+				? getPostUrlBySlug(entry.meta.prevSlug)
 				: "#"}
 			class:list={[
 				"w-full font-bold overflow-hidden active:scale-95",
-				{ "pointer-events-none": !entry.data.prevSlug },
+				{ "pointer-events-none": !entry.meta.prevTitle },
 			]}
 		>
 			{
-				entry.data.prevSlug && (
+				entry.meta.prevSlug && (
 					<div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-end gap-4">
 						<div class="overflow-hidden transition overflow-ellipsis whitespace-nowrap max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">
-							{entry.data.prevTitle}
+							{entry.meta.prevTitle}
 						</div>
 						<Icon
 							name="material-symbols:chevron-right-rounded"

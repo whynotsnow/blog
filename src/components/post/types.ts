@@ -46,7 +46,7 @@ export interface UIPost {
 	tags: TagItem[];
 	pinned?: boolean;
 	// 统计信息（PostMetadataView）
-	meta: PostMeta;
+	meta: UIPostMeta;
 
 	// UI 控制
 	hasCoverImage?: boolean; // 给 PostCard / ImageWrapper 用
@@ -56,7 +56,7 @@ export interface UIPost {
 	source?: "ssg" | "client";
 }
 
-export interface PostMeta {
+export interface UIPostMeta {
 	published: Date; // ISO
 	updated?: Date;
 

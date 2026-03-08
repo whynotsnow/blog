@@ -1,4 +1,4 @@
-import type { ListPost, RawPost } from "./types";
+import type { ListPost, PostQuery, RawPost } from "./types";
 
 /**
  * 原始推荐算法
@@ -11,32 +11,60 @@ import type { ListPost, RawPost } from "./types";
  * 4. 时间衰减 (发布天数 * 0.1) 每天扣0.1分
  */
 export function calculateRecommendScore(post: RawPost) {
-  let score = 0;
+	let score = 0;
 
-  // 置顶权重最高，确保置顶文章排在前面
-  if (post.data.pinned) score += 1000;
+	// 置顶权重最高，确保置顶文章排在前面
+	if (post.data.pinned) score += 1000;
 
-  // 优先级：priority值越小（1最高），得分越高
-  if (post.data.priority !== undefined) {
-    score += 500 - post.data.priority;
-  }
+	// 优先级：priority值越小（1最高），得分越高
+	if (post.data.priority !== undefined) {
+		score += 500 - post.data.priority;
+	}
 
-  // 基础推荐分，可手动配置
-  score += (post.data.recommendScore || 0) * 10;
+	// 基础推荐分，可手动配置
+	score += (post.data.recommendScore || 0) * 10;
 
-  // 时间衰减：文章越旧，分数越低
-  const days = (Date.now() - new Date(post.data.published).getTime()) / (1000 * 60 * 60 * 24);
-  score -= days * 0.1;
+	// 时间衰减：文章越旧，分数越低
+	const days =
+		(Date.now() - new Date(post.data.published).getTime()) /
+		(1000 * 60 * 60 * 24);
+	score -= days * 0.1;
 
-  return score;
+	return score;
 }
 
-export function sortByScore(posts: ListPost[]) {
-  return [...posts].sort((a, b) => b.score - a.score);
+export function sortByScore(posts: ListPost[], order: "asc" | "desc" = "desc") {
+	const sorted = [...posts].sort((a, b) => a.meta.score - b.meta.score);
+
+	return order === "asc" ? sorted : sorted.reverse();
 }
 
-export function sortByTime(posts: RawPost[]) {
-  return [...posts].sort(
-    (a, b) => new Date(b.data.published).getTime() - new Date(a.data.published).getTime(),
-  );
+export function sortByDate<T extends RawPost>(
+	posts: T[],
+	order: "asc" | "desc" = "asc",
+): T[] {
+	const sorted = [...posts].sort(
+		(a, b) => a.data.published.getTime() - b.data.published.getTime(),
+	);
+
+	return order === "asc" ? sorted : sorted.reverse();
+}
+
+const POST_SORTERS = {
+	score: sortByScore,
+	date: sortByDate,
+} as const;
+
+export function applyPostQuery(
+	posts: ListPost[],
+	query: PostQuery = {},
+): ListPost[] {
+	let result = [...posts];
+
+	if (query.sort) {
+		const sorter = POST_SORTERS[query.sort];
+		result = sorter(result);
+	}
+
+	return result;
 }

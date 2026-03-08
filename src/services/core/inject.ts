@@ -5,59 +5,124 @@ import {
 	generateTagSlug,
 	getCategoryUrl,
 	getPostUrl,
+	removeFileExtension,
 	resolveImageUrl,
 } from "@/utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
-import type { RawPost, ListPost, UIPost } from "./types";
+import type { RawPost, ListPost, UIPost, PostMeta } from "./types";
 import { calculateRecommendScore } from "./sort";
 
-/**
- * 全局系统级注入
- * - 为每篇文章生成顺序 ID（用于 permalink）
- * - 按发布时间升序排序
- * - TODO 需要测试 用于替代原始的initPostIdMap(listPosts)当前函数未应用
- */
-export function injectSystemMeta(posts: RawPost[]): RawPost[] {
-	const sorted = [...posts].sort(
-		(a, b) => a.data.published.getTime() - b.data.published.getTime(),
-	);
+type BaseMeta = {
+	postId: number;
+};
 
+type ContentMeta = {
+	words: number;
+	excerpt: string;
+	minutes: number;
+};
+
+type ScoreMeta = {
+	score: number;
+};
+
+type ListMeta = ContentMeta & ScoreMeta;
+
+type NavigationMeta = {
+	prevSlug?: string;
+	prevTitle?: string;
+	nextSlug?: string;
+	nextTitle?: string;
+};
+
+export type PostWithSystemMeta = RawPost & {
+	meta: BaseMeta;
+};
+
+export type PostWithListMeta = RawPost & {
+	meta: BaseMeta & ContentMeta & ScoreMeta;
+};
+
+export async function renderPost(entry) {
+	const result = await render(entry);
+	return {
+		...result,
+		remarkPluginFrontmatter: result.remarkPluginFrontmatter as {
+			words?: number;
+			minutes?: number;
+			excerpt?: string;
+		},
+	};
+}
+
+/**
+ * 为每篇文章生成顺序 ID（用于 permalink）
+ */
+export function injectSystemMeta(posts: RawPost[]): PostWithSystemMeta[] {
 	const idMap = new Map<string, number>();
 
-	sorted.forEach((post, index) => {
+	posts.forEach((post, index) => {
 		idMap.set(post.id, index + 1);
 	});
 
-	// 返回新的数组（不修改原数据）
 	return posts.map((post) => ({
 		...post,
-		system: {
-			postNumber: idMap.get(post.id),
+		meta: {
+			postId: idMap.get(post.id)!,
 		},
 	}));
 }
 
-/**
- * 列表页派生数据注入
- * - 阅读时间
- * - 字数
- */
-export async function injectListMeta(posts: RawPost[]): Promise<ListPost[]> {
+export async function injectListMeta(
+	posts: PostWithSystemMeta[],
+): Promise<PostWithListMeta[]> {
 	return Promise.all(
 		posts.map(async (post) => {
-			const { remarkPluginFrontmatter } = await render(post);
+			const { remarkPluginFrontmatter } = await renderPost(post);
 
 			const score = calculateRecommendScore(post);
 
 			return {
 				...post,
-				words: remarkPluginFrontmatter?.words ?? 0,
-				excerpt: remarkPluginFrontmatter?.excerpt ?? "",
-				minutes: remarkPluginFrontmatter?.minutes ?? 0,
-				score,
+				meta: {
+					...post.meta,
+					words: remarkPluginFrontmatter.words ?? 0,
+					excerpt: remarkPluginFrontmatter.excerpt ?? "",
+					minutes: remarkPluginFrontmatter.minutes ?? 0,
+					score,
+				},
 			};
 		}),
 	);
+}
+
+export function injectNavigationMeta(posts: PostWithListMeta[]): ListPost[] {
+	const map = new Map<string, NavigationMeta>();
+
+	for (let i = 1; i < posts.length; i++) {
+		map.set(posts[i].id, {
+			nextSlug: removeFileExtension(posts[i - 1].id),
+			nextTitle: posts[i - 1].data.title,
+		});
+	}
+
+	for (let i = 0; i < posts.length - 1; i++) {
+		const prev = map.get(posts[i].id) ?? {};
+
+		map.set(posts[i].id, {
+			...prev,
+			prevSlug: removeFileExtension(posts[i + 1].id),
+			prevTitle: posts[i + 1].data.title,
+		});
+	}
+
+	return posts.map((post) => ({
+		...post,
+		meta: {
+			...post.meta,
+			...map.get(post.id),
+		},
+	}));
 }
 
 // 构建分类信息的函数
@@ -97,7 +162,8 @@ export function buildTagItems(tags: string[]): {
 ========================= */
 
 export function toUIPost(post: ListPost): UIPost {
-	const { id, data, filePath, words, excerpt, score, minutes } = post;
+	const { id, data, filePath, meta } = post;
+	const { words, excerpt, score, minutes } = meta;
 
 	const imageUrl = resolveImageUrl(post);
 

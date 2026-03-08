@@ -1,19 +1,30 @@
 import { getCollection } from "astro:content";
-import type { ListPost, RawPost } from "./types";
-import { injectListMeta, injectSystemMeta } from "./inject";
-import { sortByScore } from "./sort";
+import type { ListPost, PostQuery, RawPost } from "./types";
+import {
+	injectListMeta,
+	injectNavigationMeta,
+	injectSystemMeta,
+} from "./inject";
+import { applyPostQuery, sortByDate } from "./sort";
 
 export async function getAllPostsRaw(): Promise<RawPost[]> {
-  return getCollection("posts", ({ data }) => {
-    return import.meta.env.PROD ? data.draft !== true : true;
-  });
+	return getCollection("posts", ({ data }) => {
+		return import.meta.env.PROD ? data.draft !== true : true;
+	});
 }
 
-export async function getAllPosts(): Promise<ListPost[]> {
-  const rawPosts = await getAllPostsRaw();
+export async function getAllPosts(
+	query: PostQuery = { sort: "score" },
+): Promise<ListPost[]> {
+	const rawPosts = await getAllPostsRaw();
 
-  const withSystemMeta = injectSystemMeta(rawPosts);
-  const listPosts = await injectListMeta(withSystemMeta);
+	const sortedPosts = sortByDate(rawPosts);
 
-  return sortByScore(listPosts);
+	const systemPosts = injectSystemMeta(sortedPosts);
+
+	const listPosts = await injectListMeta(systemPosts);
+
+	const navPosts = injectNavigationMeta(listPosts);
+
+	return applyPostQuery(navPosts, query);
 }

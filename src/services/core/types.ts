@@ -4,15 +4,24 @@ import type { CollectionEntry } from "astro:content";
 export type RawPost = CollectionEntry<"posts">;
 
 /* List 页面数据结构 */
-
 export type ListPost = RawPost & {
-	words: number;
-	excerpt: string;
-	score: number;
-	minutes: number;
-	views?: number;
+	meta: PostMeta;
 };
 
+// meta是所有派生的post状态信息
+export interface PostMeta {
+	postId: number;
+	score: number;
+
+	words: number;
+	minutes: number;
+	excerpt: string;
+
+	prevSlug?: string;
+	prevTitle?: string;
+	nextSlug?: string;
+	nextTitle?: string;
+}
 export interface UIPagination<T> {
 	data: T[];
 	start: number;
@@ -46,7 +55,7 @@ export interface CategoryItem extends BaseSlug {}
 
 export interface TagItem extends BaseSlug {}
 
-export interface PostMeta {
+export interface UIPostMeta {
 	published: Date;
 	updated?: Date;
 
@@ -54,8 +63,8 @@ export interface PostMeta {
 
 	tags: UIMeta[];
 
-	words?: number;
-	excerpt?: string;
+	words: number;
+	excerpt: string;
 
 	/** 用于 PostMetadataView 的控制 */
 	id?: string;
@@ -81,7 +90,7 @@ export interface UIPost {
 	tags: UIMeta[];
 	pinned?: boolean;
 	// 统计信息（PostMetadataView）
-	meta: PostMeta;
+	meta: UIPostMeta;
 
 	// UI 控制
 	hasCoverImage?: boolean; // 给 PostCard / ImageWrapper 用
@@ -123,4 +132,10 @@ export interface CategoryTaxonomy {
 
 export interface ContentStore extends CategoryTaxonomy {
 	posts: ListPost[];
+}
+
+export type PostSort = "score" | "date";
+export interface PostQuery {
+	sort?: PostSort;
+	order?: "asc" | "desc";
 }
