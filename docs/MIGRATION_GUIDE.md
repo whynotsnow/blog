@@ -90,8 +90,8 @@ git commit -m "Initial commit: Migrate content from Mizuki monorepo"
 git remote add origin https://github.com/your-username/Mizuki-Content.git
 
 # 推送
-git branch -M master
-git push -u origin master
+git branch -M main
+git push -u origin main
 
 echo "✅ 内容仓库已推送!"
 ```
