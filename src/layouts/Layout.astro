@@ -187,10 +187,9 @@ if (siteConfig.font) {
 
 				// 验证必要配置
 				if (!config.gtmId || !config.clarityId) {
-					if (import.meta.env.DEV)
-						console.warn(
-							"Analytics IDs not configured. Skipping loading.",
-						);
+					console.warn(
+						"Analytics IDs not configured. Skipping loading.",
+					);
 					return;
 				}
 
