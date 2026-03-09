@@ -2,9 +2,9 @@ name: snow build CI
 
 on:
     push:
-        branches: [dev_snow] # 监听 dev_snow 分支
+        branches: [snow_dev] # 监听 dev_snow 分支
     pull_request:
-        branches: [dev_snow]
+        branches: [snow_dev]
     workflow_dispatch:
 
 concurrency:
