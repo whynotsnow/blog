@@ -116,9 +116,10 @@ const imageMap: Record<string, ImageMetadata> = import.meta.glob(
 		import: "default",
 	},
 );
-const imageModules = import.meta.glob<ImageMetadata>("../../**", {
-	import: "default",
-});
+const imageModules = import.meta.glob<ImageMetadata>(
+	"/src/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+	{ import: "default" },
+);
 
 /**
  * 规范化路径：
