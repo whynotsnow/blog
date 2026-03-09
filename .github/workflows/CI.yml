@@ -1,10 +1,10 @@
-name: Fuwari-yCENzh CI
+name: snow build CI
 
 on:
     push:
-        branches: [main]
+        branches: [dev_snow] # 监听 dev_snow 分支
     pull_request:
-        branches: [main]
+        branches: [dev_snow]
     workflow_dispatch:
 
 concurrency:
@@ -15,11 +15,12 @@ permissions:
     contents: read
 
 jobs:
+    # 🚨 Step 1: Astro Check
     check:
         name: Astro Check
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout
+            - name: Checkout repository
               uses: actions/checkout@v6
 
             - name: Setup Node.js
@@ -31,6 +32,15 @@ jobs:
               uses: pnpm/action-setup@v4
               with:
                   run_install: false
+
+            # 🔹 缓存 pnpm 依赖，提高构建速度
+            - name: Cache pnpm store
+              uses: actions/cache@v3
+              with:
+                  path: ~/.pnpm-store
+                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
@@ -38,11 +48,13 @@ jobs:
             - name: Run Astro Check
               run: pnpm astro check
 
+    # 🏗️ Step 2: Astro Build
     build:
         name: Astro Build
         runs-on: ubuntu-latest
+        needs: check # 依赖 check job 成功
         steps:
-            - name: Checkout
+            - name: Checkout repository
               uses: actions/checkout@v6
 
             - name: Setup Node.js
@@ -54,6 +66,15 @@ jobs:
               uses: pnpm/action-setup@v4
               with:
                   run_install: false
+
+            # 🔹 缓存 pnpm 依赖，提高构建速度
+            - name: Cache pnpm store
+              uses: actions/cache@v3
+              with:
+                  path: ~/.pnpm-store
+                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile

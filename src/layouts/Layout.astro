@@ -3,6 +3,8 @@ import ConfigCarrier from "@components/ConfigCarrier.astro";
 import MusicPlayer from "@components/widget/MusicPlayer.svelte";
 import Pio from "@components/widget/Pio.svelte"; // 使用 Svelte 版本的 Pio 组件
 import {
+	CLARITY_PROJECT_ID,
+	GTM_ID,
 	musicPlayerConfig,
 	pioConfig,
 	profileConfig,
@@ -174,46 +176,68 @@ if (siteConfig.font) {
 >
 	<head>
 		<!-- 第三方分析脚本 - 延迟加载优化 -->
-		<script is:inline>
+		<script is:inline define:vars={{ GTM_ID, CLARITY_PROJECT_ID }}>
 			// 使用 requestIdleCallback 延迟加载第三方脚本
-			function loadAnalytics() {
-				// Google Tag Manager
-				(function (w, d, s, l, i) {
-					w[l] = w[l] || [];
-					w[l].push({
-						"gtm.start": new Date().getTime(),
-						event: "gtm.js",
-					});
-					var f = d.getElementsByTagName(s)[0],
-						j = d.createElement(s),
-						dl = l != "dataLayer" ? "&l=" + l : "";
-					j.async = true;
-					j.src =
-						"https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-					f.parentNode.insertBefore(j, f);
-				})(window, document, "script", "dataLayer", "GTM-KRX3XGVH");
+			(function () {
+				// 从环境变量读取配置
+				const config = {
+					gtmId: import.meta.env.GTM_ID || GTM_ID,
+					clarityId:
+						import.meta.env.CLARITY_PROJECT_ID ||
+						CLARITY_PROJECT_ID,
+				};
 
-				// Clarity
-				(function (c, l, a, r, i, t, y) {
-					c[a] =
-						c[a] ||
-						function () {
-							(c[a].q = c[a].q || []).push(arguments);
-						};
-					t = l.createElement(r);
-					t.async = 1;
-					t.src = "https://www.clarity.ms/tag/" + i;
-					y = l.getElementsByTagName(r)[0];
-					y.parentNode.insertBefore(t, y);
-				})(window, document, "clarity", "script", "tjr3vkhj8i");
-			}
+				// 验证必要配置
+				if (!config.gtmId || !config.clarityId) {
+					if (import.meta.env.DEV)
+						console.warn(
+							"Analytics IDs not configured. Skipping loading.",
+						);
+					return;
+				}
 
-			// 在浏览器空闲时加载，或者在 3 秒后加载
-			if ("requestIdleCallback" in window) {
-				requestIdleCallback(loadAnalytics, { timeout: 3000 });
-			} else {
-				setTimeout(loadAnalytics, 3000);
-			}
+				// 使用 requestIdleCallback 延迟加载第三方脚本
+				function loadAnalytics() {
+					// Google Tag Manager
+					(function (w, d, s, l, i) {
+						w[l] = w[l] || [];
+						w[l].push({
+							"gtm.start": new Date().getTime(),
+							event: "gtm.js",
+						});
+						var f = d.getElementsByTagName(s)[0],
+							j = d.createElement(s),
+							dl = l != "dataLayer" ? "&l=" + l : "";
+						j.async = true;
+						j.src =
+							"https://www.googletagmanager.com/gtm.js?id=" +
+							i +
+							dl;
+						f.parentNode.insertBefore(j, f);
+					})(window, document, "script", "dataLayer", config.gtmId);
+
+					// Clarity
+					(function (c, l, a, r, i, t, y) {
+						c[a] =
+							c[a] ||
+							function () {
+								(c[a].q = c[a].q || []).push(arguments);
+							};
+						t = l.createElement(r);
+						t.async = 1;
+						t.src = "https://www.clarity.ms/tag/" + i;
+						y = l.getElementsByTagName(r)[0];
+						y.parentNode.insertBefore(t, y);
+					})(window, document, "clarity", "script", config.clarityId);
+				}
+
+				// 在浏览器空闲时加载，或者在 3 秒后加载
+				if ("requestIdleCallback" in window) {
+					requestIdleCallback(loadAnalytics, { timeout: 3000 });
+				} else {
+					setTimeout(loadAnalytics, 3000);
+				}
+			})();
 		</script>
 
 		<title>{pageTitle}</title>
@@ -318,24 +342,29 @@ if (siteConfig.font) {
 			);
 
 			// 自动缩放逻辑 (Moved from MainGridLayout to here for earlier execution)
-			(function() {
+			(function () {
 				if (pageScaling && pageScaling.enable) {
 					function adjustPageScale() {
 						const isTouch =
 							(window.matchMedia &&
-								(window.matchMedia("(pointer:coarse)").matches ||
-									window.matchMedia("(hover: none)").matches)) ||
-							("ontouchstart" in window);
+								(window.matchMedia("(pointer:coarse)")
+									.matches ||
+									window.matchMedia("(hover: none)")
+										.matches)) ||
+							"ontouchstart" in window;
 						const isPortrait =
 							window.matchMedia &&
-							window.matchMedia("(orientation: portrait)").matches;
-						const isTabletLike = isTouch || window.innerWidth <= 1280;
+							window.matchMedia("(orientation: portrait)")
+								.matches;
+						const isTabletLike =
+							isTouch || window.innerWidth <= 1280;
 						if (isTabletLike || isPortrait) {
 							document.documentElement.style.fontSize = "";
 							return;
 						}
 						const targetWidth = pageScaling.targetWidth || 2000;
-						const currentWidth = document.documentElement.clientWidth;
+						const currentWidth =
+							document.documentElement.clientWidth;
 						let scale = currentWidth / targetWidth;
 						if (scale > 1) scale = 1;
 						if (scale < 0.85) scale = 0.85;
@@ -344,13 +373,19 @@ if (siteConfig.font) {
 
 					// 立即执行一次
 					adjustPageScale();
-					
+
 					// 监听窗口大小变化
-					window.addEventListener('resize', adjustPageScale);
-					
+					window.addEventListener("resize", adjustPageScale);
+
 					// Swup 页面切换后也需要检查
-					document.addEventListener('swup:page:view', adjustPageScale);
-					window.addEventListener('orientationchange', adjustPageScale);
+					document.addEventListener(
+						"swup:page:view",
+						adjustPageScale,
+					);
+					window.addEventListener(
+						"orientationchange",
+						adjustPageScale,
+					);
 				}
 			})();
 		</script>
@@ -1251,9 +1286,9 @@ function disableAnimation() {
 	function scrollFunction() {
 		const scrollTop = document.documentElement.scrollTop;
 		const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
-		
+
 		// 尝试获取内容区域的起始位置
-		const contentWrapper = document.getElementById('content-wrapper');
+		const contentWrapper = document.getElementById("content-wrapper");
 		let showBackToTopThreshold = bannerHeight + 100; // 默认回退值
 
 		if (contentWrapper) {
@@ -1280,7 +1315,8 @@ function disableAnimation() {
 			}
 
 			if (bannerEnabled && toc) {
-				const isBannerMode = document.body.classList.contains("enable-banner");
+				const isBannerMode =
+					document.body.classList.contains("enable-banner");
 				if (isBannerMode) {
 					if (scrollTop > bannerHeight) {
 						toc.classList.remove("toc-hide");

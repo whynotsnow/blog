@@ -3,6 +3,9 @@
 
 interface ImportMetaEnv {
 	readonly UMAMI_API_KEY?: string;
+	readonly GTM_ID?: string;
+	readonly CLARITY_PROJECT_ID?: string;
+	readonly MONGODB_URI?: string;
 }
 
 interface ImportMeta {
