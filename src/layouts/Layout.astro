@@ -181,10 +181,8 @@ if (siteConfig.font) {
 			(function () {
 				// 从环境变量读取配置
 				const config = {
-					gtmId: import.meta.env.GTM_ID || GTM_ID,
-					clarityId:
-						import.meta.env.CLARITY_PROJECT_ID ||
-						CLARITY_PROJECT_ID,
+					gtmId: GTM_ID,
+					clarityId: CLARITY_PROJECT_ID,
 				};
 
 				// 验证必要配置
