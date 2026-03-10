@@ -1,17 +1,10 @@
 ---
 import { Icon } from "astro-icon/components";
-import { umamiConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import { UIMeta } from "@/services/core/types";
 
-// 解析 umami
-const umamiEnabled = umamiConfig.enabled || false;
-const umamiWebsiteId =
-	umamiConfig.scripts.match(/data-website-id="([^"]+)"/)?.[1] || "";
-const umamiApiKey = umamiConfig.apiKey || "";
-const umamiBaseUrl = umamiConfig.baseUrl || "";
 
 export interface Props {
 	published: Date;
@@ -91,7 +84,7 @@ const {
         </div>
     )}
 
-    <!-- tags (只有在不显示基本元数据时才显示) -->
+    <!-- tags -->
     {!showOnlyBasicMeta && (
         <div class:list={["items-center", {"flex": !hideTagsForMobile, "hidden md:flex": hideTagsForMobile}]}>
             <div class="meta-icon">
@@ -113,8 +106,8 @@ const {
         </div>
     )}
     
-    <!-- 访问量（首页不显示，且umami.enabled为true时显示） -->
-    {!isHome && umamiEnabled && id && (
+    <!-- 访问量 -->
+    {!isHome && id && (
         <div class="flex items-center">
             <div class="meta-icon">
                 <Icon name="material-symbols:visibility-outline-rounded" class="text-xl"></Icon>
@@ -124,52 +117,48 @@ const {
     )}
 </div>
 
-<!-- 只有在非首页且启用umami且有slug时才加载脚本 -->
-{!isHome && umamiEnabled && id && (
-    <script is:inline define:vars={{ id, umamiBaseUrl, umamiApiKey, umamiWebsiteId, umamiConfig }}>
-        // 客户端统计文案生成函数
-        function generateStatsText(pageViews, visitors) {
-            return `浏览量 ${pageViews} · 访客 ${visitors}`;
-        }
-        
-        // 获取访问量统计
-        async function fetchPageViews(isRetry = false) {
+{!isHome && id && (
+	<script is:inline define:vars={{
+		pageViewsText: i18n(I18nKey.profileStatsPageViews),
+		visitsText: i18n(I18nKey.profileStatsVisits)
+	}}>
+		function generateStatsText(pageViews, visits) {
+			return `${pageViewsText} ${pageViews} · ${visitsText} ${visits}`;
+		}
 
-            if (!umamiConfig.enabled || !umamiWebsiteId || !id || !isRetry) {
-
-				console.log('return11111111111',{ id, umamiBaseUrl, umamiApiKey, umamiWebsiteId, umamiConfig, isRetry })
+		async function fetchPageViews() {
+			const container = document.querySelector('.umami-page-views');
+			
+			if (!window.oddmisc) {
+				container?.classList.add('hidden');
 				return;
-			};
-            
-            try {
-                // 构造文章页面的URL路径
-                const pageUrl = `/posts/${id}/`;
-                
-                // 调用全局工具获取特定页面的 Umami 统计数据
-                const stats = await getUmamiPageStats(umamiBaseUrl, umamiApiKey, umamiWebsiteId, pageUrl);
-                
-                // 从返回的数据中提取页面浏览量和访客数
-                const pageViews = stats.pageviews || 0;
-                const visitors = stats.visitors || 0;
-                
-                const displayElement = document.getElementById('page-views-display');
-                if (displayElement) {
-                    displayElement.textContent = generateStatsText(pageViews, visitors);
-                }
-            } catch (error) {
-                console.error('Error fetching page views:', error);
-                const displayElement = document.getElementById('page-views-display');
-                if (displayElement) {
-                    displayElement.textContent = '统计不可用';
-                }
-            }
-        }
-		console.log('document.readyState00000000', document.readyState)
-        // 页面加载完成后获取统计数据
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', fetchPageViews);
-        } else {
-            fetchPageViews();
-        }
-    </script>
+			}
+
+			const id = container?.dataset.id;
+			if (!id) return;
+
+			try {
+				const stats = await window.oddmisc.getStats(`/posts/${id}/`);
+				const pageViews = stats.pageviews || 0;
+				const visits = stats.visits || 0;
+
+				if (pageViews === 0 && visits === 0) {
+					container?.classList.add('hidden');
+					return;
+				}
+
+				container?.classList.remove('hidden');
+				container.querySelector('.page-views-display').textContent = generateStatsText(pageViews, visits);
+			} catch (error) {
+				console.error('Error fetching page views:', error);
+				container?.classList.add('hidden');
+			}
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', fetchPageViews);
+		} else {
+			fetchPageViews();
+		}
+	</script>
 )}
