@@ -134,8 +134,12 @@ const {
         
         // 获取访问量统计
         async function fetchPageViews(isRetry = false) {
-            // @ts-ignore
-            if (!umamiConfig.enabled || !umamiWebsiteId || !id || !isRetry) return;
+
+            if (!umamiConfig.enabled || !umamiWebsiteId || !id || !isRetry) {
+
+				console.log('return11111111111',{ id, umamiBaseUrl, umamiApiKey, umamiWebsiteId, umamiConfig, isRetry })
+				return;
+			};
             
             try {
                 // 构造文章页面的URL路径
@@ -160,7 +164,7 @@ const {
                 }
             }
         }
-
+		console.log('document.readyState00000000', document.readyState)
         // 页面加载完成后获取统计数据
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', fetchPageViews);
