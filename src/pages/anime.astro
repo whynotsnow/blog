@@ -11,6 +11,20 @@ import { widgetManager } from "../utils/widget-manager";
 import "../styles/anime.css";
 import { getContentStore } from "@/services/core/content-store";
 
+interface RawAnimeItem {
+	title?: string;
+	cover?: string;
+	link?: string;
+	status?: string;
+	rating?: number | string;
+	progress?: number | string;
+	totalEpisodes?: number | string;
+	description?: string;
+	year?: string;
+	studio?: string;
+	genre?: string[];
+}
+
 interface AnimeItem {
 	title: string;
 	cover: string;
@@ -25,6 +39,15 @@ interface AnimeItem {
 	genre: string[];
 }
 
+type AnimeSourceConfig =
+	| { type: "local"; data: AnimeItem[] }
+	| {
+			type: "json";
+			filename: string;
+			fetchOnDev?: boolean;
+			emptyDescription?: string; // 可选：特定源的空状态描述
+	  };
+
 if (!siteConfig.featurePages.anime) {
 	return Astro.redirect("/404/");
 }
@@ -38,129 +61,150 @@ const BANGUMI_USER_ID = siteConfig.bangumi?.userId || "your-user-id";
 const BILIBILI_VMID = siteConfig.bilibili?.vmid || "";
 const ANIME_MODE = siteConfig.anime?.mode || "bangumi";
 
-let animeList: AnimeItem[] = [];
+const sourceConfigs: Record<string, AnimeSourceConfig> = {
+	local: {
+		type: "local",
+		data: localAnimeList,
+	},
+	bilibili: {
+		type: "json",
+		filename: "bilibili-data.json",
+		fetchOnDev: siteConfig.bilibili?.fetchOnDev,
+		emptyDescription: i18n(I18nKey.animeEmptyBilibili),
+	},
+	bangumi: {
+		type: "json",
+		filename: "bangumi-data.json",
+		fetchOnDev: siteConfig.bangumi?.fetchOnDev,
+		emptyDescription: i18n(I18nKey.animeEmptyBangumi),
+	},
+	// 示例：未来扩展 MyAnimeList
+	// myanimelist: {
+	//     type: "json",
+	//     filename: "mal-data.json",
+	//     fetchOnDev: siteConfig.mal?.fetchOnDev
+	// }
+};
 
-if (ANIME_MODE === "local") {
-	animeList = localAnimeList;
-} else if (ANIME_MODE === "bilibili") {
-	const isDev = import.meta.env.DEV;
-	const shouldFetchOnDev = siteConfig.bilibili?.fetchOnDev ?? false;
-	const skipLoad = isDev && !shouldFetchOnDev;
+function loadAnimeData(filename: string): AnimeItem[] {
+	const dataPath = path.join(process.cwd(), `src/data/${filename}`);
 
-	if (skipLoad) {
-		console.log("[Dev] Skipping Bilibili data load (fetchOnDev is off).");
-		animeList = [];
-	} else {
-		try {
-			const dataPath = path.join(
-				process.cwd(),
-				"src/data/bilibili-data.json",
-			);
-			if (fs.existsSync(dataPath)) {
-				const fileContent = fs.readFileSync(dataPath, "utf-8");
-				const rawData = JSON.parse(fileContent);
-				animeList = rawData.map((item: any) => ({
-					title: item.title || "Unknown",
-					cover: item.cover || "",
-					link: item.link || "",
-					status: item.status || "planned",
-					rating: Number(item.rating) || 0,
-					progress: Number(item.progress) || 0,
-					totalEpisodes: Number(item.totalEpisodes) || 12,
-					description: item.description || "",
-					year: item.year || "",
-					studio: item.studio || "",
-					genre: Array.isArray(item.genre) ? item.genre : [],
-				}));
-			} else {
-				console.warn(`Bilibili data file not found at ${dataPath}.`);
-				animeList = [];
-			}
-		} catch (error) {
-			console.error("Failed to load Bilibili anime data:", error);
-			animeList = [];
-		}
+	if (!fs.existsSync(dataPath)) {
+		console.warn(`[Anime] Data file not found: ${dataPath}`);
+		return [];
 	}
-} else {
-	const isDev = import.meta.env.DEV;
-	const shouldFetchOnDev = siteConfig.bangumi?.fetchOnDev ?? false;
-	const skipLoad = isDev && !shouldFetchOnDev;
 
-	if (skipLoad) {
-		console.log("[Dev] Skipping Bangumi data load (fetchOnDev is off).");
-		animeList = [];
-	} else {
-		try {
-			const dataPath = path.join(
-				process.cwd(),
-				"src/data/bangumi-data.json",
-			);
-			if (fs.existsSync(dataPath)) {
-				const fileContent = fs.readFileSync(dataPath, "utf-8");
-				const rawData = JSON.parse(fileContent);
-				animeList = rawData.map((item: any) => ({
-					title: item.title || "Unknown",
-					cover: item.cover || "",
-					link: item.link || "",
-					status: item.status || "planned",
-					rating: Number(item.rating) || 0,
-					progress: Number(item.progress) || 0,
-					totalEpisodes: Number(item.totalEpisodes) || 12,
-					description: item.description || "",
-					year: item.year || "",
-					studio: item.studio || "",
-					genre: Array.isArray(item.genre) ? item.genre : [],
-				}));
-			} else {
-				console.warn(`Bangumi data file not found at ${dataPath}.`);
-				animeList = [];
-			}
-		} catch (error) {
-			console.error("Failed to load anime data:", error);
-			animeList = [];
-		}
+	try {
+		const fileContent = fs.readFileSync(dataPath, "utf-8");
+		const rawData = JSON.parse(fileContent) as RawAnimeItem[];
+
+		return rawData.map((item) => ({
+			title: item.title || "Unknown",
+			cover: item.cover || "",
+			link: item.link || "",
+			status: item.status || "planned",
+			rating: Number(item.rating) || 0,
+			progress: Number(item.progress) || 0,
+			totalEpisodes: Number(item.totalEpisodes) || 12,
+			description: item.description || "",
+			year: item.year || "",
+			studio: item.studio || "",
+			genre: Array.isArray(item.genre) ? item.genre : [],
+		}));
+	} catch (error) {
+		console.error(`[Anime] Failed to parse ${filename}:`, error);
+		return [];
 	}
 }
 
-function getStatusInfo(status: string) {
-	switch (status) {
-		case "watching":
-			return {
-				text: i18n(I18nKey.animeStatusWatching),
-				class: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-				icon: "▶",
-			};
-		case "completed":
-			return {
-				text: i18n(I18nKey.animeStatusCompleted),
-				class: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-				icon: "✓",
-			};
-		case "planned":
-			return {
-				text: i18n(I18nKey.animeStatusPlanned),
-				class: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-				icon: "❤",
-			};
-		case "onhold":
-			return {
-				text: i18n(I18nKey.animeStatusOnHold),
-				class: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-				icon: "⏸",
-			};
-		case "dropped":
-			return {
-				text: i18n(I18nKey.animeStatusDropped),
-				class: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-				icon: "✗",
-			};
-		default:
-			return {
-				text: status,
-				class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-				icon: "?",
-			};
+let animeList: AnimeItem[] = [];
+const currentConfig = sourceConfigs[ANIME_MODE];
+
+if (currentConfig) {
+	if (currentConfig.type === "local") {
+		animeList = currentConfig.data;
+	} else if (currentConfig.type === "json") {
+		const isDev = import.meta.env.DEV;
+		const shouldFetchOnDev = currentConfig.fetchOnDev ?? false;
+		const skipLoad = isDev && !shouldFetchOnDev;
+
+		if (skipLoad) {
+			console.log(
+				`[Dev] Skipping ${ANIME_MODE} data load (fetchOnDev is off).`,
+			);
+			animeList = [];
+		} else {
+			animeList = loadAnimeData(currentConfig.filename);
+		}
 	}
+} else {
+	console.warn(`[Anime] Unknown or unconfigured mode: ${ANIME_MODE}`);
+}
+
+let emptyMessage = i18n(I18nKey.animeEmpty);
+let emptyDescription = "";
+let showEmptyState = false;
+
+if (ANIME_MODE === "bilibili" && (!BILIBILI_VMID || BILIBILI_VMID === "")) {
+	showEmptyState = true;
+	emptyDescription = i18n(I18nKey.animeConfigBilibili);
+} else if (ANIME_MODE === "bangumi" && BANGUMI_USER_ID === "your-user-id") {
+	showEmptyState = true;
+	emptyDescription = i18n(I18nKey.animeConfigBangumi);
+} else if (animeList.length === 0) {
+	showEmptyState = true;
+	// 优先使用配置中的空描述，否则回退到默认
+	if (
+		currentConfig &&
+		currentConfig.type === "json" &&
+		currentConfig.emptyDescription
+	) {
+		emptyDescription = currentConfig.emptyDescription;
+	} else if (ANIME_MODE === "local") {
+		emptyDescription = i18n(I18nKey.animeEmptyLocal);
+	} else {
+		emptyDescription = "No anime data found.";
+	}
+}
+
+// 状态样式映射
+const statusMap: Record<string, { text: string; class: string; icon: string }> =
+	{
+		watching: {
+			text: i18n(I18nKey.animeStatusWatching),
+			class: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+			icon: "▶",
+		},
+		completed: {
+			text: i18n(I18nKey.animeStatusCompleted),
+			class: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+			icon: "✓",
+		},
+		planned: {
+			text: i18n(I18nKey.animeStatusPlanned),
+			class: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+			icon: "❤",
+		},
+		onhold: {
+			text: i18n(I18nKey.animeStatusOnHold),
+			class: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+			icon: "⏸",
+		},
+		dropped: {
+			text: i18n(I18nKey.animeStatusDropped),
+			class: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+			icon: "✗",
+		},
+	};
+
+function getStatusInfo(status: string) {
+	return (
+		statusMap[status] || {
+			text: status,
+			class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+			icon: "?",
+		}
+	);
 }
 
 const INITIAL_DISPLAY_COUNT = 24;
@@ -176,19 +220,19 @@ const store = await getContentStore();
 	store={store}
 >
 	<div
-		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
 	>
 		<div class="card-base anime-card-base z-10 px-9 py-6 relative w-full">
 			<div class="relative w-full mb-8">
 				<div class="mb-6">
 					<h1
-						class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
-                    before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)]
+						class="text-4xl font-bold text-90 mb-2 relative
+                    before:w-1 before:h-8 before:rounded-md before:bg-(--primary)
                     before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 					>
 						{i18n(I18nKey.animeTitle)}
 					</h1>
-					<p class="text-black/75 dark:text-white/75">
+					<p class="text-75">
 						{i18n(I18nKey.animeSubtitle)}
 					</p>
 				</div>
@@ -210,8 +254,7 @@ const store = await getContentStore();
 							>{i18n(I18nKey.animeStatusCompleted)}</button
 						>
 						{
-							(ANIME_MODE === "bangumi" ||
-								ANIME_MODE === "bilibili") && (
+							ANIME_MODE === "bangumi" && (
 								<>
 									<button
 										class="anime-filter-tag"
@@ -234,32 +277,15 @@ const store = await getContentStore();
 
 			<div class="mb-8">
 				{
-					ANIME_MODE === "bilibili" &&
-					(!BILIBILI_VMID || BILIBILI_VMID === "") ? (
+					showEmptyState ? (
 						<div class="text-center py-12">
 							<div class="text-5xl mb-4">😢</div>
-							<h3 class="text-xl font-medium text-black/80 dark:text-white/80 mb-2">
-								{i18n(I18nKey.animeEmpty)}
+							<h3 class="text-xl font-medium text-90 mb-2">
+								{emptyMessage}
 							</h3>
-							<p class="text-black/60 dark:text-white/60">
-								Please set your Bilibili vmid in the
-								src/config.ts file
-							</p>
+							<p class="text-60">{emptyDescription}</p>
 						</div>
-					) : ANIME_MODE !== "local" &&
-					  ANIME_MODE !== "bilibili" &&
-					  BANGUMI_USER_ID === "your-user-id" ? (
-						<div class="text-center py-12">
-							<div class="text-5xl mb-4">😢</div>
-							<h3 class="text-xl font-medium text-black/80 dark:text-white/80 mb-2">
-								{i18n(I18nKey.animeEmpty)}
-							</h3>
-							<p class="text-black/60 dark:text-white/60">
-								Please set your Bangumi userId in the
-								src/config.ts file
-							</p>
-						</div>
-					) : visibleAnimeList.length > 0 ? (
+					) : (
 						<>
 							<div
 								id="anime-list-container"
@@ -278,10 +304,10 @@ const store = await getContentStore();
 
 									return (
 										<div
-											class="group relative bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-[var(--radius-large)] overflow-hidden hover:shadow-lg"
+											class="group relative bg-(--card-bg) border border-(--line-divider) rounded-(--radius-large) overflow-hidden hover:shadow-lg"
 											data-anime-status={anime.status}
 										>
-											<div class="relative anime-cover-container aspect-[2/3] overflow-hidden">
+											<div class="relative anime-cover-container aspect-2/3 overflow-hidden">
 												<a
 													href={anime.link}
 													target="_blank"
@@ -293,7 +319,7 @@ const store = await getContentStore();
 														alt={anime.title}
 														class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
 													/>
-													<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+													<div class="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
 														<div class="absolute inset-0 flex items-center justify-center">
 															<div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
 																<svg
@@ -332,10 +358,10 @@ const store = await getContentStore();
 
 												{anime.status ===
 													"watching" && (
-													<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+													<div class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-2">
 														<div class="w-full bg-white/20 rounded-full h-1.5 mb-1">
 															<div
-																class="bg-gradient-to-r from-emerald-400 to-teal-400 h-1.5 rounded-full transition-all duration-300"
+																class="bg-linear-to-r from-emerald-400 to-teal-400 h-1.5 rounded-full transition-all duration-300"
 																style={`width: ${progressPercent}%`}
 															/>
 														</div>
@@ -355,11 +381,11 @@ const store = await getContentStore();
 											</div>
 
 											<div class="p-3">
-												<h3 class="text-sm font-bold text-black/90 dark:text-white/90 mb-1 leading-tight">
+												<h3 class="text-sm font-bold text-90 mb-1 leading-tight">
 													{anime.title}
 												</h3>
 												<p
-													class="text-black/60 dark:text-white/60 text-xs mb-2 line-clamp-2"
+													class="text-60 text-xs mb-2 line-clamp-2"
 													title={anime.description}
 												>
 													{anime.description}
@@ -367,23 +393,23 @@ const store = await getContentStore();
 
 												<div class="space-y-1 text-xs">
 													<div class="flex justify-between items-center">
-														<span class="text-black/50 dark:text-white/50 shrink-0">
+														<span class="text-50 shrink-0">
 															{i18n(
 																I18nKey.animeYear,
 															)}
 														</span>
-														<span class="text-black/70 dark:text-white/70 truncate ml-2 text-right">
+														<span class="text-70 truncate ml-2 text-right">
 															{anime.year}
 														</span>
 													</div>
 													<div class="flex justify-between items-start">
-														<span class="text-black/50 dark:text-white/50 shrink-0 mt-0.5">
+														<span class="text-50 shrink-0 mt-0.5">
 															{i18n(
 																I18nKey.animeStudio,
 															)}
 														</span>
 														<span
-															class="text-black/70 dark:text-white/70 text-right ml-2 line-clamp-2 break-words"
+															class="text-70 text-right ml-2 line-clamp-2 wrap-break-word"
 															title={anime.studio}
 														>
 															{anime.studio}
@@ -392,7 +418,7 @@ const store = await getContentStore();
 													<div class="flex flex-wrap gap-1 mt-2">
 														{anime.genre.map(
 															(g) => (
-																<span class="px-1.5 py-0.5 bg-[var(--btn-regular-bg)] text-black/70 dark:text-white/70 rounded text-xs">
+																<span class="px-1.5 py-0.5 bg-(--btn-regular-bg) text-70 rounded text-xs">
 																	{g}
 																</span>
 															),
@@ -419,10 +445,10 @@ const store = await getContentStore();
 
 									return (
 										<div
-											class="group relative bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-[var(--radius-large)] overflow-hidden hover:shadow-lg"
+											class="group relative bg-(--card-bg) border border-(--line-divider) rounded-(--radius-large) overflow-hidden hover:shadow-lg"
 											data-anime-status={anime.status}
 										>
-											<div class="relative anime-cover-container aspect-[2/3] overflow-hidden">
+											<div class="relative anime-cover-container aspect-2/3 overflow-hidden">
 												<a
 													href={anime.link}
 													target="_blank"
@@ -434,7 +460,7 @@ const store = await getContentStore();
 														alt={anime.title}
 														class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
 													/>
-													<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+													<div class="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
 														<div class="absolute inset-0 flex items-center justify-center">
 															<div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
 																<svg
@@ -473,10 +499,10 @@ const store = await getContentStore();
 
 												{anime.status ===
 													"watching" && (
-													<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+													<div class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-2">
 														<div class="w-full bg-white/20 rounded-full h-1.5 mb-1">
 															<div
-																class="bg-gradient-to-r from-emerald-400 to-teal-400 h-1.5 rounded-full transition-all duration-300"
+																class="bg-linear-to-r from-emerald-400 to-teal-400 h-1.5 rounded-full transition-all duration-300"
 																style={`width: ${progressPercent}%`}
 															/>
 														</div>
@@ -496,11 +522,11 @@ const store = await getContentStore();
 											</div>
 
 											<div class="p-3">
-												<h3 class="text-sm font-bold text-black/90 dark:text-white/90 mb-1 leading-tight">
+												<h3 class="text-sm font-bold text-90 mb-1 leading-tight">
 													{anime.title}
 												</h3>
 												<p
-													class="text-black/60 dark:text-white/60 text-xs mb-2 line-clamp-2"
+													class="text-60 text-xs mb-2 line-clamp-2"
 													title={anime.description}
 												>
 													{anime.description}
@@ -508,23 +534,23 @@ const store = await getContentStore();
 
 												<div class="space-y-1 text-xs">
 													<div class="flex justify-between items-center">
-														<span class="text-black/50 dark:text-white/50 shrink-0">
+														<span class="text-50 shrink-0">
 															{i18n(
 																I18nKey.animeYear,
 															)}
 														</span>
-														<span class="text-black/70 dark:text-white/70 truncate ml-2 text-right">
+														<span class="text-70 truncate ml-2 text-right">
 															{anime.year}
 														</span>
 													</div>
 													<div class="flex justify-between items-start">
-														<span class="text-black/50 dark:text-white/50 shrink-0 mt-0.5">
+														<span class="text-50 shrink-0 mt-0.5">
 															{i18n(
 																I18nKey.animeStudio,
 															)}
 														</span>
 														<span
-															class="text-black/70 dark:text-white/70 text-right ml-2 line-clamp-2 break-words"
+															class="text-70 text-right ml-2 line-clamp-2 wrap-break-word"
 															title={anime.studio}
 														>
 															{anime.studio}
@@ -533,7 +559,7 @@ const store = await getContentStore();
 													<div class="flex flex-wrap gap-1 mt-2">
 														{anime.genre.map(
 															(g) => (
-																<span class="px-1.5 py-0.5 bg-[var(--btn-regular-bg)] text-black/70 dark:text-white/70 rounded text-xs">
+																<span class="px-1.5 py-0.5 bg-(--btn-regular-bg) text-70 rounded text-xs">
 																	{g}
 																</span>
 															),
@@ -551,24 +577,10 @@ const store = await getContentStore();
 									id="infinite-scroll-sentinel"
 									class="w-full h-20 flex items-center justify-center mt-8"
 								>
-									<div class="anime-loading-spinner w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+									<div class="anime-loading-spinner w-8 h-8 border-4 border-(--primary) border-t-transparent rounded-full animate-spin" />
 								</div>
 							)}
 						</>
-					) : (
-						<div class="text-center py-12">
-							<div class="text-5xl mb-4">😢</div>
-							<h3 class="text-xl font-medium text-black/80 dark:text-white/80 mb-2">
-								{i18n(I18nKey.animeEmpty)}
-							</h3>
-							<p class="text-black/60 dark:text-white/60">
-								{ANIME_MODE === "local"
-									? i18n(I18nKey.animeEmptyLocal)
-									: ANIME_MODE === "bilibili"
-										? "Bilibili数据为空，请运行 pnpm run update-bilibili 获取数据"
-										: i18n(I18nKey.animeEmptyBangumi)}
-							</p>
-						</div>
 					)
 				}
 			</div>
@@ -662,7 +674,6 @@ const store = await getContentStore();
 					"md:grid-cols-2",
 					"lg:grid-cols-3",
 				);
-
 				if (layout === "grid") {
 					animeListContainer.classList.add("anime-grid-mode");
 					const rightSidebar = document.querySelector(
@@ -774,7 +785,6 @@ const store = await getContentStore();
 				element.removeEventListener(type, handler);
 			});
 			window.animeFilterEventListeners = [];
-
 			filterTags.forEach((tag) => {
 				const clickHandler = function () {
 					if (this.classList.contains("anime-active")) return;
@@ -903,7 +913,6 @@ const store = await getContentStore();
 							);
 						});
 					};
-
 					if (itemsToHide.length > 0) {
 						itemsToHide.forEach((item) =>
 							item.classList.add("anime-fade-out"),
