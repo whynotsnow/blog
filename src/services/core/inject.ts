@@ -9,7 +9,7 @@ import {
 	resolveImageUrl,
 } from "@/utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
-import type { RawPost, ListPost, UIPost, PostMeta } from "./types";
+import type { RawPost, ListPost, UIPost } from "./types";
 import { calculateRecommendScore } from "./sort";
 
 type BaseMeta = {
@@ -26,7 +26,7 @@ type ScoreMeta = {
 	score: number;
 };
 
-type ListMeta = ContentMeta & ScoreMeta;
+// type ListMeta = ContentMeta & ScoreMeta;
 
 type NavigationMeta = {
 	prevSlug?: string;
@@ -43,7 +43,7 @@ export type PostWithListMeta = RawPost & {
 	meta: BaseMeta & ContentMeta & ScoreMeta;
 };
 
-export async function renderPost(entry) {
+export async function renderPost(entry: RawPost) {
 	const result = await render(entry);
 	return {
 		...result,

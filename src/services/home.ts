@@ -1,5 +1,4 @@
 import { PAGE_SIZE } from "@constants/constants";
-import { getAllPosts } from "./core/source";
 import { toUIPost } from "./core/inject";
 import type { PostNavigatorCategory, UIPost } from "./core/types";
 import { getContentStore } from "./core/content-store";
