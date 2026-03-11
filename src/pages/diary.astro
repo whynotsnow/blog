@@ -160,7 +160,7 @@ const store = await getContentStore();
 
 <style>
 	.card-base-daily {
-		@apply rounded-[var(--radius-large)] overflow-hidden bg-[var(--card-bg)];
+		@apply rounded-(--radius-large) overflow-hidden bg-[var(--card-bg)];
 		border: 1px solid var(--line-divider);
 		transition: all 0.3s ease;
 	}
@@ -223,8 +223,8 @@ const store = await getContentStore();
 	}
 
 	/* 响应式设计 */
-	/* 手机端 (小于640px) */
-	@media (max-width: 640px) {
+	/* 手机端 (小于768px) */
+	@media (max-width: 768px) {
 		.moments-header {
 			padding: 0.75rem;
 		}

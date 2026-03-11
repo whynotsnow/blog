@@ -183,6 +183,7 @@
 </div>
 
 <style>
+	@reference "../../styles/main.css";
 	#post-list-container {
 		min-height: 200px;
 		transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
