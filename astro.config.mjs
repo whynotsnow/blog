@@ -41,9 +41,6 @@ export default defineConfig({
 		umami({
 			shareUrl: "https://cloud.umami.is/share/1p6c4kWjMRHn3C3J",
 		}),
-		tailwind({
-			nesting: true,
-		}),
 		swup({
 			theme: false,
 			animationClass: "transition-swup-",
