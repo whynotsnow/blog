@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { toSlug, url } from "@utils/client-utils";
+	import { url } from "@utils/client-utils";
 	import { generateCategorySlug, generateTagSlug } from "@utils/url-utils";
 
 	interface TagItem {
@@ -26,6 +26,9 @@
 
 	$: activeCategory =
 		categories.find((c) => c.slug === categorySlug) ?? undefined;
+
+	$: activeTag =
+		activeCategory?.tags.find((t) => t.slug === tagSlug) ?? undefined;
 
 	const isActiveCategory = (slug: string) => slug === categorySlug;
 	const isActiveTag = (slug: string) => slug === tagSlug;
@@ -57,11 +60,11 @@
 				</a>
 			{/if}
 
-			{#if currentTag}
+			{#if currentTag && activeTag?.name}
 				<span class="opacity-40">›</span>
 
 				<span class="text-[var(--primary)] font-semibold">
-					# {currentTag}
+					# {activeTag.name}
 				</span>
 			{/if}
 		</div>
