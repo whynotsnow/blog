@@ -450,11 +450,11 @@ export const shareConfig: ShareConfig = {
 };
 
 export const announcementConfig: AnnouncementConfig = {
-	title: "", // 公告标题，填空使用i18n字符串Key.announcement
-	content: "ブログへようこそ！これはサンプルの告知です", // 公告内容
-	closable: true, // 允许用户关闭公告
+	title: "", // 公告标题，
+	content: "网站建设中，更多功能敬请期待！", // 公告内容
+	closable: false, // 允许用户关闭公告
 	link: {
-		enable: true, // 启用链接
+		enable: false, // 启用链接
 		text: "Learn More", // 链接文本
 		url: "/about/", // 链接 URL
 		external: false, // 内部链接
@@ -511,7 +511,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：分类组件
 			type: "categories",
 			// 组件位置："sticky" 表示粘性定位，可滚动
-			position: "sticky",
+			position: "top",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -561,8 +561,8 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
 	// 侧栏组件布局配置
 	components: {
-		right: ["profile", "announcement", "categories", "tags"],
-		left: ["site-stats", "calendar"],
+		left: ["categories", "tags", "calendar", "announcement"],
+		right: ["profile", "site-stats"],
 		drawer: ["profile", "announcement"],
 	},
 
@@ -627,17 +627,17 @@ export const pioConfig: import("./types/config").PioConfig = {
 	mode: "draggable", // 默认为可拖拽模式
 	hiddenOnMobile: true, // 默认在移动设备上隐藏
 	dialog: {
-		welcome: "Welcome to Mizuki Website!", // 欢迎词
+		welcome: "欢迎来到 Snow 的博客！希望你能找到有用的内容～", // 欢迎词
 		touch: [
-			"What are you doing?",
-			"Stop touching me!",
-			"HENTAI!",
-			"Don't bully me like that!",
+			"咦？你在做什么？",
+			"不要乱点我啦！",
+			"喂喂，这样有点奇怪哦！",
+			"再点我就要生气啦！",
 		], // 触摸提示
-		home: "Click here to go back to homepage!", // 首页提示
-		skin: ["Want to see my new outfit?", "The new outfit looks great~"], // 换装提示
-		close: "QWQ See you next time~", // 关闭提示
-		link: "https://github.com/matsuzaka-yuki/Mizuki", // 关于链接
+		home: "点击这里可以回到博客首页～", // 首页提示
+		skin: ["想看看我的新装扮吗？", "新衣服是不是很好看～"], // 换装提示
+		close: "那我先休息一下啦，下次再见～", // 关闭提示
+		link: "https://github.com/whynotsnow/blog", // 关于链接
 	},
 };
 
@@ -654,12 +654,8 @@ export const widgetConfigs = {
 } as const;
 
 export const umamiConfig = {
-	enabled: true, // 是否显示Umami统计
-	apiKey: import.meta.env.UMAMI_API_KEY || "api_xxxxxxxx", // API密钥优先从环境变量读取，否则使用配置文件中的值
-	baseUrl: "https://api.umami.is", // Umami Cloud API地址
-	scripts: `
-<script defer src="https://cloud.umami.is/script.js" data-website-id="7c6f4640-13c0-426d-a138-4f9d2c857ec4"></script>
-  `.trim(), // 上面填你要插入的Script,不用再去Layout中插入
+	enabled: true, // 是否显示Umami统计 true时需要填写shareUrl字段
+	shareUrl: "https://cloud.umami.is/analytics/us/share/1p6c4kWjMRHn3C3J",
 } as const;
 
 export const GTM_ID = import.meta.env.GTM_ID || "GTM-KRX3XGVH";
