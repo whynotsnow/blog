@@ -15,7 +15,7 @@ import rehypeSlug from "rehype-slug";
 import remarkDirective from "remark-directive";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
-import { siteConfig } from "./src/config.ts";
+import { siteConfig, umamiConfig } from "./src/config.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
@@ -39,8 +39,7 @@ export default defineConfig({
 
 	integrations: [
 		umami({
-			shareUrl:
-				"https://cloud.umami.is/analytics/us/share/1p6c4kWjMRHn3C3J",
+			shareUrl: umamiConfig.enabled ? umamiConfig.shareUrl : false,
 		}),
 		swup({
 			theme: false,

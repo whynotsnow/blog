@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { profileConfig } from "../../config";
+import { profileConfig, umamiConfig } from "../../config";
 import { url } from "../../utils/url-utils";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
@@ -114,6 +114,7 @@ export interface Props {}
 		profileStatsPageViews: i18n(I18nKey.profileStatsPageViews),
 		profileStatsVisits: i18n(I18nKey.profileStatsVisits),
 		profileStatsUnavailable: i18n(I18nKey.profileStatsUnavailable),
+		umamiEnabled: umamiConfig.enabled,
 	}}
 >
 	function generateStatsText(pageViews, visits) {
@@ -135,16 +136,18 @@ export interface Props {}
 	async function fetchSiteStats() {
 		// oddmisc 未加载则隐藏
 		const ready = await waitForOddmisc();
-
+		const container = document.getElementById("umami-stats-container");
 		if (!ready) {
 			container?.classList.add("hidden");
-			console.log("load oddmisc timeout 30000", stats);
+			console.warn("load oddmisc timeout 30000");
 			return;
 		}
 
-		const container = document.getElementById("umami-stats-container");
 		if (!container) {
-			console.log("find id .umami-stats-container ele noFind", container);
+			console.warn(
+				"find id .umami-stats-container ele noFind",
+				container,
+			);
 			return;
 		}
 
@@ -156,7 +159,7 @@ export interface Props {}
 			// 数据为 0 时隐藏
 			if (pageViews === 0 && visits === 0) {
 				container?.classList.add("hidden");
-				console.log("oddmisc on pageviews data", stats);
+				console.warn("oddmisc on pageviews data", stats);
 				return;
 			}
 
@@ -165,14 +168,17 @@ export interface Props {}
 				el.textContent = generateStatsText(pageViews, visits);
 			});
 		} catch (error) {
-			console.log("Error fetching site stats:", error);
+			console.error("Error fetching site stats:", error);
 			container?.classList.add("hidden");
 		}
 	}
-
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", () => fetchSiteStats());
-	} else {
-		fetchSiteStats();
+	if (umamiEnabled) {
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", () =>
+				fetchSiteStats(),
+			);
+		} else {
+			fetchSiteStats();
+		}
 	}
 </script>
