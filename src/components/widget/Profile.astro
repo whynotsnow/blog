@@ -6,14 +6,6 @@ import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
-import { createUmamiClient } from "oddmisc";
-
-export interface Props {}
-//暂时这样等oddmisc更新 https://github.com/yCENzh/oddmisc/issues/1
-const client = createUmamiClient({
-	// 同astro.config.mjs
-	shareUrl: "https://cloud.umami.is/analytics/us/share/1p6c4kWjMRHn3C3J",
-});
 ---
 
 <div class="card-base p-3">
@@ -120,24 +112,37 @@ const client = createUmamiClient({
 		profileStatsPageViews: i18n(I18nKey.profileStatsPageViews),
 		profileStatsVisits: i18n(I18nKey.profileStatsVisits),
 		profileStatsUnavailable: i18n(I18nKey.profileStatsUnavailable),
-		getSiteStats: client.getSiteStats,
 	}}
 >
 	function generateStatsText(pageViews, visits) {
 		return `${profileStatsPageViews} ${pageViews} · ${profileStatsVisits} ${visits}`;
 	}
+	async function waitForOddmisc(timeout = 3000) {
+		const start = Date.now();
+
+		while (!window.oddmisc) {
+			if (Date.now() - start > timeout) {
+				return false;
+			}
+			await new Promise((r) => setTimeout(r, 50));
+		}
+
+		return true;
+	}
 
 	async function fetchSiteStats() {
 		const container = document.querySelector(".umami-stats-container");
+		// 等待3秒
+		const ready = await waitForOddmisc();
 
 		// oddmisc 未加载则隐藏
-		if (!getSiteStats) {
+		if (!ready) {
 			container?.classList.add("hidden");
 			return;
 		}
 
 		try {
-			const stats = getSiteStats();
+			const stats = await window.oddmisc.getSiteStats();
 			const pageViews = stats.pageviews || 0;
 			const visits = stats.visits || 0;
 
