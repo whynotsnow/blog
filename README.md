@@ -167,7 +167,6 @@ widget/registry
 - **样式**: Tailwind CSS + Stylus  
 - **构建工具**: Vite  
 - **包管理**: pnpm  
-- **代码规范**: Biome  
 
 ---
 
