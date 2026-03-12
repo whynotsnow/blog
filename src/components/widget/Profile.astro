@@ -6,8 +6,14 @@ import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
+import { createUmamiClient } from "oddmisc";
 
 export interface Props {}
+//暂时这样等oddmisc更新 https://github.com/yCENzh/oddmisc/issues/1
+const client = createUmamiClient({
+	// 同astro.config.mjs
+	shareUrl: "https://cloud.umami.is/analytics/us/share/1p6c4kWjMRHn3C3J",
+});
 ---
 
 <div class="card-base p-3">
@@ -15,7 +21,7 @@ export interface Props {}
 		aria-label="Go to About Page"
 		href={url("/about/")}
 		class="group block relative mx-auto mt-1 lg:mx-0 lg:mt-0 mb-3
-       max-w-[12rem] lg:max-w-none overflow-hidden rounded-xl active:scale-95"
+       max-w-48 lg:max-w-none overflow-hidden rounded-xl active:scale-95"
 	>
 		<div
 			class="absolute transition pointer-events-none group-hover:bg-black/30 group-active:bg-black/50
@@ -39,7 +45,7 @@ export interface Props {}
 			{profileConfig.name}
 		</div>
 		<div
-			class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"
+			class="h-1 w-5 bg-(--primary) mx-auto rounded-full mb-2 transition"
 		>
 		</div>
 
@@ -91,7 +97,7 @@ export interface Props {}
 			}
 		</div>
 
-		<div class="umami-stats-container hidden">
+		<div class="umami-stats-container">
 			<hr
 				class="my-2 border-t border-dashed border-gray-300 dark:border-gray-700"
 			/>
@@ -114,29 +120,31 @@ export interface Props {}
 		profileStatsPageViews: i18n(I18nKey.profileStatsPageViews),
 		profileStatsVisits: i18n(I18nKey.profileStatsVisits),
 		profileStatsUnavailable: i18n(I18nKey.profileStatsUnavailable),
+		getSiteStats: client.getSiteStats,
 	}}
 >
 	function generateStatsText(pageViews, visits) {
 		return `${profileStatsPageViews} ${pageViews} · ${profileStatsVisits} ${visits}`;
 	}
 
-	async function fetchSiteStats(isRetry = false) {
+	async function fetchSiteStats() {
 		const container = document.querySelector(".umami-stats-container");
 
 		// oddmisc 未加载则隐藏
-		if (!window.oddmisc) {
+		if (!getSiteStats) {
 			container?.classList.add("hidden");
 			return;
 		}
 
 		try {
-			const stats = await window.oddmisc.getSiteStats();
+			const stats = getSiteStats();
 			const pageViews = stats.pageviews || 0;
 			const visits = stats.visits || 0;
 
 			// 数据为 0 时隐藏
 			if (pageViews === 0 && visits === 0) {
 				container?.classList.add("hidden");
+				console.warn("oddmisc on pageviews data", stats);
 				return;
 			}
 
@@ -146,10 +154,6 @@ export interface Props {}
 			});
 		} catch (error) {
 			console.error("Error fetching site stats:", error);
-			if (!isRetry) {
-				setTimeout(() => fetchSiteStats(true), 2000);
-				return;
-			}
 			container?.classList.add("hidden");
 		}
 	}
