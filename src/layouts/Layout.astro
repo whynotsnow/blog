@@ -10,6 +10,7 @@ import {
 	profileConfig,
 	siteConfig,
 } from "@/config";
+import { umamiConfig } from "../config";
 
 const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
@@ -405,6 +406,12 @@ if (siteConfig.font) {
 			title={profileConfig.name}
 			href={`${Astro.site}rss.xml`}
 		/>
+		<!-- Umami Analytics -->
+		{
+			umamiConfig.enabled && umamiConfig.scripts && (
+				<Fragment set:html={umamiConfig.scripts} />
+			)
+		}
 	</head>
 	<body
 		class="min-h-screen"

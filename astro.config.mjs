@@ -38,9 +38,9 @@ export default defineConfig({
 	output: "static",
 
 	integrations: [
-		umami({
-			shareUrl: umamiConfig.enabled ? umamiConfig.shareUrl : false,
-		}),
+		// umami({
+		// 	shareUrl: umamiConfig.enabled ? umamiConfig.shareUrl : false,
+		// }),
 		swup({
 			theme: false,
 			animationClass: "transition-swup-",

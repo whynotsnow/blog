@@ -4,6 +4,14 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import { UIMeta } from "@/services/core/types";
+import { umamiConfig } from "@/config";
+
+// 解析 umami
+const umamiEnabled = umamiConfig.enabled || false;
+const umamiWebsiteId =
+	umamiConfig.scripts.match(/data-website-id="([^"]+)"/)?.[1] || "";
+const umamiApiKey = umamiConfig.apiKey || "";
+const umamiBaseUrl = umamiConfig.baseUrl || "";
 
 export interface Props {
 	published: Date;
@@ -181,67 +189,47 @@ const {
 	}
 </div>
 
-{!isHome && id && (
-	<script
-		is:inline
-		define:vars={{
-			pageViewsText: i18n(I18nKey.profileStatsPageViews),
-			visitsText: i18n(I18nKey.profileStatsVisits),
-		}}
-	>
-		function generateStatsText(pageViews, visits) {
-			return `${pageViewsText} ${pageViews} · ${visitsText} ${visits}`;
-		}
-		async function waitForOddmisc(timeout = 3000) {
-			const start = Date.now();
+<script
+	is:inline
+	define:vars={{
+		isHome,
+		id,
+		pageViewsText: i18n(I18nKey.profileStatsPageViews),
+		visitsText: i18n(I18nKey.profileStatsVisits),
+	}}
+>
+	if (!id || !isHome) return;
 
-			while (!window.oddmisc) {
-				if (Date.now() - start > timeout) {
-					return false;
-				}
-				await new Promise((r) => setTimeout(r, 50));
-			}
+	function generateStatsText(pageViews, visits) {
+		return `${pageViewsText} ${pageViews} · ${visitsText} ${visits}`;
+	}
 
-			return true;
-		}
+	async function fetchPageViews() {
+		const container = document.querySelector(".umami-page-views");
 
-		async function fetchPageViews() {
-			// oddmisc 未加载则隐藏
-			const ready = await waitForOddmisc();
-			const container = document.querySelector(".umami-page-views");
-
-			if (!ready) {
-				container?.classList.add("hidden");
-				console.warn("load oddmisc timeout 30000");
-				return;
-			}
-
-			const id = container?.dataset.id;
-			if (!id) return;
-
-			try {
-				const stats = await window.oddmisc.getStats(`/posts/${id}/`);
-				const pageViews = stats.pageviews || 0;
-				const visits = stats.visits || 0;
-
-				if (pageViews === 0 && visits === 0) {
-					container?.classList.add("hidden");
-					return;
-				}
-
-				container?.classList.remove("hidden");
-				container.querySelector(".page-views-display").textContent =
-					generateStatsText(pageViews, visits);
-			} catch (error) {
-				console.error("Error fetching page views:", error);
-				container?.classList.add("hidden");
-			}
+		if (!window.oddmisc || container) {
+			container?.classList.add("hidden");
+			console.warn("warn no find key >>:", { oddmisc, container });
+			return;
 		}
 
-		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", fetchPageViews);
-		} else {
-			fetchPageViews();
+		try {
+			const stats = await window.oddmisc.getStats(`/posts/${id}/`);
+			const pageViews = stats.pageviews || 0;
+			const visits = stats.visits || 0;
+
+			container?.classList.remove("hidden");
+			container.querySelector(".page-views-display").textContent =
+				generateStatsText(pageViews, visits);
+		} catch (error) {
+			console.error("Error fetching page views:", error);
+			container?.classList.add("hidden");
 		}
-	</script>
-)}
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", fetchPageViews);
+	} else {
+		fetchPageViews();
+	}
+</script>

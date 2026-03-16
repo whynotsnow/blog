@@ -114,40 +114,18 @@ export interface Props {}
 		profileStatsPageViews: i18n(I18nKey.profileStatsPageViews),
 		profileStatsVisits: i18n(I18nKey.profileStatsVisits),
 		profileStatsUnavailable: i18n(I18nKey.profileStatsUnavailable),
-		umamiEnabled: umamiConfig.enabled,
 	}}
 >
 	function generateStatsText(pageViews, visits) {
 		return `${profileStatsPageViews} ${pageViews} · ${profileStatsVisits} ${visits}`;
 	}
-	async function waitForOddmisc(timeout = 3000) {
-		const start = Date.now();
-
-		while (!window.oddmisc) {
-			if (Date.now() - start > timeout) {
-				return false;
-			}
-			await new Promise((r) => setTimeout(r, 50));
-		}
-
-		return true;
-	}
 
 	async function fetchSiteStats() {
-		// oddmisc 未加载则隐藏
-		const ready = await waitForOddmisc();
 		const container = document.getElementById("umami-stats-container");
-		if (!ready) {
-			container?.classList.add("hidden");
-			console.warn("load oddmisc timeout 30000");
-			return;
-		}
 
-		if (!container) {
-			console.warn(
-				"find id .umami-stats-container ele noFind",
-				container,
-			);
+		// oddmisc 未加载则隐藏
+		if (!window.oddmisc) {
+			container?.classList.add("hidden");
 			return;
 		}
 
@@ -155,13 +133,6 @@ export interface Props {}
 			const stats = await window.oddmisc.getSiteStats();
 			const pageViews = stats.pageviews || 0;
 			const visits = stats.visits || 0;
-
-			// 数据为 0 时隐藏
-			if (pageViews === 0 && visits === 0) {
-				container?.classList.add("hidden");
-				console.warn("oddmisc on pageviews data", stats);
-				return;
-			}
 
 			container?.classList.remove("hidden");
 			document.querySelectorAll(".site-stats-display").forEach((el) => {
@@ -172,13 +143,10 @@ export interface Props {}
 			container?.classList.add("hidden");
 		}
 	}
-	if (umamiEnabled) {
-		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", () =>
-				fetchSiteStats(),
-			);
-		} else {
-			fetchSiteStats();
-		}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", () => fetchSiteStats());
+	} else {
+		fetchSiteStats();
 	}
 </script>
