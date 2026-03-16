@@ -8,7 +8,7 @@ import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getFileDirFromPath, getPostUrlBySlug } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
-import { licenseConfig, shareConfig } from "src/config";
+import { licenseConfig, shareConfig, sidebarLayoutConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../../config";
@@ -21,6 +21,8 @@ import { MarkdownHeading } from "astro";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { getContentStore } from "@/services/core/content-store";
 import { buildCategoryItems, buildTagItems } from "@/services/core/inject";
+import { WidgetManager } from "@utils/widget-manager";
+import { SidebarLayoutConfig } from "@/types/config";
 
 export const getStaticPaths = buildPostDetailStaticPaths;
 
@@ -47,6 +49,18 @@ const {
 } = Astro.props;
 const { words, minutes } = entry.meta;
 const store = await getContentStore();
+
+const detailLayoutConfig: SidebarLayoutConfig = {
+	...sidebarLayoutConfig,
+	// 特殊布局
+	components: {
+		left: ["categories", "tags"],
+		right: ["profile"],
+		drawer: ["profile", "announcement"],
+	},
+};
+
+const widgetManager = new WidgetManager(detailLayoutConfig);
 ---
 
 <MainGridLayout
@@ -58,6 +72,7 @@ const store = await getContentStore();
 	postSlug={entry.id}
 	headings={headings}
 	store={store}
+	custom_widgetManager={widgetManager}
 >
 	<script
 		is:inline
@@ -66,9 +81,9 @@ const store = await getContentStore();
 		set:html={JSON.stringify(jsonLd)}
 	/>
 	<!-- 引入右侧边栏布局管理器 -->
-	<script>
+	<!-- <script>
 		import("../../scripts/right-sidebar-layout.js");
-	</script>
+	</script> -->
 	<div
 		class="flex w-full rounded-(--radius-large) overflow-hidden relative mb-4"
 	>
@@ -275,10 +290,10 @@ const store = await getContentStore();
 
 				<div class="card-base p-6 mb-4">
 					<div class="flex items-center gap-3">
-						<div class="flex items-center justify-center h-12 w-12 rounded-lg bg-[var(--enter-btn-bg)]">
+						<div class="flex items-center justify-center h-12 w-12 rounded-lg bg-(--enter-btn-bg)">
 							<Icon
 								name="material-symbols:history-rounded"
-								class="text-3xl text-[var(--primary)]"
+								class="text-3xl text-(--primary)"
 							/>
 						</div>
 						<div class="flex flex-col gap-1">

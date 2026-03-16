@@ -1,16 +1,17 @@
 ---
 import type { MarkdownHeading } from "astro";
-import { widgetManager } from "../../utils/widget-manager";
 import { getWidgetComponentMap } from "@/services/widget/registry";
 import type { ContentStore } from "@/services/core/types";
+import { WidgetManager } from "@utils/widget-manager";
 
 interface Props {
 	class?: string;
 	headings?: MarkdownHeading[];
 	store: ContentStore;
+	widgetManager: WidgetManager;
 }
 
-const { class: className, headings, store } = Astro.props;
+const { class: className, headings, store, widgetManager } = Astro.props;
 
 // 获取不同设备下的组件列表
 const mobileTopComponents = widgetManager.getComponentsByPosition(

@@ -4,7 +4,7 @@ import FloatingTOC from "@components/control/FloatingTOC.astro";
 import Footer from "@components/Footer.astro";
 import RightSideBar from "@components/layout/RightSideBar.astro";
 import Navbar from "@components/Navbar.astro";
-import SideBar from "@components/widget/SideBar.astro";
+import LeftSideBar from "@components/layout/LeftSideBar.astro";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import FullscreenWallpaper from "../components/misc/FullscreenWallpaper.astro";
@@ -14,7 +14,7 @@ import TypewriterText from "../components/TypewriterText.astro";
 import TOC from "../components/widget/TOC.astro";
 import { fullscreenWallpaperConfig, siteConfig } from "../config";
 import { BANNER_HEIGHT, BANNER_HEIGHT_EXTEND } from "../constants/constants";
-import { widgetManager } from "../utils/widget-manager";
+import { WidgetManager, widgetManager } from "../utils/widget-manager";
 import Layout from "./Layout.astro";
 import { ContentStore } from "@/services/core/types";
 
@@ -32,6 +32,7 @@ interface Props {
 	postSlug?: string;
 	headings?: MarkdownHeading[];
 	store: ContentStore;
+	custom_widgetManager?: WidgetManager;
 }
 
 // 获取banner图片的辅助函数
@@ -86,7 +87,10 @@ const {
 	postSlug,
 	headings = [],
 	store,
+	custom_widgetManager,
 } = Astro.props;
+const apply_widgetManager = custom_widgetManager ?? widgetManager;
+
 const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
 
@@ -111,30 +115,31 @@ const finalMainPanelTop =
 
 // 检查左侧边栏是否有组件
 const hasLeftSidebarComponents =
-	widgetManager.getComponentsByPosition("top", "left", "desktop").length >
-		0 ||
-	widgetManager.getComponentsByPosition("sticky", "left", "desktop").length >
-		0;
+	apply_widgetManager.getComponentsByPosition("top", "left", "desktop")
+		.length > 0 ||
+	apply_widgetManager.getComponentsByPosition("sticky", "left", "desktop")
+		.length > 0;
 
 // 检查右侧边栏是否有组件
 const hasRightSidebarComponents =
-	widgetManager.getComponentsByPosition("top", "right", "desktop").length >
-		0 ||
-	widgetManager.getComponentsByPosition("sticky", "right", "desktop").length >
-		0;
+	apply_widgetManager.getComponentsByPosition("top", "right", "desktop")
+		.length > 0 ||
+	apply_widgetManager.getComponentsByPosition("sticky", "right", "desktop")
+		.length > 0;
 
 // 检查手机端 drawer 是否有组件
 const hasMobileDrawerComponents =
-	widgetManager.getComponentsByPosition("top", "drawer", "mobile").length >
-		0 ||
-	widgetManager.getComponentsByPosition("sticky", "drawer", "mobile").length >
-		0;
+	apply_widgetManager.getComponentsByPosition("top", "drawer", "mobile")
+		.length > 0 ||
+	apply_widgetManager.getComponentsByPosition("sticky", "drawer", "mobile")
+		.length > 0;
 
 // 平板端是否有组件（考虑自动移动逻辑）
 const hasTabletLeftSidebarComponents =
-	widgetManager.getComponentsByPosition("top", "left", "tablet").length > 0 ||
-	widgetManager.getComponentsByPosition("sticky", "left", "tablet").length >
-		0;
+	apply_widgetManager.getComponentsByPosition("top", "left", "tablet")
+		.length > 0 ||
+	apply_widgetManager.getComponentsByPosition("sticky", "left", "tablet")
+		.length > 0;
 
 // 检查侧边栏是否启用，动态调整网格布局
 const mobileShowSidebar = hasMobileDrawerComponents;
@@ -1064,7 +1069,11 @@ const transparentClass = shouldEnableTransparency
 							<div
 								class={`left-sidebar-container ${leftSidebarClass} ${transparentClass}`}
 							>
-								<SideBar headings={headings} store={store} />
+								<LeftSideBar
+									widgetManager={apply_widgetManager}
+									headings={headings}
+									store={store}
+								/>
 							</div>
 						)
 					}
@@ -1076,6 +1085,7 @@ const transparentClass = shouldEnableTransparency
 							>
 								<RightSideBar
 									headings={headings}
+									widgetManager={apply_widgetManager}
 									store={store}
 								/>
 							</div>

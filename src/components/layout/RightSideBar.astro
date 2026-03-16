@@ -1,6 +1,6 @@
 ---
 import type { MarkdownHeading } from "astro";
-import { widgetManager } from "@/utils/widget-manager";
+import { WidgetManager } from "@/utils/widget-manager";
 import { getWidgetComponentMap } from "@/services/widget/registry";
 import type { ContentStore } from "@/services/core/types";
 
@@ -8,9 +8,10 @@ interface Props {
 	class?: string;
 	headings?: MarkdownHeading[];
 	store: ContentStore;
+	widgetManager: WidgetManager;
 }
 
-const { class: className, headings, store } = Astro.props;
+const { class: className, headings, store, widgetManager } = Astro.props;
 
 // 获取右侧边栏的组件列表
 const topComponents = widgetManager.getComponentsByPosition("top", "right");
