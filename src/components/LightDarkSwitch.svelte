@@ -50,18 +50,18 @@ if (typeof window !== "undefined") {
 				mode = newMode;
 			}
 		});
-	};
+		};
 
-	// 检查Swup是否已经加载
-	if ((window as any).swup && (window as any).swup.hooks) {
-		(window as any).swup.hooks.on("content:replace", handleContentReplace);
-	} else {
-		document.addEventListener("swup:enable", () => {
-			if ((window as any).swup && (window as any).swup.hooks) {
-				(window as any).swup.hooks.on("content:replace", handleContentReplace);
-			}
-		});
-	}
+		// 检查Swup是否已经加载
+		if (window.swup?.hooks) {
+			window.swup.hooks.on("content:replace", handleContentReplace);
+		} else {
+			document.addEventListener("swup:enable", () => {
+				if (window.swup?.hooks) {
+					window.swup.hooks.on("content:replace", handleContentReplace);
+				}
+			});
+		}
 
 	// 页面加载完成后也同步一次状态
 	document.addEventListener("DOMContentLoaded", () => {

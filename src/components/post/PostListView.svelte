@@ -135,7 +135,7 @@
 	/* ================= Swup 集成 ================= */
 
 	function setupSwupListeners() {
-		const swup = (window as any).swup;
+		const swup = window.swup;
 
 		if (!swup) return;
 

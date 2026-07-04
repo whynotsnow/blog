@@ -33,10 +33,10 @@ const setPanelVisibility = async (show: boolean): Promise<void> => {
 	await panelManager.togglePanel("mobile-toc-panel", show);
 };
 
-const generateTOC = () => {
-	// 获取配置
-	useJapaneseBadge = (window as any).siteConfig?.toc?.useJapaneseBadge || false;
-	tocDepth = (window as any).siteConfig?.toc?.depth || 3;
+	const generateTOC = () => {
+		// 获取配置
+		useJapaneseBadge = window.siteConfig?.toc?.useJapaneseBadge || false;
+		tocDepth = window.siteConfig?.toc?.depth || 3;
 
 	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
 	const items: Array<{
@@ -213,12 +213,12 @@ const setupIntersectionObserver = () => {
 let swupListenersRegistered = false;
 
 const setupSwupListeners = () => {
-	if (
-		typeof window !== "undefined" &&
-		(window as any).swup &&
-		!swupListenersRegistered
-	) {
-		const swup = (window as any).swup;
+		if (
+			typeof window !== "undefined" &&
+			window.swup &&
+			!swupListenersRegistered
+		) {
+			const swup = window.swup;
 
 		// 只监听页面视图事件，避免重复触发
 		swup.hooks.on("page:view", () => {
@@ -243,12 +243,12 @@ const setupSwupListeners = () => {
 const checkSwupAvailability = () => {
 	if (typeof window !== "undefined") {
 		// 检查Swup是否已加载
-		swupReady = !!(window as any).swup;
+			swupReady = !!window.swup;
 
 		// 如果Swup还未加载，监听其加载事件
 		if (!swupReady) {
-			const checkSwup = () => {
-				if ((window as any).swup) {
+				const checkSwup = () => {
+					if (window.swup) {
 					swupReady = true;
 					document.removeEventListener("swup:enable", checkSwup);
 					// Swup加载完成后设置监听器
@@ -260,8 +260,8 @@ const checkSwupAvailability = () => {
 			document.addEventListener("swup:enable", checkSwup);
 
 			// 设置超时检查
-			setTimeout(() => {
-				if ((window as any).swup) {
+				setTimeout(() => {
+					if (window.swup) {
 					swupReady = true;
 					document.removeEventListener("swup:enable", checkSwup);
 					// Swup加载完成后设置监听器
@@ -301,9 +301,9 @@ onMount(() => {
 		window.removeEventListener("scroll", updateActiveHeading);
 
 		// 清理Swup事件监听器
-		if (typeof window !== "undefined" && (window as any).swup) {
-			const swup = (window as any).swup;
-			swup.hooks.off("page:view");
+			if (typeof window !== "undefined" && window.swup) {
+				const swup = window.swup;
+				swup.hooks.off("page:view");
 		}
 
 		// 清理popstate事件监听器
@@ -313,9 +313,9 @@ onMount(() => {
 });
 
 // 导出初始化函数供外部调用
-if (typeof window !== "undefined") {
-	(window as any).mobileTOCInit = init;
-}
+	if (typeof window !== "undefined") {
+		window.mobileTOCInit = init;
+	}
 </script>
 
 <!-- TOC toggle button for mobile -->

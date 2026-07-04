@@ -70,6 +70,20 @@ type Song = {
 	duration: number;
 };
 
+type MetingSong = {
+	id?: number;
+	name?: string;
+	title?: string;
+	artist?: string;
+	author?: string;
+	pic?: string;
+	cover?: string;
+	url?: string;
+	lrc?: string;
+	lyric?: string;
+	duration?: number;
+};
+
 let playlist: Song[] = [];
 let currentIndex = 0;
 let audio: HTMLAudioElement;
@@ -139,8 +153,8 @@ async function fetchMetingPlaylist() {
 	try {
 		const res = await fetch(apiUrl);
 		if (!res.ok) throw new Error("meting api error");
-		const list = await res.json();
-		playlist = list.map((song: any) => {
+			const list = (await res.json()) as MetingSong[];
+			playlist = list.map((song) => {
 			const title = song.name ?? song.title ?? i18n(Key.unknownSong);
 			const artist = song.artist ?? song.author ?? i18n(Key.unknownArtist);
 			let dur = song.duration ?? 0;

@@ -38,7 +38,7 @@ const typescriptRules = {
 			caughtErrorsIgnorePattern: "^_",
 		},
 	],
-	"@typescript-eslint/no-explicit-any": "off",
+	"@typescript-eslint/no-explicit-any": "error",
 };
 
 const astroRules = {
@@ -97,12 +97,6 @@ export default [
 			...commonRules,
 			...typescriptRules,
 			...astroRules,
-		},
-	},
-	{
-		files: ["src/global.d.ts", "src/utils/**/*.ts"],
-		rules: {
-			"@typescript-eslint/no-explicit-any": "error",
 		},
 	},
 ];

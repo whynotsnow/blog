@@ -9,11 +9,13 @@ type SwupHookName =
 	| "content:replace"
 	| "link:click"
 	| "page:view"
+	| "visit:start"
 	| "visit:end";
 
 interface SwupInstance {
 	hooks: {
 		on: (event: SwupHookName | string, callback: (...args: unknown[]) => void) => void;
+		off: (event: SwupHookName | string, callback?: (...args: unknown[]) => void) => void;
 	};
 	navigate: (url: string, options?: { history?: boolean }) => void;
 	preload?: (url: string) => void;
@@ -40,6 +42,8 @@ declare global {
 
 		mobileTOCInit?: () => void;
 		initSemifullScrollDetection?: () => void;
+		_postListSwupListenerAttached?: boolean;
+		sakuraInitialized?: boolean;
 		semifullScrollHandler?: EventListener;
 		iconifyLoaded?: boolean;
 		__iconifyLoader?: {
