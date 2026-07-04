@@ -38,7 +38,7 @@ export function getPostUrlByAlias(alias: string): string {
 	return url(`/posts/${cleanAlias}/`);
 }
 
-export function getPostUrl(post: any): string {
+export function getPostUrl(post: RawPost): string {
 	// 如果文章有自定义 permalink，优先使用（在根目录下）
 	if (post.data.permalink) {
 		const slug = post.data.permalink

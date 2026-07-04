@@ -1,5 +1,24 @@
 export {};
 
+import type { SiteConfig } from "./types/config";
+import type { panelManager } from "./utils/panel-manager";
+
+type SwupHookName =
+	| "animation:out:start"
+	| "animation:in:start"
+	| "content:replace"
+	| "link:click"
+	| "page:view"
+	| "visit:end";
+
+interface SwupInstance {
+	hooks: {
+		on: (event: SwupHookName | string, callback: (...args: unknown[]) => void) => void;
+	};
+	navigate: (url: string, options?: { history?: boolean }) => void;
+	preload?: (url: string) => void;
+}
+
 declare global {
 	interface HTMLElementTagNameMap {
 		"table-of-contents": HTMLElement & {
@@ -9,7 +28,7 @@ declare global {
 
 	interface Window {
 		// Define swup type directly since @swup/astro doesn't export AstroIntegration
-		swup: any;
+		swup: SwupInstance;
 		closeAnnouncement: () => void;
 		pagefind: {
 			search: (query: string) => Promise<{
@@ -29,7 +48,8 @@ declare global {
 			onLoad: (callback: () => void) => void;
 			isLoaded: boolean;
 		};
-		siteConfig: any;
+		panelManager?: typeof panelManager;
+		siteConfig: SiteConfig;
 	}
 }
 

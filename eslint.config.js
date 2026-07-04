@@ -99,4 +99,10 @@ export default [
 			...astroRules,
 		},
 	},
+	{
+		files: ["src/global.d.ts", "src/utils/**/*.ts"],
+		rules: {
+			"@typescript-eslint/no-explicit-any": "error",
+		},
+	},
 ];

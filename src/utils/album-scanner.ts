@@ -2,6 +2,22 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { AlbumGroup, Photo } from "../types/album";
 
+type AlbumInfo = {
+	mode?: "external" | string;
+	cover?: string;
+	photos?: ExternalPhoto[];
+	hidden?: boolean;
+	title?: string;
+	description?: string;
+	date?: string;
+	location?: string;
+	tags?: string[];
+	layout?: AlbumGroup["layout"];
+	columns?: number;
+};
+
+type ExternalPhoto = Photo;
+
 export async function scanAlbums(): Promise<AlbumGroup[]> {
 	const albumsDir = path.join(process.cwd(), "public/images/albums");
 	const albums: AlbumGroup[] = [];
@@ -44,9 +60,9 @@ async function processAlbumFolder(
 
 	// 读取相册信息
 	const infoContent = fs.readFileSync(infoPath, "utf-8");
-	let info: Record<string, any>;
+	let info: AlbumInfo;
 	try {
-		info = JSON.parse(infoContent);
+		info = JSON.parse(infoContent) as AlbumInfo;
 	} catch (e) {
 		console.error(`相册 ${folderName} 的 info.json 格式错误:`, e);
 		return null;
@@ -144,7 +160,7 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 }
 
 function processExternalPhotos(
-	externalPhotos: any[],
+	externalPhotos: ExternalPhoto[],
 	albumId: string,
 ): Photo[] {
 	const photos: Photo[] = [];
