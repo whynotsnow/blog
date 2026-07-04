@@ -176,7 +176,7 @@
 		data-default-layout={defaultLayout}
 		data-both-sidebars={hasRightSidebars}
 	>
-		{#each posts as post}
+			{#each posts as post (post.id)}
 			<PostCardView {post} className="onload-animation" />
 		{/each}
 	</div>

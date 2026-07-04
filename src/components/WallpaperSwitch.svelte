@@ -73,7 +73,7 @@
 
     <div id="wallpaper-mode-panel" class="absolute transition float-panel-closed top-11 -right-2 pt-5">
         <div class="card-base float-panel p-2">
-            {#each wallpaperOptions as option}
+            {#each wallpaperOptions as option (option.mode)}
                 <button
                     class="flex transition whitespace-nowrap items-center justify-start! w-full btn-plain rounded-lg h-11 px-3 font-medium active:scale-95 theme-switch-btn mb-0.5 last:mb-0"
                     data-active={mode === option.mode}

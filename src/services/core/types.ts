@@ -51,9 +51,9 @@ export interface UIMeta {
 	url: string;
 }
 
-export interface CategoryItem extends BaseSlug {}
+export type CategoryItem = BaseSlug;
 
-export interface TagItem extends BaseSlug {}
+export type TagItem = BaseSlug;
 
 export interface UIPostMeta {
 	published: Date;

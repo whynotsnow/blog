@@ -5,7 +5,7 @@
 </script>
 
 <ul>
-	{#each posts as post}
+	{#each posts as post (post.id)}
 		<li>
 			<a href={`/posts/${post.id}/`}>
 				{post.title}

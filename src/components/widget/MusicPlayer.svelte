@@ -709,7 +709,7 @@ onDestroy(() => {
                 </button>
             </div>
             <div class="playlist-content overflow-y-auto max-h-80 hide-scrollbar">
-                {#each playlist as song, index}
+                {#each playlist as song, index (song.id)}
                     <div class="playlist-item flex items-center gap-3 p-3 hover:bg-(--btn-plain-bg-hover) cursor-pointer transition-colors"
                          class:bg-[var(--btn-plain-bg)]={index === currentIndex}
                          class:text-[var(--primary)]={index === currentIndex}

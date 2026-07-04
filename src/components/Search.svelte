@@ -264,7 +264,7 @@ onDestroy(() => {
         >
     </div>
     <!-- search results -->
-    {#each result as item}
+    {#each result as item (item.url)}
         <a href={item.url}
            onclick={(e) => handleResultClick(e, item.url)}
            class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block

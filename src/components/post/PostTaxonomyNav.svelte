@@ -71,7 +71,7 @@
 
 		<!-- ================= 分类按钮组 ================= -->
 		<div class="flex flex-wrap gap-2">
-			{#each categories as cat}
+			{#each categories as cat (cat.slug)}
 				<div
 					class="relative group text-[var(--btn-content)]"
 					class:text-white={isActiveCategory(cat.slug)}
@@ -117,7 +117,7 @@
 		{#if activeCategory}
 			<div class="mt-5 pt-4 border-t border-[var(--line-divider)]">
 				<div class="flex flex-wrap gap-2">
-					{#each activeCategory.tags as tag}
+					{#each activeCategory.tags as tag (tag.slug)}
 						<div
 							class="relative group text-[var(--btn-content)]"
 							class:text-white={isActiveTag(tag.slug)}

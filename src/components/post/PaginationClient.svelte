@@ -41,7 +41,7 @@
 		class="bg-[var(--card-bg)] flex flex-row rounded-lg items-center
 		       text-neutral-700 dark:text-neutral-300 font-bold"
 	>
-		{#each pages as p}
+			{#each pages as p, index (`${p}-${index}`)}
 			{#if p === HIDDEN}
 				<Icon icon="material-symbols:more-horiz" class="mx-1" />
 			{:else if p === currentPage}

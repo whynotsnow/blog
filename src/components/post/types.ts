@@ -22,9 +22,9 @@ export interface BaseSlug {
 	url?: string;
 }
 
-export interface CategoryItem extends BaseSlug {}
+export type CategoryItem = BaseSlug;
 
-export interface TagItem extends BaseSlug {}
+export type TagItem = BaseSlug;
 
 export interface UIPost {
 	// 基础标识

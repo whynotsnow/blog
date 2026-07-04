@@ -83,7 +83,7 @@
 		<!-- ================= 标签 ================= -->
 		<div class="flex flex-wrap gap-2 mt-2">
 			{#if post.tags && post.tags.length > 0}
-				{#each post.tags as tag}
+				{#each post.tags as tag (tag.slug)}
 					<a
 						href={tag.url}
 						class={siteConfig.tagStyle?.useNewStyle
