@@ -33,6 +33,46 @@ flowchart TD
 | `scripts` | 内容同步、文章创建、番剧数据、字体压缩、索引提交等脚本。 |
 | `docs` | 项目文档，按开发者和 Agent 分区维护。 |
 
+## 服务层与 View Model 边界
+
+后续拆分大文件时，应继续沿用当前的逻辑与页面解耦方案：`src/services/` 承载页面逻辑和 view model，`src/pages/` 保持路由入口轻量，拆出来的页面组件尽量只负责展示。
+
+推荐边界如下：
+
+- `src/services/` 负责页面逻辑、数据适配、配置归一化、static paths 构建、页面级 view model 生成。
+- `src/pages/` 只负责路由入口：调用 service、组合 layout/component、把 view model 传给展示组件。
+- `src/components/` 与 `src/layouts/` 负责渲染和局部展示结构。由页面拆出的组件应尽量是 presentational component。
+- 浏览器运行时交互不放入 `src/services/`，例如 DOM 监听、音频播放、pointer/mouse/touch 事件、localStorage UI 状态、Svelte runtime store，应放在所属组件或 feature 目录旁边。
+- `src/services/core` 仍然是内容管线边界。普通文章集合、分类、标签、归档和文章详情数据不要绕过 `getContentStore()`。
+
+厚页面推荐拆分方式：
+
+```text
+src/pages/anime.astro
+src/services/anime.ts
+src/components/anime/
+  AnimePage.astro
+  AnimeToolbar.astro
+  AnimeGrid.astro
+  AnimeCard.astro
+  types.ts
+```
+
+复杂运行时功能推荐使用 feature-local 结构：
+
+```text
+src/features/music-player/
+  MusicPlayer.svelte
+  MiniPlayer.svelte
+  ExpandedPlayer.svelte
+  PlaylistPanel.svelte
+  audio-controller.ts
+  storage.ts
+  types.ts
+```
+
+拆分时优先把 helper 和类型留在所属功能目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
+
 ## 内容管线
 
 1. `src/content.config.ts` 定义 `posts` 和 `spec` 内容集合。
@@ -82,4 +122,3 @@ flowchart TD
 - 新增 Widget：放入 `src/components/widget`，并在 `src/services/widget/registry.ts` 注册。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和 permalink URL 不要硬编码，使用 `src/utils/url-utils.ts`、`src/utils/client-utils.ts`、`src/utils/permalink-utils.ts`。
-

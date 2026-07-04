@@ -33,6 +33,44 @@ flowchart TD
 | `scripts` | Local automation for content sync, post creation, anime data, fonts, and search indexing support. |
 | `docs` | Maintained project documentation. |
 
+## Service and View Model Boundaries
+
+Large file splitting should preserve the existing service-oriented architecture:
+
+- `src/services/` owns page logic, build-time data adaptation, configuration normalization, static path builders, and page-level view models.
+- `src/pages/` should stay thin. A route should call services, compose layouts/components, and pass view models into presentation components.
+- `src/components/` and `src/layouts/` own rendering and local presentation. Page-specific extracted components should be mostly presentational.
+- Runtime browser interaction state does not belong in `src/services/`. Keep DOM listeners, audio playback, pointer events, localStorage UI state, and Svelte runtime stores beside the owning component or feature.
+- `src/services/core` remains the content pipeline boundary. Normal post collection data must continue to flow through `getContentStore()`.
+
+Recommended split pattern for a thick route:
+
+```text
+src/pages/anime.astro
+src/services/anime.ts
+src/components/anime/
+  AnimePage.astro
+  AnimeToolbar.astro
+  AnimeGrid.astro
+  AnimeCard.astro
+  types.ts
+```
+
+Recommended split pattern for a complex runtime feature:
+
+```text
+src/features/music-player/
+  MusicPlayer.svelte
+  MiniPlayer.svelte
+  ExpandedPlayer.svelte
+  PlaylistPanel.svelte
+  audio-controller.ts
+  storage.ts
+  types.ts
+```
+
+Use feature-local helpers and types first. Promote code to `src/utils` or shared services only after multiple unrelated features reuse it.
+
 ## Content Pipeline
 
 1. `src/content.config.ts` defines the `posts` and `spec` content collections.

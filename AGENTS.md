@@ -61,6 +61,12 @@ Do not claim that a command passed unless you actually ran it in this workspace 
 
 - Prefer the existing service layer instead of querying Astro content directly from UI components.
 - Keep route pages thin. Pages should compose layouts/components and call services.
+- When splitting large route, layout, or component files, preserve the existing separation of concerns:
+  - `src/services/` owns page logic, data adaptation, configuration normalization, static path builders, and page-level view models.
+  - `src/pages/` owns routing only: call services, compose layouts/components, and pass view models down.
+  - `src/components/` and `src/layouts/` own rendering and local presentation. Extracted page components should stay mostly presentational.
+  - Browser-only interaction state such as DOM listeners, audio playback, pointer events, localStorage UI state, and Svelte runtime stores should live beside the owning component or feature, not in `src/services/`.
+- Prefer feature-local directories for large splits. Keep helpers and types beside the feature until they are reused by multiple unrelated features; only then promote them to shared `src/utils` or shared services.
 - All architectural changes must respect the `src/services/core` pipeline.
 - Do not bypass the `content-store` layer or `getContentStore()` for normal post collection data.
 - Keep content schema changes in `src/content.config.ts` and document them in `docs/developers/content-guide.md`.
