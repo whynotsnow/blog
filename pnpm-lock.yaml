@@ -198,6 +198,9 @@ importers:
       '@types/sanitize-html':
         specifier: ^2.16.0
         version: 2.16.1
+      astro-eslint-parser:
+        specifier: 1.4.0
+        version: 1.4.0
       eslint:
         specifier: ^9.39.4
         version: 9.39.4(jiti@2.6.1)
