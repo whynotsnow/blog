@@ -3,6 +3,7 @@ import type { MarkdownHeading } from "astro";
 import { getWidgetComponentMap } from "@/services/widget/registry";
 import type { ContentStore } from "@/services/core/types";
 import { WidgetManager } from "@utils/widget-manager";
+import type { WidgetComponentConfig } from "@/types/config";
 
 interface Props {
 	class?: string;
@@ -42,7 +43,10 @@ const widgetMap = getWidgetComponentMap({
 	headings,
 });
 
-function renderComponent(componentConfig, index) {
+function renderComponent(
+	componentConfig: WidgetComponentConfig,
+	index: number,
+) {
 	const definition = widgetMap[componentConfig.type];
 	if (!definition) return null;
 
