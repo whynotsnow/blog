@@ -47,6 +47,9 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 </div>
 
 <script>
+	import { applyLayoutMode, getLayoutMode } from "@/utils/layout-mode";
+	import { onPageLifecycle } from "@/utils/page-lifecycle";
+
 	// 动态布局切换脚本
 	function initLayout() {
 		requestAnimationFrame(() => {
@@ -55,11 +58,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 			);
 			if (!postListContainer) return;
 
-			// 读取偏好
-			const savedLayout = localStorage.getItem("postListLayout");
-			const defaultLayout =
-				postListContainer.getAttribute("data-default-layout") || "list";
-			const currentLayout = savedLayout || defaultLayout;
+			const currentLayout = getLayoutMode();
 
 			// 检查现有状态是否一致，避免重复初始化
 			const hasGridClass =
@@ -88,54 +87,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 	function updatePostListLayout(layout: string) {
 		const container = document.getElementById("post-list-container");
 		if (!container) return;
-
-		container.classList.add("layout-switching");
-
-		// 切换布局模式类名
-		if (layout === "grid") {
-			container.classList.remove("list-mode");
-			container.classList.add("grid-mode");
-
-			// Grid 模式下隐藏右侧栏
-			// const rightSidebar = document.querySelector(
-			// 	".right-sidebar-container",
-			// );
-			// if (rightSidebar) rightSidebar.classList.add("hidden-in-grid-mode");
-
-			const mainGrid = document.getElementById("main-grid");
-			if (mainGrid) mainGrid.setAttribute("data-layout-mode", "grid");
-
-			const leftSidebar = document.querySelector(
-				".left-sidebar-container",
-			);
-			if (leftSidebar) leftSidebar.classList.add("hidden-in-grid-mode");
-		} else {
-			container.classList.remove("grid-mode");
-			container.classList.add("list-mode");
-
-			// List 模式下显示右侧栏
-			// const rightSidebar = document.querySelector(
-			// 	".right-sidebar-container",
-			// );
-			// if (rightSidebar)
-			// 	rightSidebar.classList.remove("hidden-in-grid-mode");
-
-			const mainGrid = document.getElementById("main-grid");
-			if (mainGrid) mainGrid.setAttribute("data-layout-mode", "list");
-
-			const leftSidebar = document.querySelector(
-				".left-sidebar-container",
-			);
-			if (leftSidebar)
-				leftSidebar.classList.remove("hidden-in-grid-mode");
-		}
-
-		container.classList.add("js-initialized");
-
-		// 移除切换动画类
-		setTimeout(() => {
-			container.classList.remove("layout-switching");
-		}, 500);
+		applyLayoutMode(layout === "grid" ? "grid" : "list");
 	}
 
 	// 监听布局变化
@@ -151,12 +103,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 		clearTimeout(resizeTimeout);
 		resizeTimeout = window.setTimeout(() => {
 			if (window.innerWidth >= 769) {
-				const savedLayout = localStorage.getItem("postListLayout");
-				const defaultLayout =
-					document
-						.getElementById("post-list-container")
-						?.getAttribute("data-default-layout") || "list";
-				updatePostListLayout(savedLayout || defaultLayout);
+				updatePostListLayout(getLayoutMode());
 			}
 		}, 100);
 	});
@@ -165,34 +112,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 	document.addEventListener("DOMContentLoaded", initLayout);
 	if (document.readyState !== "loading") initLayout();
 
-	// Swup 集成
-	function setupSwupListeners() {
-		if (window._postListSwupListenerAttached) return;
-
-		function trySetupSwup() {
-			if (typeof window !== "undefined" && window.swup) {
-				window.swup.hooks.on("content:replace", initLayout);
-				window._postListSwupListenerAttached = true;
-				return true;
-			}
-			return false;
-		}
-
-		if (!trySetupSwup()) {
-			let retryCount = 0;
-			const retryInterval = setInterval(() => {
-				if (trySetupSwup() || ++retryCount >= 10) {
-					clearInterval(retryInterval);
-					if (retryCount >= 10) {
-						window.addEventListener("popstate", () =>
-							requestAnimationFrame(initLayout),
-						);
-					}
-				}
-			}, 100);
-		}
-	}
-	setTimeout(setupSwupListeners, 200);
+	onPageLifecycle("content-replace", initLayout);
 
 	function publishLayoutInit() {
 		const container = document.getElementById("post-list-container");

@@ -1,11 +1,17 @@
 <script lang="ts">
-	import { onMount, onDestroy } from "svelte";
+	import { onMount } from "svelte";
 	import type { UIPost } from "./types";
 	import { siteConfig } from "@/config";
 	import { widgetManager } from "@/utils/widget-manager";
 	import PostCardView from "./PostCardView.svelte";
 	import type { PostNavigatorCategory } from "@utils/client-utils";
 	import PostTaxonomyNav from "./PostTaxonomyNav.svelte";
+	import {
+		applyLayoutMode,
+		getLayoutMode,
+		type LayoutMode,
+	} from "@/utils/layout-mode";
+	import { onPageLifecycle } from "@/utils/page-lifecycle";
 
 	export let posts: UIPost[];
 	export let categories: PostNavigatorCategory[];
@@ -23,40 +29,9 @@
 	const defaultLayout: "grid" | "list" =
 		siteConfig.postListLayout.defaultMode === "grid" ? "grid" : "list";
 
-	function updatePostListLayout(layout: "grid" | "list") {
+	function updatePostListLayout(layout: LayoutMode) {
 		if (!container) return;
-
-		container.classList.add("layout-switching");
-
-		if (layout === "grid") {
-			container.classList.remove("list-mode");
-			container.classList.add("grid-mode");
-
-			document
-				.getElementById("main-grid")
-				?.setAttribute("data-layout-mode", "grid");
-
-			document
-				.querySelector(".left-sidebar-container")
-				?.classList.add("hidden-in-grid-mode");
-		} else {
-			container.classList.remove("grid-mode");
-			container.classList.add("list-mode");
-
-			document
-				.getElementById("main-grid")
-				?.setAttribute("data-layout-mode", "list");
-
-			document
-				.querySelector(".left-sidebar-container")
-				?.classList.remove("hidden-in-grid-mode");
-		}
-
-		container.classList.add("js-initialized");
-
-		setTimeout(() => {
-			container?.classList.remove("layout-switching");
-		}, 500);
+		applyLayoutMode(layout);
 	}
 
 	function publishLayoutInit() {
@@ -75,12 +50,7 @@
 		requestAnimationFrame(() => {
 			if (!container) return;
 
-			const savedLayout = localStorage.getItem("postListLayout") as
-				| "grid"
-				| "list"
-				| null;
-
-			const layout = savedLayout || defaultLayout;
+			const layout = getLayoutMode();
 
 			const hasGridClass = container.classList.contains("grid-mode");
 
@@ -113,12 +83,7 @@
 
 		resizeTimeout = window.setTimeout(() => {
 			if (window.innerWidth >= 769) {
-				const saved =
-					(localStorage.getItem("postListLayout") as
-						| "grid"
-						| "list") || defaultLayout;
-
-				updatePostListLayout(saved);
+				updatePostListLayout(getLayoutMode());
 			}
 		}, 100);
 	}
@@ -132,16 +97,6 @@
 		}
 	}
 
-	/* ================= Swup 集成 ================= */
-
-	function setupSwupListeners() {
-		const swup = window.swup;
-
-		if (!swup) return;
-
-		swup.hooks.on("content:replace", initLayout);
-	}
-
 	/* ================= 生命周期 ================= */
 
 	onMount(() => {
@@ -150,13 +105,17 @@
 		window.addEventListener("resize", handleResize);
 		window.addEventListener("layoutChange", handleLayoutChange);
 
-		setTimeout(setupSwupListeners, 200);
+		const unsubscribeContentReplace = onPageLifecycle(
+			"content-replace",
+			initLayout,
+		);
 		setTimeout(publishLayoutInit, 150);
-	});
 
-	onDestroy(() => {
-		window.removeEventListener("resize", handleResize);
-		window.removeEventListener("layoutChange", handleLayoutChange);
+		return () => {
+			window.removeEventListener("resize", handleResize);
+			window.removeEventListener("layoutChange", handleLayoutChange);
+			unsubscribeContentReplace();
+		};
 	});
 </script>
 
@@ -176,7 +135,7 @@
 		data-default-layout={defaultLayout}
 		data-both-sidebars={hasRightSidebars}
 	>
-			{#each posts as post (post.id)}
+		{#each posts as post (post.id)}
 			<PostCardView {post} className="onload-animation" />
 		{/each}
 	</div>

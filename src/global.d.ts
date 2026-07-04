@@ -2,6 +2,7 @@ export {};
 
 import type { SiteConfig } from "./types/config";
 import type { panelManager } from "./utils/panel-manager";
+import type { onPageLifecycle } from "./utils/page-lifecycle";
 
 type SwupHookName =
 	| "animation:out:start"
@@ -14,8 +15,14 @@ type SwupHookName =
 
 interface SwupInstance {
 	hooks: {
-		on: (event: SwupHookName | string, callback: (...args: unknown[]) => void) => void;
-		off: (event: SwupHookName | string, callback?: (...args: unknown[]) => void) => void;
+		on: (
+			event: SwupHookName | string,
+			callback: (...args: unknown[]) => void,
+		) => void;
+		off: (
+			event: SwupHookName | string,
+			callback?: (...args: unknown[]) => void,
+		) => void;
 	};
 	navigate: (url: string, options?: { history?: boolean }) => void;
 	preload?: (url: string) => void;
@@ -42,7 +49,8 @@ declare global {
 
 		mobileTOCInit?: () => void;
 		initSemifullScrollDetection?: () => void;
-		_postListSwupListenerAttached?: boolean;
+		applyWallpaperMode?: () => void;
+		onPageLifecycle?: typeof onPageLifecycle;
 		sakuraInitialized?: boolean;
 		semifullScrollHandler?: EventListener;
 		iconifyLoaded?: boolean;

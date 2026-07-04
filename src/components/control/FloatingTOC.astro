@@ -243,6 +243,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 </style>
 
 <script>
+	import { onPageLifecycle } from "@/utils/page-lifecycle";
+
 	class FloatingTOC {
 		private btn: HTMLElement | null;
 		private panel: HTMLElement | null;
@@ -507,11 +509,9 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			document.addEventListener("keydown", (e) => {
 				if (e.key === "Escape" && this.isOpen) this.close();
 			});
-			if (window.swup) {
-				window.swup.hooks.on("page:view", () => {
-					setTimeout(() => this.reinit(), 200);
-				});
-			}
+			onPageLifecycle("page-view", () => {
+				setTimeout(() => this.reinit(), 200);
+			});
 		}
 
 		private toggle() {
@@ -548,5 +548,5 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 	}
 
 	document.addEventListener("DOMContentLoaded", () => new FloatingTOC());
-	document.addEventListener("swup:page:view", () => new FloatingTOC());
+	onPageLifecycle("page-view", () => new FloatingTOC());
 </script>

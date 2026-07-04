@@ -56,20 +56,9 @@ const config = {
   // 页面加载时初始化
   document.addEventListener('DOMContentLoaded', initTwikoo);
   
-  // Swup 页面切换后重新初始化
-  if (window.swup && window.swup.hooks) {
-    window.swup.hooks.on('content:replace', function() {
-      setTimeout(initTwikoo, 200);
-    });
-  } else {
-    document.addEventListener('swup:enable', function() {
-      if (window.swup && window.swup.hooks) {
-        window.swup.hooks.on('content:replace', function() {
-          setTimeout(initTwikoo, 200);
-        });
-      }
-    });
-  }
+  window.onPageLifecycle?.('content-replace', function() {
+    setTimeout(initTwikoo, 200);
+  });
   
   // 自定义事件监听
   document.addEventListener('mizuki:page:loaded', function() {

@@ -99,10 +99,6 @@ const store = await getContentStore();
 ---
 
 <MainGridLayout title={title} description={subtitle} store={store}>
-	<!-- 引入右侧边栏布局管理器 -->
-	<script>
-		import("../scripts/right-sidebar-layout.js");
-	</script>
 	<!-- 图标加载器，预加载所有时间线图标 -->
 	<IconifyLoader preloadIcons={allIcons} />
 	<div
@@ -557,12 +553,11 @@ const store = await getContentStore();
 			setTimeout(initTimelinePage, 100);
 		});
 
-		// 监听 SWUP 事件
-		document.addEventListener("swup:contentReplaced", function () {
+		window.onPageLifecycle?.("content-replace", function () {
 			setTimeout(initTimelinePage, 100);
 		});
 
-		document.addEventListener("swup:pageView", function () {
+		window.onPageLifecycle?.("page-view", function () {
 			setTimeout(initTimelinePage, 100);
 		});
 	}

@@ -521,6 +521,7 @@ if (siteConfig.font) {
 	import { widgetConfigs } from "../config";
 	import { initSakura } from "../utils/sakura-manager";
 	import type { PanelId } from "../utils/panel-manager";
+	import { onPageLifecycle } from "../utils/page-lifecycle";
 
 	// const setTimeout = window.setTimeout;
 	const setTimeout = (
@@ -989,19 +990,7 @@ function disableAnimation() {
 	}
 
 	const setup = () => {
-		// TODO: temp solution to change the height of the banner
-		/*
-    window.swup.hooks.on('animation:out:start', () => {
-        const path = window.location.pathname
-        const body = document.querySelector('body')
-        if (path[path.length - 1] === '/' && !body.classList.contains('is-home')) {
-            body.classList.add('is-home')
-        } else if (path[path.length - 1] !== '/' && body.classList.contains('is-home')) {
-            body.classList.remove('is-home')
-        }
-    })
-*/
-		window.swup.hooks.on("link:click", () => {
+		onPageLifecycle("link-click", () => {
 			// Remove the delay for the first time page load
 			document.documentElement.style.setProperty(
 				"--content-delay",
@@ -1021,7 +1010,7 @@ function disableAnimation() {
 			}
 		});
 
-		window.swup.hooks.on("content:replace", () => {
+		onPageLifecycle("content-replace", () => {
 			// 初始化新页面的图片、公式、滚动条和TOC
 			initFancybox();
 			checkKatex();
@@ -1065,15 +1054,15 @@ function disableAnimation() {
 			}
 		});
 
-		window.swup.hooks.on(
-			"visit:start",
-			(visit: { to: { url: string } }) => {
+		onPageLifecycle(
+			"visit-start",
+			({ visit }: { visit?: { to?: { url?: string } } }) => {
 				// 清理上一页的 Fancybox
 				cleanupFancybox();
 
 				// 处理 Banner class 和显示状态
 				const bodyElement = document.querySelector("body");
-				const isHomePage = pathsEqual(visit.to.url, url("/"));
+				const isHomePage = pathsEqual(visit?.to?.url || window.location.pathname, url("/"));
 				if (bodyElement) {
 					if (isHomePage) {
 						bodyElement.classList.add("is-home");
@@ -1159,7 +1148,7 @@ function disableAnimation() {
 			},
 		);
 
-		window.swup.hooks.on("page:view", () => {
+		onPageLifecycle("page-view", () => {
 			// hide the temp high element when the transition is done
 			const heightExtend = document.getElementById("page-height-extend");
 			if (heightExtend) {
@@ -1226,7 +1215,7 @@ function disableAnimation() {
 			}, 300);
 		});
 
-		window.swup.hooks.on("visit:end", (_visit: { to: { url: string } }) => {
+		onPageLifecycle("visit-end", () => {
 			setTimeout(() => {
 				const heightExtend =
 					document.getElementById("page-height-extend");
@@ -1243,23 +1232,9 @@ function disableAnimation() {
 		});
 	};
 
-	if (window?.swup?.hooks) {
-		initFancybox();
-		checkKatex();
-		setup();
-	} else {
-		document.addEventListener("swup:enable", setup);
-		// 监听 DOM 加载 (确保首屏也能加载优化组件)
-		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", () => {
-				initFancybox();
-				checkKatex();
-			});
-		} else {
-			initFancybox();
-			checkKatex();
-		}
-	}
+	initFancybox();
+	checkKatex();
+	setup();
 
 	const backToTopBtn = document.getElementById("back-to-top-btn");
 	const toc = document.getElementById("toc-wrapper");

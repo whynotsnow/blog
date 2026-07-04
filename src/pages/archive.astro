@@ -12,9 +12,5 @@ const { groups } = await buildArchivePageData(store.posts);
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)} store={store}>
-	<script>
-		import("../scripts/right-sidebar-layout.js");
-	</script>
-
 	<ArchivePanel groups={groups} client:only="svelte" />
 </MainGridLayout>
