@@ -79,6 +79,7 @@
 - 引入 **services 层**，实现 UI 与业务逻辑解耦
 - 统一文章数据源 `source.ts`
 - 数据来源统一为： 
+
 ```
 content-store/buildContentStore
 ```
@@ -190,6 +191,7 @@ pnpm install
 ```bash
 pnpm dev
 ```
+
 浏览器打开 `http://localhost:4321` 预览页面
 
 ## ⚙️ 生产环境变量配置

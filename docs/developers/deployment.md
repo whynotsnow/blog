@@ -20,6 +20,7 @@
 1. **更新站点 URL**
 
 编辑 `astro.config.mjs`:
+
 ```javascript
 export default defineConfig({
   site: 'https://your-domain.com',  // 更新为你的域名
@@ -66,6 +67,7 @@ export default defineConfig({
 2. **修改 `.github/workflows/deploy.yml`**:
 
 取消注释环境变量部分:
+
 ```yaml
 - name: Build site
   run: pnpm run build
@@ -82,6 +84,7 @@ export default defineConfig({
 - 自动使用 `GITHUB_TOKEN` 访问
 
 **跨账号私有仓库 (SSH)**:
+
 ```yaml
 # 添加 SSH 配置步骤
 - name: Setup SSH Key
@@ -100,6 +103,7 @@ export default defineConfig({
 - `CONTENT_REPO_URL`: `git@github.com:other-user/repo.git`
 
 **跨账号私有仓库 (Token)**:
+
 ```yaml
 - name: Checkout
   uses: actions/checkout@v4
@@ -173,6 +177,7 @@ export default defineConfig({
 **方式 B: 使用 Token**
 
 添加环境变量:
+
 ```
 ENABLE_CONTENT_SYNC=true
 GITHUB_TOKEN=ghp_your_personal_access_token
@@ -207,6 +212,7 @@ USE_SUBMODULE=true
 3. **环境变量** (如果使用内容分离):
 
 在 Site settings → Environment variables 中添加:
+
 ```
 ENABLE_CONTENT_SYNC=true
 CONTENT_REPO_URL=https://github.com/your-username/Mizuki-Content.git
@@ -254,6 +260,7 @@ USE_SUBMODULE=true
 3. **环境变量** (如果使用内容分离):
 
 添加以下变量:
+
 ```
 ENABLE_CONTENT_SYNC=true
 CONTENT_REPO_URL=https://github.com/your-username/Mizuki-Content.git
@@ -319,6 +326,7 @@ USE_SUBMODULE=false  # ⚠️ Cloudflare Pages 默认不支持 submodule
 ### 问题 3: Submodule 与 .gitignore 冲突
 
 **错误信息**:
+
 ```
 The following paths are ignored by one of your .gitignore files:
 content
@@ -379,6 +387,7 @@ USE_SUBMODULE=false  # 改为 false
 ### 问题 7: Vercel 部署时 submodule 权限问题
 
 **错误信息**:
+
 ```
 fatal: could not read Username for 'https://github.com'
 ```
@@ -775,6 +784,7 @@ on:
 #### 测试步骤
 
 1. **在内容仓库修改文章**:
+
    ```bash
    cd /path/to/Mizuki-Content
    # 编辑文章
@@ -811,6 +821,7 @@ on:
    - 格式: `owner/repo`
 
 **调试**:
+
 ```yaml
 # 在内容仓库工作流中添加调试步骤
 - name: Debug
@@ -842,6 +853,7 @@ on:
 1. Hook URL 是否正确复制?
 2. Secret 是否正确添加?
 3. 使用 curl 测试 Hook:
+
    ```bash
    curl -X POST "https://api.vercel.com/v1/integrations/deploy/..."
    ```

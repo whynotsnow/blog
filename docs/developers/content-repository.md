@@ -140,6 +140,7 @@ lang: zh-CN
 - **包含图片的文章**: 创建文件夹,将 `index.md` 和图片放在一起
 
 示例:
+
 ```
 posts/
 ├── simple-post.md                    # 简单文章
@@ -156,6 +157,7 @@ posts/
 1. 修改内容仓库中的文件
 2. 提交并推送更改
 3. 在代码仓库中同步内容:
+
    ```bash
    cd /path/to/Mizuki
    pnpm run sync-content
@@ -235,6 +237,7 @@ pnpm run sync-content
 ### 快速参考
 
 **本地开发**: 推荐使用 SSH 密钥
+
 ```bash
 CONTENT_REPO_URL=git@github.com:your-username/Mizuki-Content-Private.git
 USE_SUBMODULE=true

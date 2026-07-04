@@ -1,0 +1,8 @@
+{
+	"globs": ["AGENTS.md", "README.md", "docs/**/*.md"],
+	"ignores": ["node_modules", "dist", ".astro"],
+	"config": {
+		"default": false,
+		"MD031": true
+	}
+}

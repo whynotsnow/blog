@@ -88,12 +88,14 @@ ENABLE_CONTENT_SYNC=true
 - ✅ 适合个人博客、小型项目
 
 **配置**:
+
 ```bash
 # .env (或不创建 .env 文件)
 ENABLE_CONTENT_SYNC=false
 ```
 
 **工作流程**:
+
 ```bash
 # 直接编辑 src/content/ 下的文章
 pnpm dev
@@ -113,6 +115,7 @@ git push
 - ✅ 独立的内容版本控制
 
 **配置**:
+
 ```bash
 # .env
 ENABLE_CONTENT_SYNC=true
@@ -120,6 +123,7 @@ CONTENT_REPO_URL=https://github.com/your-username/Mizuki-Content.git
 ```
 
 **工作流程**:
+
 ```bash
 # 自动同步内容后启动
 pnpm dev
@@ -138,18 +142,22 @@ git push
 
 1. 创建内容仓库 (参考 [迁移指南](./migration-guide.md))
 2. 编辑 `.env`:
+
    ```bash
    ENABLE_CONTENT_SYNC=true
    CONTENT_REPO_URL=https://github.com/your-username/Mizuki-Content.git
    ```
+
 3. 同步内容: `pnpm run sync-content`
 
 #### 从独立仓库切换回本地
 
 1. 编辑 `.env`:
+
    ```bash
    ENABLE_CONTENT_SYNC=false
    ```
+
 2. 直接开发: `pnpm dev`
 
 ---
@@ -388,6 +396,7 @@ CONTENT_REPO_URL=https://YOUR_TOKEN@github.com/your-username/Mizuki-Content-Priv
 **原因**: `ENABLE_CONTENT_SYNC` 未设置或设置为 `false`。
 
 **解决**:
+
 ```bash
 # 检查 .env 文件
 cat .env
@@ -401,6 +410,7 @@ ENABLE_CONTENT_SYNC=true
 **原因**: 启用了内容分离但未配置仓库地址。
 
 **解决**:
+
 ```bash
 # 在 .env 中添加
 CONTENT_REPO_URL=https://github.com/your-username/Mizuki-Content.git
@@ -409,6 +419,7 @@ CONTENT_REPO_URL=https://github.com/your-username/Mizuki-Content.git
 ### 问题 3: 私有仓库认证失败
 
 **SSH 方式**:
+
 ```bash
 # 测试 SSH 连接
 ssh -T git@github.com
@@ -431,12 +442,14 @@ ssh -T git@github.com
 **检查清单**:
 
 1. 文件位置正确 (项目根目录)
+
    ```bash
    ls -la .env  # Linux/Mac
    dir .env     # Windows
    ```
 
 2. 文件格式正确
+
    ```bash
    # ✅ 正确
    ENABLE_CONTENT_SYNC=true
@@ -449,11 +462,13 @@ ssh -T git@github.com
    ```
 
 3. 文件权限可读
+
    ```bash
    chmod 644 .env  # Linux/Mac
    ```
 
 4. 确认当前 Git 状态和可用脚本
+
    ```bash
    git status --short
    sed -n '1,80p' package.json

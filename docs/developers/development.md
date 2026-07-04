@@ -42,9 +42,11 @@ pnpm build
 pnpm check
 pnpm type-check
 pnpm format:check
+pnpm lint:md
 ```
 
 常规代码变更优先运行 `pnpm check`。涉及 TypeScript 类型、服务层结构或声明文件时，再运行 `pnpm type-check`。
+文档结构和 Markdown 格式变更运行 `pnpm lint:md`，当前检查范围包括 `AGENTS.md`、`README.md` 和 `docs/**/*.md`，初始规则只启用 `MD031`。
 
 ## 格式化
 
@@ -53,6 +55,7 @@ pnpm format
 ```
 
 当前格式化配置会忽略 Markdown 和 Astro 文件，避免对文章内容和复杂 Astro 模板做大范围无关改动。
+Markdown 规范检查由 `markdownlint-cli2` 单独处理，不会自动重写文章内容。需要自动修复 fenced code block 空行时运行 `pnpm lint:md:fix`。
 
 ## 常用任务
 

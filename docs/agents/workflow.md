@@ -58,7 +58,7 @@ Do not read unrelated documents just to appear thorough. If multiple areas are a
 
 | Change type | Suggested validation |
 | --- | --- |
-| Docs only | Read affected links and headings. |
+| Docs only | Read affected links and headings; run `pnpm lint:md` for Markdown structure changes. |
 | Type or schema | `pnpm check`, `pnpm type-check` |
 | Content pipeline | `pnpm check`, then `pnpm build` when feasible |
 | Styles or UI components | `pnpm dev` visual check, plus `pnpm check` |
