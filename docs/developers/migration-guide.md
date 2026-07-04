@@ -2,7 +2,7 @@
 
 本指南将帮助你将现有的 Mizuki 博客从单仓库模式迁移到代码内容分离模式。
 
-> 💡 **提示**: 如果是新项目,建议先阅读 [内容分离完整指南](./CONTENT_SEPARATION.md)
+> 💡 **提示**: 如果是新项目,建议先阅读 [内容分离完整指南](./content-separation.md)
 
 ## 📋 迁移前准备
 
@@ -123,7 +123,7 @@ git commit -m "Enable content separation"
 git push
 ```
 
-> 📖 更多配置选项请参考 [内容分离完整指南](./CONTENT_SEPARATION.md)
+> 📖 更多配置选项请参考 [内容分离完整指南](./content-separation.md)
 
 ### 步骤 5: 清理原仓库中的内容 (可选)
 
@@ -233,7 +233,7 @@ CONTENT_REPO_URL=https://github.com/your-username/Mizuki-Content.git
 USE_SUBMODULE=true
 ```
 
-详细的部署配置(包括私有仓库、GitHub Actions、Vercel 等)请参考 [内容分离完整指南 - CI/CD 部署](./CONTENT_SEPARATION.md#-cicd-部署)
+详细的部署配置(包括私有仓库、GitHub Actions、Vercel 等)请参考 [内容分离完整指南 - CI/CD 部署](./content-separation.md#-cicd-部署)
 
 ## ⚠️ 常见问题
 
@@ -246,7 +246,7 @@ A: 检查:
 4. `CONTENT_REPO_URL` 是否正确
 5. 是否有足够的磁盘空间
 
-运行 `pnpm run check-env` 检查配置。
+运行 `git status --short` 查看当前 Git 状态；需要验证内容同步时，运行 `pnpm run sync-content`。
 
 ### Q: 符号链接在 Windows 上不工作?
 
@@ -258,12 +258,12 @@ A: 在 `.env` 中设置 `ENABLE_CONTENT_SYNC=false`,然后从备份或内容仓�
 
 ### Q: 遇到私有仓库认证问题?
 
-A: 参考 [内容分离完整指南 - 私有仓库配置](./CONTENT_SEPARATION.md#-私有仓库配置)
+A: 参考 [内容分离完整指南 - 私有仓库配置](./content-separation.md#-私有仓库配置)
 
 ## 📚 参考文档
 
-- [内容分离完整指南](./CONTENT_SEPARATION.md) - 详细配置说明
-- [内容仓库结构说明](./CONTENT_REPOSITORY.md) - 推荐的仓库结构
+- [内容分离完整指南](./content-separation.md) - 详细配置说明
+- [内容仓库结构说明](./content-repository.md) - 推荐的仓库结构
 - [Git Submodule 文档](https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%AD%90%E6%A8%A1%E5%9D%97)
 
 ---

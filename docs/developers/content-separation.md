@@ -5,8 +5,8 @@
 ## 📖 目录
 
 - [快速开始](#-快速开始)
-- [ENABLE_CONTENT_SYNC 控制开关](#-enable_content_sync-控制开关)
-- [配置方式](#-配置方式)
+- [ENABLE_CONTENT_SYNC 控制开关](#️-enable_content_sync-控制开关)
+- [配置方式](#️-配置方式)
 - [私有仓库](#-私有仓库配置)
 - [CI/CD 部署](#-cicd-部署)
 - [常用命令](#-常用命令)
@@ -136,7 +136,7 @@ git push
 
 #### 从本地切换到独立仓库
 
-1. 创建内容仓库 (参考 [CONTENT_MIGRATION.md](./CONTENT_MIGRATION.md))
+1. 创建内容仓库 (参考 [迁移指南](./migration-guide.md))
 2. 编辑 `.env`:
    ```bash
    ENABLE_CONTENT_SYNC=true
@@ -225,9 +225,9 @@ CONTENT_REPO_URL=git@github.com:your-username/Mizuki-Content-Private.git
 **推荐使用 Repository Dispatch**，5 步快速配置，适用所有部署平台。
 
 详细步骤请查看:
-- **[自动构建触发快速参考](./AUTO_BUILD_TRIGGER.md)** - 最简洁的配置指南 ⭐
-- **[部署文档 - 完整说明](./DEPLOYMENT.md#内容仓库更新触发构建)** - 包含多种方案
-- **[内容仓库配置指南](../Mizuki-Content/.github/workflows/README.md)** - 工作流详细说明
+- **[自动构建触发快速参考](./auto-build-trigger.md)** - 最简洁的配置指南 ⭐
+- **[部署文档 - 完整说明](./deployment.md#内容仓库更新触发构建)** - 包含多种方案
+- 内容仓库中的 `.github/workflows/README.md` - 工作流详细说明
 
 ---
 
@@ -351,7 +351,7 @@ CONTENT_REPO_URL=https://YOUR_TOKEN@github.com/your-username/Mizuki-Content-Priv
 
 不同平台的具体配置步骤、私有仓库认证、故障排查等详细信息，请查看：
 
-📖 **[部署指南](./DEPLOYMENT.md)** - 完整的部署文档，包含：
+📖 **[部署指南](./deployment.md)** - 完整的部署文档，包含：
 - GitHub Pages 自动部署配置
 - Vercel 部署详细步骤
 - Netlify 部署配置
@@ -367,7 +367,6 @@ CONTENT_REPO_URL=https://YOUR_TOKEN@github.com/your-username/Mizuki-Content-Priv
 |------|------|
 | `pnpm run init-content` | 运行交互式初始化向导 |
 | `pnpm run sync-content` | 手动同步内容仓库 |
-| `pnpm run check-env` | 检查环境变量配置 |
 | `pnpm dev` | 启动开发服务器 (自动同步) |
 | `pnpm build` | 构建项目 (自动同步) |
 
@@ -454,9 +453,10 @@ ssh -T git@github.com
    chmod 644 .env  # Linux/Mac
    ```
 
-4. 运行检查命令
+4. 确认当前 Git 状态和可用脚本
    ```bash
-   pnpm run check-env
+   git status --short
+   sed -n '1,80p' package.json
    ```
 
 ### 问题 5: 内容同步失败
@@ -510,16 +510,16 @@ git clone https://github.com/your-username/Mizuki-Content.git content
 
 ## 📚 相关文档
 
-- [内容迁移指南](./CONTENT_MIGRATION.md) - 如何从单仓库迁移到分离模式
-- [内容仓库结构](./CONTENT_REPOSITORY.md) - 内容仓库的推荐结构
-- [主 README](../README.zh.md) - 项目总体说明
+- [内容迁移指南](./migration-guide.md) - 如何从单仓库迁移到分离模式
+- [内容仓库结构](./content-repository.md) - 内容仓库的推荐结构
+- [项目文档索引](../README.md) - 当前仓库维护文档入口
 
 ---
 
 ## 🤝 需要帮助?
 
 - 查看 [GitHub Issues](https://github.com/matsuzaka-yuki/Mizuki/issues)
-- 阅读 [完整文档](../README.zh.md)
-- 运行 `pnpm run check-env` 检查配置
+- 阅读 [项目文档索引](../README.md)
+- 运行 `git status --short` 查看当前 Git 状态
 
 祝你使用愉快! 🎉

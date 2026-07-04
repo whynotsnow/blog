@@ -98,8 +98,8 @@ CONTENT_DIR=./content
 	// 提示后续步骤
 	console.log("\nInitialization completed\n");
 	console.log("\nDocumentation:");
-	console.log("- Content repository: docs/CONTENT_REPOSITORY.md");
-	console.log("- Migration guide: docs/MIGRATION_GUIDE.md");
+	console.log("- Content repository: docs/developers/content-repository.md");
+	console.log("- Migration guide: docs/developers/migration-guide.md");
 
 	rl.close();
 }

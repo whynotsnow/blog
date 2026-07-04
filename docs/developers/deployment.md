@@ -8,7 +8,7 @@
 - [GitHub Pages 部署](#-github-pages-部署)
 - [Vercel 部署](#-vercel-部署)
 - [Netlify 部署](#-netlify-部署)
-- [Cloudflare Pages 部署](#-cloudflare-pages-部署)
+- [Cloudflare Pages 部署](#️-cloudflare-pages-部署)
 - [故障排查](#-故障排查)
 
 ---
@@ -34,7 +34,7 @@ export default defineConfig({
 - `CONTENT_REPO_URL=你的内容仓库地址`
 - `USE_SUBMODULE=true`
 
-详见 [内容分离完整指南](./CONTENT_SEPARATION.md)
+详见 [内容分离完整指南](./content-separation.md)
 
 ---
 
@@ -435,9 +435,9 @@ fatal: could not read Username for 'https://github.com'
 
 ## 📚 相关文档
 
-- [内容分离完整指南](./CONTENT_SEPARATION.md) - 详细的内容分离配置
-- [内容迁移指南](./MIGRATION_GUIDE.md) - 从单仓库迁移到分离模式
-- [内容仓库结构](./CONTENT_REPOSITORY.md) - 内容仓库的组织方式
+- [内容分离完整指南](./content-separation.md) - 详细的内容分离配置
+- [内容迁移指南](./migration-guide.md) - 从单仓库迁移到分离模式
+- [内容仓库结构](./content-repository.md) - 内容仓库的组织方式
 
 ---
 

@@ -229,8 +229,8 @@ pnpm run sync-content
 
 如果你的内容仓库是私有的，需要配置访问权限。详细的配置方法请参考：
 
-- [内容分离完整指南 - 私有仓库配置](./CONTENT_SEPARATION.md#-私有仓库配置)
-- [部署指南](./DEPLOYMENT.md) - 各平台的私有仓库部署配置
+- [内容分离完整指南 - 私有仓库配置](./content-separation.md#-私有仓库配置)
+- [部署指南](./deployment.md) - 各平台的私有仓库部署配置
 
 ### 快速参考
 
