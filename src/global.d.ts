@@ -21,6 +21,7 @@ declare global {
 
 		mobileTOCInit?: () => void;
 		initSemifullScrollDetection?: () => void;
+		semifullScrollHandler?: EventListener;
 		iconifyLoaded?: boolean;
 		__iconifyLoader?: {
 			load: () => Promise<void>;

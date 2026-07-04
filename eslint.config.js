@@ -32,7 +32,7 @@ export default [
 			"prefer-const": "error",
 			"prefer-rest-params": "error",
 			"astro/no-unused-define-vars-in-style": "error",
-			"@typescript-eslint/ban-ts-comment": "off",
+			"@typescript-eslint/ban-ts-comment": "error",
 			"@typescript-eslint/no-empty-object-type": "off",
 			"@typescript-eslint/no-unsafe-function-type": "error",
 			"@typescript-eslint/no-this-alias": "error",
