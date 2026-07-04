@@ -11,7 +11,7 @@ const pioOptions = {
 };
 
 // 全局Pio实例引用
-let pioInstance = null;
+let _pioInstance = null;
 let pioInitialized = false;
 let pioContainer;
 let pioCanvas;
@@ -24,7 +24,7 @@ function initPio() {
 		try {
 			// 确保DOM元素存在
 			if (pioContainer && pioCanvas && !pioInitialized) {
-				pioInstance = new Paul_Pio(pioOptions);
+				_pioInstance = new Paul_Pio(pioOptions);
 				pioInitialized = true;
 				console.log("Pio initialized successfully (Svelte)");
 			} else if (!pioContainer || !pioCanvas) {

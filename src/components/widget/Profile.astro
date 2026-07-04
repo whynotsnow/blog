@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { profileConfig, umamiConfig } from "../../config";
+import { profileConfig } from "../../config";
 import { url } from "../../utils/url-utils";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
@@ -113,7 +113,6 @@ export interface Props {}
 	define:vars={{
 		profileStatsPageViews: i18n(I18nKey.profileStatsPageViews),
 		profileStatsVisits: i18n(I18nKey.profileStatsVisits),
-		profileStatsUnavailable: i18n(I18nKey.profileStatsUnavailable),
 	}}
 >
 	function generateStatsText(pageViews, visits) {

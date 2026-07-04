@@ -7,7 +7,6 @@ import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import fs from "node:fs";
 import path from "node:path";
-import { widgetManager } from "../utils/widget-manager";
 import "../styles/anime.css";
 import { getContentStore } from "@/services/core/content-store";
 
@@ -52,11 +51,6 @@ if (!siteConfig.featurePages.anime) {
 	return Astro.redirect("/404/");
 }
 
-const hasRightSidebars =
-	widgetManager.getComponentsByPosition("top", "right", "desktop").length >
-		0 ||
-	widgetManager.getComponentsByPosition("sticky", "right", "desktop").length >
-		0;
 const BANGUMI_USER_ID = siteConfig.bangumi?.userId || "your-user-id";
 const BILIBILI_VMID = siteConfig.bilibili?.vmid || "";
 const ANIME_MODE = siteConfig.anime?.mode || "bangumi";
@@ -587,7 +581,7 @@ const store = await getContentStore();
 		</div>
 	</div>
 
-	<script is:inline define:vars={{ hasRightSidebars }}>
+	<script is:inline>
 		(function () {
 			function initAnimeLayout() {
 				const animeListContainer = document.getElementById(

@@ -3,9 +3,9 @@
 
 /**
  * 初始化页面布局
- * @param {string} pageType - 页面类型（projects, skills等）
+ * @param {string} _pageType - 页面类型（projects, skills等）
  */
-function initPageLayout(pageType) {
+function initPageLayout(_pageType) {
 	// 获取布局配置
 	const defaultPostListLayout =
 		localStorage.getItem("postListLayout") || "list";

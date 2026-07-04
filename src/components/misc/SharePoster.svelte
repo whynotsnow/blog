@@ -24,7 +24,6 @@ const FONT_FAMILY = "'Roboto', sans-serif";
 // State
 let showModal = false;
 let posterImage: string | null = null;
-let generating = false;
 let themeColor = "#558e88";
 
 onMount(() => {
@@ -127,7 +126,6 @@ async function generatePoster() {
 	showModal = true;
 	if (posterImage) return;
 
-	generating = true;
 	try {
 		const qrCodeUrl = await QRCode.toDataURL(url, {
 			margin: 1,
@@ -344,8 +342,6 @@ async function generatePoster() {
 		posterImage = canvas.toDataURL("image/png");
 	} catch (error) {
 		console.error("Failed to generate poster:", error);
-	} finally {
-		generating = false;
 	}
 }
 

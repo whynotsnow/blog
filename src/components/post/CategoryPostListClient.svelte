@@ -10,24 +10,24 @@
 	export let categories: PostNavigatorCategory[];
 	export let categorySlug: string;
 	// 从 URL 推导分页状态
-	const { page, state } = useCategoryPagination({
+	const { page, state: paginationState } = useCategoryPagination({
 		posts,
 		pageSize: PAGE_SIZE,
 	});
 </script>
 
 <!-- isTagMode判断路由是否为tag如果是会使用 Client渲染 列表和分页 -->
-{#if $state.isTagMode}
+{#if $paginationState.isTagMode}
 	<PostListView
 		posts={$page.data}
 		{categories}
 		{categorySlug}
-		tag={$state.tag}
+		tag={$paginationState.tag}
 	/>
 	<PaginationClient
 		currentPage={$page.currentPage}
 		lastPage={$page.lastPage}
-		tag={$state.tag}
+		tag={$paginationState.tag}
 	/>
 {:else}
 	<!-- 否则 为 SSG 快照 -->

@@ -1,4 +1,4 @@
-import type { ListPost, RawPost } from "../core/types";
+import type { ListPost } from "../core/types";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { MarkdownHeading } from "astro";
 

@@ -159,7 +159,7 @@ async function fetchMetingPlaylist() {
 			loadSong(playlist[0]);
 		}
 		isLoading = false;
-	} catch (e) {
+	} catch {
 		showErrorMessage(i18n(Key.musicPlayerErrorPlaylist));
 		isLoading = false;
 	}

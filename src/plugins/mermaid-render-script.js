@@ -172,7 +172,7 @@
 			isPanning = false;
 			try {
 				wrapper.releasePointerCapture(ev.pointerId);
-			} catch (e) {}
+			} catch {}
 		});
 
 		wrapper.addEventListener("pointercancel", () => {
