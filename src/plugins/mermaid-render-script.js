@@ -172,7 +172,9 @@
 			isPanning = false;
 			try {
 				wrapper.releasePointerCapture(ev.pointerId);
-			} catch {}
+			} catch {
+				// Pointer capture may already be released by the browser.
+			}
 		});
 
 		wrapper.addEventListener("pointercancel", () => {

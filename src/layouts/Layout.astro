@@ -214,8 +214,8 @@ if (siteConfig.font) {
 					(function (c, l, a, r, i, t, y) {
 						c[a] =
 							c[a] ||
-							function () {
-								(c[a].q = c[a].q || []).push(arguments);
+							function (...args) {
+								(c[a].q = c[a].q || []).push(args);
 							};
 						t = l.createElement(r);
 						t.async = 1;
@@ -447,7 +447,6 @@ if (siteConfig.font) {
 	define:vars={{
 		bannerOffset,
 		"banner-height-home": `${BANNER_HEIGHT_HOME}vh`,
-		"banner-height": `${BANNER_HEIGHT}vh`,
 	}}
 >
 	@reference "../styles/main.css";
@@ -1265,13 +1264,14 @@ function disableAnimation() {
 	const navbar = document.getElementById("navbar-wrapper");
 
 	// 节流函数
-	function throttle(func: Function, limit: number) {
+	function throttle<T extends (...args: any[]) => void>(
+		func: T,
+		limit: number,
+	) {
 		let inThrottle: boolean;
-		return function (this: any) {
-			const args = arguments;
-			const context = this;
+		return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
 			if (!inThrottle) {
-				func.apply(context, args);
+				func.apply(this, args);
 				inThrottle = true;
 				setTimeout(() => (inThrottle = false), limit);
 			}

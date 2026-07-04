@@ -824,9 +824,11 @@ const store = await getContentStore();
 							!item.classList.contains("anime-hidden");
 
 						if (shouldShow) {
-							isCurrentlyVisible
-								? itemsToKeep.push(item)
-								: itemsToShow.push(item);
+							if (isCurrentlyVisible) {
+								itemsToKeep.push(item);
+							} else {
+								itemsToShow.push(item);
+							}
 						} else {
 							if (isCurrentlyVisible) itemsToHide.push(item);
 						}
