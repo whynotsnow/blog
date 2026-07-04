@@ -4,6 +4,25 @@ This repository is an Astro + Svelte personal blog forked from Mizuki and custom
 
 Use this file as the first stop before changing code. The goal is to keep AI-agent work predictable, easy to review, and aligned with the current architecture.
 
+## Why Agent OS Exists
+
+This project is not just a static blog system. It is a content engineering system with layered service architecture, build-time transformation pipeline, multiple routing strategies, and framework-specific constraints across Astro, Svelte, and TypeScript.
+
+Without structured agent memory:
+
+- the same tooling bugs reappear;
+- architectural decisions get reinterpreted incorrectly;
+- fixes are repeated instead of reused;
+- debugging cost increases over time.
+
+Agent OS introduces persistent failure memory, structured execution logs, reusable debugging patterns, and enforced reflection after meaningful tasks.
+
+Key principle:
+
+> This project is not debugged repeatedly. It is learned once and reused forever.
+
+All AI-assisted development in this project should be memory-driven, pattern-aware, architecture-constrained, and failure-learned.
+
 ## Project Shape
 
 - Framework: Astro 5 with Svelte components.
@@ -22,7 +41,8 @@ Use this file as the first stop before changing code. The goal is to keep AI-age
 3. Use `docs/README.md` as the routing index when you need to choose the right document.
 4. Read `docs/agents/workflow.md` before non-trivial agent work.
 5. Read `docs/agents/project-map.md` before changing architecture, data flow, routing, or services.
-6. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
+6. Read `docs/agents/memory.json`, `docs/agents/failure-index.md`, and `docs/agents/runtime-playbook.md` before running commands or changing areas with known failures.
+7. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
 
 ## Commands
 
@@ -40,6 +60,8 @@ Do not claim that a command passed unless you actually ran it in this workspace 
 
 - Prefer the existing service layer instead of querying Astro content directly from UI components.
 - Keep route pages thin. Pages should compose layouts/components and call services.
+- All architectural changes must respect the `src/services/core` pipeline.
+- Do not bypass the `content-store` layer or `getContentStore()` for normal post collection data.
 - Keep content schema changes in `src/content.config.ts` and document them in `docs/developers/content-guide.md`.
 - Keep configuration shape changes in `src/types/config.ts` and document them in `docs/developers/configuration.md`.
 - Do not edit generated folders such as `dist` or `node_modules`.
@@ -52,6 +74,7 @@ Read only the documents needed for the current task:
 
 - Documentation structure or routing: `docs/README.md`.
 - Agent workflow and handoff: `docs/agents/workflow.md`.
+- Known failures and runtime pitfalls: `docs/agents/memory.json`, `docs/agents/failure-index.md`, and `docs/agents/runtime-playbook.md`.
 - Architecture, content pipeline, routes, or service boundaries: `docs/agents/project-map.md` and `docs/developers/architecture.md`.
 - Content schema, posts, tags, categories, drafts, or assets: `docs/developers/content-guide.md`.
 - Site configuration, environment variables, feature pages, URL helpers, or permalink behavior: `docs/developers/configuration.md`.
@@ -70,6 +93,7 @@ When a change affects multiple areas, read the relevant documents for each area.
 - Documentation assets live in `docs/assets/`.
 - When behavior changes, update the closest audience-specific document instead of adding a new root-level Markdown file.
 - If a change affects both humans and agents, update both the Chinese developer document and the English agent document.
+- If a task discovers a reusable failure pattern, update `docs/agents/memory.json`, `docs/agents/failure-index.md`, `docs/agents/runtime-playbook.md`, or `docs/agents/execution-log.md` as appropriate.
 
 ## Validation Expectations
 

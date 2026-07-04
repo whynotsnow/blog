@@ -31,6 +31,10 @@
 | [Agent Documentation](./agents/README.md) | English documentation index for AI agents. |
 | [Agent Workflow](./agents/workflow.md) | English workflow for AI agents: inspect, modify, validate, and hand off work. |
 | [Project Map](./agents/project-map.md) | English architecture map optimized for AI agents. |
+| [Runtime Playbook](./agents/runtime-playbook.md) | English playbook for known runtime and tooling pitfalls. |
+| [Failure Index](./agents/failure-index.md) | English index of clustered failure patterns. |
+| [Execution Log](./agents/execution-log.md) | English log for reusable AI-assisted task learning. |
+| [Memory](./agents/memory.json) | Structured persistent memory for Agent OS. |
 
 ## 推荐阅读路径
 
@@ -79,7 +83,11 @@ docs/
 ├── agents/
 │   ├── README.md
 │   ├── workflow.md
-│   └── project-map.md
+│   ├── project-map.md
+│   ├── runtime-playbook.md
+│   ├── failure-index.md
+│   ├── execution-log.md
+│   └── memory.json
 └── assets/
     ├── editor/
     └── image/

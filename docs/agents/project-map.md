@@ -90,5 +90,7 @@ Document user-facing config changes in `docs/developers/configuration.md`.
 
 - Start with service and type boundaries before editing UI.
 - Keep generated data derivation in `src/services/core`.
+- All architectural changes must respect the `src/services/core` pipeline.
+- Do not bypass the `content-store` layer for normal post collection data.
 - Do not duplicate category/tag URL logic; use `src/utils/url-utils.ts` and `src/utils/client-utils.ts`.
 - Avoid direct content collection access outside the service layer unless the route is a specialized static endpoint.
