@@ -46,7 +46,7 @@ const astroRules = {
 };
 
 const svelteRules = {
-	"svelte/no-at-html-tags": "off",
+	"svelte/no-at-html-tags": "error",
 	"svelte/require-each-key": "error",
 };
 

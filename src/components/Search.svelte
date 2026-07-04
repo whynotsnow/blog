@@ -36,6 +36,51 @@ const fakeResult: SearchResult[] = [
 	},
 ];
 
+const escapeHtml = (html: string): string =>
+	html.replace(
+		/[&<>"']/g,
+		(char) =>
+			({
+				"&": "&amp;",
+				"<": "&lt;",
+				">": "&gt;",
+				'"': "&quot;",
+				"'": "&#39;",
+			})[char] ?? char,
+	);
+
+const sanitizeExcerpt = (html: string): string => {
+	if (typeof DOMParser === "undefined" || typeof document === "undefined") {
+		return escapeHtml(html);
+	}
+
+	const doc = new DOMParser().parseFromString(html, "text/html");
+	const allowed = new Set(["MARK"]);
+	const walker = document.createTreeWalker(
+		doc.body,
+		NodeFilter.SHOW_ELEMENT,
+	);
+	const toRemove: Element[] = [];
+
+	while (walker.nextNode()) {
+		const el = walker.currentNode as Element;
+		if (!allowed.has(el.tagName)) {
+			toRemove.push(el);
+			continue;
+		}
+
+		for (const attr of Array.from(el.attributes)) {
+			el.removeAttribute(attr.name);
+		}
+	}
+
+	for (const el of toRemove) {
+		el.replaceWith(...Array.from(el.childNodes));
+	}
+
+	return doc.body.innerHTML;
+};
+
 const togglePanel = () => {
 	const panel = document.getElementById("search-panel");
 	panel?.classList.toggle("float-panel-closed");
@@ -273,7 +318,9 @@ onDestroy(() => {
                 {item.meta.title}<Icon icon="fa7-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-(--primary)"></Icon>
             </div>
             <div class="transition text-sm text-50">
-                {@html item.excerpt}
+                <!-- HTML is sanitized by sanitizeExcerpt; only attribute-free <mark> tags are preserved. -->
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+                {@html sanitizeExcerpt(item.excerpt)}
             </div>
         </a>
     {/each}
