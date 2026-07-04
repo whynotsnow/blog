@@ -9,17 +9,17 @@ import Key from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 
 // 音乐播放器模式，可选 "local" 或 "meting"，从本地配置中获取或使用默认值 "meting"
-let mode = musicPlayerConfig.mode ?? "meting";
+const mode = musicPlayerConfig.mode ?? "meting";
 // Meting API 地址，从配置中获取或使用默认地址(bilibili.uno(由哔哩哔哩松坂有希公益管理)),服务器在海外,部分音乐平台可能不支持并且速度可能慢,也可以自建Meting API
-let meting_api =
+const meting_api =
 	musicPlayerConfig.meting_api ??
 	"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
 // Meting API 的 ID，从配置中获取或使用默认值
-let meting_id = musicPlayerConfig.id ?? "14164869977";
+const meting_id = musicPlayerConfig.id ?? "14164869977";
 // Meting API 的服务器，从配置中获取或使用默认值,有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
-let meting_server = musicPlayerConfig.server ?? "netease";
+const meting_server = musicPlayerConfig.server ?? "netease";
 // Meting API 的类型，从配置中获取或使用默认值
-let meting_type = musicPlayerConfig.type ?? "playlist";
+const meting_type = musicPlayerConfig.type ?? "playlist";
 
 // 播放状态，默认为 false (未播放)
 let isPlaying = false;
@@ -141,8 +141,8 @@ async function fetchMetingPlaylist() {
 		if (!res.ok) throw new Error("meting api error");
 		const list = await res.json();
 		playlist = list.map((song: any) => {
-			let title = song.name ?? song.title ?? i18n(Key.unknownSong);
-		let artist = song.artist ?? song.author ?? i18n(Key.unknownArtist);
+			const title = song.name ?? song.title ?? i18n(Key.unknownSong);
+			const artist = song.artist ?? song.author ?? i18n(Key.unknownArtist);
 			let dur = song.duration ?? 0;
 			if (dur > 10000) dur = Math.floor(dur / 1000);
 			if (!Number.isFinite(dur) || dur <= 0) dur = 0;

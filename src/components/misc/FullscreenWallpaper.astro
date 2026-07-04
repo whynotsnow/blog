@@ -11,7 +11,7 @@ const { config, className } = Astro.props;
 
 // 获取当前设备类型的图片源
 const getImageSources = async () => {
-	let srcConfig = config.src;
+	const srcConfig = config.src;
 
 	// API 图片逻辑
 	if (siteConfig.banner.imageApi?.enable && siteConfig.banner.imageApi?.url) {
@@ -193,7 +193,7 @@ const renderGroups = [
 			}
 
 			const STORAGE_KEY = 'mizuki_wallpaper_index';
-			let savedIndex = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0');
+			const savedIndex = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0');
 
 			const groups = [
 				container.querySelectorAll('.hidden.md\\:block [data-carousel-item]'),

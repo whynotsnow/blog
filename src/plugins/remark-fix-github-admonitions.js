@@ -1,6 +1,6 @@
 import { visit } from "unist-util-visit";
 
-const GITHUB_ALERT_DECLARATION_REGEX = /^\s*\[\!(?<type>\w+)\]\s*$/;
+const GITHUB_ALERT_DECLARATION_REGEX = /^\s*\[!(?<type>\w+)\]\s*$/;
 const GITHUB_ALERT_TYPES = ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"];
 
 function parseGithubAlertDeclaration(text) {

@@ -40,8 +40,8 @@ interface Props {
 	postSlug?: string;
 }
 
-let { title, banner, description, lang, setOGTypeArticle, postSlug } =
-	Astro.props;
+const { title, description, setOGTypeArticle, postSlug } = Astro.props;
+let { banner, lang } = Astro.props;
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
 // Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
@@ -199,7 +199,7 @@ if (siteConfig.font) {
 							"gtm.start": new Date().getTime(),
 							event: "gtm.js",
 						});
-						var f = d.getElementsByTagName(s)[0],
+						const f = d.getElementsByTagName(s)[0],
 							j = d.createElement(s),
 							dl = l != "dataLayer" ? "&l=" + l : "";
 						j.async = true;
@@ -583,10 +583,10 @@ function disableAnimation() {
 				document.addEventListener("click", async (event) => {
 					// @ts-ignore
 					// let _panelDom = document.getElementById(panel);
-					let tDom = event.target;
+					const tDom = event.target;
 					if (!(tDom instanceof Node)) return; // Ensure the event target is an HTML Node
-					for (let ig of ignores) {
-						let ie = document.getElementById(ig);
+					for (const ig of ignores) {
+						const ie = document.getElementById(ig);
 						if (ie == tDom || ie?.contains(tDom)) {
 							return;
 						}
@@ -1152,7 +1152,7 @@ function disableAnimation() {
 				}
 
 				// Hide the TOC while scrolling back to top
-				let toc = document.getElementById("toc-wrapper");
+				const toc = document.getElementById("toc-wrapper");
 				if (toc) {
 					toc.classList.add("toc-not-ready");
 				}
@@ -1261,9 +1261,9 @@ function disableAnimation() {
 		}
 	}
 
-	let backToTopBtn = document.getElementById("back-to-top-btn");
-	let toc = document.getElementById("toc-wrapper");
-	let navbar = document.getElementById("navbar-wrapper");
+	const backToTopBtn = document.getElementById("back-to-top-btn");
+	const toc = document.getElementById("toc-wrapper");
+	const navbar = document.getElementById("navbar-wrapper");
 
 	// 节流函数
 	function throttle(func: Function, limit: number) {

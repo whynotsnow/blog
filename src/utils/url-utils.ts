@@ -155,7 +155,7 @@ export function resolveImageUrl(
 	if (!image || !filePath) return;
 
 	// 文章所在目录
-	const articleDir = filePath.replace(/\\/g, "/").replace(/\/[^\/]+$/, ""); // 去掉文件名
+	const articleDir = filePath.replace(/\\/g, "/").replace(/\/[^/]+$/, ""); // 去掉文件名
 
 	// 规范化 image
 	const normalizedImage = normalizePath(image);

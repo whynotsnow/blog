@@ -10,7 +10,7 @@ export interface Props {
 	headings: MarkdownHeading[];
 }
 
-let { headings = [] } = Astro.props;
+const { headings = [] } = Astro.props;
 
 let minDepth = 10;
 for (const heading of headings) {
@@ -103,19 +103,19 @@ const className = Astro.props.class;
 			if (min > max) {
 				this.activeIndicator?.setAttribute("style", `opacity: 0`);
 			} else {
-				let parentOffset = this.tocEl?.getBoundingClientRect().top || 0;
-				let scrollOffset = this.tocEl?.scrollTop || 0;
+				const parentOffset = this.tocEl?.getBoundingClientRect().top || 0;
+				const scrollOffset = this.tocEl?.scrollTop || 0;
 				const minEntry = this.tocEntries[min];
 				const maxEntry = this.tocEntries[max];
 				if (minEntry && maxEntry) {
-					let top =
-						minEntry.getBoundingClientRect().top -
-						parentOffset +
-						scrollOffset;
-					let bottom =
-						maxEntry.getBoundingClientRect().bottom -
-						parentOffset +
-						scrollOffset;
+					const top =
+					minEntry.getBoundingClientRect().top -
+					parentOffset +
+					scrollOffset;
+					const bottom =
+					maxEntry.getBoundingClientRect().bottom -
+					parentOffset +
+					scrollOffset;
 					this.activeIndicator?.setAttribute(
 						"style",
 						`top: ${top}px; height: ${bottom - top}px`,
@@ -168,9 +168,9 @@ const className = Astro.props.class;
 			if (!this.sections.length) return;
 
 			for (let i = 0; i < this.sections.length; i++) {
-				let offsetTop = this.sections[i].getBoundingClientRect().top;
-				let offsetBottom =
-					this.sections[i].getBoundingClientRect().bottom;
+				const offsetTop = this.sections[i].getBoundingClientRect().top;
+				const offsetBottom =
+				this.sections[i].getBoundingClientRect().bottom;
 
 				if (
 					this.isInRange(offsetTop, 0, window.innerHeight) ||

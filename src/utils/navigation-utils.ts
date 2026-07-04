@@ -96,8 +96,6 @@ export function waitForSwup(timeout = 5000): Promise<boolean> {
 			return;
 		}
 
-		let timeoutId: NodeJS.Timeout;
-
 		const checkSwup = () => {
 			if (isSwupReady()) {
 				clearTimeout(timeoutId);
@@ -106,14 +104,14 @@ export function waitForSwup(timeout = 5000): Promise<boolean> {
 			}
 		};
 
-		// 监听 Swup 启用事件
-		document.addEventListener("swup:enable", checkSwup);
-
 		// 设置超时
-		timeoutId = setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			document.removeEventListener("swup:enable", checkSwup);
 			resolve(false);
 		}, timeout);
+
+		// 监听 Swup 启用事件
+		document.addEventListener("swup:enable", checkSwup);
 	});
 }
 

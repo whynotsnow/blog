@@ -91,7 +91,7 @@ export function generatePages(
 	}
 
 	// 构建最终页码数组，处理首页、末页和省略号
-	let pages: (number | typeof HIDDEN)[] = [];
+	const pages: (number | typeof HIDDEN)[] = [];
 	if (l > 1) pages.push(1); // 显示首页
 	if (l === 3) pages.push(2); // 当左边界为3时，第二页可直接显示（避免孤立省略号）
 	if (l > 3) pages.push(HIDDEN); // 左侧有较大间隙时插入省略号

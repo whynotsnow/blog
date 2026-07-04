@@ -27,7 +27,7 @@
         mode = getStoredWallpaperMode();
     });
 
-    let currentIcon = $derived(wallpaperOptions.find(opt => opt.mode === mode)?.icon || wallpaperOptions[0].icon);
+    const currentIcon = $derived(wallpaperOptions.find(opt => opt.mode === mode)?.icon || wallpaperOptions[0].icon);
 
     function switchWallpaperMode(newMode: WALLPAPER_MODE) {
         mode = newMode;

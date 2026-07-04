@@ -391,21 +391,21 @@ const transparentClass = shouldEnableTransparency
 		}
 
 		function applyWallpaperMode() {
-			var wallpaperMode =
+			const wallpaperMode =
 				localStorage.getItem("wallpaperMode") || defaultWallpaperMode;
-			var bannerWrapper = document.getElementById("banner-wrapper");
-			var fullscreenWallpaper = document.querySelector(
+			const bannerWrapper = document.getElementById("banner-wrapper");
+			const fullscreenWallpaper = document.querySelector(
 				"[data-fullscreen-wallpaper]",
 			);
-			var navbar = document.getElementById("navbar");
-			var body = document.body;
-			var mainContent = document.querySelector(
+			const navbar = document.getElementById("navbar");
+			const body = document.body;
+			const mainContent = document.querySelector(
 				".absolute.w-full.z-30.pointer-events-none",
 			);
-			var tocWrapper = document.getElementById("toc-wrapper");
+			const tocWrapper = document.getElementById("toc-wrapper");
 
 			// 强制重排以确保样式正确应用
-			var forceReflow = function () {
+			const forceReflow = function () {
 				void document.body.offsetHeight;
 			};
 
