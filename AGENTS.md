@@ -52,6 +52,7 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm build`: production build, Pagefind indexing, and font compression.
 - `pnpm format:check`: check formatting.
 - `pnpm format`: format the repository according to the local Prettier config.
+- `pnpm precommit`: run the same pre-commit gate as the Git hook.
 - `pnpm new-post -- <filename>`: create a post template.
 
 Do not claim that a command passed unless you actually ran it in this workspace and observed the result. If a command was not run, say so explicitly.
@@ -111,6 +112,7 @@ If a command cannot run because of missing local secrets, unavailable network ac
 - Avoid destructive commands such as `git reset --hard` and `git checkout --` unless the user explicitly asks.
 - Keep changes focused. Do not perform unrelated refactors.
 - Before committing, inspect the working tree and commit only the intended files.
+- Git hooks are installed from `.githooks`. The pre-commit hook formats staged code files, restages formatting changes, runs staged whitespace checks, and runs `astro check`. Do not bypass it unless the user explicitly asks.
 
 ## Git Commit Rules
 

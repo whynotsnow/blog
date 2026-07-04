@@ -59,6 +59,23 @@ pnpm format
 当前格式化配置会忽略 Markdown 和 Astro 文件，避免对文章内容和复杂 Astro 模板做大范围无关改动。
 Markdown 规范检查由 `markdownlint-cli2` 单独处理，不会自动重写文章内容。需要自动修复 fenced code block 空行时运行 `pnpm lint:md:fix`。
 
+## Git hooks
+
+依赖安装后会通过 `prepare` 自动执行 `scripts/install-git-hooks.mjs`，将本仓库的 Git hooks 路径设置为 `.githooks`。
+
+提交前会运行 `.githooks/pre-commit`：
+
+1. 自动格式化已暂存的 JavaScript、TypeScript、Svelte、CSS、JSON、YAML 等代码文件，并重新暂存格式化结果。
+2. 如果已暂存文件同时存在未暂存改动，hook 会停止提交，避免自动格式化时把未准备提交的内容一起加入 commit。
+3. 运行 `git diff --cached --check` 检查暂存内容的空白错误。
+4. 运行 `astro check` 检查 Astro、Svelte 和 TypeScript 诊断；存在错误时提交会被阻止。
+
+也可以手动运行：
+
+```bash
+pnpm precommit
+```
+
 ## 常用任务
 
 创建文章：

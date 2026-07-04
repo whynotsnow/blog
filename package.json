@@ -26,6 +26,8 @@
 		"lint:md:fix": "markdownlint-cli2 --fix",
 		"lint": "eslint ./src",
 		"lint:fix": "eslint ./src --fix",
+		"prepare": "node scripts/install-git-hooks.mjs",
+		"precommit": "node scripts/pre-commit-check.mjs",
 		"preinstall": "npx only-allow pnpm",
 		"compress-fonts": "node scripts/compress-fonts.js",
 		"clean": "rimraf node_modules pnpm-lock.yaml",
