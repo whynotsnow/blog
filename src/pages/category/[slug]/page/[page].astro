@@ -1,24 +1,13 @@
 ---
-import type { GetStaticPaths, Page } from "astro";
-import type {
-	CategoryEntry,
-	PostNavigatorCategory,
-	RawPost,
-} from "@/services/core/types";
+import type { GetStaticPaths } from "astro";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import PostPage from "@/components/PostPage.astro";
 import Pagination from "@/components/control/Pagination.astro";
 import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
-import { toUIPost } from "@/services/core/inject";
-import { getCategoryPaginatedStaticPaths } from "@/services/category-page";
-import { getContentStore } from "@/services/core/content-store";
-
-export interface Props {
-	page: Page<RawPost>;
-	categorySlug: string;
-	categories: PostNavigatorCategory[];
-	categoryAllPosts: CategoryEntry;
-}
+import {
+	getCategoryPaginatedStaticPaths,
+	type CategoryPageProps,
+} from "@/services/category-page";
 
 export const getStaticPaths =
 	getCategoryPaginatedStaticPaths satisfies GetStaticPaths;
@@ -27,20 +16,10 @@ export const getStaticPaths =
  * params & props
  */
 const { slug } = Astro.params;
-const { page, categorySlug, categories, categoryAllPosts } =
-	Astro.props as Props;
+const { posts, allPosts, page, categorySlug, categories, store } =
+	Astro.props as CategoryPageProps;
 
 if (!slug) return Astro.redirect("/404");
-
-/**
- *
- * SSG 静态时使用 page.data 做分页
- * client 分页需要分类的所有数据做分页
- */
-const posts = await Promise.all(page.data.map(toUIPost));
-const allPosts = await Promise.all(categoryAllPosts.posts.map(toUIPost));
-
-const store = await getContentStore();
 ---
 
 <MainGridLayout store={store}>

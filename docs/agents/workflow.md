@@ -58,7 +58,7 @@ Do not read unrelated documents just to appear thorough. If multiple areas are a
 | --- | --- |
 | Add or change a post field | `src/content.config.ts`, `src/services/core/types.ts`, `docs/developers/content-guide.md` |
 | Change homepage post selection | `src/pages/index.astro`, `src/services/home.ts`, `src/services/core/sort.ts` |
-| Change categories or tags | `src/services/core/content-store.ts`, `src/utils/url-utils.ts`, category route files |
+| Change categories or tags | `src/services/core/content-store.ts`, `src/services/category-page.ts`, `src/utils/url-utils.ts`, category route files |
 | Change post detail rendering | `src/services/post-detail/index.ts`, `src/components/PostPage.astro`, `src/pages/posts/[...slug].astro` |
 | Change widgets | `src/components/widget`, `src/services/widget/registry.ts` |
 | Change navigation or feature pages | `src/config.ts`, `src/constants/link-presets.ts`, related page file |

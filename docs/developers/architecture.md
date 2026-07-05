@@ -94,8 +94,8 @@ src/features/music-player/
 | `src/pages/index.astro` | 首页文章列表和分类导航。 |
 | `src/pages/posts/[...slug].astro` | 文章详情页，由 `buildPostDetailStaticPaths` 生成路径。 |
 | `src/pages/[permalink].astro` | 自定义 permalink 支持。 |
-| `src/pages/category/[slug]/index.astro` | 分类第一页。 |
-| `src/pages/category/[slug]/page/[page].astro` | 分类分页。 |
+| `src/pages/category/[slug]/index.astro` | 分类第一页，底层由 `src/services/category-page.ts` 生成页面数据。 |
+| `src/pages/category/[slug]/page/[page].astro` | 分类分页，底层由 `src/services/category-page.ts` 生成页面数据。 |
 | `src/pages/archive.astro` | 归档页。 |
 | `src/pages/rss.xml.ts`、`src/pages/atom.xml.ts` | Feed 输出，底层由 `src/services/feed.ts` 提供数据与内容渲染。 |
 | `src/pages/og/[...slug].png.ts` | Open Graph 图片生成。 |

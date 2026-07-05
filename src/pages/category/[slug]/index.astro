@@ -1,31 +1,17 @@
 ---
-import type { Page } from "astro";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import PostPage from "@/components/PostPage.astro";
 import Pagination from "@/components/control/Pagination.astro";
 import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
-import type {
-	CategoryEntry,
-	PostNavigatorCategory,
-	UIPost,
-} from "@/services/core/types";
-import { getCategoryStaticPaths } from "@/services/category";
-import { toUIPost } from "@/services/core/inject";
-import { getContentStore } from "@/services/core/content-store";
+import {
+	getCategoryIndexStaticPaths,
+	type CategoryPageProps,
+} from "@/services/category-page";
 
-interface Props {
-	posts: UIPost[];
-	page: Page;
-	categories: PostNavigatorCategory[];
-	categorySlug: string;
-	categoryAllPosts: CategoryEntry;
-}
-export const getStaticPaths = getCategoryStaticPaths;
+export const getStaticPaths = getCategoryIndexStaticPaths;
 
-// 从 props 中直接获取数据
-const { posts, page, categories, categorySlug, categoryAllPosts } = Astro.props;
-const allPosts = await Promise.all(categoryAllPosts.posts.map(toUIPost));
-const store = await getContentStore();
+const { posts, allPosts, page, categories, categorySlug, store } =
+	Astro.props as CategoryPageProps;
 ---
 
 <MainGridLayout store={store}>
