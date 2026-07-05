@@ -1,0 +1,63 @@
+---
+import { BANNER_HEIGHT_EXTEND } from "@constants/constants";
+import type { BannerImages } from "@/services/banner";
+import type { SiteConfig } from "@/types/config";
+import BannerCarousel from "./BannerCarousel.astro";
+import BannerHomeText from "./BannerHomeText.astro";
+import BannerWaves from "./BannerWaves.astro";
+
+interface Props {
+	bannerImages: BannerImages;
+	config: SiteConfig["banner"];
+	mobileNonHomeClass: string;
+	showHomeText: boolean | undefined;
+}
+
+const { bannerImages, config, mobileNonHomeClass, showHomeText } = Astro.props;
+const hasCarousel =
+	config.carousel?.enable &&
+	((Array.isArray(bannerImages.desktop) && bannerImages.desktop.length > 1) ||
+		(Array.isArray(bannerImages.mobile) && bannerImages.mobile.length > 1));
+---
+
+<div
+	id="banner-wrapper"
+	class={`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeClass}`}
+	style={`top: -${BANNER_HEIGHT_EXTEND}vh`}
+>
+	{
+		hasCarousel ? (
+			<BannerCarousel
+				bannerImages={bannerImages}
+				position={config.position}
+			/>
+		) : (
+			<div id="banner-single-container" class="relative h-full w-full" />
+		)
+	}
+
+	{
+		!hasCarousel && (
+			<>
+				<script
+					id="banner-single-options"
+					is:inline
+					type="application/json"
+					set:html={JSON.stringify({
+						desktopImages: bannerImages.desktop,
+						mobileImages: bannerImages.mobile,
+						position: config.position,
+					})}
+				></script>
+				<script>
+					import { initBannerSingleFromDocument } from "./banner-single-client";
+
+					initBannerSingleFromDocument();
+				</script>
+			</>
+		)
+	}
+
+	<BannerHomeText homeText={config.homeText} showHomeText={showHomeText} />
+	<BannerWaves enabled={config.waves?.enable} />
+</div>

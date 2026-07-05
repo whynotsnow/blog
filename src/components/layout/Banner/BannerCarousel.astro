@@ -1,0 +1,68 @@
+---
+import ImageWrapper from "@components/misc/ImageWrapper.astro";
+import type { BannerImages } from "@/services/banner";
+import type { SiteConfig } from "@/types/config";
+
+interface Props {
+	bannerImages: BannerImages;
+	position: SiteConfig["banner"]["position"];
+}
+
+const { bannerImages, position } = Astro.props;
+const itemCount = Math.max(
+	Array.isArray(bannerImages.desktop) ? bannerImages.desktop.length : 0,
+	Array.isArray(bannerImages.mobile) ? bannerImages.mobile.length : 0,
+);
+const items = Array.from({ length: itemCount })
+	.map((_, index) => {
+		const desktopSrc = Array.isArray(bannerImages.desktop)
+			? bannerImages.desktop[index]
+			: typeof bannerImages.desktop === "string"
+				? bannerImages.desktop
+				: "";
+		const mobileSrc = Array.isArray(bannerImages.mobile)
+			? bannerImages.mobile[index]
+			: typeof bannerImages.mobile === "string"
+				? bannerImages.mobile
+				: "";
+
+		if (!desktopSrc && !mobileSrc) return null;
+		return { desktopSrc, mobileSrc };
+	})
+	.filter(Boolean);
+---
+
+<div id="banner-carousel" class="relative h-full w-full">
+	<ul class="carousel-list h-full w-full">
+		{
+			items.map((item, index) => (
+				<li
+					class={`carousel-item absolute inset-0 transition-all duration-500 ${index === 0 ? "opacity-100 scale-100" : "opacity-0 scale-110"}`}
+				>
+					{item?.mobileSrc && (
+						<ImageWrapper
+							alt={`Mobile banner image ${index + 1}`}
+							class:list={[
+								"block md:hidden object-cover h-full w-full transition-transform duration-500 ease-out",
+							]}
+							src={item.mobileSrc}
+							position={position}
+							loading={index === 0 ? "eager" : "lazy"}
+						/>
+					)}
+					{item?.desktopSrc && (
+						<ImageWrapper
+							alt={`Desktop banner image ${index + 1}`}
+							class:list={[
+								"hidden md:block object-cover h-full w-full transition-transform duration-500 ease-out",
+							]}
+							src={item.desktopSrc}
+							position={position}
+							loading={index === 0 ? "eager" : "lazy"}
+						/>
+					)}
+				</li>
+			))
+		}
+	</ul>
+</div>

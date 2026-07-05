@@ -1,0 +1,101 @@
+---
+import type { MarkdownHeading } from "astro";
+import BackToTop from "@components/control/BackToTop.astro";
+import FloatingTOC from "@components/control/FloatingTOC.astro";
+import Footer from "@components/Footer.astro";
+import LeftSideBar from "@components/layout/LeftSideBar.astro";
+import RightSideBar from "@components/layout/RightSideBar.astro";
+import type { ContentStore } from "@/services/core/types";
+import type { MainGridLayoutViewModel } from "@/services/layout/main-grid";
+import type { WidgetManager } from "@/utils/widget-manager";
+import BannerCredit from "./BannerCredit.astro";
+
+interface Props {
+	headings: MarkdownHeading[];
+	store: ContentStore;
+	widgetManager: WidgetManager;
+	viewModel: MainGridLayoutViewModel;
+}
+
+const { headings, store, widgetManager, viewModel } = Astro.props;
+const {
+	defaultPostListLayout,
+	desktopShowSidebar,
+	mobileShowSidebar,
+	tabletShowSidebar,
+	hasMobileDrawerComponents,
+	hasRightSidebarComponents,
+	gridCols,
+	leftSidebarClass,
+	rightSidebarClass,
+	mainContentClass,
+} = viewModel.sidebarLayout;
+const { transparentClass } = viewModel.mainPanel;
+---
+
+<div
+	class={`absolute w-full z-30 pointer-events-none ${viewModel.mainPanel.mobileNonHomeClass} ${viewModel.mainPanel.noBannerLayoutClass} ${transparentClass}`}
+	style={`top: ${viewModel.mainPanel.top}`}
+>
+	<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
+	<div class="relative max-w-(--page-width) mx-auto pointer-events-auto">
+		<div
+			id="main-grid"
+			class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? "mobile-no-sidebar" : ""} ${hasRightSidebarComponents ? "mobile-both-sidebar" : ""}`}
+			data-layout-mode={defaultPostListLayout}
+		>
+			<BannerCredit
+				credit={viewModel.banner.credit}
+				hasCreditLink={viewModel.banner.hasCreditLink}
+			/>
+
+			<div class="contents">
+				{
+					(mobileShowSidebar ||
+						tabletShowSidebar ||
+						desktopShowSidebar) && (
+						<div
+							class={`left-sidebar-container ${leftSidebarClass} ${transparentClass}`}
+						>
+							<LeftSideBar
+								widgetManager={widgetManager}
+								headings={headings}
+								store={store}
+							/>
+						</div>
+					)
+				}
+
+				{
+					hasRightSidebarComponents && (
+						<div
+							class={`right-sidebar-container ${rightSidebarClass} ${transparentClass}`}
+						>
+							<RightSideBar
+								headings={headings}
+								widgetManager={widgetManager}
+								store={store}
+							/>
+						</div>
+					)
+				}
+			</div>
+
+			<main id="swup-container" class={`${mainContentClass} transition-main`}>
+				<div id="content-wrapper" class="onload-animation transition-leaving">
+					<slot />
+					<div class="footer col-span-full onload-animation hidden lg:block">
+						<Footer />
+					</div>
+				</div>
+			</main>
+
+			<div class="footer col-span-full onload-animation block lg:hidden">
+				<Footer />
+			</div>
+		</div>
+
+		<BackToTop />
+		{viewModel.toc.enable && viewModel.toc.isFloat && <FloatingTOC />}
+	</div>
+</div>
