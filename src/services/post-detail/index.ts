@@ -6,9 +6,8 @@ import {
 	removeFileExtension,
 	resolveSharePosterImages,
 } from "@/utils/url-utils";
-import { hasCustomPermalink, initPostIdMap } from "@/utils/permalink-utils";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
-import { permalinkConfig, siteConfig, profileConfig } from "@/config";
+import { siteConfig, profileConfig } from "@/config";
 import type { ListPost } from "../core/types";
 import type { BlogPostingJsonLd, PostDetailPageProps } from "./types";
 import { getContentStore } from "../core/content-store";
@@ -67,9 +66,6 @@ async function buildPostDetailPageData(
 export const buildPostDetailStaticPaths: GetStaticPaths = async () => {
 	const { posts: listPosts } = await getContentStore();
 
-	// 初始化文章 ID 映射
-	initPostIdMap(listPosts);
-
 	// 并行处理
 	const results = await Promise.all(
 		listPosts.map(async (entry) => {
@@ -86,7 +82,7 @@ export const buildPostDetailStaticPaths: GetStaticPaths = async () => {
 			});
 
 			// alias
-			if (!permalinkConfig.enable && entry.data.alias) {
+			if (entry.data.alias) {
 				let alias = entry.data.alias
 					.replace(/^\/+/, "")
 					.replace(/\/+$/, "");
@@ -99,11 +95,6 @@ export const buildPostDetailStaticPaths: GetStaticPaths = async () => {
 					params: { slug: alias },
 					props: pageData,
 				});
-			}
-
-			// custom permalink 由其它路由处理
-			if (hasCustomPermalink(entry)) {
-				return items;
 			}
 
 			return items;

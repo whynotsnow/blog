@@ -56,7 +56,7 @@ export async function renderPost(entry: RawPost) {
 }
 
 /**
- * 为每篇文章生成顺序 ID（用于 permalink）
+ * 为每篇文章生成顺序 ID。
  */
 export function injectSystemMeta(posts: RawPost[]): PostWithSystemMeta[] {
 	const idMap = new Map<string, number>();

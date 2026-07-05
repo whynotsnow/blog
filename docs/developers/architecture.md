@@ -93,7 +93,6 @@ src/features/music-player/
 | --- | --- |
 | `src/pages/index.astro` | 首页文章列表和分类导航。 |
 | `src/pages/posts/[...slug].astro` | 文章详情页，由 `buildPostDetailStaticPaths` 生成路径。 |
-| `src/pages/[permalink].astro` | 自定义 permalink 支持。 |
 | `src/pages/category/[slug]/index.astro` | 分类第一页，底层由 `src/services/category-page.ts` 生成页面数据。 |
 | `src/pages/category/[slug]/page/[page].astro` | 分类分页，底层由 `src/services/category-page.ts` 生成页面数据。 |
 | `src/pages/archive.astro` | 归档页。 |
@@ -111,7 +110,6 @@ src/features/music-player/
 - `profileConfig`：个人资料组件。
 - `sidebarLayoutConfig`：左右侧边栏布局。
 - `commentConfig`：评论系统。
-- `permalinkConfig`：自定义 URL 策略。
 
 配置结构变化需要同步更新 [配置说明](./configuration.md)。
 
@@ -121,4 +119,4 @@ src/features/music-player/
 - 新增非文章数据：优先放到 `src/data`。
 - 新增 Widget：放入 `src/components/widget`，并在 `src/services/widget/registry.ts` 注册。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
-- 分类、标签和 permalink URL 不要硬编码，使用 `src/utils/url-utils.ts`、`src/utils/client-utils.ts`、`src/utils/permalink-utils.ts`。
+- 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。

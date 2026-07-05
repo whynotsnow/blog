@@ -45,7 +45,7 @@ Agent OS does not require reading every document. It requires checking the relev
 | Architecture, content flow, routes, or services | `docs/agents/project-map.md`, `docs/developers/architecture.md` |
 | Known command/tooling failure or repeated debugging pattern | `docs/agents/memory.json`, `docs/agents/failure-index.md`, `docs/agents/runtime-playbook.md` |
 | Content schema, posts, tags, categories, drafts, or assets | `docs/developers/content-guide.md` |
-| Site config, env vars, feature pages, URLs, or permalink behavior | `docs/developers/configuration.md` |
+| Site config, env vars, feature pages, or URL behavior | `docs/developers/configuration.md` |
 | Local setup, commands, checks, or developer workflow | `docs/developers/development.md` |
 | Content separation, content repository, migration, deployment, or build trigger behavior | Matching document in `docs/developers/` |
 | Maintenance risks, generated files, dependency updates | `docs/developers/maintenance.md` |

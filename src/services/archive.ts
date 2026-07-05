@@ -17,7 +17,6 @@ export type ArchivePost = {
 		category?: SlugItem;
 		published: Date;
 		alias?: string;
-		permalink?: string;
 	};
 };
 
@@ -53,7 +52,6 @@ function toArchivePost(post: ListPost): ArchivePost {
 			category,
 			published: post.data.published,
 			alias: post.data.alias,
-			permalink: post.data.permalink,
 		},
 	};
 }

@@ -1,8 +1,7 @@
 import type { CollectionEntry } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { CATEGORY_SLUG_MAP, permalinkConfig, profileConfig } from "../config";
-import { generatePermalinkSlug } from "./permalink-utils";
+import { CATEGORY_SLUG_MAP, profileConfig } from "../config";
 import type { RawPost } from "@/services/core/types";
 import path from "node:path";
 import { toSlug } from "./client-utils";
@@ -39,20 +38,6 @@ export function getPostUrlByAlias(alias: string): string {
 }
 
 export function getPostUrl(post: RawPost): string {
-	// 如果文章有自定义 permalink，优先使用（在根目录下）
-	if (post.data.permalink) {
-		const slug = post.data.permalink
-			.replace(/^\/+/, "")
-			.replace(/\/+$/, "");
-		return url(`/${slug}/`);
-	}
-
-	// 如果全局 permalink 功能启用，使用生成的 slug（在根目录下）
-	if (permalinkConfig.enable) {
-		const slug = generatePermalinkSlug(post);
-		return url(`/${slug}/`);
-	}
-
 	// 如果文章有 alias，使用 alias（在 /posts/ 下）
 	if (post.data.alias) {
 		return getPostUrlByAlias(post.data.alias);

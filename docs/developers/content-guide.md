@@ -37,7 +37,6 @@ licenseUrl: ""
 encrypted: false
 password: ""
 alias: ""
-permalink: ""
 ---
 ```
 
@@ -56,6 +55,7 @@ permalink: ""
 - `draft`：为 `true` 时生产环境不发布。
 - `pinned`、`priority`、`recommendScore`：列表排序和推荐权重。
 - `comment`：是否开启评论。
+- `alias`：可选文章别名，生成 `/posts/{alias}/` 路径。项目不再支持根级 `permalink` 路径。
 
 兼容旧版本但不建议新文章继续使用的字段：
 
@@ -131,4 +131,3 @@ pnpm new-post -- my-post-title
 3. 更新 `src/services/core` 中的注入、排序或索引逻辑。
 4. 更新本文档。
 5. 运行 `pnpm check`。
-

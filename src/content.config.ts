@@ -3,62 +3,61 @@ import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
 const postsCollection = defineCollection({
-  loader: glob({
-    pattern: "**/*.md",
-    base: "./src/content/posts",
-  }),
+	loader: glob({
+		pattern: "**/*.md",
+		base: "./src/content/posts",
+	}),
 
-  schema: z.object({
-    /* Core */
-    title: z.string(),
-    published: z.coerce.date(),
-    updated: z.coerce.date().optional(),
+	schema: z.object({
+		/* Core */
+		title: z.string(),
+		published: z.coerce.date(),
+		updated: z.coerce.date().optional(),
 
-    /* Basic flags */
-    draft: z.boolean().optional().default(false),
-    pinned: z.boolean().optional().default(false),
-    priority: z.number().optional(),
+		/* Basic flags */
+		draft: z.boolean().optional().default(false),
+		pinned: z.boolean().optional().default(false),
+		priority: z.number().optional(),
 
-    /* Meta */
-    description: z.string().optional().default(""),
-    image: z.string().optional().default(""),
-    author: z.string().optional().default(""),
-    lang: z.string().optional().default(""),
+		/* Meta */
+		description: z.string().optional().default(""),
+		image: z.string().optional().default(""),
+		author: z.string().optional().default(""),
+		lang: z.string().optional().default(""),
 
-    /* Classification */
-    tags: z.array(z.string()).optional().default([]),
-    category: z.string().optional().default(""),
+		/* Classification */
+		tags: z.array(z.string()).optional().default([]),
+		category: z.string().optional().default(""),
 
-    /* Interaction */
-    comment: z.boolean().optional().default(true),
+		/* Interaction */
+		comment: z.boolean().optional().default(true),
 
-    /* Source & License */
-    sourceLink: z.string().optional().default(""),
-    licenseName: z.string().optional().default(""),
-    licenseUrl: z.string().optional().default(""),
+		/* Source & License */
+		sourceLink: z.string().optional().default(""),
+		licenseName: z.string().optional().default(""),
+		licenseUrl: z.string().optional().default(""),
 
-    /* Encryption */
-    encrypted: z.boolean().optional().default(false),
-    password: z.string().optional().default(""),
+		/* Encryption */
+		encrypted: z.boolean().optional().default(false),
+		password: z.string().optional().default(""),
 
-    /* Routing */
-    alias: z.string().optional(),
-    permalink: z.string().optional(),
+		/* Routing */
+		alias: z.string().optional(),
 
-    /* 推荐权重 */
-    recommendScore: z.number().optional().default(0),
+		/* 推荐权重 */
+		recommendScore: z.number().optional().default(0),
 
-    /* =========================
+		/* =========================
        Deprecated fields
        为兼容旧版本保留
        不再使用
     ========================= */
 
-    prevTitle: z.string().optional(),
-    prevSlug: z.string().optional(),
-    nextTitle: z.string().optional(),
-    nextSlug: z.string().optional(),
-  }),
+		prevTitle: z.string().optional(),
+		prevSlug: z.string().optional(),
+		nextTitle: z.string().optional(),
+		nextSlug: z.string().optional(),
+	}),
 });
 
 /* =========================
@@ -66,11 +65,11 @@ const postsCollection = defineCollection({
 ========================= */
 
 const specCollection = defineCollection({
-  loader: glob({
-    pattern: "**/*.md",
-    base: "./src/content/spec",
-  }),
-  schema: z.object({}),
+	loader: glob({
+		pattern: "**/*.md",
+		base: "./src/content/spec",
+	}),
+	schema: z.object({}),
 });
 
 /* =========================
@@ -78,6 +77,6 @@ const specCollection = defineCollection({
 ========================= */
 
 export const collections = {
-  posts: postsCollection,
-  spec: specCollection,
+	posts: postsCollection,
+	spec: specCollection,
 };

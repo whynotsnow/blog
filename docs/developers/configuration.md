@@ -24,7 +24,6 @@
 | `licenseConfig` | 默认内容协议展示。 |
 | `commentConfig` | 评论系统配置。 |
 | `sidebarLayoutConfig` | 侧边栏位置和布局模式。 |
-| `permalinkConfig` | URL 生成和自定义 permalink。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
 ## 特色页面
@@ -57,13 +56,11 @@
 
 本地值放在 `.env`，生产值放在 Vercel 或对应部署平台的环境变量中。
 
-## URL 和 Permalink
+## URL
 
 URL 相关工具位于：
 
 - `src/utils/url-utils.ts`
-- `src/utils/permalink-utils.ts`
 - `src/utils/client-utils.ts`
 
-新增代码不要硬编码分类、标签、文章 URL。使用已有工具可以保证 alias 和 permalink 配置继续生效。
-
+新增代码不要硬编码分类、标签、文章 URL。文章详情页使用 `/posts/{slug}/`，可选 `alias` 会生成 `/posts/{alias}/`。

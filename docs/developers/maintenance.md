@@ -46,7 +46,7 @@ pnpm build
 | `src/content.config.ts` | Schema 变化可能影响大量文章构建。 |
 | `src/services/core/inject.ts` | 派生元数据会影响列表、详情、归档、Feed 和卡片。 |
 | `src/services/core/content-store.ts` | 分类和标签索引会影响路由与导航。 |
-| `src/utils/permalink-utils.ts` | URL 变化会影响旧链接和 SEO。 |
+| `src/utils/url-utils.ts` | URL 变化会影响旧链接和 SEO。 |
 | `scripts/sync-content.js` | 会移动、链接或复制内容目录。 |
 | `src/config.ts` | 站点私有行为和外部服务配置集中在这里。 |
 

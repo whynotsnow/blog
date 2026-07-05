@@ -1,6 +1,5 @@
 import type { CollectionEntry } from "astro:content";
 import { getPostUrl } from "@utils/url-utils";
-import { initPostIdMap } from "@utils/permalink-utils";
 import { getContentStore } from "@/services/core/content-store";
 import type { ListPost } from "@/services/core/types";
 
@@ -17,8 +16,6 @@ export type PostForList = {
 
 export async function getSortedPostsList(): Promise<PostForList[]> {
 	const { posts } = await getContentStore();
-
-	initPostIdMap(posts);
 
 	return posts.map((post) => ({
 		id: post.id,

@@ -5,7 +5,6 @@ import { parse as htmlParser } from "node-html-parser";
 import sanitizeHtml from "sanitize-html";
 import { getContentStore } from "./core/content-store";
 import type { ListPost } from "./core/types";
-import { initPostIdMap } from "@/utils/permalink-utils";
 
 const markdownParser = new MarkdownIt();
 
@@ -18,8 +17,6 @@ export async function getFeedPosts(): Promise<ListPost[]> {
 	const feedPosts = posts.filter(
 		(post) => !post.data.encrypted && post.data.draft !== true,
 	);
-
-	initPostIdMap(feedPosts);
 
 	return feedPosts;
 }
