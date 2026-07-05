@@ -57,12 +57,14 @@ pnpm build
 ```bash
 pnpm check
 pnpm type-check
+pnpm test:smoke
 pnpm format:check
 pnpm lint
 pnpm lint:md
 ```
 
 常规代码变更优先运行 `pnpm check`。涉及 TypeScript 类型、服务层结构或声明文件时，再运行 `pnpm type-check`。
+需要浏览器冒烟测试或 Codex 调试页面时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。`test:smoke` 会通过 Playwright 自动启动 Astro dev server，不需要手动运行 `pnpm dev`。
 JavaScript、TypeScript、Astro 或 Svelte 代码质量检查运行 `pnpm lint`，需要自动修复可修复问题时运行 `pnpm lint:fix`。
 文档结构和 Markdown 格式变更运行 `pnpm lint:md`，当前检查范围包括 `AGENTS.md`、`README.md` 和 `docs/**/*.md`，初始规则只启用 `MD031`。
 
