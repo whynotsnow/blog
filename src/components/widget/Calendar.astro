@@ -4,12 +4,12 @@ import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import WidgetLayout from "./WidgetLayout.astro";
 import { Icon } from "astro-icon/components";
-import type { CalendarData } from "@/services/widget/registry";
+import type { CalendarWidgetData } from "@/services/widget/data/calendar";
 
 export interface Props {
 	class?: string;
 	style?: string;
-	calendarData: CalendarData;
+	calendarData: CalendarWidgetData;
 }
 
 const { class: className, style, calendarData } = Astro.props;
@@ -176,7 +176,8 @@ const yearSuffix = isChinese ? "年" : " ";
 			: decodedPath;
 
 		const matchedPost = allPostsData.find((post) => {
-			return normalizedPath.endsWith(`/${post.id}`);
+			const postUrl = decodeURIComponent(post.url).replace(/\/$/, "");
+			return normalizedPath === postUrl;
 		});
 		return matchedPost ? matchedPost.id : null;
 	}
@@ -373,7 +374,7 @@ const yearSuffix = isChinese ? "年" : " ";
 				}
 
 				return `
-            <a href="/posts/${post.id}/" class="${containerClass}">
+            <a href="${post.url}" class="${containerClass}">
                 <span class="${titleClass}">${post.title}</span>
                 <span class="${dateClass}">${dateStr}</span>
             </a>
