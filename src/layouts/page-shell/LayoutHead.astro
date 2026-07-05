@@ -1,0 +1,231 @@
+---
+import { CLARITY_PROJECT_ID, GTM_ID, pioConfig, profileConfig, siteConfig } from "@/config";
+import { umamiConfig } from "@/config";
+import {
+	DARK_MODE,
+	DEFAULT_THEME,
+	LIGHT_MODE,
+	PAGE_WIDTH,
+} from "@/constants/constants";
+import type { Favicon } from "@/types/config";
+import { url } from "@/utils/url-utils";
+
+interface Props {
+	configHue: number;
+	currentUrl: URL;
+	description?: string;
+	favicons: Favicon[];
+	generator: string;
+	ogImageUrl?: string;
+	pageTitle: string;
+	setOGTypeArticle?: boolean;
+}
+
+const {
+	configHue,
+	currentUrl,
+	description,
+	favicons,
+	generator,
+	ogImageUrl,
+	pageTitle,
+	setOGTypeArticle,
+} = Astro.props;
+---
+
+<!-- 第三方分析脚本 - 延迟加载优化 -->
+<script is:inline define:vars={{ GTM_ID, CLARITY_PROJECT_ID }}>
+	// 使用 requestIdleCallback 延迟加载第三方脚本
+	(function () {
+		// 从环境变量读取配置
+		const config = {
+			gtmId: GTM_ID,
+			clarityId: CLARITY_PROJECT_ID,
+		};
+
+		// 验证必要配置
+		if (!config.gtmId || !config.clarityId) {
+			console.warn("Analytics IDs not configured. Skipping loading.");
+			return;
+		}
+
+		// 使用 requestIdleCallback 延迟加载
+		function loadAnalytics() {
+			// Google Tag Manager
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({
+					"gtm.start": new Date().getTime(),
+					event: "gtm.js",
+				});
+				const f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", config.gtmId);
+
+			// Clarity
+			(function (c, l, a, r, i, t, y) {
+				c[a] =
+					c[a] ||
+					function (...args) {
+						(c[a].q = c[a].q || []).push(args);
+					};
+				t = l.createElement(r);
+				t.async = 1;
+				t.src = "https://www.clarity.ms/tag/" + i;
+				y = l.getElementsByTagName(r)[0];
+				y.parentNode.insertBefore(t, y);
+			})(window, document, "clarity", "script", config.clarityId);
+		}
+
+		if ("requestIdleCallback" in window) {
+			requestIdleCallback(loadAnalytics, { timeout: 3000 });
+		} else {
+			setTimeout(loadAnalytics, 3000);
+		}
+	})();
+</script>
+
+<title>{pageTitle}</title>
+<meta charset="UTF-8" />
+<meta name="description" content={description || pageTitle} />
+{
+	siteConfig.keywords && siteConfig.keywords.length > 0 && (
+		<meta name="keywords" content={siteConfig.keywords.join(", ")} />
+	)
+}
+<meta name="author" content={profileConfig.name} />
+<meta property="og:site_name" content={siteConfig.title} />
+<meta property="og:url" content={currentUrl} />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={description || pageTitle} />
+{ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+{
+	setOGTypeArticle ? (
+		<meta property="og:type" content="article" />
+	) : (
+		<meta property="og:type" content="website" />
+	)
+}
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={currentUrl} />
+<meta name="twitter:title" content={pageTitle} />
+<meta name="twitter:description" content={description || pageTitle} />
+<meta name="viewport" content="width=device-width" />
+<meta name="generator" content={generator} />
+{
+	favicons.map((favicon) => (
+		<link
+			rel="icon"
+			href={favicon.src.startsWith("/") ? url(favicon.src) : favicon.src}
+			sizes={favicon.sizes}
+			media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
+		/>
+	))
+}
+
+<!-- Set the theme before the page is rendered to avoid a flash -->
+<script
+	is:inline
+	define:vars={{
+		DEFAULT_THEME,
+		LIGHT_MODE,
+		DARK_MODE,
+		BANNER_HEIGHT_EXTEND: 30,
+		configHue,
+		pageScaling: siteConfig.pageScaling,
+	}}
+>
+	// Load the theme from local storage
+	const theme = localStorage.getItem("theme") || DEFAULT_THEME;
+	let isDark = false;
+	switch (theme) {
+		case LIGHT_MODE:
+			document.documentElement.classList.remove("dark");
+			isDark = false;
+			break;
+		case DARK_MODE:
+			document.documentElement.classList.add("dark");
+			isDark = true;
+			break;
+	}
+
+	// Set the theme for Expressive Code based on current mode
+	const expressiveTheme = isDark ? "github-dark" : "github-light";
+	const currentTheme = document.documentElement.getAttribute("data-theme");
+	if (currentTheme !== expressiveTheme) {
+		document.documentElement.setAttribute("data-theme", expressiveTheme);
+	}
+
+	// Load the hue from local storage
+	const hue = localStorage.getItem("hue") || configHue;
+	document.documentElement.style.setProperty("--hue", hue);
+
+	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
+	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
+	offset = offset - (offset % 4);
+	document.documentElement.style.setProperty(
+		"--banner-height-extend",
+		`${offset}px`,
+	);
+
+	// 自动缩放逻辑 (Moved from MainGridLayout to here for earlier execution)
+	(function () {
+		if (pageScaling && pageScaling.enable) {
+			function adjustPageScale() {
+				const isTouch =
+					(window.matchMedia &&
+						(window.matchMedia("(pointer:coarse)").matches ||
+							window.matchMedia("(hover: none)").matches)) ||
+					"ontouchstart" in window;
+				const isPortrait =
+					window.matchMedia &&
+					window.matchMedia("(orientation: portrait)").matches;
+				const isTabletLike = isTouch || window.innerWidth <= 1280;
+				if (isTabletLike || isPortrait) {
+					document.documentElement.style.fontSize = "";
+					return;
+				}
+				const targetWidth = pageScaling.targetWidth || 2000;
+				const currentWidth = document.documentElement.clientWidth;
+				let scale = currentWidth / targetWidth;
+				if (scale > 1) scale = 1;
+				if (scale < 0.85) scale = 0.85;
+				document.documentElement.style.fontSize = `${scale * 100}%`;
+			}
+
+			adjustPageScale();
+			window.addEventListener("resize", adjustPageScale);
+			document.addEventListener("swup:page:view", adjustPageScale);
+			window.addEventListener("orientationchange", adjustPageScale);
+		}
+	})();
+</script>
+<style
+	define:vars={{
+		configHue,
+		"page-width": `${PAGE_WIDTH}rem`,
+	}}
+></style>
+
+<slot />
+
+{
+	pioConfig.enable && <link rel="stylesheet" href="/pio/static/pio.css" />
+}
+
+<link
+	rel="alternate"
+	type="application/rss+xml"
+	title={profileConfig.name}
+	href={`${Astro.site}rss.xml`}
+/>
+
+{
+	umamiConfig.enabled && umamiConfig.scripts && (
+		<Fragment set:html={umamiConfig.scripts} />
+	)
+}

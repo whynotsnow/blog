@@ -1,0 +1,58 @@
+---
+interface Props {
+	bannerOffset: string;
+	bannerHeightHome: string;
+}
+
+const { bannerOffset, bannerHeightHome } = Astro.props;
+---
+
+<style
+	is:global
+	define:vars={{
+		bannerOffset,
+		"banner-height-home": bannerHeightHome,
+	}}
+>
+	@reference "../../styles/main.css";
+
+	@layer components {
+		.enable-banner.is-home #banner-wrapper {
+			@apply lg:h-(--banner-height-home) lg:translate-y-(--banner-height-extend);
+		}
+		.enable-banner #banner-wrapper {
+			@apply lg:h-(--banner-height-home);
+		}
+		.enable-banner.is-home #banner {
+			@apply lg:h-(--banner-height-home) lg:translate-y-0;
+		}
+		.enable-banner #banner {
+			@apply lg:h-(--banner-height-home) lg:translate-y-(--bannerOffset);
+		}
+		.enable-banner.is-home #main-grid {
+			@apply lg:translate-y-(--banner-height-extend);
+		}
+		.enable-banner #top-row {
+			@apply lg:h-[calc(var(--banner-height-home)-4.5rem)] transition-all duration-300;
+		}
+		.enable-banner.is-home #sidebar-sticky {
+			@apply lg:top-[calc(1rem-var(--banner-height-extend))];
+		}
+		.navbar-hidden {
+			@apply opacity-0 -translate-y-16;
+		}
+
+		/* Water waves animation */
+		.waves > .parallax use {
+			animation: wave 25s cubic-bezier(0.5, 0.5, 0.45, 0.5) infinite;
+		}
+		@keyframes wave {
+			0% {
+				transform: translate3d(-90px, 0, 0);
+			}
+			100% {
+				transform: translate3d(85px, 0, 0);
+			}
+		}
+	}
+</style>
