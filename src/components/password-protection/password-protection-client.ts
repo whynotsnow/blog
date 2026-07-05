@@ -1,32 +1,5 @@
 import type { PasswordProtectionClientConfig } from "./types";
 
-declare global {
-	interface Window {
-		CryptoJS?: {
-			AES: {
-				decrypt: (
-					content: string,
-					password: string,
-				) => {
-					toString: (encoder: unknown) => string;
-				};
-			};
-			enc: {
-				Utf8: unknown;
-			};
-		};
-		Fancybox?: {
-			bind?: (selector: string, options: Record<string, unknown>) => void;
-			unbind?: (selector: string) => void;
-		};
-		hljs?: {
-			highlightElement: (element: Element) => void;
-		};
-		mobileTOCInit?: () => void;
-		renderMermaidDiagrams?: () => void;
-	}
-}
-
 const CONFIG_ID = "password-protection-config";
 const VERIFY_PREFIX = "MIZUKI-VERIFY:";
 

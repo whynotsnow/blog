@@ -47,7 +47,28 @@ declare global {
 			}>;
 		};
 
+		CryptoJS?: {
+			AES: {
+				decrypt: (
+					content: string,
+					password: string,
+				) => {
+					toString: (encoder: unknown) => string;
+				};
+			};
+			enc: {
+				Utf8: unknown;
+			};
+		};
+		Fancybox?: {
+			bind?: (selector: string, options: Record<string, unknown>) => void;
+			unbind?: (selector: string) => void;
+		};
+		hljs?: {
+			highlightElement: (element: Element) => void;
+		};
 		mobileTOCInit?: () => void;
+		renderMermaidDiagrams?: () => void;
 		initSemifullScrollDetection?: () => void;
 		applyWallpaperMode?: () => void;
 		onPageLifecycle?: typeof onPageLifecycle;
