@@ -1,0 +1,55 @@
+---
+import type { AnimePageModel } from "../../services/anime";
+import AnimeEmptyState from "./AnimeEmptyState.astro";
+import AnimeGrid from "./AnimeGrid.astro";
+import AnimeToolbar from "./AnimeToolbar.astro";
+
+interface Props {
+	model: AnimePageModel;
+}
+
+const { model } = Astro.props;
+---
+
+<div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+	<div class="card-base anime-card-base z-10 px-9 py-6 relative w-full">
+		<div class="relative w-full mb-8">
+			<div class="mb-6">
+				<h1
+					class="text-4xl font-bold text-90 mb-2 relative
+                    before:w-1 before:h-8 before:rounded-md before:bg-(--primary)
+                    before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
+				>
+					{model.title}
+				</h1>
+				<p class="text-75">{model.subtitle}</p>
+			</div>
+
+			<AnimeToolbar filterOptions={model.filterOptions} />
+		</div>
+
+		<div class="mb-8">
+			{
+				model.showEmptyState ? (
+					<AnimeEmptyState
+						message={model.emptyMessage}
+						description={model.emptyDescription}
+					/>
+				) : (
+					<AnimeGrid
+						visibleItems={model.visibleItems}
+						hiddenItems={model.hiddenItems}
+						statusMap={model.statusMap}
+						labels={model.labels}
+					/>
+				)
+			}
+		</div>
+	</div>
+</div>
+
+<script>
+	import { initAnimePage } from "./anime-page-client";
+
+	initAnimePage();
+</script>

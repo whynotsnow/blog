@@ -1,0 +1,56 @@
+---
+import type {
+	AnimeItem,
+	AnimeLabels,
+	AnimeStatusInfo,
+} from "../../services/anime";
+import { getAnimeStatusInfo } from "../../services/anime";
+import AnimeCard from "./AnimeCard.astro";
+
+interface Props {
+	visibleItems: AnimeItem[];
+	hiddenItems: AnimeItem[];
+	statusMap: Record<string, AnimeStatusInfo>;
+	labels: AnimeLabels;
+}
+
+const { visibleItems, hiddenItems, statusMap, labels } = Astro.props;
+---
+
+<div
+	id="anime-list-container"
+	class="anime-grid-container grid gap-4 md:gap-6 opacity-0 transition-opacity duration-300"
+>
+	{
+		visibleItems.map((anime) => (
+			<AnimeCard
+				anime={anime}
+				statusInfo={getAnimeStatusInfo(statusMap, anime.status)}
+				labels={labels}
+			/>
+		))
+	}
+</div>
+
+<template id="anime-lazy-store">
+	{
+		hiddenItems.map((anime) => (
+			<AnimeCard
+				anime={anime}
+				statusInfo={getAnimeStatusInfo(statusMap, anime.status)}
+				labels={labels}
+			/>
+		))
+	}
+</template>
+
+{
+	hiddenItems.length > 0 && (
+		<div
+			id="infinite-scroll-sentinel"
+			class="w-full h-20 flex items-center justify-center mt-8"
+		>
+			<div class="anime-loading-spinner w-8 h-8 border-4 border-(--primary) border-t-transparent rounded-full animate-spin" />
+		</div>
+	)
+}

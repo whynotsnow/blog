@@ -1,0 +1,24 @@
+---
+import type { AnimeFilterOption } from "../../services/anime";
+
+interface Props {
+	filterOptions: AnimeFilterOption[];
+}
+
+const { filterOptions } = Astro.props;
+---
+
+<div class="mb-6">
+	<div class="anime-filter-container flex flex-wrap gap-2">
+		{
+			filterOptions.map((option, index) => (
+				<button
+					class:list={["anime-filter-tag", { "anime-active": index === 0 }]}
+					data-status={option.status}
+				>
+					{option.text}
+				</button>
+			))
+		}
+	</div>
+</div>
