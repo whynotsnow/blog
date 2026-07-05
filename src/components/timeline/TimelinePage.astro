@@ -1,0 +1,96 @@
+---
+import type { TimelinePageModel } from "@/services/timeline";
+import TimelineCurrent from "./TimelineCurrent.astro";
+import TimelineHistory from "./TimelineHistory.astro";
+import TimelineStats from "./TimelineStats.astro";
+
+interface Props {
+	model: TimelinePageModel;
+}
+
+const { model } = Astro.props;
+---
+
+<div
+	class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+>
+	<div class="card-base z-10 px-6 py-8 md:px-9 md:py-1ss0 relative w-full">
+		<div class="flex flex-col items-start justify-center mb-10">
+			<h1
+				class="text-3xl md:text-4xl font-bold text-black/90 dark:text-white/90 mb-3 relative
+                  before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)]
+                  before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
+			>
+				{model.title}
+			</h1>
+			<p class="text-base md:text-lg text-black/60 dark:text-white/60">
+				{model.subtitle}
+			</p>
+		</div>
+
+		<TimelineStats model={model} />
+		<TimelineCurrent model={model} />
+		<TimelineHistory model={model} />
+	</div>
+</div>
+
+<style>
+	.line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.line-clamp-3 {
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.timeline-node {
+		transition: all 0.3s ease;
+	}
+
+	.timeline-node:hover {
+		transform: scale(1.1);
+	}
+
+	@keyframes pulse {
+		0% {
+			transform: scale(1);
+			box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+		}
+		70% {
+			transform: scale(1.05);
+			box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+		}
+		100% {
+			transform: scale(1);
+			box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+		}
+	}
+
+	.timeline-node {
+		animation: pulse 2s infinite;
+	}
+
+	.timeline-horizontal-scroll::-webkit-scrollbar {
+		height: 8px;
+	}
+
+	.timeline-horizontal-scroll::-webkit-scrollbar-track {
+		background: #e5e7eb;
+		border-radius: 4px;
+	}
+
+	.timeline-horizontal-scroll::-webkit-scrollbar-thumb {
+		background: hsl(var(--hue), 70%, 60%);
+		border-radius: 4px;
+	}
+</style>
+
+<script>
+	import "./timeline-page-client";
+</script>
