@@ -3,20 +3,23 @@
 	"type": "module",
 	"version": "8.3",
 	"scripts": {
+		"check-env": "node scripts/check-env.mjs",
 		"sync-content": "node scripts/sync-content.js",
 		"init-content": "node scripts/init-content-repo.js",
-		"predev": "node scripts/sync-content.js || true",
-		"prebuild": "node scripts/sync-content.js || true",
-		"dev": "astro dev --host",
+		"predev": "node scripts/check-env.mjs",
+		"prebuild": "node scripts/check-env.mjs",
+		"dev": "(node scripts/sync-content.js || true) && astro dev --host",
 		"start": "astro dev",
+		"precheck": "node scripts/check-env.mjs",
 		"check": "astro check",
 		"update-anime": "node scripts/update-anime.mjs",
 		"update-bangumi": "node scripts/update-bangumi.mjs",
 		"update-bilibili": "node scripts/update-bilibili.mjs",
-		"build": "node scripts/update-anime.mjs && astro build && pagefind --site dist && node scripts/compress-fonts.js",
+		"build": "(node scripts/sync-content.js || true) && node scripts/update-anime.mjs && astro build && pagefind --site dist && node scripts/compress-fonts.js",
 		"submit": "node scripts/indexnow-submit.js",
 		"preview": "astro preview",
 		"astro": "astro",
+		"pretype-check": "node scripts/check-env.mjs",
 		"type-check": "tsc --noEmit --isolatedDeclarations",
 		"new-post": "node scripts/new-post.js",
 		"generate-posts": "node scripts/generate-posts.js",
@@ -27,8 +30,8 @@
 		"lint": "eslint ./src",
 		"lint:fix": "eslint ./src --fix",
 		"prepare": "node scripts/install-git-hooks.mjs",
-		"precommit": "node scripts/pre-commit-check.mjs",
-		"preinstall": "npx only-allow pnpm",
+		"precommit": "node scripts/check-env.mjs && node scripts/pre-commit-check.mjs",
+		"preinstall": "node scripts/check-env.mjs && npx only-allow pnpm",
 		"compress-fonts": "node scripts/compress-fonts.js",
 		"clean": "rimraf node_modules pnpm-lock.yaml",
 		"clean:force": "rimraf node_modules pnpm-lock.yaml && pnpm store prune"
@@ -112,10 +115,5 @@
 		"prettier-plugin-svelte": "^3.5.0",
 		"typescript-eslint": "^8.62.1"
 	},
-	"packageManager": "pnpm@10.22.0",
-	"pnpm": {
-		"overrides": {
-			"@emmetio/css-parser": "https://codeload.github.com/ramya-rao-a/css-parser/tar.gz/370c480ac103bd17c7bcfb34bf5d577dc40d3660"
-		}
-	}
+	"packageManager": "pnpm@10.22.0"
 }

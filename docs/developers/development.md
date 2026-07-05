@@ -5,6 +5,22 @@
 - Node.js 18 或更新版本。
 - pnpm 10，版本应与 `package.json` 中的 `packageManager` 保持一致。
 
+本项目通过 `scripts/check-env.mjs` 校验 pnpm 版本。若本机全局 PATH 中存在其他 pnpm 版本，优先使用 Corepack 启动项目声明的版本：
+
+```bash
+corepack enable
+corepack install
+corepack pnpm --version
+```
+
+在 Codex 或临时 shell 中，可以先进入项目环境：
+
+```bash
+source .codex/env-setup.sh
+```
+
+该脚本会通过 Corepack 使用 `package.json` 中声明的 pnpm 版本，不会要求修改系统全局 pnpm。
+
 ## 安装依赖
 
 ```bash
@@ -19,7 +35,7 @@ pnpm dev
 
 `dev` 脚本会启动 `astro dev --host`。
 
-`predev` 会先运行内容同步脚本。如果未配置内容分离，同步脚本会直接退出并继续使用本地内容。
+`predev` 会先运行环境校验；`dev` 会在启动前运行内容同步脚本。如果未配置内容分离，同步脚本会直接退出并继续使用本地内容。
 
 ## 构建
 
