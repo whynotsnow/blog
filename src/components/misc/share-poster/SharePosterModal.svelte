@@ -1,0 +1,86 @@
+<script lang="ts">
+	import Icon from "@iconify/svelte";
+	import type { SharePosterLabels } from "./types";
+
+	export let posterImage: string | null;
+	export let themeColor: string;
+	export let copied: boolean;
+	export let labels: SharePosterLabels;
+	export let closeModal: () => void;
+	export let copyLink: () => void;
+	export let downloadPoster: () => void;
+
+	function portal(node: HTMLElement) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node.parentNode) {
+					node.parentNode.removeChild(node);
+				}
+			},
+		};
+	}
+</script>
+
+<div
+	use:portal
+	class="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity"
+	on:click={closeModal}
+>
+	<div
+		class="bg-(--card-bg) rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl transform transition-all"
+		on:click|stopPropagation
+	>
+		<div
+			class="p-6 flex justify-center bg-(--card-bg) min-h-[200px] items-center"
+		>
+			{#if posterImage}
+				<img
+					src={posterImage}
+					alt="Poster"
+					class="max-w-full h-auto shadow-lg rounded-lg"
+				/>
+			{:else}
+				<div class="flex flex-col items-center gap-3">
+					<div
+						class="w-8 h-8 border-2 border-black/10 dark:border-white/10 rounded-full animate-spin"
+						style="border-top-color: {themeColor}"
+					></div>
+					<span class="text-sm text-60"
+						>{labels.generatingPoster}</span
+					>
+				</div>
+			{/if}
+		</div>
+
+		<div
+			class="p-4 border-t border-black/5 dark:border-white/10 grid grid-cols-2 gap-3"
+		>
+			<button
+				class="py-3 bg-(--btn-plain-bg-hover) text-75 rounded-xl font-medium hover:bg-(--btn-plain-bg-active) active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+				on:click={copyLink}
+			>
+				{#if copied}
+					<Icon
+						icon="material-symbols:check"
+						width="20"
+						height="20"
+					/>
+					<span>{labels.copied}</span>
+				{:else}
+					<Icon icon="material-symbols:link" width="20" height="20" />
+					<span>{labels.copyLink}</span>
+				{/if}
+			</button>
+			<button
+				class="py-3 text-white rounded-xl font-medium active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-90"
+				style="background-color: {themeColor};"
+				on:click={downloadPoster}
+				disabled={!posterImage}
+			>
+				<Icon icon="material-symbols:download" width="20" height="20" />
+				{labels.savePoster}
+			</button>
+		</div>
+	</div>
+</div>
