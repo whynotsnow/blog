@@ -25,7 +25,7 @@ flowchart TD
 | `src/layouts` | Page shell and grid layout composition. |
 | `src/components` | Astro and Svelte UI components. |
 | `src/services/core` | Content loading, sorting, derived metadata, taxonomy, and cached content store. |
-| `src/services` | Feature-level data access for home, archive, categories, widgets, and post detail pages. |
+| `src/services` | Feature-level data access for home, archive, categories, feeds, calendar data, widgets, and post detail pages. |
 | `src/content` | Astro content collections for posts and special pages. |
 | `src/data` | Typed data for non-post pages such as timeline, diary, friends, projects, devices, and skills. |
 | `src/utils` | Shared utility functions for URLs, dates, content, widgets, panels, and client behavior. |
@@ -83,7 +83,7 @@ Use feature-local helpers and types first. Promote code to `src/utils` or shared
    - `posts`
    - `categoryMap`
    - `categories`
-6. Feature services and route handlers consume the store.
+6. Feature services and route handlers consume the store. Feed and calendar endpoints should use `src/services/feed.ts` and `src/services/calendar.ts` instead of querying Astro content directly.
 
 Use `getContentStore()` as the default data access point for post collections.
 
@@ -99,7 +99,7 @@ Important routes:
 | `src/pages/category/[slug]/index.astro` | First category page. |
 | `src/pages/category/[slug]/page/[page].astro` | Category pagination. |
 | `src/pages/archive.astro` | Archive page. |
-| `src/pages/rss.xml.ts`, `src/pages/atom.xml.ts` | Feeds. |
+| `src/pages/rss.xml.ts`, `src/pages/atom.xml.ts` | Feeds backed by `src/services/feed.ts`. |
 | `src/pages/og/[...slug].png.ts` | Open Graph image generation when enabled. |
 
 ## Configuration

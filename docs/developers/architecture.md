@@ -25,7 +25,7 @@ flowchart TD
 | `src/layouts` | 页面外壳和网格布局。 |
 | `src/components` | Astro 与 Svelte UI 组件。 |
 | `src/services/core` | 内容读取、排序、派生元数据、分类标签索引、内容缓存。 |
-| `src/services` | 首页、归档、分类、组件、文章详情等业务服务。 |
+| `src/services` | 首页、归档、分类、Feed、日历数据、组件、文章详情等业务服务。 |
 | `src/content` | Astro 内容集合，包含文章和特殊页面。 |
 | `src/data` | 时间线、日记、友链、项目、设备、技能等非文章数据。 |
 | `src/utils` | URL、日期、内容处理、组件和客户端行为工具。 |
@@ -85,7 +85,7 @@ src/features/music-player/
    - `posts`
    - `categoryMap`
    - `categories`
-6. 页面和业务服务优先消费 `getContentStore()`。
+6. 页面和业务服务优先消费 `getContentStore()`。Feed 与日历端点应通过 `src/services/feed.ts`、`src/services/calendar.ts` 取数，不直接查询 Astro Content Collection。
 
 ## 路由说明
 
@@ -97,7 +97,7 @@ src/features/music-player/
 | `src/pages/category/[slug]/index.astro` | 分类第一页。 |
 | `src/pages/category/[slug]/page/[page].astro` | 分类分页。 |
 | `src/pages/archive.astro` | 归档页。 |
-| `src/pages/rss.xml.ts`、`src/pages/atom.xml.ts` | Feed 输出。 |
+| `src/pages/rss.xml.ts`、`src/pages/atom.xml.ts` | Feed 输出，底层由 `src/services/feed.ts` 提供数据与内容渲染。 |
 | `src/pages/og/[...slug].png.ts` | Open Graph 图片生成。 |
 
 ## 配置入口
