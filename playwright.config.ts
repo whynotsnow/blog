@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { defineConfig, devices } from "@playwright/test";
 
 const port = Number(process.env.PLAYWRIGHT_PORT ?? 4321);
