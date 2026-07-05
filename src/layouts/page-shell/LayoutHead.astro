@@ -5,29 +5,34 @@ import {
 	DARK_MODE,
 	DEFAULT_THEME,
 	LIGHT_MODE,
-	PAGE_WIDTH,
 } from "@/constants/constants";
 import type { Favicon } from "@/types/config";
 import { url } from "@/utils/url-utils";
 
 interface Props {
+	bannerHeightHome: string;
+	bannerOffset: string;
 	configHue: number;
 	currentUrl: URL;
 	description?: string;
 	favicons: Favicon[];
 	generator: string;
 	ogImageUrl?: string;
+	pageWidth: string;
 	pageTitle: string;
 	setOGTypeArticle?: boolean;
 }
 
 const {
+	bannerHeightHome,
+	bannerOffset,
 	configHue,
 	currentUrl,
 	description,
 	favicons,
 	generator,
 	ogImageUrl,
+	pageWidth,
 	pageTitle,
 	setOGTypeArticle,
 } = Astro.props;
@@ -135,7 +140,10 @@ const {
 		LIGHT_MODE,
 		DARK_MODE,
 		BANNER_HEIGHT_EXTEND: 30,
+		bannerHeightHome,
+		bannerOffset,
 		configHue,
+		pageWidth,
 		pageScaling: siteConfig.pageScaling,
 	}}
 >
@@ -162,7 +170,14 @@ const {
 
 	// Load the hue from local storage
 	const hue = localStorage.getItem("hue") || configHue;
+	document.documentElement.style.setProperty("--configHue", `${configHue}`);
 	document.documentElement.style.setProperty("--hue", hue);
+	document.documentElement.style.setProperty("--page-width", pageWidth);
+	document.documentElement.style.setProperty(
+		"--banner-height-home",
+		bannerHeightHome,
+	);
+	document.documentElement.style.setProperty("--bannerOffset", bannerOffset);
 
 	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
@@ -204,13 +219,6 @@ const {
 		}
 	})();
 </script>
-<style
-	define:vars={{
-		configHue,
-		"page-width": `${PAGE_WIDTH}rem`,
-	}}
-></style>
-
 <slot />
 
 {

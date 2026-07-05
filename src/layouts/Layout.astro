@@ -9,6 +9,7 @@ import {
 	LAYOUT_BANNER_HEIGHT_HOME,
 	buildLayoutPageShellModel,
 } from "@/services/layout/page-shell";
+import { PAGE_WIDTH } from "@/constants/constants";
 import "../styles/mobile-navbar.css";
 import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
@@ -46,11 +47,14 @@ const pageShell = buildLayoutPageShellModel({
 	<head>
 		<LayoutHead
 			configHue={pageShell.configHue}
+			bannerHeightHome={`${LAYOUT_BANNER_HEIGHT_HOME}vh`}
+			bannerOffset={pageShell.bannerOffset}
 			currentUrl={Astro.url}
 			description={pageShell.description}
 			favicons={pageShell.favicons}
 			generator={Astro.generator}
 			ogImageUrl={pageShell.ogImageUrl}
+			pageWidth={`${PAGE_WIDTH}rem`}
 			pageTitle={pageShell.pageTitle}
 			setOGTypeArticle={setOGTypeArticle}
 		>
@@ -94,10 +98,7 @@ const pageShell = buildLayoutPageShellModel({
 	</body>
 </html>
 
-<LayoutBannerStyles
-	bannerOffset={pageShell.bannerOffset}
-	bannerHeightHome={`${LAYOUT_BANNER_HEIGHT_HOME}vh`}
-/>
+<LayoutBannerStyles />
 
 <script>
 	import "../scripts/layout-client";

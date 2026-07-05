@@ -1,19 +1,4 @@
----
-interface Props {
-	bannerOffset: string;
-	bannerHeightHome: string;
-}
-
-const { bannerOffset, bannerHeightHome } = Astro.props;
----
-
-<style
-	is:global
-	define:vars={{
-		bannerOffset,
-		"banner-height-home": bannerHeightHome,
-	}}
->
+<style is:global>
 	@reference "../../styles/main.css";
 
 	@layer components {
