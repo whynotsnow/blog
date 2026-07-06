@@ -103,17 +103,17 @@ Important routes:
 
 ## Configuration
 
-Primary configuration lives in `src/config.ts`. Its types live in `src/types/config.ts`.
+Primary configuration lives in modules under `src/config/`. The file `src/config.ts` is a compatibility export entry so existing imports from `@/config` and relative `../config` paths continue to work. Its types live in `src/types/config.ts`.
 
 High-impact configuration groups:
 
 - `siteConfig`: site identity, language, feature pages, banners, typography, post list mode, feature switches.
-- `navbarConfig`: top navigation.
+- `navBarConfig`: top navigation.
 - `profileConfig`: profile widget content.
 - `sidebarLayoutConfig`: left/right sidebar behavior.
 - `commentConfig`: comment provider settings.
 
-Document user-facing config changes in `docs/developers/configuration.md`.
+When adding or changing configuration values, edit the nearest module under `src/config/` instead of expanding `src/config.ts`. Document user-facing config changes in `docs/developers/configuration.md`.
 
 ## Extension Points
 
