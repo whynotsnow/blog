@@ -40,19 +40,116 @@ Agent OS does not require reading every document. It requires checking the relev
 
 ## Tool Role Boundaries
 
-Keep exploration, verification, knowledge retrieval, and environment execution separate:
+Keep exploration, verification, knowledge retrieval, and environment execution strictly separated. Tool selection must follow the routing rules below.
 
-- Browser (in-app) is for documentation, API reference, and error explanations only. It must not be used for UI rendering validation.
-- Chrome is for manual UI exploration and debugging, including DOM inspection, layout debugging, network analysis, and human-like interactions.
-- Playwright is for automated, reproducible UI testing, regression checks, and CI-style validation. It must not be used for exploratory debugging.
-- Computer Use is for system-level environment execution, such as starting a dev server, running tests, or file operations. It must not be used for UI validation.
+---
 
-Critical mapping:
+### 1. Browser (in-app)
 
-- Chrome = exploration/debugging.
-- Playwright = verification/testing.
-- Browser = knowledge retrieval.
-- Computer Use = environment execution.
+- Use ONLY for documentation, API reference, and error explanation.
+- It is a knowledge retrieval tool, not a runtime tool.
+- Must NOT be used for UI rendering validation, DOM inspection, or interaction testing.
+- Must NOT access localhost or development servers for UI verification.
+
+---
+
+### 2. Chrome (manual UI debugging)
+
+- Use for real-time frontend debugging in a real browser environment.
+- Supports DOM inspection, layout debugging, network analysis, and human-like interaction.
+- Default choice for exploratory/manual localhost UI validation.
+- Preferred when the task requires visual judgment, DOM inspection, layout debugging, network inspection, or human-like interaction.
+
+---
+
+### 3. Playwright (automated testing)
+
+- Use for reproducible UI testing, regression testing, and CI-style validation.
+- Used for deterministic verification of UI behavior.
+- Must NOT be used for exploratory debugging or ad-hoc inspection.
+- Prefer it when validation must be repeatable, script-based, or suitable for future regression coverage.
+
+---
+
+### 4. Computer Use
+
+- Use ONLY for system-level execution tasks:
+  - starting dev servers
+  - running tests
+  - file system operations
+- Must NOT be used for UI validation or browser interaction.
+
+---
+
+## Tool Routing Rules (CRITICAL)
+
+Choose the tool by task shape, not convenience.
+
+### UI Validation Tasks (highest priority rule)
+
+If a task involves:
+- layout correctness
+- visual rendering
+- interaction behavior
+- CSS / DOM / frontend runtime state
+- localhost application verification
+
+Then:
+
+1. Use Chrome for exploratory/manual debugging and visual inspection.
+2. Use Playwright for scripted, repeatable, or CI-oriented verification.
+3. NEVER use Browser (in-app) for these tasks
+4. NEVER fall back to code review as a substitute for UI validation
+
+---
+
+### Knowledge / Documentation Tasks
+
+If a task involves:
+- API lookup
+- framework documentation
+- error explanation
+- conceptual clarification
+
+Then:
+→ Use Browser (in-app)
+
+---
+
+### System Execution Tasks
+
+If a task involves:
+- running dev server
+- executing build/test scripts
+- file operations
+
+Then:
+→ Use terminal/shell or Computer Use for environment execution only. Do not use either as a substitute for browser-based UI validation.
+
+---
+
+## Failure Handling Policy (IMPORTANT)
+
+If a selected tool fails due to sandbox, origin policy, or access restriction:
+
+1. The task must NOT be marked as complete.
+2. The agent must NOT replace UI validation with code review.
+3. The agent must re-route the task using the following fallback chain:
+
+   - Browser used for localhost/UI validation → discard that result and switch to Chrome
+   - Chrome unavailable → switch to Playwright
+   - Playwright unavailable → explicitly report inability to validate UI
+
+4. UI validation is ONLY valid if executed successfully in Chrome or Playwright.
+
+---
+
+## Critical Mapping
+
+- Chrome = exploration / debugging (human-in-the-loop)
+- Playwright = verification / testing (machine-in-the-loop)
+- Browser = knowledge retrieval (read-only cognition layer)
+- Computer Use = environment execution (system layer)
 
 ## On-Demand Documentation Routing
 

@@ -57,21 +57,18 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 
 Do not claim that a command passed unless you actually ran it in this workspace and observed the result. If a command was not run, say so explicitly.
 
-## Browser, Chrome, Playwright, and Computer Use Policy
+## Tool Policy
 
-Use each UI or environment tool only for its intended role:
+Keep tool roles separate. Detailed routing lives in `docs/agents/workflow.md`; this file records the non-negotiable summary.
 
-- Browser (in-app): use only for documentation, API reference, and error explanations. Do not use it for UI rendering validation.
-- Chrome (manual UI debugging): use for interactive frontend debugging, DOM inspection, layout debugging, network analysis, and human-like interaction.
-- Playwright (automated testing): use for reproducible UI tests, regression checks, and CI-style validation. Do not use it for exploratory debugging.
-- Computer Use: use only for system-level tasks such as starting dev servers, running tests, and file operations. Do not use it for UI validation.
+- Browser (in-app) is only for documentation, API reference, and error explanation. Do not use it for localhost, UI rendering, DOM inspection, or runtime behavior validation.
+- Chrome is the default tool for exploratory/manual frontend debugging, visual checks, DOM inspection, layout debugging, network analysis, and localhost UI validation.
+- Playwright is for scripted, repeatable UI verification, regression tests, and CI-style checks. Use it when the requested validation should be deterministic.
+- Computer Use is only for system-level execution such as starting dev servers, running commands, or file operations. Do not use it for UI validation.
 
-Critical mapping:
+Any task involving layout, CSS, visual rendering, interaction behavior, or frontend runtime state must be validated successfully with Chrome or Playwright. Code review alone is not UI validation.
 
-- Chrome = exploration/debugging.
-- Playwright = verification/testing.
-- Browser = knowledge retrieval.
-- Computer Use = environment execution.
+If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Re-route according to `docs/agents/workflow.md`; if no valid UI tool can run, report the validation gap explicitly.
 
 ## Editing Rules
 
