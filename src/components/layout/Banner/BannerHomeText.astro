@@ -14,6 +14,7 @@ const subtitle = homeText?.subtitle;
 {
 	homeText?.enable && (
 		<div
+			data-setting-target="banner-home-text"
 			class={`banner-text-overlay absolute inset-0 z-20 flex items-center justify-center ${!showHomeText ? "hidden" : ""}`}
 		>
 			<div class="w-4/5 lg:w-3/4 text-center mb-0">

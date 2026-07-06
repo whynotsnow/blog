@@ -23,9 +23,15 @@
 		getDefaultSakuraEnabled,
 		getDefaultWavesEnabled,
 		getHue,
+		getStoredBannerTitleEnabled,
+		getStoredSakuraEnabled,
 		getStoredWallpaperMode,
+		getStoredWavesEnabled,
+		setBannerTitleEnabled,
 		setHue,
+		setSakuraEnabled,
 		setWallpaperMode,
+		setWavesEnabled,
 	} from "@/utils/setting-utils";
 	import {
 		getLayoutMode,
@@ -174,12 +180,36 @@
 
 	function resetBannerSettings() {
 		bannerTitleEnabled = defaultBannerTitleEnabled;
+		if (isBannerTitleSwitchable) {
+			setBannerTitleEnabled(defaultBannerTitleEnabled);
+		}
 		wavesEnabled = defaultWavesEnabled;
+		if (isWavesSwitchable) {
+			setWavesEnabled(defaultWavesEnabled);
+		}
 		bannerCarouselEnabled = defaultBannerCarouselEnabled;
 	}
 
 	function resetEffectsSettings() {
 		sakuraEnabled = defaultSakuraEnabled;
+		if (isSakuraSwitchable) {
+			setSakuraEnabled(defaultSakuraEnabled);
+		}
+	}
+
+	function toggleBannerTitleEnabled() {
+		bannerTitleEnabled = !bannerTitleEnabled;
+		setBannerTitleEnabled(bannerTitleEnabled);
+	}
+
+	function toggleWavesEnabled() {
+		wavesEnabled = !wavesEnabled;
+		setWavesEnabled(wavesEnabled);
+	}
+
+	function toggleSakuraEnabled() {
+		sakuraEnabled = !sakuraEnabled;
+		setSakuraEnabled(sakuraEnabled);
 	}
 
 	function switchWallpaperMode(newMode: WALLPAPER_MODE) {
@@ -202,6 +232,9 @@
 		hue = getHue();
 		wallpaperMode = getPreviewSafeWallpaperMode();
 		currentLayout = getLayoutMode();
+		wavesEnabled = getStoredWavesEnabled();
+		bannerTitleEnabled = getStoredBannerTitleEnabled();
+		sakuraEnabled = getStoredSakuraEnabled();
 		checkMobile();
 		window.addEventListener("resize", checkMobile);
 
@@ -416,8 +449,7 @@
 						icon="material-symbols:titlecase-rounded"
 						label={i18n(I18nKey.bannerTitle)}
 						enabled={bannerTitleEnabled}
-						onToggle={() =>
-							(bannerTitleEnabled = !bannerTitleEnabled)}
+						onToggle={toggleBannerTitleEnabled}
 					/>
 				{/if}
 				{#if isWavesSwitchable}
@@ -425,7 +457,7 @@
 						icon="material-symbols:airwave-rounded"
 						label={i18n(I18nKey.wavesAnimation)}
 						enabled={wavesEnabled}
-						onToggle={() => (wavesEnabled = !wavesEnabled)}
+						onToggle={toggleWavesEnabled}
 					/>
 				{/if}
 				{#if isBannerCarouselSwitchable}
@@ -451,7 +483,7 @@
 						icon="material-symbols:spa-outline-rounded"
 						label={i18n(I18nKey.sakuraEffect)}
 						enabled={sakuraEnabled}
-						onToggle={() => (sakuraEnabled = !sakuraEnabled)}
+						onToggle={toggleSakuraEnabled}
 					/>
 				{/if}
 			</SettingSection>

@@ -1,7 +1,8 @@
-import { siteConfig } from "@/config";
+import { sakuraConfig, siteConfig } from "@/config";
 import { BANNER_HEIGHT } from "@/constants/constants";
 import { applyLayoutMode, bindLayoutModeEvents } from "@/utils/layout-mode";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
+import { initSakura, stopSakura } from "@/utils/sakura-manager";
 
 const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 const navbarTransparentMode =
@@ -19,6 +20,55 @@ function forceReflow() {
 
 function getMainContent(): HTMLElement | null {
 	return document.querySelector(".absolute.w-full.z-30.pointer-events-none");
+}
+
+function getStoredBoolean(key: string, fallback: boolean): boolean {
+	const stored = localStorage.getItem(key);
+	return stored !== null ? stored === "true" : fallback;
+}
+
+function applyWavesSetting(
+	enabled = getStoredBoolean(
+		"wavesEnabled",
+		siteConfig.banner?.waves?.enable ?? true,
+	),
+) {
+	document.documentElement.setAttribute(
+		"data-waves-enabled",
+		String(enabled),
+	);
+	const waves = document.querySelector(
+		'[data-setting-target="banner-waves"]',
+	) as HTMLElement | null;
+	if (!waves) return;
+	waves.style.display = enabled ? "" : "none";
+}
+
+function applyBannerTitleSetting(
+	enabled = getStoredBoolean(
+		"bannerTitleEnabled",
+		siteConfig.banner?.homeText?.enable ?? true,
+	),
+) {
+	document.documentElement.setAttribute(
+		"data-banner-title-enabled",
+		String(enabled),
+	);
+	const bannerTitle = document.querySelector(
+		'[data-setting-target="banner-home-text"]',
+	) as HTMLElement | null;
+	if (!bannerTitle) return;
+	bannerTitle.classList.toggle("hidden", !enabled);
+}
+
+function applySakuraSetting(
+	enabled = getStoredBoolean("sakuraEnabled", sakuraConfig.enable),
+) {
+	if (enabled) {
+		initSakura({ ...sakuraConfig, enable: true });
+	} else {
+		stopSakura();
+	}
 }
 
 function applyInitialPageShell() {
@@ -165,6 +215,9 @@ function syncPageShell() {
 	bindLayoutModeEvents();
 	window.applyWallpaperMode?.();
 	requestAnimationFrame(() => applyLayoutMode());
+	applyWavesSetting();
+	applyBannerTitleSetting();
+	applySakuraSetting();
 }
 
 function bindMainGridClient() {
@@ -173,6 +226,23 @@ function bindMainGridClient() {
 
 	window.addEventListener("wallpaper-mode-change", () => {
 		applyWallpaperMode();
+	});
+	window.addEventListener("waves-toggle", (event) => {
+		const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail
+			?.enabled;
+		applyWavesSetting(typeof enabled === "boolean" ? enabled : undefined);
+	});
+	window.addEventListener("banner-title-toggle", (event) => {
+		const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail
+			?.enabled;
+		applyBannerTitleSetting(
+			typeof enabled === "boolean" ? enabled : undefined,
+		);
+	});
+	window.addEventListener("sakura-toggle", (event) => {
+		const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail
+			?.enabled;
+		applySakuraSetting(typeof enabled === "boolean" ? enabled : undefined);
 	});
 
 	window.applyWallpaperMode = applyWallpaperMode;
@@ -184,9 +254,17 @@ function bindMainGridClient() {
 applyInitialPageShell();
 
 if (document.readyState === "loading") {
-	document.addEventListener("DOMContentLoaded", applyWallpaperMode);
+	document.addEventListener("DOMContentLoaded", () => {
+		applyWallpaperMode();
+		applyWavesSetting();
+		applyBannerTitleSetting();
+		applySakuraSetting();
+	});
 } else {
 	applyWallpaperMode();
+	applyWavesSetting();
+	applyBannerTitleSetting();
+	applySakuraSetting();
 }
 
 bindMainGridClient();

@@ -248,11 +248,19 @@ export function getDefaultWavesEnabled(): boolean {
 }
 
 export function getStoredWavesEnabled(): boolean {
-	return getDefaultWavesEnabled();
+	const stored = localStorage.getItem("wavesEnabled");
+	return stored !== null ? stored === "true" : getDefaultWavesEnabled();
 }
 
-export function setWavesEnabled(_enabled: boolean): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setWavesEnabled(enabled: boolean): void {
+	localStorage.setItem("wavesEnabled", String(enabled));
+	document.documentElement.setAttribute(
+		"data-waves-enabled",
+		String(enabled),
+	);
+	window.dispatchEvent(
+		new CustomEvent("waves-toggle", { detail: { enabled } }),
+	);
 }
 
 export function getDefaultBannerTitleEnabled(): boolean {
@@ -260,11 +268,19 @@ export function getDefaultBannerTitleEnabled(): boolean {
 }
 
 export function getStoredBannerTitleEnabled(): boolean {
-	return getDefaultBannerTitleEnabled();
+	const stored = localStorage.getItem("bannerTitleEnabled");
+	return stored !== null ? stored === "true" : getDefaultBannerTitleEnabled();
 }
 
-export function setBannerTitleEnabled(_enabled: boolean): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setBannerTitleEnabled(enabled: boolean): void {
+	localStorage.setItem("bannerTitleEnabled", String(enabled));
+	document.documentElement.setAttribute(
+		"data-banner-title-enabled",
+		String(enabled),
+	);
+	window.dispatchEvent(
+		new CustomEvent("banner-title-toggle", { detail: { enabled } }),
+	);
 }
 
 export function getDefaultSakuraEnabled(): boolean {
@@ -272,9 +288,13 @@ export function getDefaultSakuraEnabled(): boolean {
 }
 
 export function getStoredSakuraEnabled(): boolean {
-	return getDefaultSakuraEnabled();
+	const stored = localStorage.getItem("sakuraEnabled");
+	return stored !== null ? stored === "true" : getDefaultSakuraEnabled();
 }
 
-export function setSakuraEnabled(_enabled: boolean): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setSakuraEnabled(enabled: boolean): void {
+	localStorage.setItem("sakuraEnabled", String(enabled));
+	window.dispatchEvent(
+		new CustomEvent("sakura-toggle", { detail: { enabled } }),
+	);
 }
