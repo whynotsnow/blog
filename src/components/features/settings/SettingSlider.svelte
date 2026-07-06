@@ -1,0 +1,123 @@
+<script lang="ts">
+	import { onMount } from "svelte";
+
+	let {
+		label = "",
+		displayValue = "",
+		min = 0,
+		max = 100,
+		step = 1,
+		value = $bindable(50),
+		oninput,
+	}: {
+		label?: string;
+		displayValue?: string;
+		min?: number;
+		max?: number;
+		step?: number;
+		value?: number;
+		oninput?: ((value: number) => void) | undefined;
+	} = $props();
+
+	let slider: HTMLInputElement | undefined;
+	const sliderId = `slider-${Math.random().toString(36).slice(2, 9)}`;
+
+	function updateProgress(input: HTMLInputElement) {
+		const minVal = Number(input.min || 0);
+		const maxVal = Number(input.max || 100);
+		const val = Number(input.value || 0);
+		const progress = ((val - minVal) * 100) / (maxVal - minVal || 1);
+		input.style.setProperty(
+			"--range-progress",
+			`${Math.min(100, Math.max(0, progress))}%`,
+		);
+	}
+
+	function handleInput(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
+		updateProgress(input);
+		oninput?.(Number(input.value));
+	}
+
+	onMount(() => {
+		if (slider) updateProgress(slider);
+	});
+</script>
+
+<div class="rounded-lg bg-[var(--btn-regular-bg)] p-2.5 transition-colors">
+	<div class="mb-1.5 flex items-center justify-between gap-2">
+		<span
+			class="min-w-0 truncate text-sm font-medium text-[var(--btn-content)] opacity-85"
+		>
+			{label}
+		</span>
+		<span class="shrink-0 text-xs font-mono text-[var(--btn-content)]">
+			{displayValue}
+		</span>
+	</div>
+	<input
+		bind:this={slider}
+		id={sliderId}
+		type="range"
+		{min}
+		{max}
+		{step}
+		bind:value
+		oninput={handleInput}
+		class="slider range-slider w-full"
+		aria-label={label}
+	/>
+</div>
+
+<style>
+	.slider {
+		-webkit-appearance: none;
+		appearance: none;
+		height: 0.85rem;
+		border-radius: 999px;
+		cursor: pointer;
+		outline: none;
+	}
+
+	.range-slider {
+		background-image: linear-gradient(
+			90deg,
+			var(--primary) 0 var(--range-progress, 50%),
+			var(--btn-regular-bg-active) var(--range-progress, 50%) 100%
+		);
+		transition: background-image 0.1s ease;
+	}
+
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		height: 0.875rem;
+		width: 0.875rem;
+		border-radius: 50%;
+		background: white;
+		box-shadow:
+			0 1px 4px rgba(0, 0, 0, 0.2),
+			0 0 0 2px var(--primary);
+		cursor: pointer;
+		transition: transform 0.15s ease;
+	}
+
+	.slider::-webkit-slider-thumb:hover {
+		transform: scale(1.15);
+	}
+
+	.slider::-webkit-slider-thumb:active {
+		transform: scale(1.05);
+	}
+
+	.slider::-moz-range-thumb {
+		height: 0.875rem;
+		width: 0.875rem;
+		border: none;
+		border-radius: 50%;
+		background: white;
+		box-shadow:
+			0 1px 4px rgba(0, 0, 0, 0.2),
+			0 0 0 2px var(--primary);
+		cursor: pointer;
+	}
+</style>
