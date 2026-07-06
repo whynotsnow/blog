@@ -3,6 +3,7 @@
 	import { i18n } from "@i18n/translation";
 	import Icon from "@iconify/svelte";
 	import { navigateToPage } from "@utils/navigation-utils";
+	import { panelManager } from "@utils/panel-manager";
 	import { url } from "@utils/url-utils";
 	import { onMount, onDestroy } from "svelte";
 	import type { SearchResult } from "@/global";
@@ -85,9 +86,8 @@
 		return doc.body.innerHTML;
 	};
 
-	const togglePanel = () => {
-		const panel = document.getElementById("search-panel");
-		panel?.classList.toggle("float-panel-closed");
+	const togglePanel = async () => {
+		await panelManager.togglePanel("search-panel");
 	};
 
 	const toggleDesktopSearch = () => {
@@ -125,6 +125,7 @@
 		const panel = document.getElementById("search-panel");
 		if (!panel || !isDesktop) return;
 		if (show) {
+			void panelManager.closeAllPanelsExcept("search-panel");
 			panel.classList.remove("float-panel-closed");
 		} else {
 			panel.classList.add("float-panel-closed");

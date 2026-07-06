@@ -4,12 +4,10 @@ import { navBarConfig, siteConfig } from "../config";
 import { LinkPresets } from "../constants/link-presets";
 import { LinkPreset, type NavBarLink } from "../types/config";
 import { url } from "../utils/url-utils";
-import LayoutSwitchButton from "./LayoutSwitchButton.svelte";
+import SettingsPanel from "./features/settings/SettingsPanel.svelte";
 import LightDarkSwitch from "./LightDarkSwitch.svelte";
 import MobileTOC from "./MobileTOC.svelte";
 import Search from "./Search.svelte";
-import WallpaperSwitch from "./WallpaperSwitch.svelte";
-import DisplaySettings from "./widget/DisplaySettings.svelte";
 import DropdownMenu from "./widget/DropdownMenu.astro";
 import NavMenuPanel from "./widget/NavMenuPanel.astro";
 
@@ -18,10 +16,6 @@ const className = Astro.props.class;
 // 获取导航栏透明模式配置
 const navbarTransparentMode =
 	siteConfig.banner?.navbar?.transparentMode || "semi";
-
-// 获取整体布局方案切换按钮显示设置
-const modeSwitchDisplay =
-	siteConfig.wallpaperMode?.showModeSwitchOnMobile || "desktop";
 
 // 检查是否为首页
 const isHomePage = Astro.url.pathname === "/" || Astro.url.pathname === "";
@@ -74,28 +68,16 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
                 <Search client:only="svelte"></Search>
             </div>
             {siteConfig.toc.enable && <MobileTOC client:only="svelte"></MobileTOC>}
-            {!siteConfig.themeColor.fixed && (
-                    <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
-                        <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
-                    </button>
-            )}
-            <LayoutSwitchButton client:only="svelte" currentLayout={siteConfig.postListLayout.defaultMode}></LayoutSwitchButton>
-            <!-- 整体布局方案切换按钮：根据配置决定在哪些设备上显示 -->
-            <div class:list={[
-                modeSwitchDisplay === "off" ? "hidden" :
-                modeSwitchDisplay === "mobile" ? "block md:hidden" :
-                modeSwitchDisplay === "desktop" ? "hidden md:block" :
-                modeSwitchDisplay === "both" ? "block" : "hidden md:block"
-            ]}>
-                <WallpaperSwitch client:only="svelte"></WallpaperSwitch>
-            </div>
+            <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
+                <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
+            </button>
             <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
                 <Icon name="material-symbols:unfold-more" class="text-[1.25rem]"></Icon>
             </button>
         </div>
         <NavMenuPanel links={links}></NavMenuPanel>
-        <DisplaySettings client:only="svelte"></DisplaySettings>
+        <SettingsPanel client:only="svelte"></SettingsPanel>
     </div>
 </div>
 
