@@ -1,6 +1,7 @@
 import type { FullscreenWallpaperConfig } from "../types/config";
 
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
+	enable: true,
 	src: {
 		desktop: [
 			"/assets/desktop-banner/1.webp",
@@ -27,4 +28,21 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	zIndex: -1, // 层级，确保壁纸在背景层
 	opacity: 0.8, // 壁纸透明度
 	blur: 1, // 背景模糊程度
+	switchable: true,
+	overlay: {
+		opacity: 0.8,
+		blur: 1.5,
+		cardOpacity: 0.8,
+		switchable: {
+			opacity: true,
+			blur: true,
+			cardOpacity: true,
+		},
+	},
+	fullscreen: {
+		switchable: {
+			opacity: true,
+			blur: true,
+		},
+	},
 };

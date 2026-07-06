@@ -4,6 +4,7 @@ import type {
 	WALLPAPER_BANNER,
 	WALLPAPER_FULLSCREEN,
 	WALLPAPER_NONE,
+	WALLPAPER_OVERLAY,
 } from "../constants/constants";
 
 export type SiteConfig = {
@@ -72,7 +73,11 @@ export type SiteConfig = {
 	// 文章列表布局配置
 	postListLayout: {
 		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式
+		enable?: boolean; // 是否启用布局切换功能
 		allowSwitch: boolean; // 是否允许用户切换布局
+		categoryBar?: {
+			enable: boolean; // 是否在文章列表页显示分类导航条
+		};
 	};
 
 	// 顶栏标题配置
@@ -131,7 +136,7 @@ export type SiteConfig = {
 
 	// 壁纸模式配置
 	wallpaperMode: {
-		defaultMode: "banner" | "fullscreen" | "none"; // 默认壁纸模式：banner=顶部横幅，fullscreen=全屏壁纸，none=无壁纸
+		defaultMode: "banner" | "fullscreen" | "overlay" | "none"; // 默认壁纸模式：banner=顶部横幅，fullscreen=全屏壁纸，overlay=叠加壁纸，none=无壁纸
 		showModeSwitchOnMobile?: "off" | "mobile" | "desktop" | "both"; // 整体布局方案切换按钮显示设置：off=隐藏，mobile=仅移动端，desktop=仅桌面端，both=全部显示
 	};
 
@@ -147,11 +152,13 @@ export type SiteConfig = {
 		carousel?: {
 			enable: boolean; // 是否启用轮播
 			interval: number; // 轮播间隔时间（秒）
+			switchable?: boolean; // 是否允许在设置面板中切换
 		};
 		waves?: {
 			enable: boolean; // 是否启用水波纹效果
 			performanceMode?: boolean; // 性能模式：减少动画复杂度
 			mobileDisable?: boolean; // 移动端禁用
+			switchable?: boolean; // 是否允许在设置面板中切换
 		};
 		imageApi?: {
 			enable: boolean; // 是否启用图片API
@@ -167,6 +174,7 @@ export type SiteConfig = {
 				deleteSpeed: number; // 删除速度（毫秒）
 				pauseTime: number; // 完整显示后的暂停时间（毫秒）
 			};
+			switchable?: boolean; // 是否允许在设置面板中切换
 		};
 		credit: {
 			enable: boolean;
@@ -259,6 +267,7 @@ export type LIGHT_DARK_MODE = typeof LIGHT_MODE | typeof DARK_MODE;
 export type WALLPAPER_MODE =
 	| typeof WALLPAPER_BANNER
 	| typeof WALLPAPER_FULLSCREEN
+	| typeof WALLPAPER_OVERLAY
 	| typeof WALLPAPER_NONE;
 
 export type BlogPostData = {
@@ -360,6 +369,7 @@ export type SidebarLayoutConfig = {
 
 export type SakuraConfig = {
 	enable: boolean; // 是否启用樱花特效
+	switchable?: boolean; // 是否允许在设置面板中切换
 	sakuraNum: number; // 樱花数量，默认21
 	limitTimes: number; // 樱花越界限制次数，-1为无限循环
 	size: {
@@ -386,6 +396,7 @@ export type SakuraConfig = {
 };
 
 export type FullscreenWallpaperConfig = {
+	enable?: boolean; // 是否启用全屏/叠加壁纸资源
 	src:
 		| string
 		| string[]
@@ -401,6 +412,27 @@ export type FullscreenWallpaperConfig = {
 	zIndex?: number; // 层级，确保壁纸在合适的层级显示
 	opacity?: number; // 壁纸透明度，0-1之间
 	blur?: number; // 背景模糊程度，单位px
+	switchable?: boolean; // 是否允许在设置面板中切换壁纸模式
+	overlay?: {
+		opacity?: number; // 叠加壁纸不透明度
+		blur?: number; // 叠加壁纸模糊半径
+		cardOpacity?: number; // 叠加模式下卡片不透明度
+		switchable?:
+			| boolean
+			| {
+					opacity?: boolean;
+					blur?: boolean;
+					cardOpacity?: boolean;
+			  };
+	};
+	fullscreen?: {
+		switchable?:
+			| boolean
+			| {
+					opacity?: boolean;
+					blur?: boolean;
+			  };
+	};
 };
 
 /**

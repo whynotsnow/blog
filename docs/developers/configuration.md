@@ -46,6 +46,22 @@
 | `sidebarLayoutConfig` | 侧边栏位置和布局模式。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
+## SettingsPanel 相关配置
+
+统一设置面板使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应入口。
+
+- `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
+- `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。当前 `overlay` 是为后续真实能力预留的壁纸模式。
+- `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。
+- `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。
+- `siteConfig.banner.homeText.switchable`：控制首页 banner 文案设置入口。
+- `fullscreenWallpaperConfig.enable` 和 `fullscreenWallpaperConfig.switchable`：控制全屏/叠加壁纸资源与切换入口。
+- `fullscreenWallpaperConfig.overlay`：提供叠加壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。
+- `fullscreenWallpaperConfig.fullscreen.switchable`：控制全屏壁纸透明度、模糊度滑块入口。
+- `sakuraConfig.switchable`：控制樱花特效设置入口。
+
+在设置面板分阶段迁移期间，未接入真实运行时的设置只使用这些配置作为默认展示值，不应提前写入 `localStorage` 或触发页面副作用。
+
 ## 特色页面
 
 `siteConfig.featurePages` 控制可选页面是否启用。关闭某个页面后，也应从导航配置中移除对应链接。

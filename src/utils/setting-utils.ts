@@ -4,7 +4,7 @@ import {
 	LIGHT_MODE,
 	// WALLPAPER_BANNER,
 } from "@constants/constants";
-import { siteConfig } from "@/config";
+import { fullscreenWallpaperConfig, sakuraConfig, siteConfig } from "@/config";
 import type { LIGHT_DARK_MODE, WALLPAPER_MODE } from "@/types/config";
 
 export function getDefaultHue(): number {
@@ -164,4 +164,117 @@ export function setWallpaperMode(mode: WALLPAPER_MODE): void {
 	window.dispatchEvent(
 		new CustomEvent("wallpaper-mode-change", { detail: { mode } }),
 	);
+}
+
+function getNumberConfigDefault(value: number | undefined, fallback: number) {
+	return typeof value === "number" ? value : fallback;
+}
+
+function getBooleanConfigDefault(
+	value: boolean | undefined,
+	fallback: boolean,
+) {
+	return typeof value === "boolean" ? value : fallback;
+}
+
+export function getDefaultOverlayOpacity(): number {
+	return getNumberConfigDefault(
+		fullscreenWallpaperConfig.overlay?.opacity,
+		0.8,
+	);
+}
+
+export function getStoredOverlayOpacity(): number {
+	return getDefaultOverlayOpacity();
+}
+
+export function setOverlayOpacity(_value: number): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+}
+
+export function getDefaultOverlayBlur(): number {
+	return getNumberConfigDefault(fullscreenWallpaperConfig.overlay?.blur, 1.5);
+}
+
+export function getStoredOverlayBlur(): number {
+	return getDefaultOverlayBlur();
+}
+
+export function setOverlayBlur(_value: number): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+}
+
+export function getDefaultOverlayCardOpacity(): number {
+	return getNumberConfigDefault(
+		fullscreenWallpaperConfig.overlay?.cardOpacity,
+		0.8,
+	);
+}
+
+export function getStoredOverlayCardOpacity(): number {
+	return getDefaultOverlayCardOpacity();
+}
+
+export function setOverlayCardOpacity(_value: number): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+}
+
+export function getDefaultFullscreenOpacity(): number {
+	return getNumberConfigDefault(fullscreenWallpaperConfig.opacity, 0.8);
+}
+
+export function getStoredFullscreenOpacity(): number {
+	return getDefaultFullscreenOpacity();
+}
+
+export function setFullscreenOpacity(_value: number): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+}
+
+export function getDefaultFullscreenBlur(): number {
+	return getNumberConfigDefault(fullscreenWallpaperConfig.blur, 1);
+}
+
+export function getStoredFullscreenBlur(): number {
+	return getDefaultFullscreenBlur();
+}
+
+export function setFullscreenBlur(_value: number): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+}
+
+export function getDefaultWavesEnabled(): boolean {
+	return getBooleanConfigDefault(siteConfig.banner.waves?.enable, true);
+}
+
+export function getStoredWavesEnabled(): boolean {
+	return getDefaultWavesEnabled();
+}
+
+export function setWavesEnabled(_enabled: boolean): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+}
+
+export function getDefaultBannerTitleEnabled(): boolean {
+	return getBooleanConfigDefault(siteConfig.banner.homeText?.enable, true);
+}
+
+export function getStoredBannerTitleEnabled(): boolean {
+	return getDefaultBannerTitleEnabled();
+}
+
+export function setBannerTitleEnabled(_enabled: boolean): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+}
+
+export function getDefaultSakuraEnabled(): boolean {
+	return getBooleanConfigDefault(sakuraConfig.enable, false);
+}
+
+export function getStoredSakuraEnabled(): boolean {
+	return getDefaultSakuraEnabled();
+}
+
+export function setSakuraEnabled(_enabled: boolean): void {
+	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
 }

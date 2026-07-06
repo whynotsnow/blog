@@ -76,6 +76,8 @@ export const siteConfig: SiteConfig = {
 		// 默认布局模式："list" 列表模式（单列布局），"grid" 网格模式（双列布局）
 		// 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
 		defaultMode: "list",
+		// 是否启用布局切换功能
+		enable: true,
 		// 是否允许用户切换布局
 		allowSwitch: true,
 	},
@@ -125,12 +127,14 @@ export const siteConfig: SiteConfig = {
 			enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
 
 			interval: 8, // 轮播间隔时间（秒）
+			switchable: true, // 设置面板入口保留，真实开关在后续阶段接入
 		},
 
 		waves: {
 			enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
 			performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
 			mobileDisable: false, // 移动端禁用
+			switchable: true, // 设置面板入口保留，真实开关在后续阶段接入
 		},
 
 		// PicFlow API支持(智能图片API)
@@ -159,6 +163,7 @@ export const siteConfig: SiteConfig = {
 				deleteSpeed: 50, // 删除速度（毫秒）
 				pauseTime: 2000, // 完全显示后的暂停时间（毫秒）
 			},
+			switchable: true, // 设置面板入口保留，真实开关在后续阶段接入
 		},
 
 		credit: {
