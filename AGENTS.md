@@ -57,6 +57,22 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 
 Do not claim that a command passed unless you actually ran it in this workspace and observed the result. If a command was not run, say so explicitly.
 
+## Browser, Chrome, Playwright, and Computer Use Policy
+
+Use each UI or environment tool only for its intended role:
+
+- Browser (in-app): use only for documentation, API reference, and error explanations. Do not use it for UI rendering validation.
+- Chrome (manual UI debugging): use for interactive frontend debugging, DOM inspection, layout debugging, network analysis, and human-like interaction.
+- Playwright (automated testing): use for reproducible UI tests, regression checks, and CI-style validation. Do not use it for exploratory debugging.
+- Computer Use: use only for system-level tasks such as starting dev servers, running tests, and file operations. Do not use it for UI validation.
+
+Critical mapping:
+
+- Chrome = exploration/debugging.
+- Playwright = verification/testing.
+- Browser = knowledge retrieval.
+- Computer Use = environment execution.
+
 ## Editing Rules
 
 - Prefer the existing service layer instead of querying Astro content directly from UI components.

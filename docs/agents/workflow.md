@@ -38,6 +38,22 @@ Agent OS does not require reading every document. It requires checking the relev
 5. Run the narrowest meaningful validation command.
 6. Report changed files, validation results, and any skipped checks.
 
+## Tool Role Boundaries
+
+Keep exploration, verification, knowledge retrieval, and environment execution separate:
+
+- Browser (in-app) is for documentation, API reference, and error explanations only. It must not be used for UI rendering validation.
+- Chrome is for manual UI exploration and debugging, including DOM inspection, layout debugging, network analysis, and human-like interactions.
+- Playwright is for automated, reproducible UI testing, regression checks, and CI-style validation. It must not be used for exploratory debugging.
+- Computer Use is for system-level environment execution, such as starting a dev server, running tests, or file operations. It must not be used for UI validation.
+
+Critical mapping:
+
+- Chrome = exploration/debugging.
+- Playwright = verification/testing.
+- Browser = knowledge retrieval.
+- Computer Use = environment execution.
+
 ## On-Demand Documentation Routing
 
 | Task area | Read |
