@@ -42,9 +42,7 @@ const items = Array.from({ length: itemCount })
 					{item?.mobileSrc && (
 						<ImageWrapper
 							alt={`Mobile banner image ${index + 1}`}
-							class:list={[
-								"block md:hidden object-cover h-full w-full transition-transform duration-500 ease-out",
-							]}
+							class="block h-full w-full transition-transform duration-500 ease-out md:hidden"
 							src={item.mobileSrc}
 							position={position}
 							loading={index === 0 ? "eager" : "lazy"}
@@ -53,9 +51,7 @@ const items = Array.from({ length: itemCount })
 					{item?.desktopSrc && (
 						<ImageWrapper
 							alt={`Desktop banner image ${index + 1}`}
-							class:list={[
-								"hidden md:block object-cover h-full w-full transition-transform duration-500 ease-out",
-							]}
+							class="hidden h-full w-full transition-transform duration-500 ease-out md:block"
 							src={item.desktopSrc}
 							position={position}
 							loading={index === 0 ? "eager" : "lazy"}
