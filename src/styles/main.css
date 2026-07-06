@@ -271,15 +271,18 @@ html {
     -webkit-backdrop-filter: blur(8px) !important;
   }
 
-  .wallpaper-transparent .float-panel {
+  .wallpaper-transparent .float-panel,
+  .wallpaper-overlay .float-panel {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
 
-  .wallpaper-transparent #navbar > div {
+  .wallpaper-transparent #navbar > div,
+  .wallpaper-overlay #navbar > div {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
 
-  .wallpaper-transparent .btn-card {
+  .wallpaper-transparent .btn-card,
+  .wallpaper-overlay .btn-card {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
 
@@ -288,7 +291,10 @@ html {
   .wallpaper-transparent ~ * .music-player .playlist-panel,
   body.wallpaper-transparent .music-player .mini-player,
   body.wallpaper-transparent .music-player .expanded-player,
-  body.wallpaper-transparent .music-player .playlist-panel {
+  body.wallpaper-transparent .music-player .playlist-panel,
+  body.wallpaper-overlay .music-player .mini-player,
+  body.wallpaper-overlay .music-player .expanded-player,
+  body.wallpaper-overlay .music-player .playlist-panel {
     background-color: var(--card-bg-transparent) !important;
     backdrop-filter: blur(8px) !important;
   }

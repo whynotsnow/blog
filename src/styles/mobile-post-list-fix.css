@@ -68,7 +68,7 @@
   }
 }
 
-/* 全局规则：确保所有 wallpaper-transparent 模式下的卡片都透明 */
+/* fullscreen 壁纸模式下卡片透明；overlay 使用独立 body 类，不复用这些全局卡片规则。 */
 body.wallpaper-transparent .card-base,
 .wallpaper-transparent .card-base,
 body.wallpaper-transparent #post-list-container .card-base,

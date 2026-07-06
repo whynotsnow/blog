@@ -103,11 +103,8 @@ function applyInitialPageShell() {
 			break;
 		case "overlay":
 			body.classList.remove("enable-banner");
-			body.classList.add(
-				"wallpaper-transparent",
-				"wallpaper-overlay",
-				"no-banner-mode",
-			);
+			body.classList.remove("wallpaper-transparent");
+			body.classList.add("wallpaper-overlay", "no-banner-mode");
 			break;
 		case "none":
 			body.classList.remove(
@@ -235,13 +232,10 @@ export function applyWallpaperMode() {
 				fullscreenWallpaper.style.display = "block";
 			tocWrapper?.classList.remove("toc-hide");
 			body.classList.remove("enable-banner");
+			body.classList.remove("wallpaper-transparent");
 			forceReflow();
 			mainContent?.style.removeProperty("top");
-			body.classList.add(
-				"wallpaper-transparent",
-				"wallpaper-overlay",
-				"no-banner-mode",
-			);
+			body.classList.add("wallpaper-overlay", "no-banner-mode");
 			if (navbar) {
 				navbar.setAttribute("data-dynamic-transparent", "semi");
 				navbar.removeAttribute("data-transparent-mode");

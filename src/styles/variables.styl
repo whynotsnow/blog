@@ -113,7 +113,7 @@ body.wallpaper-transparent
 /* 只有 overlay 壁纸模式允许 SettingsPanel 调整卡片透明度 */
 body.wallpaper-overlay
   --card-transparent-opacity: 0.8
-  --card-bg-transparent: rgba(255, 255, 255, var(--card-transparent-opacity))
+  --card-bg-transparent: unquote("rgba(255, 255, 255, var(--card-transparent-opacity))")
 
 :root.dark body.wallpaper-overlay
-  --card-bg-transparent: rgba(23, 23, 23, var(--card-transparent-opacity))
+  --card-bg-transparent: unquote("rgba(23, 23, 23, var(--card-transparent-opacity))")
