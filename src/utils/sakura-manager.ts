@@ -141,18 +141,9 @@ type SakuraRandomFnOption = "fnx" | "fny" | "fnr" | "fna";
 type SakuraRandomValue = number | SakuraMoveFn | SakuraRotateFn;
 
 // 获取随机值的函数
-function getRandom(
-	option: SakuraRandomOption,
-	config: SakuraConfig,
-): number;
-function getRandom(
-	option: "fnx" | "fny",
-	config: SakuraConfig,
-): SakuraMoveFn;
-function getRandom(
-	option: "fnr" | "fna",
-	config: SakuraConfig,
-): SakuraRotateFn;
+function getRandom(option: SakuraRandomOption, config: SakuraConfig): number;
+function getRandom(option: "fnx" | "fny", config: SakuraConfig): SakuraMoveFn;
+function getRandom(option: "fnr" | "fna", config: SakuraConfig): SakuraRotateFn;
 function getRandom(
 	option: SakuraRandomOption | SakuraRandomFnOption,
 	config: SakuraConfig,

@@ -3,6 +3,6 @@
 	"ignores": ["node_modules", "dist", ".astro"],
 	"config": {
 		"default": false,
-		"MD031": true
-	}
+		"MD031": true,
+	},
 }

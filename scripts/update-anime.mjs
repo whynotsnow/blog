@@ -50,7 +50,9 @@ async function main() {
 	const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 
 	if (mode === "bilibili") {
-		console.log("Detected anime mode: bilibili, running update-bilibili.mjs");
+		console.log(
+			"Detected anime mode: bilibili, running update-bilibili.mjs",
+		);
 		await runScript(path.join(scriptsDir, "update-bilibili.mjs"));
 	} else if (mode === "bangumi") {
 		console.log("Detected anime mode: bangumi, running update-bangumi.mjs");
@@ -65,4 +67,3 @@ main().catch((err) => {
 	console.error(err);
 	process.exit(1);
 });
-

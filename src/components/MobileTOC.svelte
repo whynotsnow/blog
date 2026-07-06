@@ -1,218 +1,228 @@
 <script lang="ts">
-import Icon from "@iconify/svelte";
-import { onMount } from "svelte";
-import I18nKey from "../i18n/i18nKey";
-import { i18n } from "../i18n/translation";
-import { navigateToPage } from "../utils/navigation-utils";
-import { panelManager } from "../utils/panel-manager.js";
+	import Icon from "@iconify/svelte";
+	import { onMount } from "svelte";
+	import I18nKey from "../i18n/i18nKey";
+	import { i18n } from "../i18n/translation";
+	import { navigateToPage } from "../utils/navigation-utils";
+	import { panelManager } from "../utils/panel-manager.js";
 
-let tocItems: Array<{
-	id: string;
-	text: string;
-	level: number;
-	badge?: string;
-}> = [];
-let postItems: Array<{
-	title: string;
-	url: string;
-	category?: string;
-	pinned?: boolean;
-}> = [];
-let activeId = "";
-let observer: IntersectionObserver;
-let isHomePage = false;
-let swupReady = false;
-let useJapaneseBadge = false;
-let tocDepth = 3;
+	let tocItems: Array<{
+		id: string;
+		text: string;
+		level: number;
+		badge?: string;
+	}> = [];
+	let postItems: Array<{
+		title: string;
+		url: string;
+		category?: string;
+		pinned?: boolean;
+	}> = [];
+	let activeId = "";
+	let observer: IntersectionObserver;
+	let isHomePage = false;
+	let swupReady = false;
+	let useJapaneseBadge = false;
+	let tocDepth = 3;
 
-const togglePanel = async () => {
-	await panelManager.togglePanel("mobile-toc-panel");
-};
+	const togglePanel = async () => {
+		await panelManager.togglePanel("mobile-toc-panel");
+	};
 
-const setPanelVisibility = async (show: boolean): Promise<void> => {
-	await panelManager.togglePanel("mobile-toc-panel", show);
-};
+	const setPanelVisibility = async (show: boolean): Promise<void> => {
+		await panelManager.togglePanel("mobile-toc-panel", show);
+	};
 
 	const generateTOC = () => {
 		// 获取配置
 		useJapaneseBadge = window.siteConfig?.toc?.useJapaneseBadge || false;
 		tocDepth = window.siteConfig?.toc?.depth || 3;
 
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-	const items: Array<{
-		id: string;
-		text: string;
-		level: number;
-		badge?: string;
-	}> = [];
-	const japaneseHiragana = [
-		"ア",
-		"イ",
-		"ウ",
-		"エ",
-		"オ",
-		"カ",
-		"キ",
-		"ク",
-		"ケ",
-		"コ",
-		"サ",
-		"シ",
-		"ス",
-		"セ",
-		"ソ",
-		"タ",
-		"チ",
-		"ツ",
-		"テ",
-		"ト",
-	];
-	let h1Count = 0;
+		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+		const items: Array<{
+			id: string;
+			text: string;
+			level: number;
+			badge?: string;
+		}> = [];
+		const japaneseHiragana = [
+			"ア",
+			"イ",
+			"ウ",
+			"エ",
+			"オ",
+			"カ",
+			"キ",
+			"ク",
+			"ケ",
+			"コ",
+			"サ",
+			"シ",
+			"ス",
+			"セ",
+			"ソ",
+			"タ",
+			"チ",
+			"ツ",
+			"テ",
+			"ト",
+		];
+		let h1Count = 0;
 
-	headings.forEach((heading) => {
-		if (heading.id) {
-			const level = Number.parseInt(heading.tagName.charAt(1), 10);
+		headings.forEach((heading) => {
+			if (heading.id) {
+				const level = Number.parseInt(heading.tagName.charAt(1), 10);
 
-			// 根据depth配置过滤标题
-			if (level > tocDepth) {
-				return;
+				// 根据depth配置过滤标题
+				if (level > tocDepth) {
+					return;
+				}
+
+				const text = (heading.textContent || "").replace(/#+\s*$/, "");
+				let badge = "";
+
+				// 只为H1标题生成badge
+				if (level === 1) {
+					h1Count++;
+					if (
+						useJapaneseBadge &&
+						h1Count - 1 < japaneseHiragana.length
+					) {
+						badge = japaneseHiragana[h1Count - 1];
+					} else {
+						badge = h1Count.toString();
+					}
+				}
+
+				items.push({ id: heading.id, text, level, badge });
 			}
+		});
 
-			const text = (heading.textContent || "").replace(/#+\s*$/, "");
-			let badge = "";
+		tocItems = items;
+	};
 
-			// 只为H1标题生成badge
-			if (level === 1) {
-				h1Count++;
-				if (useJapaneseBadge && h1Count - 1 < japaneseHiragana.length) {
-					badge = japaneseHiragana[h1Count - 1];
-				} else {
-					badge = h1Count.toString();
+	const generatePostList = () => {
+		// 查找所有文章卡片
+		const postCards = document.querySelectorAll(".card-base");
+		const items: Array<{
+			title: string;
+			url: string;
+			category?: string;
+			pinned?: boolean;
+		}> = [];
+
+		postCards.forEach((card) => {
+			// 查找标题链接
+			const titleLink = card.querySelector(
+				'a[href*="/posts/"].transition.group',
+			);
+			// 查找分类链接
+			const categoryLink = card.querySelector(
+				'a[href*="/categories/"].link-lg',
+			);
+			// 查找置顶图标
+			const pinnedIcon = titleLink?.querySelector(
+				'svg[data-icon="mdi:pin"]',
+			);
+
+			if (titleLink) {
+				const href = titleLink.getAttribute("href");
+				const title =
+					titleLink.textContent?.replace(/\s+/g, " ").trim() || "";
+				const category = categoryLink?.textContent?.trim() || "";
+				const pinned = !!pinnedIcon;
+
+				if (href && title) {
+					items.push({ title, url: href, category, pinned });
 				}
 			}
+		});
 
-			items.push({ id: heading.id, text, level, badge });
+		postItems = items;
+	};
+
+	const checkIsHomePage = () => {
+		const pathname = window.location.pathname;
+		// 检查是否为首页或首页的分页页面
+		// 分页格式：/, /2/, /3/, 等等
+		isHomePage =
+			pathname === "/" || pathname === "" || /^\/\d+\/?$/.test(pathname);
+	};
+
+	const scrollToHeading = (id: string) => {
+		const element = document.getElementById(id);
+		if (element) {
+			// 关闭面板
+			setPanelVisibility(false);
+
+			// 滚动到目标位置，考虑导航栏高度
+			const offset = 80;
+			const elementPosition = element.offsetTop - offset;
+
+			window.scrollTo({
+				top: elementPosition,
+				behavior: "smooth",
+			});
 		}
-	});
+	};
 
-	tocItems = items;
-};
-
-const generatePostList = () => {
-	// 查找所有文章卡片
-	const postCards = document.querySelectorAll(".card-base");
-	const items: Array<{
-		title: string;
-		url: string;
-		category?: string;
-		pinned?: boolean;
-	}> = [];
-
-	postCards.forEach((card) => {
-		// 查找标题链接
-		const titleLink = card.querySelector('a[href*="/posts/"].transition.group');
-		// 查找分类链接
-		const categoryLink = card.querySelector('a[href*="/categories/"].link-lg');
-		// 查找置顶图标
-		const pinnedIcon = titleLink?.querySelector('svg[data-icon="mdi:pin"]');
-
-		if (titleLink) {
-			const href = titleLink.getAttribute("href");
-			const title = titleLink.textContent?.replace(/\s+/g, " ").trim() || "";
-			const category = categoryLink?.textContent?.trim() || "";
-			const pinned = !!pinnedIcon;
-
-			if (href && title) {
-				items.push({ title, url: href, category, pinned });
-			}
-		}
-	});
-
-	postItems = items;
-};
-
-const checkIsHomePage = () => {
-	const pathname = window.location.pathname;
-	// 检查是否为首页或首页的分页页面
-	// 分页格式：/, /2/, /3/, 等等
-	isHomePage =
-		pathname === "/" || pathname === "" || /^\/\d+\/?$/.test(pathname);
-};
-
-const scrollToHeading = (id: string) => {
-	const element = document.getElementById(id);
-	if (element) {
+	const navigateToPost = (url: string) => {
 		// 关闭面板
 		setPanelVisibility(false);
 
-		// 滚动到目标位置，考虑导航栏高度
-		const offset = 80;
-		const elementPosition = element.offsetTop - offset;
+		// 使用统一的导航工具函数，实现无刷新跳转
+		navigateToPage(url);
+	};
 
-		window.scrollTo({
-			top: elementPosition,
-			behavior: "smooth",
-		});
-	}
-};
+	const updateActiveHeading = () => {
+		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+		const scrollTop = window.scrollY;
+		const offset = 100;
 
-const navigateToPost = (url: string) => {
-	// 关闭面板
-	setPanelVisibility(false);
-
-	// 使用统一的导航工具函数，实现无刷新跳转
-	navigateToPage(url);
-};
-
-const updateActiveHeading = () => {
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-	const scrollTop = window.scrollY;
-	const offset = 100;
-
-	let currentActiveId = "";
-	headings.forEach((heading) => {
-		if (heading.id) {
-			const elementTop = (heading as HTMLElement).offsetTop - offset;
-			if (scrollTop >= elementTop) {
-				currentActiveId = heading.id;
-			}
-		}
-	});
-
-	activeId = currentActiveId;
-};
-
-const setupIntersectionObserver = () => {
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-
-	if (observer) {
-		observer.disconnect();
-	}
-
-	observer = new IntersectionObserver(
-		(entries) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					activeId = entry.target.id;
+		let currentActiveId = "";
+		headings.forEach((heading) => {
+			if (heading.id) {
+				const elementTop = (heading as HTMLElement).offsetTop - offset;
+				if (scrollTop >= elementTop) {
+					currentActiveId = heading.id;
 				}
-			});
-		},
-		{
-			rootMargin: "-80px 0px -80% 0px",
-			threshold: 0,
-		},
-	);
+			}
+		});
 
-	headings.forEach((heading) => {
-		if (heading.id) {
-			observer.observe(heading);
+		activeId = currentActiveId;
+	};
+
+	const setupIntersectionObserver = () => {
+		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+		if (observer) {
+			observer.disconnect();
 		}
-	});
-};
 
-let swupListenersRegistered = false;
+		observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						activeId = entry.target.id;
+					}
+				});
+			},
+			{
+				rootMargin: "-80px 0px -80% 0px",
+				threshold: 0,
+			},
+		);
 
-const setupSwupListeners = () => {
+		headings.forEach((heading) => {
+			if (heading.id) {
+				observer.observe(heading);
+			}
+		});
+	};
+
+	let swupListenersRegistered = false;
+
+	const setupSwupListeners = () => {
 		if (
 			typeof window !== "undefined" &&
 			window.swup &&
@@ -220,99 +230,99 @@ const setupSwupListeners = () => {
 		) {
 			const swup = window.swup;
 
-		// 只监听页面视图事件，避免重复触发
-		swup.hooks.on("page:view", () => {
-			// 延迟执行，确保页面已完全加载
-			setTimeout(() => {
-				init();
-			}, 200);
-		});
+			// 只监听页面视图事件，避免重复触发
+			swup.hooks.on("page:view", () => {
+				// 延迟执行，确保页面已完全加载
+				setTimeout(() => {
+					init();
+				}, 200);
+			});
 
-		swupListenersRegistered = true;
-		console.log("MobileTOC Swup listener registered");
-	} else if (!swupListenersRegistered) {
-		// 降级处理：监听普通页面切换事件
-		window.addEventListener("popstate", () => {
-			setTimeout(init, 200);
-		});
-		swupListenersRegistered = true;
-		console.log("MobileTOC fallback listener registered");
-	}
-};
+			swupListenersRegistered = true;
+			console.log("MobileTOC Swup listener registered");
+		} else if (!swupListenersRegistered) {
+			// 降级处理：监听普通页面切换事件
+			window.addEventListener("popstate", () => {
+				setTimeout(init, 200);
+			});
+			swupListenersRegistered = true;
+			console.log("MobileTOC fallback listener registered");
+		}
+	};
 
-const checkSwupAvailability = () => {
-	if (typeof window !== "undefined") {
-		// 检查Swup是否已加载
+	const checkSwupAvailability = () => {
+		if (typeof window !== "undefined") {
+			// 检查Swup是否已加载
 			swupReady = !!window.swup;
 
-		// 如果Swup还未加载，监听其加载事件
-		if (!swupReady) {
+			// 如果Swup还未加载，监听其加载事件
+			if (!swupReady) {
 				const checkSwup = () => {
 					if (window.swup) {
-					swupReady = true;
-					document.removeEventListener("swup:enable", checkSwup);
-					// Swup加载完成后设置监听器
-					setupSwupListeners();
-				}
-			};
+						swupReady = true;
+						document.removeEventListener("swup:enable", checkSwup);
+						// Swup加载完成后设置监听器
+						setupSwupListeners();
+					}
+				};
 
-			// 监听Swup启用事件
-			document.addEventListener("swup:enable", checkSwup);
+				// 监听Swup启用事件
+				document.addEventListener("swup:enable", checkSwup);
 
-			// 设置超时检查
+				// 设置超时检查
 				setTimeout(() => {
 					if (window.swup) {
-					swupReady = true;
-					document.removeEventListener("swup:enable", checkSwup);
-					// Swup加载完成后设置监听器
-					setupSwupListeners();
-				}
-			}, 1000);
+						swupReady = true;
+						document.removeEventListener("swup:enable", checkSwup);
+						// Swup加载完成后设置监听器
+						setupSwupListeners();
+					}
+				}, 1000);
+			} else {
+				// Swup已经加载，直接设置监听器
+				setupSwupListeners();
+			}
+		}
+	};
+
+	const init = () => {
+		checkIsHomePage();
+		checkSwupAvailability();
+		if (isHomePage) {
+			generatePostList();
 		} else {
-			// Swup已经加载，直接设置监听器
-			setupSwupListeners();
+			generateTOC();
+			setupIntersectionObserver();
+			updateActiveHeading();
 		}
-	}
-};
+	};
 
-const init = () => {
-	checkIsHomePage();
-	checkSwupAvailability();
-	if (isHomePage) {
-		generatePostList();
-	} else {
-		generateTOC();
-		setupIntersectionObserver();
-		updateActiveHeading();
-	}
-};
+	onMount(() => {
+		// 延迟初始化，确保页面内容已加载
+		setTimeout(init, 100);
 
-onMount(() => {
-	// 延迟初始化，确保页面内容已加载
-	setTimeout(init, 100);
+		// 监听滚动事件作为备用
+		window.addEventListener("scroll", updateActiveHeading);
 
-	// 监听滚动事件作为备用
-	window.addEventListener("scroll", updateActiveHeading);
+		return () => {
+			if (observer) {
+				observer.disconnect();
+			}
+			window.removeEventListener("scroll", updateActiveHeading);
 
-	return () => {
-		if (observer) {
-			observer.disconnect();
-		}
-		window.removeEventListener("scroll", updateActiveHeading);
-
-		// 清理Swup事件监听器
+			// 清理Swup事件监听器
 			if (typeof window !== "undefined" && window.swup) {
 				const swup = window.swup;
 				swup.hooks.off("page:view");
-		}
+			}
 
-		// 清理popstate事件监听器
-		window.removeEventListener("popstate", init);
-		swupListenersRegistered = false;
-	};
-});
+			// 清理popstate事件监听器
+			window.removeEventListener("popstate", init);
+			swupListenersRegistered = false;
+		};
+	});
 
-// 导出初始化函数供外部调用
+	// 导出初始化函数供外部调用
 	if (typeof window !== "undefined") {
 		window.mobileTOCInit = init;
 	}
@@ -329,14 +339,18 @@ onMount(() => {
 </button>
 
 <!-- Mobile TOC Panel -->
-<div 
-	id="mobile-toc-panel" 
+<div
+	id="mobile-toc-panel"
 	class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)]
 		top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
 >
 	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-lg font-bold text-(--primary)">{isHomePage ? i18n(I18nKey.postList) : i18n(I18nKey.tableOfContents)}</h3>
-		<button 
+		<h3 class="text-lg font-bold text-(--primary)">
+			{isHomePage
+				? i18n(I18nKey.postList)
+				: i18n(I18nKey.tableOfContents)}
+		</h3>
+		<button
 			on:click={togglePanel}
 			aria-label="Close TOC"
 			class="btn-plain rounded-lg h-8 w-8 active:scale-90 theme-switch-btn"
@@ -348,7 +362,10 @@ onMount(() => {
 	{#if isHomePage}
 		{#if postItems.length === 0}
 			<div class="text-center py-8 text-black/50 dark:text-white/50">
-				<Icon icon="material-symbols:article-outline" class="text-2xl mb-2" />
+				<Icon
+					icon="material-symbols:article-outline"
+					class="text-2xl mb-2"
+				/>
 				<p>暂无文章</p>
 			</div>
 		{:else}
@@ -371,31 +388,31 @@ onMount(() => {
 				{/each}
 			</div>
 		{/if}
+	{:else if tocItems.length === 0}
+		<div class="text-center py-8 text-black/50 dark:text-white/50">
+			<p>{i18n(I18nKey.tocEmpty)}</p>
+		</div>
 	{:else}
-		{#if tocItems.length === 0}
-			<div class="text-center py-8 text-black/50 dark:text-white/50">
-				<p>{i18n(I18nKey.tocEmpty)}</p>
-			</div>
-		{:else}
-			<div class="toc-content">
-				{#each tocItems as item (item.id)}
-					<button
-						on:click={() => scrollToHeading(item.id)}
-						class="toc-item level-{item.level} {activeId === item.id ? 'active' : ''}"
-						class:active={activeId === item.id}
-					>
-						{#if item.level === 1}
-							<span class="badge">{item.badge}</span>
-						{:else if item.level === 2}
-							<span class="dot-square"></span>
-						{:else}
-							<span class="dot-small"></span>
-						{/if}
-						<span class="toc-text">{item.text}</span>
-					</button>
-				{/each}
-			</div>
-		{/if}
+		<div class="toc-content">
+			{#each tocItems as item (item.id)}
+				<button
+					on:click={() => scrollToHeading(item.id)}
+					class="toc-item level-{item.level} {activeId === item.id
+						? 'active'
+						: ''}"
+					class:active={activeId === item.id}
+				>
+					{#if item.level === 1}
+						<span class="badge">{item.badge}</span>
+					{:else if item.level === 2}
+						<span class="dot-square"></span>
+					{:else}
+						<span class="dot-small"></span>
+					{/if}
+					<span class="toc-text">{item.text}</span>
+				</button>
+			{/each}
+		</div>
 	{/if}
 </div>
 
@@ -410,7 +427,9 @@ onMount(() => {
 
 	/* 确保主题切换按钮的背景色即时更新 */
 	:global(.theme-switch-btn)::before {
-		transition: transform 75ms ease-out, background-color 0ms !important;
+		transition:
+			transform 75ms ease-out,
+			background-color 0ms !important;
 	}
 
 	.toc-content {

@@ -32,7 +32,7 @@
 </script>
 
 <div class="card-base px-8 py-6">
-		{#each displayGroups as group (group.year)}
+	{#each displayGroups as group (group.year)}
 		<div>
 			<div class="flex flex-row w-full items-center h-[3.75rem]">
 				<div
