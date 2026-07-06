@@ -45,6 +45,9 @@ yarn.lock
 # Local private Agent OS files
 docs/agents/
 
+# Local migration staging files
+.migration/
+
 cache/
 fuwari/
 src/data/myself.ts
