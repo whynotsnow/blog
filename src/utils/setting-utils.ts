@@ -185,11 +185,19 @@ export function getDefaultOverlayOpacity(): number {
 }
 
 export function getStoredOverlayOpacity(): number {
-	return getDefaultOverlayOpacity();
+	const stored = localStorage.getItem("overlayOpacity");
+	return stored ? Number(stored) : getDefaultOverlayOpacity();
 }
 
-export function setOverlayOpacity(_value: number): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setOverlayOpacity(value: number): void {
+	localStorage.setItem("overlayOpacity", String(value));
+	const wallpaper = document.querySelector(
+		"[data-fullscreen-wallpaper]",
+	) as HTMLElement | null;
+	if (wallpaper) {
+		wallpaper.style.setProperty("--wallpaper-opacity", String(value));
+	}
+	window.dispatchEvent(new CustomEvent("overlay-settings-change"));
 }
 
 export function getDefaultOverlayBlur(): number {
@@ -197,11 +205,19 @@ export function getDefaultOverlayBlur(): number {
 }
 
 export function getStoredOverlayBlur(): number {
-	return getDefaultOverlayBlur();
+	const stored = localStorage.getItem("overlayBlur");
+	return stored ? Number(stored) : getDefaultOverlayBlur();
 }
 
-export function setOverlayBlur(_value: number): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setOverlayBlur(value: number): void {
+	localStorage.setItem("overlayBlur", String(value));
+	const wallpaper = document.querySelector(
+		"[data-fullscreen-wallpaper]",
+	) as HTMLElement | null;
+	if (wallpaper) {
+		wallpaper.style.setProperty("--wallpaper-blur", `${value}px`);
+	}
+	window.dispatchEvent(new CustomEvent("overlay-settings-change"));
 }
 
 export function getDefaultOverlayCardOpacity(): number {
@@ -212,11 +228,17 @@ export function getDefaultOverlayCardOpacity(): number {
 }
 
 export function getStoredOverlayCardOpacity(): number {
-	return getDefaultOverlayCardOpacity();
+	const stored = localStorage.getItem("overlayCardOpacity");
+	return stored ? Number(stored) : getDefaultOverlayCardOpacity();
 }
 
-export function setOverlayCardOpacity(_value: number): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setOverlayCardOpacity(value: number): void {
+	localStorage.setItem("overlayCardOpacity", String(value));
+	document.documentElement.style.setProperty(
+		"--card-transparent-opacity",
+		String(value),
+	);
+	window.dispatchEvent(new CustomEvent("overlay-settings-change"));
 }
 
 export function getDefaultFullscreenOpacity(): number {
@@ -224,11 +246,19 @@ export function getDefaultFullscreenOpacity(): number {
 }
 
 export function getStoredFullscreenOpacity(): number {
-	return getDefaultFullscreenOpacity();
+	const stored = localStorage.getItem("fullscreenOpacity");
+	return stored ? Number(stored) : getDefaultFullscreenOpacity();
 }
 
-export function setFullscreenOpacity(_value: number): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setFullscreenOpacity(value: number): void {
+	localStorage.setItem("fullscreenOpacity", String(value));
+	const wallpaper = document.querySelector(
+		"[data-fullscreen-wallpaper]",
+	) as HTMLElement | null;
+	if (wallpaper) {
+		wallpaper.style.setProperty("--wallpaper-opacity", String(value));
+	}
+	window.dispatchEvent(new CustomEvent("fullscreen-settings-change"));
 }
 
 export function getDefaultFullscreenBlur(): number {
@@ -236,11 +266,64 @@ export function getDefaultFullscreenBlur(): number {
 }
 
 export function getStoredFullscreenBlur(): number {
-	return getDefaultFullscreenBlur();
+	const stored = localStorage.getItem("fullscreenBlur");
+	return stored ? Number(stored) : getDefaultFullscreenBlur();
 }
 
-export function setFullscreenBlur(_value: number): void {
-	// Phase 1/2 preview-only: no localStorage or DOM side effects yet.
+export function setFullscreenBlur(value: number): void {
+	localStorage.setItem("fullscreenBlur", String(value));
+	const wallpaper = document.querySelector(
+		"[data-fullscreen-wallpaper]",
+	) as HTMLElement | null;
+	if (wallpaper) {
+		wallpaper.style.setProperty("--wallpaper-blur", `${value}px`);
+	}
+	window.dispatchEvent(new CustomEvent("fullscreen-settings-change"));
+}
+
+export function applyWallpaperVisualSettings(mode?: WALLPAPER_MODE): void {
+	const currentMode = mode || getStoredWallpaperMode();
+	const wallpaper = document.querySelector(
+		"[data-fullscreen-wallpaper]",
+	) as HTMLElement | null;
+	const root = document.documentElement;
+
+	if (!wallpaper) {
+		return;
+	}
+
+	if (currentMode === "overlay") {
+		wallpaper.style.setProperty(
+			"--wallpaper-opacity",
+			String(getStoredOverlayOpacity()),
+		);
+		wallpaper.style.setProperty(
+			"--wallpaper-blur",
+			`${getStoredOverlayBlur()}px`,
+		);
+		root.style.setProperty(
+			"--card-transparent-opacity",
+			String(getStoredOverlayCardOpacity()),
+		);
+		return;
+	}
+
+	if (currentMode === "fullscreen") {
+		wallpaper.style.setProperty(
+			"--wallpaper-opacity",
+			String(getStoredFullscreenOpacity()),
+		);
+		wallpaper.style.setProperty(
+			"--wallpaper-blur",
+			`${getStoredFullscreenBlur()}px`,
+		);
+		root.style.removeProperty("--card-transparent-opacity");
+		return;
+	}
+
+	wallpaper.style.removeProperty("--wallpaper-opacity");
+	wallpaper.style.removeProperty("--wallpaper-blur");
+	root.style.removeProperty("--card-transparent-opacity");
 }
 
 export function getDefaultWavesEnabled(): boolean {

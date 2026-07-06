@@ -105,7 +105,8 @@ body:not(.wallpaper-transparent)
 
 /* 全屏壁纸模式下，--card-bg-transparent 使用真正的半透明值 */
 body.wallpaper-transparent
-  --card-bg-transparent: rgba(255, 255, 255, 0.8)
+  --card-transparent-opacity: 0.8
+  --card-bg-transparent: rgba(255, 255, 255, var(--card-transparent-opacity))
 
 :root.dark body.wallpaper-transparent
-  --card-bg-transparent: rgba(23, 23, 23, 0.8)
+  --card-bg-transparent: rgba(23, 23, 23, var(--card-transparent-opacity))

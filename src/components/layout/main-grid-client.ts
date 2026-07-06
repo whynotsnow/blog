@@ -3,6 +3,8 @@ import { BANNER_HEIGHT } from "@/constants/constants";
 import { applyLayoutMode, bindLayoutModeEvents } from "@/utils/layout-mode";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
+import { applyWallpaperVisualSettings } from "@/utils/setting-utils";
+import type { WALLPAPER_MODE } from "@/types/config";
 
 const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 const navbarTransparentMode =
@@ -10,8 +12,17 @@ const navbarTransparentMode =
 const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 let mainGridClientBound = false;
 
-function getWallpaperMode(): string {
-	return localStorage.getItem("wallpaperMode") || defaultWallpaperMode;
+function getWallpaperMode(): WALLPAPER_MODE {
+	const stored = localStorage.getItem("wallpaperMode");
+	if (
+		stored === "banner" ||
+		stored === "fullscreen" ||
+		stored === "overlay" ||
+		stored === "none"
+	) {
+		return stored;
+	}
+	return defaultWallpaperMode as WALLPAPER_MODE;
 }
 
 function forceReflow() {
@@ -74,6 +85,7 @@ function applySakuraSetting(
 function applyInitialPageShell() {
 	const wallpaperMode = getWallpaperMode();
 	const body = document.body;
+	applyWallpaperVisualSettings(wallpaperMode);
 
 	switch (wallpaperMode) {
 		case "banner":
@@ -81,6 +93,7 @@ function applyInitialPageShell() {
 			body.classList.remove("wallpaper-transparent", "no-banner-mode");
 			break;
 		case "fullscreen":
+		case "overlay":
 			body.classList.remove("enable-banner");
 			body.classList.add("wallpaper-transparent", "no-banner-mode");
 			break;
@@ -146,6 +159,7 @@ export function applyWallpaperMode() {
 	const body = document.body;
 	const mainContent = getMainContent();
 	const tocWrapper = document.getElementById("toc-wrapper");
+	applyWallpaperVisualSettings(wallpaperMode);
 
 	switch (wallpaperMode) {
 		case "banner":
@@ -194,6 +208,22 @@ export function applyWallpaperMode() {
 			forceReflow();
 			break;
 
+		case "overlay":
+			if (bannerWrapper) bannerWrapper.style.display = "none";
+			if (fullscreenWallpaper)
+				fullscreenWallpaper.style.display = "block";
+			tocWrapper?.classList.remove("toc-hide");
+			body.classList.remove("enable-banner");
+			forceReflow();
+			mainContent?.style.removeProperty("top");
+			body.classList.add("wallpaper-transparent", "no-banner-mode");
+			if (navbar) {
+				navbar.setAttribute("data-dynamic-transparent", "semi");
+				navbar.removeAttribute("data-transparent-mode");
+			}
+			forceReflow();
+			break;
+
 		case "none":
 			if (bannerWrapper) bannerWrapper.style.display = "none";
 			if (fullscreenWallpaper) fullscreenWallpaper.style.display = "none";
@@ -214,6 +244,7 @@ export function applyWallpaperMode() {
 function syncPageShell() {
 	bindLayoutModeEvents();
 	window.applyWallpaperMode?.();
+	applyWallpaperVisualSettings();
 	requestAnimationFrame(() => applyLayoutMode());
 	applyWavesSetting();
 	applyBannerTitleSetting();
@@ -226,6 +257,13 @@ function bindMainGridClient() {
 
 	window.addEventListener("wallpaper-mode-change", () => {
 		applyWallpaperMode();
+		applyWallpaperVisualSettings();
+	});
+	window.addEventListener("overlay-settings-change", () => {
+		applyWallpaperVisualSettings("overlay");
+	});
+	window.addEventListener("fullscreen-settings-change", () => {
+		applyWallpaperVisualSettings("fullscreen");
 	});
 	window.addEventListener("waves-toggle", (event) => {
 		const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail
@@ -256,12 +294,14 @@ applyInitialPageShell();
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", () => {
 		applyWallpaperMode();
+		applyWallpaperVisualSettings();
 		applyWavesSetting();
 		applyBannerTitleSetting();
 		applySakuraSetting();
 	});
 } else {
 	applyWallpaperMode();
+	applyWallpaperVisualSettings();
 	applyWavesSetting();
 	applyBannerTitleSetting();
 	applySakuraSetting();

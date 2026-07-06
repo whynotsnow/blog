@@ -24,11 +24,17 @@
 		getDefaultWavesEnabled,
 		getHue,
 		getStoredBannerTitleEnabled,
+		getStoredOverlayBlur,
+		getStoredOverlayCardOpacity,
+		getStoredOverlayOpacity,
 		getStoredSakuraEnabled,
 		getStoredWallpaperMode,
 		getStoredWavesEnabled,
 		setBannerTitleEnabled,
 		setHue,
+		setOverlayBlur,
+		setOverlayCardOpacity,
+		setOverlayOpacity,
 		setSakuraEnabled,
 		setWallpaperMode,
 		setWavesEnabled,
@@ -149,10 +155,7 @@
 	);
 
 	function getPreviewSafeWallpaperMode(): WALLPAPER_MODE {
-		const stored = getStoredWallpaperMode();
-		return stored === WALLPAPER_OVERLAY
-			? (defaultWallpaperMode as WALLPAPER_MODE)
-			: stored;
+		return getStoredWallpaperMode();
 	}
 
 	function resetHue() {
@@ -174,8 +177,17 @@
 
 	function resetOverlaySettings() {
 		overlayOpacity = defaultOverlayOpacity;
+		if (isOverlayOpacitySwitchable) {
+			setOverlayOpacity(defaultOverlayOpacity);
+		}
 		overlayBlur = defaultOverlayBlur;
+		if (isOverlayBlurSwitchable) {
+			setOverlayBlur(defaultOverlayBlur);
+		}
 		overlayCardOpacity = defaultOverlayCardOpacity;
+		if (isOverlayCardOpacitySwitchable) {
+			setOverlayCardOpacity(defaultOverlayCardOpacity);
+		}
 	}
 
 	function resetBannerSettings() {
@@ -214,8 +226,13 @@
 
 	function switchWallpaperMode(newMode: WALLPAPER_MODE) {
 		wallpaperMode = newMode;
-		if (newMode !== WALLPAPER_OVERLAY) {
-			setWallpaperMode(newMode);
+		setWallpaperMode(newMode);
+		if (newMode === WALLPAPER_OVERLAY) {
+			if (isOverlayOpacitySwitchable) setOverlayOpacity(overlayOpacity);
+			if (isOverlayBlurSwitchable) setOverlayBlur(overlayBlur);
+			if (isOverlayCardOpacitySwitchable) {
+				setOverlayCardOpacity(overlayCardOpacity);
+			}
 		}
 	}
 
@@ -232,6 +249,9 @@
 		hue = getHue();
 		wallpaperMode = getPreviewSafeWallpaperMode();
 		currentLayout = getLayoutMode();
+		overlayOpacity = getStoredOverlayOpacity();
+		overlayBlur = getStoredOverlayBlur();
+		overlayCardOpacity = getStoredOverlayCardOpacity();
 		wavesEnabled = getStoredWavesEnabled();
 		bannerTitleEnabled = getStoredBannerTitleEnabled();
 		sakuraEnabled = getStoredSakuraEnabled();
@@ -411,7 +431,10 @@
 						max={100}
 						step={1}
 						value={Math.round(overlayOpacity * 100)}
-						oninput={(value) => (overlayOpacity = value / 100)}
+						oninput={(value) => {
+							overlayOpacity = value / 100;
+							setOverlayOpacity(overlayOpacity);
+						}}
 					/>
 				{/if}
 				{#if isOverlayBlurSwitchable}
@@ -421,7 +444,11 @@
 						min={0}
 						max={12}
 						step={0.5}
-						bind:value={overlayBlur}
+						value={overlayBlur}
+						oninput={(value) => {
+							overlayBlur = value;
+							setOverlayBlur(overlayBlur);
+						}}
 					/>
 				{/if}
 				{#if isOverlayCardOpacitySwitchable}
@@ -432,7 +459,10 @@
 						max={100}
 						step={1}
 						value={Math.round(overlayCardOpacity * 100)}
-						oninput={(value) => (overlayCardOpacity = value / 100)}
+						oninput={(value) => {
+							overlayCardOpacity = value / 100;
+							setOverlayCardOpacity(overlayCardOpacity);
+						}}
 					/>
 				{/if}
 			</SettingSection>
