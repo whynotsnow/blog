@@ -14,8 +14,20 @@
 		.enable-banner #banner {
 			@apply lg:h-(--banner-height-home) lg:translate-y-(--bannerOffset);
 		}
+		.enable-banner.fullscreen-banner #banner-wrapper {
+			@apply lg:h-screen lg:translate-y-0;
+		}
+		.enable-banner.fullscreen-banner #banner {
+			@apply lg:h-screen lg:translate-y-0;
+		}
+		.enable-banner.fullscreen-banner #top-row {
+			@apply lg:h-[calc(100vh-4.5rem)];
+		}
 		.enable-banner.is-home #main-grid {
 			@apply lg:translate-y-(--banner-height-extend);
+		}
+		.enable-banner.fullscreen-banner.is-home #main-grid {
+			@apply lg:translate-y-0;
 		}
 		.enable-banner #top-row {
 			@apply lg:h-[calc(var(--banner-height-home)-4.5rem)] transition-all duration-300;

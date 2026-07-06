@@ -308,19 +308,6 @@ export function applyWallpaperVisualSettings(mode?: WALLPAPER_MODE): void {
 		return;
 	}
 
-	if (currentMode === "fullscreen") {
-		wallpaper.style.setProperty(
-			"--wallpaper-opacity",
-			String(getStoredFullscreenOpacity()),
-		);
-		wallpaper.style.setProperty(
-			"--wallpaper-blur",
-			`${getStoredFullscreenBlur()}px`,
-		);
-		root.style.removeProperty("--card-transparent-opacity");
-		return;
-	}
-
 	wallpaper.style.removeProperty("--wallpaper-opacity");
 	wallpaper.style.removeProperty("--wallpaper-blur");
 	root.style.removeProperty("--card-transparent-opacity");

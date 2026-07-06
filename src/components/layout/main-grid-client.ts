@@ -1,5 +1,5 @@
 import { sakuraConfig, siteConfig } from "@/config";
-import { BANNER_HEIGHT } from "@/constants/constants";
+import { BANNER_HEIGHT, BANNER_HEIGHT_FULLSCREEN } from "@/constants/constants";
 import { applyLayoutMode, bindLayoutModeEvents } from "@/utils/layout-mode";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
@@ -31,6 +31,62 @@ function forceReflow() {
 
 function getMainContent(): HTMLElement | null {
 	return document.querySelector(".absolute.w-full.z-30.pointer-events-none");
+}
+
+function syncMainContentPosition(mode: WALLPAPER_MODE) {
+	const mainContent = getMainContent();
+	const bannerWrapper = document.getElementById("banner-wrapper");
+	if (!mainContent) return;
+
+	const isMobile = window.innerWidth < 1280;
+	const isHomePage =
+		window.location.pathname === "/" || window.location.pathname === "";
+
+	mainContent.classList.remove("mobile-main-no-banner", "no-banner-layout");
+	mainContent.style.removeProperty("position");
+	mainContent.style.removeProperty("z-index");
+	mainContent.style.removeProperty("min-height");
+	mainContent.style.removeProperty("transition");
+
+	if (mode === "fullscreen") {
+		if (isMobile && !isHomePage) {
+			mainContent.classList.add(
+				"mobile-main-no-banner",
+				"no-banner-layout",
+			);
+			mainContent.style.setProperty("top", "5.5rem", "important");
+			mainContent.style.setProperty("margin-top", "0", "important");
+			bannerWrapper?.classList.add("mobile-hide-banner");
+			return;
+		}
+
+		bannerWrapper?.classList.remove("mobile-hide-banner");
+		mainContent.classList.add("no-banner-layout");
+		mainContent.style.position = "relative";
+		mainContent.style.zIndex = "30";
+		mainContent.style.setProperty("top", "0", "important");
+		mainContent.style.setProperty("margin-top", "1rem", "important");
+		return;
+	}
+
+	mainContent.style.setProperty("margin-top", "0", "important");
+
+	if (mode === "banner") {
+		if (isMobile && !isHomePage) {
+			mainContent.classList.add("mobile-main-no-banner");
+			mainContent.style.setProperty("top", "5.5rem", "important");
+			bannerWrapper?.classList.add("mobile-hide-banner");
+			return;
+		}
+
+		bannerWrapper?.classList.remove("mobile-hide-banner");
+		mainContent.style.setProperty("top", `${BANNER_HEIGHT}vh`, "important");
+		return;
+	}
+
+	bannerWrapper?.classList.remove("mobile-hide-banner");
+	mainContent.classList.add("no-banner-layout");
+	mainContent.style.setProperty("top", "5.5rem", "important");
 }
 
 function getStoredBoolean(key: string, fallback: boolean): boolean {
@@ -93,17 +149,21 @@ function applyInitialPageShell() {
 			body.classList.remove(
 				"wallpaper-transparent",
 				"wallpaper-overlay",
+				"fullscreen-banner",
 				"no-banner-mode",
 			);
 			break;
 		case "fullscreen":
-			body.classList.remove("enable-banner");
-			body.classList.remove("wallpaper-overlay");
-			body.classList.add("wallpaper-transparent", "no-banner-mode");
+			body.classList.remove(
+				"wallpaper-transparent",
+				"wallpaper-overlay",
+				"no-banner-mode",
+			);
+			body.classList.add("enable-banner", "fullscreen-banner");
 			break;
 		case "overlay":
 			body.classList.remove("enable-banner");
-			body.classList.remove("wallpaper-transparent");
+			body.classList.remove("wallpaper-transparent", "fullscreen-banner");
 			body.classList.add("wallpaper-overlay", "no-banner-mode");
 			break;
 		case "none":
@@ -111,17 +171,14 @@ function applyInitialPageShell() {
 				"enable-banner",
 				"wallpaper-transparent",
 				"wallpaper-overlay",
+				"fullscreen-banner",
 			);
 			body.classList.add("no-banner-mode");
 			break;
 	}
 
 	requestAnimationFrame(() => {
-		const mainContent = getMainContent();
-		if (mainContent) {
-			mainContent.style.top =
-				wallpaperMode === "banner" ? `${BANNER_HEIGHT}vh` : "5.5rem";
-		}
+		syncMainContentPosition(wallpaperMode);
 
 		const mainGrid = document.getElementById("main-grid");
 		if (mainGrid) {
@@ -173,6 +230,7 @@ export function applyWallpaperMode() {
 	const mainContent = getMainContent();
 	const tocWrapper = document.getElementById("toc-wrapper");
 	applyWallpaperVisualSettings(wallpaperMode);
+	syncMainContentPosition(wallpaperMode);
 
 	switch (wallpaperMode) {
 		case "banner":
@@ -188,6 +246,7 @@ export function applyWallpaperMode() {
 			body.classList.remove(
 				"wallpaper-transparent",
 				"wallpaper-overlay",
+				"fullscreen-banner",
 				"no-banner-mode",
 			);
 			forceReflow();
@@ -210,18 +269,35 @@ export function applyWallpaperMode() {
 			break;
 
 		case "fullscreen":
-			if (bannerWrapper) bannerWrapper.style.display = "none";
-			if (fullscreenWallpaper)
-				fullscreenWallpaper.style.display = "block";
-			tocWrapper?.classList.remove("toc-hide");
-			body.classList.remove("enable-banner");
-			body.classList.remove("wallpaper-overlay");
+			if (bannerWrapper) bannerWrapper.style.display = "block";
+			if (fullscreenWallpaper) fullscreenWallpaper.style.display = "none";
+			if (tocWrapper) {
+				const scrollTop = document.documentElement.scrollTop;
+				const bannerHeight =
+					window.innerHeight * (BANNER_HEIGHT_FULLSCREEN / 100);
+				if (scrollTop <= bannerHeight) {
+					tocWrapper.classList.add("toc-hide");
+				}
+			}
+			body.classList.remove(
+				"wallpaper-transparent",
+				"wallpaper-overlay",
+				"no-banner-mode",
+			);
 			forceReflow();
-			mainContent?.style.removeProperty("top");
-			body.classList.add("wallpaper-transparent", "no-banner-mode");
+			body.classList.add("enable-banner", "fullscreen-banner");
 			if (navbar) {
-				navbar.setAttribute("data-dynamic-transparent", "semi");
-				navbar.removeAttribute("data-transparent-mode");
+				navbar.removeAttribute("data-dynamic-transparent");
+				navbar.setAttribute(
+					"data-transparent-mode",
+					navbarTransparentMode,
+				);
+				if (
+					navbarTransparentMode === "semifull" &&
+					window.initSemifullScrollDetection
+				) {
+					window.initSemifullScrollDetection();
+				}
 			}
 			forceReflow();
 			break;
@@ -232,7 +308,7 @@ export function applyWallpaperMode() {
 				fullscreenWallpaper.style.display = "block";
 			tocWrapper?.classList.remove("toc-hide");
 			body.classList.remove("enable-banner");
-			body.classList.remove("wallpaper-transparent");
+			body.classList.remove("wallpaper-transparent", "fullscreen-banner");
 			forceReflow();
 			mainContent?.style.removeProperty("top");
 			body.classList.add("wallpaper-overlay", "no-banner-mode");
@@ -251,6 +327,7 @@ export function applyWallpaperMode() {
 				"enable-banner",
 				"wallpaper-transparent",
 				"wallpaper-overlay",
+				"fullscreen-banner",
 			);
 			forceReflow();
 			mainContent?.style.removeProperty("top");

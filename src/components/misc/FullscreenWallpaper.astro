@@ -97,7 +97,7 @@ const renderGroups = [
 	// 立即执行脚本：防止闪烁
 	(function() {
 		const mode = localStorage.getItem('wallpaperMode') || 'banner';
-		if (mode !== 'fullscreen' && mode !== 'overlay') {
+		if (mode !== 'overlay') {
 			document.currentScript.parentElement.style.display = 'none';
 		}
 	})();
