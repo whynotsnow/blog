@@ -51,16 +51,14 @@
 统一设置面板使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应入口。
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
-- `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。当前 `overlay` 是为后续真实能力预留的壁纸模式。
-- `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。
-- `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。
-- `siteConfig.banner.homeText.switchable`：控制首页 banner 文案设置入口。
+- `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。`overlay` 会显示全屏壁纸并通过 CSS 变量控制壁纸和卡片透明效果。
+- `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。当前入口只保留 UI 状态预览，不会写入运行时配置。
+- `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 waves。
+- `siteConfig.banner.homeText.switchable`：控制首页 banner 文案设置入口。用户设置会写入 `localStorage.bannerTitleEnabled` 并实时显示/隐藏首页文案。
 - `fullscreenWallpaperConfig.enable` 和 `fullscreenWallpaperConfig.switchable`：控制全屏/叠加壁纸资源与切换入口。
-- `fullscreenWallpaperConfig.overlay`：提供叠加壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。
+- `fullscreenWallpaperConfig.overlay`：提供叠加壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。用户设置会分别写入 `localStorage.overlayOpacity`、`localStorage.overlayBlur`、`localStorage.overlayCardOpacity`。
 - `fullscreenWallpaperConfig.fullscreen.switchable`：控制全屏壁纸透明度、模糊度滑块入口。
-- `sakuraConfig.switchable`：控制樱花特效设置入口。
-
-在设置面板分阶段迁移期间，未接入真实运行时的设置只使用这些配置作为默认展示值，不应提前写入 `localStorage` 或触发页面副作用。
+- `sakuraConfig.switchable`：控制樱花特效设置入口。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
 
 ## 特色页面
 
