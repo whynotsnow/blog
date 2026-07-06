@@ -127,51 +127,6 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
 		}
 	}
 
-async function loadButtonScript() {
-    try {
-        // 导入面板管理器
-        const { panelManager } = await import('../utils/panel-manager.js');
-        
-        const settingBtn = document.getElementById("display-settings-switch");
-        if (settingBtn) {
-            settingBtn.onclick = async function () {
-                await panelManager.togglePanel('display-setting');
-            };
-        }
-
-        const menuBtn = document.getElementById("nav-menu-switch");
-        if (menuBtn) {
-            menuBtn.onclick = async function () {
-                await panelManager.togglePanel('nav-menu-panel');
-            };
-        }
-    } catch (error) {
-        console.error('Failed to load panel manager:', error);
-        // 备用逻辑
-        const settingBtn = document.getElementById("display-settings-switch");
-        if (settingBtn) {
-            settingBtn.onclick = function () {
-                const settingPanel = document.getElementById("display-setting");
-                if (settingPanel) {
-                    settingPanel.classList.toggle("float-panel-closed");
-                }
-            };
-        }
-
-        const menuBtn = document.getElementById("nav-menu-switch");
-        if (menuBtn) {
-            menuBtn.onclick = function () {
-                const menuPanel = document.getElementById("nav-menu-panel");
-                if (menuPanel) {
-                    menuPanel.classList.toggle("float-panel-closed");
-                }
-            };
-        }
-    }
-}
-
-loadButtonScript();
-
 // 为semifull模式添加滚动检测逻辑
 function initSemifullScrollDetection() {
     const navbar = document.getElementById('navbar');

@@ -79,11 +79,32 @@ function disableAnimation() {
 */
 
 const bannerEnabled = !!document.getElementById("banner-wrapper");
+let panelToggleDelegationBound = false;
 
 // 导入面板管理器
 async function initializePanelManager() {
 	try {
 		const { panelManager } = await import("../utils/panel-manager.js");
+
+		if (!panelToggleDelegationBound) {
+			panelToggleDelegationBound = true;
+			document.addEventListener("click", async (event) => {
+				const target = event.target;
+				if (!(target instanceof Element)) return;
+
+				const toggle = target.closest<HTMLElement>(
+					"#display-settings-switch, #nav-menu-switch",
+				);
+				if (!toggle) return;
+
+				event.preventDefault();
+				if (toggle.id === "display-settings-switch") {
+					await panelManager.togglePanel("display-setting");
+					return;
+				}
+				await panelManager.togglePanel("nav-menu-panel");
+			});
+		}
 
 		function setClickOutsideToClose(panel: string, ignores: string[]) {
 			document.addEventListener("click", async (event) => {
