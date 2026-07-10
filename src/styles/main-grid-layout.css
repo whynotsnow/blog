@@ -934,6 +934,11 @@ body.fullscreen-banner.enable-banner #banner-wrapper:not(.mobile-hide-banner) {
   transform: translateY(0) translateZ(0) !important;
 }
 
+body.fullscreen-banner.enable-banner #top-row {
+  height: 100vh !important;
+  min-height: 100vh !important;
+}
+
 body.fullscreen-banner.enable-banner #banner,
 body.fullscreen-banner.enable-banner #banner-carousel,
 body.fullscreen-banner.enable-banner #banner-carousel .carousel-list,
