@@ -136,15 +136,25 @@ If a selected tool fails due to sandbox, origin policy, or access restriction:
 
 1. The task must NOT be marked as complete.
 2. The agent must NOT replace UI validation with code review.
-3. The agent must re-route the task using the following fallback chain:
+3. Detect available execution surfaces using `runtime-capabilities.md`; do not assume that host Terminal, controlled Chrome, or CI is available in every session.
+4. Re-route within the matching validation lane below.
+5. UI validation is ONLY valid if executed successfully in Chrome or Playwright, regardless of whether Playwright was launched by the sandbox shell, host Terminal, or CI.
 
-   - Browser used for localhost/UI validation → discard that result and switch to Chrome
-   - Chrome unavailable → switch to Playwright
-   - Sandbox Playwright hits the known macOS Mach permission failure → run the same test in host Terminal through Computer Use when available
-   - Host Terminal unavailable → use controlled Chrome when available, or route the automated test to CI
-   - No host Terminal, Chrome, Playwright, or CI result available → explicitly report inability to validate UI
+### Manual and Exploratory Lane
 
-4. UI validation is ONLY valid if executed successfully in Chrome or Playwright, regardless of whether Playwright was launched by the sandbox shell, host Terminal, or CI.
+1. Use controlled Chrome.
+2. If controlled Chrome is unavailable, use Playwright only when deterministic assertions can adequately verify the requested behavior.
+3. If the task requires visual judgment or exploratory inspection that Playwright cannot replace, report the validation gap.
+
+### Automated and Regression Lane
+
+1. Use Playwright in the current command environment.
+2. If Chromium hits the known macOS Mach permission failure, stop retrying from that restricted process.
+3. Run the same Playwright command in host Terminal when that execution surface is available.
+4. Otherwise route the automated test to CI, or ask the user to run it in a normal host Terminal.
+5. A controlled Chrome check may provide separate manual validation, but it must not be reported as an automated Playwright pass.
+
+If no valid route in the required lane is available, explicitly report inability to complete UI validation.
 
 ---
 

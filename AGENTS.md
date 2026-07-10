@@ -66,11 +66,10 @@ Keep tool roles separate. Detailed routing lives in `docs/agents/workflow.md`; t
 - Chrome is the default tool for exploratory/manual frontend debugging, visual checks, DOM inspection, layout debugging, network analysis, and localhost UI validation.
 - Playwright is for scripted, repeatable UI verification, regression tests, and CI-style checks. Use it when the requested validation should be deterministic.
 - Computer Use is only for system-level execution such as starting dev servers, running commands, or file operations. Do not use it for UI validation.
-- When sandbox Playwright hits the known macOS Mach port restriction, Computer Use may run `pnpm test:smoke` in the host Terminal. The Playwright result is the validation; Computer Use is only the external command transport.
 
 Any task involving layout, CSS, visual rendering, interaction behavior, or frontend runtime state must be validated successfully with Chrome or Playwright. Code review alone is not UI validation.
 
-If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Re-route according to `docs/agents/runtime-capabilities.md` and `docs/agents/workflow.md`; if no valid host Terminal, Chrome, Playwright, or CI route can run, report the validation gap explicitly.
+If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Follow the routing policy in `docs/agents/workflow.md`, using `docs/agents/runtime-capabilities.md` only to detect available execution surfaces. If no valid route can run, report the validation gap explicitly.
 
 ## Editing Rules
 

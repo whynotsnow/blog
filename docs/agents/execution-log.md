@@ -32,3 +32,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Added a runtime capability matrix that separates the Codex command sandbox, host Terminal, controlled Chrome, CI, and user-operated fallbacks.
 - Changed the known Playwright Mach port response from immediate validation-gap reporting to capability-aware re-routing.
 - Kept Computer Use as command transport only; successful Chrome or Playwright execution remains the source of browser validation truth.
+
+### Consolidated browser validation policy
+
+- Made `workflow.md` the single source of truth for tool routing and split failure handling into manual and automated lanes.
+- Limited `runtime-capabilities.md` to environment facts and per-session capability detection.
+- Removed the circular Chrome-to-Playwright-to-Chrome fallback and linked failure records to the canonical policy.

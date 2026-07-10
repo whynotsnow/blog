@@ -151,7 +151,7 @@ Use:
 - Do not claim browser validation passed.
 - Do not replace it with in-app Browser localhost validation; project policy reserves Browser for documentation/API lookup only.
 - Do not retry from the same restricted process or assume that pointing Playwright at system Chrome removes the process sandbox.
-- Follow the external execution route in [Runtime Capabilities](./runtime-capabilities.md#required-fallback-route): prefer host Terminal Playwright when available, then controlled Chrome or CI.
+- Detect external execution surfaces in [Runtime Capabilities](./runtime-capabilities.md#capability-detection), then follow the automated lane in [Agent Workflow](./workflow.md#automated-and-regression-lane).
 - Continue non-browser checks such as `pnpm check`, formatting checks, and code inspection independently of the browser result.
 
 ## Markdown

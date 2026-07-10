@@ -49,7 +49,8 @@ This index clusters known failure patterns so agents can recognize them quickly 
 
 - Symptom: Playwright Chromium launch fails with `MachPortRendezvousServer` and `Permission denied (1100)` before localhost navigation.
 - Playbook: [playwright-chromium-mac-sandbox](./runtime-playbook.md#playwright-chromium-mac-sandbox)
-- Capability route: [Browser Automation](./runtime-capabilities.md#browser-automation)
+- Capability detection: [Runtime Capabilities](./runtime-capabilities.md#capability-detection)
+- Routing policy: [Automated and Regression Lane](./workflow.md#automated-and-regression-lane)
 
 ## TypeScript
 
