@@ -924,3 +924,48 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     max-height: 40px !important;
   }
 }
+
+/* Fullscreen banner must win over generic responsive banner height rules. */
+body.fullscreen-banner.enable-banner #banner-wrapper:not(.mobile-hide-banner) {
+  top: 0 !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  transform: translateY(0) translateZ(0) !important;
+}
+
+body.fullscreen-banner.enable-banner #banner,
+body.fullscreen-banner.enable-banner #banner-carousel,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-list,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-item,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-item > div,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-item img,
+body.fullscreen-banner.enable-banner #banner-single-container,
+body.fullscreen-banner.enable-banner #banner-single-container > img {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+body.fullscreen-banner.enable-banner #banner-carousel,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-list,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-item,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-item > div,
+body.fullscreen-banner.enable-banner #banner-carousel .carousel-item img,
+body.fullscreen-banner.enable-banner #banner-single-container,
+body.fullscreen-banner.enable-banner #banner-single-container > img {
+  width: 100% !important;
+}
+
+body.fullscreen-banner.enable-banner #header-waves {
+  top: auto !important;
+  bottom: -1px !important;
+  position: absolute !important;
+  width: 100% !important;
+}
+
+body.fullscreen-banner.enable-banner #header-waves > svg {
+  inset: auto !important;
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+}
