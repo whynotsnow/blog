@@ -30,6 +30,9 @@ function run(command, args, options = {}) {
 	});
 
 	if (result.status !== 0) {
+		if (options.failureAdvice) {
+			console.error(`\n[pre-commit] ${options.failureAdvice}`);
+		}
 		process.exit(result.status ?? 1);
 	}
 }
@@ -124,7 +127,26 @@ if (prettierTargets.length > 0) {
 console.log("[pre-commit] Checking staged whitespace...");
 run("git", ["diff", "--cached", "--check"]);
 
+console.log("[pre-commit] Running ESLint...");
+run(
+	localBin("eslint"),
+	["src", "scripts", "*.config.{js,mjs,cjs,ts}", "--max-warnings", "0"],
+	{
+		failureAdvice:
+			"ESLint failed. Review the diagnostics above, then run `pnpm lint:fix` for automatically fixable issues and `pnpm lint` to verify.",
+	},
+);
+
 console.log("[pre-commit] Running Astro type/content diagnostics...");
-run(localBin("astro"), ["check"]);
+run(localBin("astro"), ["check"], {
+	failureAdvice:
+		"Astro diagnostics failed. Review the file and line diagnostics above, then run `pnpm check` to verify the fix.",
+});
+
+console.log("[pre-commit] Running TypeScript diagnostics...");
+run(localBin("tsc"), ["--noEmit"], {
+	failureAdvice:
+		"TypeScript diagnostics failed. Review the errors above, then run `pnpm type-check` to verify the fix.",
+});
 
 console.log("[pre-commit] All checks passed.");

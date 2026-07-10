@@ -57,13 +57,14 @@ pnpm build
 ```bash
 pnpm check
 pnpm type-check
+pnpm type-check:declarations
 pnpm test:smoke
 pnpm format:check
 pnpm lint
 pnpm lint:md
 ```
 
-常规代码变更优先运行 `pnpm check`。涉及 TypeScript 类型、服务层结构或声明文件时，再运行 `pnpm type-check`。
+常规代码变更优先运行 `pnpm check`。`pnpm type-check` 使用 `tsc --noEmit` 检查纯 TypeScript 代码；Astro 组件的模板和精确 Props 类型仍由 `pnpm check` 负责。只有维护可发布声明文件时才运行更严格的 `pnpm type-check:declarations`，它不属于常规提交门禁。
 需要浏览器冒烟测试或 Codex 调试页面时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。`test:smoke` 会通过 Playwright 自动启动 Astro dev server，不需要手动运行 `pnpm dev`。
 
 如果 Codex 沙箱中的 Chromium 在启动阶段出现 `MachPortRendezvousServer Permission denied (1100)`，这表示浏览器进程被 macOS sandbox 拦截，页面断言尚未执行。不要在同一受限进程中反复重试，也不要把它记成页面测试失败。应在普通宿主 Terminal 中运行：
@@ -95,7 +96,11 @@ Markdown 规范检查由 `markdownlint-cli2` 单独处理，不会自动重写�
 1. 自动格式化已暂存的 JavaScript、TypeScript、Svelte、CSS、JSON、YAML 等代码文件，并重新暂存格式化结果。
 2. 如果已暂存文件同时存在未暂存改动，hook 会停止提交，避免自动格式化时把未准备提交的内容一起加入 commit。
 3. 运行 `git diff --cached --check` 检查暂存内容的空白错误。
-4. 运行 `astro check` 检查 Astro、Svelte 和 TypeScript 诊断；存在错误时提交会被阻止。
+4. 运行 ESLint 检查 `src`、`scripts` 和根目录配置文件；任何 error 或 warning 都会阻止提交，并提示运行 `pnpm lint:fix` 或 `pnpm lint`。
+5. 运行 `astro check` 检查 Astro、Svelte 和 TypeScript 诊断；存在错误时提交会被阻止。
+6. 运行 `tsc --noEmit` 检查纯 TypeScript 代码；存在错误时提交会被阻止并提示运行 `pnpm type-check`。
+
+GitHub CI 会重复运行 `pnpm lint`、`pnpm check` 和 `pnpm type-check`，全部通过后才执行 `pnpm build`。因此即使本地使用 `git commit --no-verify` 跳过 hook，合并前仍应由分支保护要求 `Quality Checks` 与 `Astro Build` 成功。
 
 也可以手动运行：
 

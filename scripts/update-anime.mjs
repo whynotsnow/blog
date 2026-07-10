@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 
 const CONFIG_PATH = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
-	"../src/config.ts",
+	"../src/config/site.ts",
 );
 
 async function getAnimeModeFromConfig() {

@@ -15,9 +15,9 @@ permissions:
     contents: read
 
 jobs:
-    # 🚨 Step 1: Astro Check
+    # Step 1: static quality gates
     check:
-        name: Astro Check
+        name: Quality Checks
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -45,14 +45,20 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Run Astro Check
-              run: pnpm astro check
+            - name: Run ESLint
+              run: pnpm lint
 
-    # 🏗️ Step 2: Astro Build
+            - name: Run Astro Check
+              run: pnpm check
+
+            - name: Run TypeScript Check
+              run: pnpm type-check
+
+    # Step 2: production build
     build:
         name: Astro Build
         runs-on: ubuntu-latest
-        needs: check # 依赖 check job 成功
+        needs: check
         steps:
             - name: Checkout repository
               uses: actions/checkout@v6
