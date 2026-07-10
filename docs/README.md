@@ -32,6 +32,7 @@
 | [Agent Workflow](./agents/workflow.md) | English workflow for AI agents: inspect, modify, validate, and hand off work. |
 | [Project Map](./agents/project-map.md) | English architecture map optimized for AI agents. |
 | [Runtime Playbook](./agents/runtime-playbook.md) | English playbook for known runtime and tooling pitfalls. |
+| [Runtime Capabilities](./agents/runtime-capabilities.md) | English capability matrix for sandbox, host Terminal, Chrome, and CI validation. |
 | [Failure Index](./agents/failure-index.md) | English index of clustered failure patterns. |
 | [Execution Log](./agents/execution-log.md) | English log for reusable AI-assisted task learning. |
 | [Memory](./agents/memory.json) | Structured persistent memory for Agent OS. |
@@ -85,6 +86,7 @@ docs/
 │   ├── workflow.md
 │   ├── project-map.md
 │   ├── runtime-playbook.md
+│   ├── runtime-capabilities.md
 │   ├── failure-index.md
 │   ├── execution-log.md
 │   └── memory.json

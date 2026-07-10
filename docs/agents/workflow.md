@@ -10,6 +10,7 @@ This repository is now prepared for AI-assisted maintenance. The intent is not t
 | `docs/README.md` | Documentation index. |
 | `docs/agents/project-map.md` | English project map and data flow for agents. |
 | `docs/agents/runtime-playbook.md` | Known runtime, CLI, framework, and Markdown pitfalls. |
+| `docs/agents/runtime-capabilities.md` | Execution surfaces and sandbox-to-host validation routing. |
 | `docs/agents/failure-index.md` | Clustered known failure patterns. |
 | `docs/agents/memory.json` | Persistent structured memory for constraints and recurring failures. |
 | `docs/agents/execution-log.md` | Reusable task-level learning log. |
@@ -22,10 +23,11 @@ For non-trivial tasks, run in Agent OS mode:
 
 1. Check `memory.json` for known constraints and recurring failures that match the task.
 2. Check `failure-index.md` and `runtime-playbook.md` before running commands in areas with known pitfalls.
-3. Respect `src/services/core` and `getContentStore()` boundaries for architecture-sensitive changes.
-4. Execute the smallest coherent change.
-5. Record reusable task learning in `execution-log.md` when the task discovers or reuses a pattern.
-6. Update `memory.json` and `failure-index.md` if a new recurring failure class is discovered.
+3. Check `runtime-capabilities.md` before browser validation and select an available execution surface.
+4. Respect `src/services/core` and `getContentStore()` boundaries for architecture-sensitive changes.
+5. Execute the smallest coherent change.
+6. Record reusable task learning in `execution-log.md` when the task discovers or reuses a pattern.
+7. Update `memory.json` and `failure-index.md` if a new recurring failure class is discovered.
 
 Agent OS does not require reading every document. It requires checking the relevant memory and playbook before repeating known mistakes.
 
@@ -138,9 +140,11 @@ If a selected tool fails due to sandbox, origin policy, or access restriction:
 
    - Browser used for localhost/UI validation → discard that result and switch to Chrome
    - Chrome unavailable → switch to Playwright
-   - Playwright unavailable → explicitly report inability to validate UI
+   - Sandbox Playwright hits the known macOS Mach permission failure → run the same test in host Terminal through Computer Use when available
+   - Host Terminal unavailable → use controlled Chrome when available, or route the automated test to CI
+   - No host Terminal, Chrome, Playwright, or CI result available → explicitly report inability to validate UI
 
-4. UI validation is ONLY valid if executed successfully in Chrome or Playwright.
+4. UI validation is ONLY valid if executed successfully in Chrome or Playwright, regardless of whether Playwright was launched by the sandbox shell, host Terminal, or CI.
 
 ---
 

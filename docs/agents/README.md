@@ -9,6 +9,7 @@ This directory is for AI coding agents. All documents in this directory must be 
 | [Workflow](./workflow.md) | How agents should inspect, modify, validate, and hand off work. |
 | [Project Map](./project-map.md) | Repository shape, data flow, route map, service boundaries, and extension points. |
 | [Runtime Playbook](./runtime-playbook.md) | Known command, framework, Markdown, and package-manager pitfalls with reusable responses. |
+| [Runtime Capabilities](./runtime-capabilities.md) | Available execution surfaces and browser-validation fallback routing. |
 | [Failure Index](./failure-index.md) | Clustered index of known failure patterns. |
 | [Execution Log](./execution-log.md) | Short record of AI-assisted work that teaches reusable project knowledge. |
 | [Memory](./memory.json) | Structured persistent memory for architecture constraints and recurring failures. |
@@ -39,6 +40,7 @@ Agents must read documentation based on the task scope, not as a blanket preflig
 - Read `workflow.md` for non-trivial implementation, validation, or handoff work.
 - Read `project-map.md` before touching architecture, content flow, routes, or service boundaries.
 - Read `memory.json` and `runtime-playbook.md` before running commands or changing areas with known failures.
+- Read `runtime-capabilities.md` before browser validation or sandbox-to-host execution routing.
 - Read the matching Chinese document under `../developers/` when human-facing behavior, content authoring, configuration, deployment, or maintenance rules are affected.
 - Do not claim a command passed unless it was actually run.
 

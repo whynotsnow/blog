@@ -42,7 +42,8 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 4. Read `docs/agents/workflow.md` before non-trivial agent work.
 5. Read `docs/agents/project-map.md` before changing architecture, data flow, routing, or services.
 6. Read `docs/agents/memory.json`, `docs/agents/failure-index.md`, and `docs/agents/runtime-playbook.md` before running commands or changing areas with known failures.
-7. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
+7. Read `docs/agents/runtime-capabilities.md` before browser validation or when execution may need to leave the Codex sandbox.
+8. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
 
 ## Commands
 
@@ -65,10 +66,11 @@ Keep tool roles separate. Detailed routing lives in `docs/agents/workflow.md`; t
 - Chrome is the default tool for exploratory/manual frontend debugging, visual checks, DOM inspection, layout debugging, network analysis, and localhost UI validation.
 - Playwright is for scripted, repeatable UI verification, regression tests, and CI-style checks. Use it when the requested validation should be deterministic.
 - Computer Use is only for system-level execution such as starting dev servers, running commands, or file operations. Do not use it for UI validation.
+- When sandbox Playwright hits the known macOS Mach port restriction, Computer Use may run `pnpm test:smoke` in the host Terminal. The Playwright result is the validation; Computer Use is only the external command transport.
 
 Any task involving layout, CSS, visual rendering, interaction behavior, or frontend runtime state must be validated successfully with Chrome or Playwright. Code review alone is not UI validation.
 
-If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Re-route according to `docs/agents/workflow.md`; if no valid UI tool can run, report the validation gap explicitly.
+If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Re-route according to `docs/agents/runtime-capabilities.md` and `docs/agents/workflow.md`; if no valid host Terminal, Chrome, Playwright, or CI route can run, report the validation gap explicitly.
 
 ## Editing Rules
 

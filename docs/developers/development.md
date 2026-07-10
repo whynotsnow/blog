@@ -65,6 +65,15 @@ pnpm lint:md
 
 常规代码变更优先运行 `pnpm check`。涉及 TypeScript 类型、服务层结构或声明文件时，再运行 `pnpm type-check`。
 需要浏览器冒烟测试或 Codex 调试页面时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。`test:smoke` 会通过 Playwright 自动启动 Astro dev server，不需要手动运行 `pnpm dev`。
+
+如果 Codex 沙箱中的 Chromium 在启动阶段出现 `MachPortRendezvousServer Permission denied (1100)`，这表示浏览器进程被 macOS sandbox 拦截，页面断言尚未执行。不要在同一受限进程中反复重试，也不要把它记成页面测试失败。应在普通宿主 Terminal 中运行：
+
+```bash
+source .codex/env-setup.sh
+pnpm test:smoke
+```
+
+当当前 Codex 会话提供宿主 Terminal 控制能力时，Agent 可以通过该通道执行上述命令；否则由本机 Terminal 或 CI 执行。仅把 Playwright 指向系统 Chrome executable 不一定能绕过进程级 sandbox，因此不能作为默认修复。
 JavaScript、TypeScript、Astro 或 Svelte 代码质量检查运行 `pnpm lint`，需要自动修复可修复问题时运行 `pnpm lint:fix`。
 文档结构和 Markdown 格式变更运行 `pnpm lint:md`，当前检查范围包括 `AGENTS.md`、`README.md` 和 `docs/**/*.md`，初始规则只启用 `MD031`。
 

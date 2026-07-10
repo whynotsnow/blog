@@ -43,7 +43,15 @@ yarn.lock
 *.iml
 
 # Local private Agent OS files
-docs/agents/
+docs/agents/*
+!docs/agents/README.md
+!docs/agents/project-map.md
+!docs/agents/workflow.md
+!docs/agents/runtime-capabilities.md
+!docs/agents/runtime-playbook.md
+!docs/agents/failure-index.md
+!docs/agents/memory.json
+!docs/agents/execution-log.md
 
 # Local migration staging files
 .migration/

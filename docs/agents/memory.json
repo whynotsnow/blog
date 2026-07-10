@@ -1,0 +1,135 @@
+{
+	"version": 2,
+	"updated": "2026-07-10",
+	"principle": "This project is not debugged repeatedly. It is learned once and reused forever.",
+	"architecture_constraints": [
+		{
+			"id": "service-layer-boundary",
+			"rule": "Normal post list, category, tag, archive, and post detail data should flow through src/services/core and feature services.",
+			"reason": "Bypassing the service layer fragments taxonomy, sorting, URL generation, and UI metadata behavior."
+		},
+		{
+			"id": "page-view-model-boundary",
+			"rule": "When splitting large route, layout, or component files, put page logic, data adaptation, config normalization, static path builders, and page-level view models in src/services/; keep src/pages thin and extracted page components mostly presentational.",
+			"reason": "The project already separates routing, page logic, and rendering; preserving this boundary prevents large files from reappearing under different names."
+		},
+		{
+			"id": "runtime-feature-boundary",
+			"rule": "Browser-only runtime interaction state such as DOM listeners, audio playback, pointer events, localStorage UI state, and Svelte runtime stores should live beside the owning component or feature, not in src/services/.",
+			"reason": "src/services is for build-time/page-level logic and view models, while client interaction code is feature-local runtime behavior."
+		},
+		{
+			"id": "content-store-contract",
+			"rule": "Do not bypass getContentStore() for normal post collection access unless the route is a specialized static endpoint.",
+			"reason": "content-store centralizes posts, categoryMap, and categories."
+		},
+		{
+			"id": "config-ownership",
+			"rule": "Treat src/config.ts as owner-specific site configuration, not upstream defaults.",
+			"reason": "This fork intentionally contains private layout, feature, and service choices."
+		}
+	],
+	"known_failures": [
+		{
+			"id": "zsh-glob-expansion",
+			"cluster": "cli",
+			"symptoms": [
+				"zsh: no matches found",
+				"Astro route path with [] fails before command runs"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#zsh-glob-expansion"
+		},
+		{
+			"id": "astro-telemetry-side-effects",
+			"cluster": "framework",
+			"symptoms": [
+				"Astro command tries to write telemetry config outside workspace",
+				"EPERM under user preferences/home directory"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#astro-telemetry-side-effects"
+		},
+		{
+			"id": "pnpm-version-config-drift",
+			"cluster": "cli",
+			"symptoms": [
+				"pnpm field in package.json is ignored",
+				"ERR_PNPM_LOCKFILE_CONFIG_MISMATCH"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#pnpm-version-config-drift"
+		},
+		{
+			"id": "pnpm-non-tty-node-modules-purge",
+			"cluster": "cli",
+			"symptoms": [
+				"ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY",
+				"pnpm aborts before script execution"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#pnpm-non-tty-node-modules-purge"
+		},
+		{
+			"id": "pnpm-store-location-mismatch",
+			"cluster": "cli",
+			"symptoms": [
+				"ERR_PNPM_UNEXPECTED_STORE",
+				"existing node_modules is linked from a different pnpm store",
+				"pnpm wants to use .pnpm-store while node_modules points to the user-level store"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#pnpm-store-location-mismatch"
+		},
+		{
+			"id": "md051-emoji-heading-fragments",
+			"cluster": "markdown",
+			"symptoms": ["MD051/link-fragments reports emoji heading anchors"],
+			"playbook": "docs/agents/runtime-playbook.md#md051-emoji-heading-fragments"
+		},
+		{
+			"id": "global-style-entrypoint-drift",
+			"cluster": "styles",
+			"symptoms": [
+				"global card styles disappear",
+				".card-base loses background or radius",
+				"runtime CSS variables such as --card-bg are empty",
+				"Stylus rgba(..., var(...)) errors appear after restoring global style imports"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#global-style-entrypoint-drift"
+		},
+		{
+			"id": "fullscreen-banner-responsive-override",
+			"cluster": "styles",
+			"symptoms": [
+				"fullscreen banner mode does not fill the first viewport",
+				"header waves are not aligned to the first screen bottom",
+				"later responsive banner height rules override fullscreen 100vh"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#fullscreen-banner-responsive-override"
+		},
+		{
+			"id": "playwright-chromium-mac-sandbox",
+			"cluster": "runtime-environment",
+			"severity": "medium",
+			"description": "Chromium can be unable to launch inside the Codex macOS sandbox because Mach port rendezvous permission is blocked.",
+			"symptoms": [
+				"Playwright Chromium launch fails before navigation",
+				"MachPortRendezvousServer Permission denied (1100)",
+				"browser process exits with SIGTRAP in the sandbox"
+			],
+			"affected": [
+				"Playwright",
+				"visual regression",
+				"browser automation"
+			],
+			"solutions": [
+				"run pnpm test:smoke in host Terminal through Computer Use when available",
+				"use controlled Chrome for manual UI validation",
+				"run automated browser validation in CI",
+				"ask the user to run pnpm test:smoke in a normal host Terminal when no external tool is available"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#playwright-chromium-mac-sandbox",
+			"capabilities": "docs/agents/runtime-capabilities.md#browser-automation"
+		}
+	],
+	"validation_truthfulness": {
+		"rule": "Do not claim that a command passed unless it actually ran and returned success in this workspace.",
+		"failure_preflight_rule": "If a package manager fails before invoking a target script, report package-manager preflight failure separately from script validation."
+	}
+}
