@@ -19,7 +19,7 @@ async function getAnimeModeFromConfig() {
 			return match[1];
 		}
 		return "bangumi";
-	} catch (error) {
+	} catch (_error) {
 		return "bangumi";
 	}
 }

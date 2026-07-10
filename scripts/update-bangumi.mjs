@@ -51,7 +51,7 @@ async function getAnimeModeFromConfig() {
 			return match[1];
 		}
 		return "bangumi";
-	} catch (error) {
+	} catch (_error) {
 		return "bangumi";
 	}
 }
@@ -64,7 +64,7 @@ async function fetchSubjectDetail(subjectId) {
 		const response = await fetch(`${API_BASE}/v0/subjects/${subjectId}`);
 		if (!response.ok) return null;
 		return await response.json();
-	} catch (error) {
+	} catch (_error) {
 		return null;
 	}
 }

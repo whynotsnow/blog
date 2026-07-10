@@ -114,7 +114,7 @@ for (const mapping of contentMappings) {
 		const relPath = path.relative(path.dirname(destPath), srcPath);
 		fs.symlinkSync(relPath, destPath, "junction");
 		console.log(`Created symbolic link: ${mapping.dest} -> ${mapping.src}`);
-	} catch (error) {
+	} catch (_error) {
 		console.log(`Copying content: ${mapping.src} -> ${mapping.dest}`);
 		copyRecursive(srcPath, destPath);
 	}

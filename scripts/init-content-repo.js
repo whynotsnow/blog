@@ -89,7 +89,7 @@ CONTENT_DIR=./content
 			},
 		});
 		console.log("Content synchronized successfully");
-	} catch (error) {
+	} catch (_error) {
 		console.error(
 			"Content synchronization failed. Run manually: pnpm run sync-content",
 		);

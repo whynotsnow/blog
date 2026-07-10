@@ -280,13 +280,14 @@ async function main() {
 	const command = args[0].toLowerCase();
 
 	switch (command) {
-		case "batch":
+		case "batch": {
 			const numPosts = parseInt(args[1]) || 5;
 			const baseTitle = args[2] || "测试文章";
 			await generateBatchPosts(numPosts, baseTitle);
 			break;
+		}
 
-		case "theme":
+		case "theme": {
 			const themes = args.slice(1);
 			if (themes.length === 0) {
 				// 使用默认主题
@@ -295,11 +296,13 @@ async function main() {
 				await generateThemePosts(themes);
 			}
 			break;
+		}
 
-		case "clear":
+		case "clear": {
 			const prefix = args[1] || "测试文章";
 			clearTestPosts(prefix);
 			break;
+		}
 
 		case "help":
 			console.log(`
