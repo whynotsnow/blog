@@ -1,0 +1,33 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Agent Workspace Machine Runtime Profile",
+	"type": "object",
+	"required": [
+		"schema_version",
+		"spec_version",
+		"machine_id",
+		"developer_id",
+		"environment",
+		"capabilities",
+		"detected_at"
+	],
+	"properties": {
+		"spec_version": { "const": "0.1.0" },
+		"schema_version": { "const": 1 },
+		"machine_id": { "type": "string", "pattern": "^machine_[a-f0-9]{12}$" },
+		"developer_id": { "type": "string", "pattern": "^dev_[a-f0-9]{12}$" },
+		"environment": {
+			"type": "object",
+			"required": ["os_family", "architecture", "shell"],
+			"properties": {
+				"os_family": { "type": "string" },
+				"architecture": { "type": "string" },
+				"shell": { "type": "string" }
+			},
+			"additionalProperties": false
+		},
+		"capabilities": { "type": "object" },
+		"detected_at": { "type": "string", "format": "date-time" }
+	},
+	"additionalProperties": false
+}

@@ -28,14 +28,16 @@
 
 | 文档 | 说明 |
 | --- | --- |
+| [Agent Workspace Spec](../spec/agent-workspace/SPEC.md) | Agent 工作区文件格式、合规等级、上下文解析与版本规则。 |
 | [Agent Documentation](./agents/README.md) | English documentation index for AI agents. |
 | [Agent Workflow](./agents/workflow.md) | English workflow for AI agents: inspect, modify, validate, and hand off work. |
 | [Project Map](./agents/project-map.md) | English architecture map optimized for AI agents. |
 | [Runtime Playbook](./agents/runtime-playbook.md) | English playbook for known runtime and tooling pitfalls. |
-| [Runtime Capabilities](./agents/runtime-capabilities.md) | English capability matrix for sandbox, host Terminal, Chrome, and CI validation. |
+| [Runtime Requirements](./agents/runtime-requirements.md) | English execution capability contract and local profile resolution order. |
+| [Disclosure Policy](./agents/disclosure-policy.md) | English policy for public Agent Workspace Spec knowledge and ignored runtime state. |
 | [Failure Index](./agents/failure-index.md) | English index of clustered failure patterns. |
 | [Execution Log](./agents/execution-log.md) | English log for reusable AI-assisted task learning. |
-| [Memory](./agents/memory.json) | Structured persistent memory for Agent OS. |
+| [Memory](./agents/memory.json) | Structured persistent memory for Agent Workspace Spec. |
 
 ## 推荐阅读路径
 
@@ -86,7 +88,8 @@ docs/
 │   ├── workflow.md
 │   ├── project-map.md
 │   ├── runtime-playbook.md
-│   ├── runtime-capabilities.md
+│   ├── runtime-requirements.md
+│   ├── disclosure-policy.md
 │   ├── failure-index.md
 │   ├── execution-log.md
 │   └── memory.json
@@ -94,6 +97,8 @@ docs/
     ├── editor/
     └── image/
 ```
+
+Agent Workspace Spec 的规范性文件、JSON Schema 和公开示例位于 `spec/agent-workspace/`；项目实例 manifest 位于 `.agent-workspace/manifest.json`，本地 profile 位于被 Git 忽略的 `.agent-workspace/local/`。
 
 ## 维护规则
 

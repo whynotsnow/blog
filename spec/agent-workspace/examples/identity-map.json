@@ -1,0 +1,12 @@
+{
+	"spec_version": "0.1.0",
+	"schema_version": 1,
+	"salt": "<random-local-salt>",
+	"identities": [
+		{
+			"fingerprint": "<locally-salted-git-identity-fingerprint>",
+			"developer_id": "dev_<random-id>",
+			"actor_type": "human"
+		}
+	]
+}

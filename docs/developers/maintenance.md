@@ -16,6 +16,47 @@ pnpm build
 代码质量检查建议运行 `pnpm lint`；如需自动修复可修复问题，运行 `pnpm lint:fix` 后再复查 diff。
 文档结构调整或 Markdown 格式修复建议运行 `pnpm lint:md`。
 
+## Agent Workspace Spec 公开边界
+
+`AGENTS.md` 与 `docs/agents/` 属于可公开、可版本管理的 Agent Workspace Spec 知识。个人身份、本机绝对路径、完整命令输出、未经审核的 runtime memory 和私有基础设施信息必须保存到以下 Git 忽略目录：
+
+- `.agent-workspace/local/`：稳定的本机或个人上下文。
+- `.agent-workspace/raw/`：原始日志、trace、prompt 和临时诊断。
+- `.agent-workspace/quarantine/`：等待脱敏和分类的候选 memory。
+
+团队环境通过本地加盐指纹将当前 Git identity 映射为随机 Developer ID，并为不同机器和会话分别生成 Machine ID 与 Session ID。公开文档不会记录开发者姓名、邮箱或这些本地 ID。
+
+首次使用或切换 Git identity 后运行：
+
+```bash
+node .agent-workspace/tools/agent-workspace.mjs profile init
+node .agent-workspace/tools/agent-workspace.mjs profile status
+node .agent-workspace/tools/agent-workspace.mjs profile doctor
+node .agent-workspace/tools/agent-workspace.mjs runtime detect
+node .agent-workspace/tools/agent-workspace.mjs session start
+```
+
+同一开发者需要关联另一个 Git identity 时，使用本地已有的 Developer ID：
+
+```bash
+node .agent-workspace/tools/agent-workspace.mjs profile link-identity <developer-id>
+```
+
+Agent Workspace 工具统一位于 `.agent-workspace/tools/`，通过 manifest 声明单一入口，不要求修改 `package.json`。只要 manifest 声明的本地入口存在且对应 runtime 可用，就应优先直接调用项目本地工具。Node 项目可以自行添加快捷 alias，但它不是 Spec 合规要求。
+
+这里的 `.agent-workspace/tools/` 是项目本地实现层，也是当前项目 Agent Workspace 命令的最高优先级执行入口。已安装的 Agent Workspace Skill 负责 workspace 识别、规范解释、迁移指导和边界审查，不应覆盖或绕过项目自己的 tools 实现。不同项目可以使用 Node、Python、Bash、Make、package-manager wrapper 或 CI 命令，只要 manifest 描述准确即可。
+
+如果 manifest 声明的入口缺失或本地实现不支持某个命令，应报告 workspace capability gap，不能静默改用 Skill 自带 validator。Skill 的本机安装路径属于 private local state，不得写入公开项目文档。
+
+提交 Agent Workspace Spec 变更前运行：
+
+```bash
+node .agent-workspace/tools/agent-workspace.mjs validate
+pnpm lint:md
+```
+
+公开 memory 必须使用 `$HOME`、`<user>`、`<repository>` 等占位符，不能直接复制本机路径或完整日志。详细规则参见 [Agent Workspace Spec Disclosure Policy](../agents/disclosure-policy.md)。
+
 ## 依赖更新
 
 项目依赖面较广，包括 Astro、Svelte、Pagefind、Expressive Code、图片处理和静态资源工具。

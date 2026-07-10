@@ -1,0 +1,13 @@
+{
+	"spec_version": "0.1.0",
+	"schema_version": 1,
+	"machine_id": "machine_<random-id>",
+	"developer_id": "dev_<random-id>",
+	"environment": {
+		"os_family": "<operating-system>",
+		"architecture": "<architecture>",
+		"shell": "<shell-name>"
+	},
+	"capabilities": {},
+	"detected_at": "<ISO-8601 timestamp>"
+}

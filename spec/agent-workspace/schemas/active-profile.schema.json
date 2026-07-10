@@ -1,0 +1,23 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Agent Workspace Active Profile",
+	"type": "object",
+	"required": [
+		"spec_version",
+		"schema_version",
+		"developer_id",
+		"machine_id",
+		"session_id"
+	],
+	"properties": {
+		"spec_version": { "const": "0.1.0" },
+		"schema_version": { "const": 1 },
+		"developer_id": { "type": "string", "pattern": "^dev_[a-f0-9]{12}$" },
+		"machine_id": { "type": "string", "pattern": "^machine_[a-f0-9]{12}$" },
+		"session_id": {
+			"type": ["string", "null"],
+			"pattern": "^session_[a-f0-9]{12}$"
+		}
+	},
+	"additionalProperties": false
+}

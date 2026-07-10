@@ -6,7 +6,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 ## 2026-07-04
 
-### Added Agent OS documentation layer
+### Added Agent Workspace Spec documentation layer
 
 - Added persistent agent memory, runtime playbook, failure index, and this execution log.
 - Updated workflow rules so future agents check memory and known pitfalls before non-trivial work.
@@ -38,3 +38,39 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Made `workflow.md` the single source of truth for tool routing and split failure handling into manual and automated lanes.
 - Limited `runtime-capabilities.md` to environment facts and per-session capability detection.
 - Removed the circular Chrome-to-Playwright-to-Chrome fallback and linked failure records to the canonical policy.
+
+### Added the public/private Agent Workspace Spec boundary
+
+- Made `docs/agents/` the sanitized, version-controlled public knowledge layer.
+- Added ignored local, raw, and quarantine storage for identity, machine state, unfiltered output, and unreviewed memory.
+- Added a disclosure policy and a pre-commit check for private directories, user-home paths, private keys, and credential-bearing URLs.
+
+### Added team-aware local profiles
+
+- Added locally salted Git identity matching with opaque developer, machine, and session IDs.
+- Separated public runtime requirements from private machine and session capability state.
+- Added schemas, public examples, and profile commands for initialization, identity linking, runtime refresh, and session creation.
+
+### Adopted Agent Workspace Spec 0.1.0
+
+- Replaced the Agent OS working name with Agent Workspace Spec and separated the normative spec from its local implementation state.
+- Added a versioned manifest, normative requirements, conformance levels, schemas, examples, and a reference validator.
+- Migrated ignored local profiles to `.agent-workspace/local/` without exposing identity or runtime state.
+
+### Prepared the tooling boundary for Skill extraction
+
+- Consolidated profile, disclosure, and conformance commands behind one manifest-declared CLI entry.
+- Moved reference tooling under `.agent-workspace/tools/` and removed required package-manager aliases.
+- Added upward workspace discovery so a future Skill can invoke the CLI from nested project directories.
+
+### Formalized the Skill operator boundary
+
+- Defined `.agent-workspace/tools/` as the workspace-local implementation layer rather than the future Skill implementation.
+- Required Skills, hooks, CI, and maintainers to prefer the manifest-declared tooling entry.
+- Added manifest schema coverage and repository-relative tooling path validation.
+
+### Extracted the Agent Workspace Skill
+
+- Created a reusable Agent Workspace Skill as an external operator for Agent Workspace Spec repositories.
+- Kept this repository's `.agent-workspace/tools/` as the project-local implementation rather than moving project-specific validation into the Skill.
+- Forward-tested the Skill against both this repository and a minimal temporary workspace.

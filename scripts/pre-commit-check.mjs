@@ -85,6 +85,14 @@ function localBin(name) {
 }
 
 const stagedFiles = getStagedFiles();
+
+console.log("[pre-commit] Checking Agent Workspace Spec conformance...");
+run(process.execPath, [
+	".agent-workspace/tools/agent-workspace.mjs",
+	"validate",
+	"--staged",
+]);
+
 const prettierTargets = stagedFiles.filter(isPrettierTarget);
 const unstagedFiles = getUnstagedFiles();
 const partiallyStaged = prettierTargets.filter((file) =>

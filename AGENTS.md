@@ -4,7 +4,7 @@ This repository is an Astro + Svelte personal blog forked from Mizuki and custom
 
 Use this file as the first stop before changing code. The goal is to keep AI-agent work predictable, easy to review, and aligned with the current architecture.
 
-## Why Agent OS Exists
+## Why Agent Workspace Spec Exists
 
 This project is not just a static blog system. It is a content engineering system with layered service architecture, build-time transformation pipeline, multiple routing strategies, and framework-specific constraints across Astro, Svelte, and TypeScript.
 
@@ -15,7 +15,7 @@ Without structured agent memory:
 - fixes are repeated instead of reused;
 - debugging cost increases over time.
 
-Agent OS introduces persistent failure memory, structured execution logs, reusable debugging patterns, and enforced reflection after meaningful tasks.
+Agent Workspace Spec introduces persistent failure memory, structured execution logs, reusable debugging patterns, and enforced reflection after meaningful tasks.
 
 Key principle:
 
@@ -37,13 +37,15 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 ## Start Here
 
 1. Read this file first.
-2. Read documentation on demand. Do not load every document by default.
-3. Use `docs/README.md` as the routing index when you need to choose the right document.
-4. Read `docs/agents/workflow.md` before non-trivial agent work.
-5. Read `docs/agents/project-map.md` before changing architecture, data flow, routing, or services.
-6. Read `docs/agents/memory.json`, `docs/agents/failure-index.md`, and `docs/agents/runtime-playbook.md` before running commands or changing areas with known failures.
-7. Read `docs/agents/runtime-capabilities.md` before browser validation or when execution may need to leave the Codex sandbox.
-8. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
+2. Treat `.agent-workspace/manifest.json` and `spec/agent-workspace/SPEC.md` as the conformance entry points. When the manifest declares an existing local tooling entry, invoke that project-local implementation directly and prefer it over any globally installed Agent Workspace Skill tooling. Initialize or inspect the opaque local profile with `node .agent-workspace/tools/agent-workspace.mjs profile init` and `node .agent-workspace/tools/agent-workspace.mjs profile status` when developer, machine, or session context matters. Treat `.agent-workspace/local/` as private input: never quote, summarize, or copy its values into tracked files or handoffs.
+3. Read documentation on demand. Do not load every document by default.
+4. Use `docs/README.md` as the routing index when you need to choose the right document.
+5. Read `docs/agents/workflow.md` before non-trivial agent work.
+6. Read `docs/agents/project-map.md` before changing architecture, data flow, routing, or services.
+7. Read `docs/agents/memory.json`, `docs/agents/failure-index.md`, and `docs/agents/runtime-playbook.md` before running commands or changing areas with known failures.
+8. Read `docs/agents/runtime-requirements.md` before browser validation or when execution may need to leave the Codex sandbox.
+9. Read `docs/agents/disclosure-policy.md` before persisting runtime observations or adding Agent Workspace Spec files.
+10. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
 
 ## Commands
 
@@ -54,9 +56,21 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm format:check`: check formatting.
 - `pnpm format`: format the repository according to the local Prettier config.
 - `pnpm precommit`: run the same pre-commit gate as the Git hook.
+- `node .agent-workspace/tools/agent-workspace.mjs validate`: validate Agent Workspace Spec conformance and disclosure boundaries.
 - `pnpm new-post -- <filename>`: create a post template.
 
 Do not claim that a command passed unless you actually ran it in this workspace and observed the result. If a command was not run, say so explicitly.
+
+## Agent Workspace Tool Resolution
+
+Use `.agent-workspace/manifest.json` as the command contract and resolve Agent Workspace operations in this order:
+
+1. If `tooling.entry` and its declared runtime exist, invoke that project-local implementation directly. In this repository the primary entry is `node .agent-workspace/tools/agent-workspace.mjs`.
+2. Use an installed Agent Workspace Skill for workspace discovery, explanation, migration guidance, or boundary review. The Skill is an operator, not a higher-priority replacement for project tooling.
+3. If the manifest is absent, follow the Skill's adoption workflow when the user asks to initialize or migrate the repository.
+4. If the manifest declares tooling that is missing or does not support a requested command, report a workspace capability gap. Do not silently substitute Skill-bundled validation or another implementation.
+
+Do not record a machine-specific Skill installation path in tracked files. Resolve installed Skill locations from the active agent runtime when Skill assistance is needed.
 
 ## Tool Policy
 
@@ -69,7 +83,7 @@ Keep tool roles separate. Detailed routing lives in `docs/agents/workflow.md`; t
 
 Any task involving layout, CSS, visual rendering, interaction behavior, or frontend runtime state must be validated successfully with Chrome or Playwright. Code review alone is not UI validation.
 
-If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Follow the routing policy in `docs/agents/workflow.md`, using `docs/agents/runtime-capabilities.md` only to detect available execution surfaces. If no valid route can run, report the validation gap explicitly.
+If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Follow the routing policy in `docs/agents/workflow.md`, using the local machine/session profile to detect available execution surfaces and `docs/agents/runtime-requirements.md` for the public capability contract. If no valid route can run, report the validation gap explicitly.
 
 ## Editing Rules
 
@@ -87,6 +101,8 @@ If UI validation cannot be completed because of sandbox, origin policy, localhos
 - Keep configuration shape changes in `src/types/config.ts` and document them in `docs/developers/configuration.md`.
 - Do not edit generated folders such as `dist` or `node_modules`.
 - Do not commit secrets. Environment variables belong in `.env` locally or platform secrets in production.
+- Store machine-specific paths, personal identities, raw command output, and unreviewed runtime observations under `.agent-workspace/local/`, `.agent-workspace/raw/`, or `.agent-workspace/quarantine/`. These directories are private and ignored by Git.
+- Only promote sanitized, reusable knowledge into tracked Agent Workspace Spec documents. Follow `docs/agents/disclosure-policy.md` and run `node .agent-workspace/tools/agent-workspace.mjs validate` before committing.
 - Preserve local customizations in `src/config.ts`; this repository is intentionally personal and not a clean upstream Mizuki copy.
 
 ## Documentation Reading Rules
@@ -136,26 +152,15 @@ If a command cannot run because of missing local secrets, unavailable network ac
 
 ## Git Commit Rules
 
-Git commit identity is defined by this document. Do not re-query local Git config before every commit.
+Git commit identity is local configuration and must not be recorded in this public document. Use the repository's existing Git configuration; the Agent Workspace Spec identity map may match it to an opaque developer ID but must not expose it. Never invent or substitute an AI/tool identity.
 
 When the user asks to commit code, first check whether the change requires maintaining `README.md`, `AGENTS.md`, or `docs/`. If the change adds or adjusts safety boundaries, interaction flows, migration/storage rules, test or maintenance knowledge, commit conventions, or other project context, update the corresponding documentation before committing.
 
 Commit red lines:
 
-- Do not commit with Codex, AI Agent, tool default, or temporary identities such as `Codex <codex@openai.com>`.
-- Do not bypass the identity recorded in this document.
+- Do not commit with Codex, AI Agent, tool-default, or temporary identities.
+- Do not copy a local identity into tracked documentation or command examples.
 - Commit messages must follow Conventional Commits.
-
-Current commit identity:
-
-- Name: `whynotsnow`
-- Email: `whynotsnow@163.com`
-
-When committing, use the identity above directly:
-
-```bash
-git -c user.name=whynotsnow -c user.email=whynotsnow@163.com commit -m "docs: update project context"
-```
 
 Example commit messages:
 

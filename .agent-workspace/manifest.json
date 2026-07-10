@@ -1,0 +1,12 @@
+{
+	"spec": "agent-workspace",
+	"spec_version": "0.1.0",
+	"conformance": ["core", "disclosure", "runtime", "team"],
+	"public_instructions": "AGENTS.md",
+	"public_knowledge": "docs/agents",
+	"local_state": ".agent-workspace/local",
+	"tooling": {
+		"entry": ".agent-workspace/tools/agent-workspace.mjs",
+		"runtime": "node"
+	}
+}

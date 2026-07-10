@@ -1,0 +1,28 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Agent Workspace Developer Profile",
+	"type": "object",
+	"required": [
+		"schema_version",
+		"spec_version",
+		"developer_id",
+		"actor_type",
+		"machine_ids",
+		"preferences"
+	],
+	"properties": {
+		"spec_version": { "const": "0.1.0" },
+		"schema_version": { "const": 1 },
+		"developer_id": { "type": "string", "pattern": "^dev_[a-f0-9]{12}$" },
+		"actor_type": {
+			"enum": ["human", "automation", "shared", "unknown"]
+		},
+		"machine_ids": {
+			"type": "array",
+			"items": { "type": "string", "pattern": "^machine_[a-f0-9]{12}$" },
+			"uniqueItems": true
+		},
+		"preferences": { "type": "object" }
+	},
+	"additionalProperties": false
+}

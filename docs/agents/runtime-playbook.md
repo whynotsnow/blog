@@ -87,7 +87,7 @@ Use:
 
 ```bash
 source .codex/env-setup.sh
-pnpm --store-dir /Users/whynotsnow/Library/pnpm/store/v10 add -D <package>
+pnpm --store-dir "$HOME/Library/pnpm/store/v10" add -D <package>
 ```
 
 - In restricted sandboxes, writing to the user-level store may require approval. Request escalation instead of reinstalling `node_modules` or rewriting the lockfile.
@@ -151,7 +151,7 @@ Use:
 - Do not claim browser validation passed.
 - Do not replace it with in-app Browser localhost validation; project policy reserves Browser for documentation/API lookup only.
 - Do not retry from the same restricted process or assume that pointing Playwright at system Chrome removes the process sandbox.
-- Detect external execution surfaces in [Runtime Capabilities](./runtime-capabilities.md#capability-detection), then follow the automated lane in [Agent Workflow](./workflow.md#automated-and-regression-lane).
+- Resolve required surfaces through [Runtime Requirements](./runtime-requirements.md#capability-resolution), detect actual session availability, then follow the automated lane in [Agent Workflow](./workflow.md#automated-and-regression-lane).
 - Continue non-browser checks such as `pnpm check`, formatting checks, and code inspection independently of the browser result.
 
 ## Markdown

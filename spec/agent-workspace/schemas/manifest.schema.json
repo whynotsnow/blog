@@ -1,0 +1,54 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Agent Workspace Manifest",
+	"type": "object",
+	"required": [
+		"spec",
+		"spec_version",
+		"conformance",
+		"public_instructions",
+		"public_knowledge",
+		"local_state",
+		"tooling"
+	],
+	"properties": {
+		"spec": { "const": "agent-workspace" },
+		"spec_version": { "const": "0.1.0" },
+		"conformance": {
+			"type": "array",
+			"items": {
+				"enum": ["core", "disclosure", "runtime", "team"]
+			},
+			"minItems": 1,
+			"uniqueItems": true
+		},
+		"public_instructions": {
+			"type": "string",
+			"pattern": "^[^/].*"
+		},
+		"public_knowledge": {
+			"type": "string",
+			"pattern": "^[^/].*"
+		},
+		"local_state": {
+			"type": "string",
+			"pattern": "^[^/].*"
+		},
+		"tooling": {
+			"type": "object",
+			"required": ["entry", "runtime"],
+			"properties": {
+				"entry": {
+					"type": "string",
+					"pattern": "^[^/].*"
+				},
+				"runtime": {
+					"type": "string",
+					"minLength": 1
+				}
+			},
+			"additionalProperties": true
+		}
+	},
+	"additionalProperties": false
+}

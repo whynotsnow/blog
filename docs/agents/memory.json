@@ -125,7 +125,7 @@
 				"ask the user to run pnpm test:smoke in a normal host Terminal when no external tool is available"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#playwright-chromium-mac-sandbox",
-			"capabilities": "docs/agents/runtime-capabilities.md#browser-automation"
+			"requirements": "docs/agents/runtime-requirements.md#project-browser-contract"
 		}
 	],
 	"validation_truthfulness": {

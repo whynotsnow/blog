@@ -1,0 +1,33 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Agent Workspace Local Identity Map",
+	"type": "object",
+	"required": ["spec_version", "schema_version", "salt", "identities"],
+	"properties": {
+		"spec_version": { "const": "0.1.0" },
+		"schema_version": { "const": 1 },
+		"salt": { "type": "string", "minLength": 32 },
+		"identities": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["fingerprint", "developer_id", "actor_type"],
+				"properties": {
+					"fingerprint": {
+						"type": "string",
+						"pattern": "^[a-f0-9]{64}$"
+					},
+					"developer_id": {
+						"type": "string",
+						"pattern": "^dev_[a-f0-9]{12}$"
+					},
+					"actor_type": {
+						"enum": ["human", "automation", "shared", "unknown"]
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+	"additionalProperties": false
+}
