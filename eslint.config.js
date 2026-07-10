@@ -8,19 +8,13 @@ import tseslint from "typescript-eslint";
 /**
  * Runtime boundaries
  *
- * src:
- * - Astro components
- * - Svelte components
- * - Browser runtime
+ * Browser:
+ * - src/**
  *
- * scripts:
- * - Node.js CLI scripts
- * - Build tools
- * - Automation tasks
- *
- * config:
- * - Astro config
- * - Tooling config
+ * Node:
+ * - scripts/**
+ * - .agent-workspace/tools/**
+ * - config files
  */
 
 // Browser runtime
@@ -40,20 +34,33 @@ const nodeGlobals = {
 };
 
 /**
+ * Files running in Node environment
+ */
+const nodeToolingFiles = [
+	"scripts/**/*.{js,mjs,cjs,ts}",
+	".agent-workspace/tools/**/*.{js,mjs,cjs,ts}",
+	"astro.config.*",
+	"*.config.{js,mjs,cjs,ts}",
+];
+
+/**
  * Shared rules
  */
 const commonRules = {
 	"no-empty": "error",
 	"no-empty-pattern": "error",
+
 	/**
 	 * Disabled because TypeScript handles this better.
 	 */
 	"no-undef": "off",
+
 	"no-unused-expressions": "off",
 	"no-useless-escape": "error",
 	"no-var": "error",
 	"prefer-const": "error",
 	"prefer-rest-params": "error",
+
 	/**
 	 * Handled by @typescript-eslint/no-unused-vars
 	 */
@@ -62,11 +69,17 @@ const commonRules = {
 
 const typescriptRules = {
 	"@typescript-eslint/ban-ts-comment": "error",
+
 	"@typescript-eslint/no-empty-object-type": "error",
+
 	"@typescript-eslint/no-unsafe-function-type": "error",
+
 	"@typescript-eslint/no-this-alias": "error",
+
 	"@typescript-eslint/no-unused-expressions": "error",
+
 	"@typescript-eslint/triple-slash-reference": "off",
+
 	"@typescript-eslint/no-unused-vars": [
 		"error",
 		{
@@ -75,6 +88,7 @@ const typescriptRules = {
 			caughtErrorsIgnorePattern: "^_",
 		},
 	],
+
 	"@typescript-eslint/no-explicit-any": "error",
 };
 
@@ -94,14 +108,20 @@ export default [
 	{
 		ignores: ["dist/**", "node_modules/**", ".astro/**", ".vercel/**"],
 	},
+
 	/**
 	 * Base configs
 	 */
 	js.configs.recommended,
+
 	...tseslint.configs.recommended,
+
 	...astro.configs["flat/recommended"],
+
 	...svelte.configs["flat/recommended"],
+
 	...svelte.configs["flat/prettier"],
+
 	/**
 	 * Browser runtime
 	 *
@@ -109,21 +129,26 @@ export default [
 	 */
 	{
 		files: ["src/**/*.{js,mjs,cjs,ts}"],
+
 		languageOptions: {
 			globals: browserGlobals,
 		},
+
 		rules: {
 			...commonRules,
 			...typescriptRules,
 		},
 	},
+
 	/**
 	 * Svelte components
 	 */
 	{
 		files: ["src/**/*.svelte"],
+
 		languageOptions: {
 			globals: browserGlobals,
+
 			parserOptions: {
 				parser: tseslint.parser,
 			},
@@ -133,50 +158,54 @@ export default [
 			...commonRules,
 			...typescriptRules,
 			...svelteRules,
+
+			/**
+			 * Svelte 5:
+			 * $props / $bindable use let declarations.
+			 */
+			"prefer-const": "off",
 		},
 	},
+
 	/**
 	 * Astro components
 	 */
 	{
 		files: ["src/**/*.astro"],
+
 		languageOptions: {
 			globals: browserGlobals,
+
 			parser: astroParser,
+
 			parserOptions: {
 				parser: tseslint.parser,
+
 				extraFileExtensions: [".astro"],
 			},
 		},
+
 		rules: {
 			...commonRules,
 			...typescriptRules,
 			...astroRules,
 		},
 	},
+
 	/**
-	 * Node runtime scripts
+	 * Node runtime
 	 *
-	 * scripts/**
+	 * scripts
+	 * .agent-workspace/tools
+	 * config files
 	 */
 	{
-		files: ["scripts/**/*.{js,mjs,cjs,ts}"],
+		files: nodeToolingFiles,
+
 		languageOptions: {
 			globals: nodeGlobals,
 		},
-		rules: {
-			...commonRules,
-			...typescriptRules,
-		},
-	},
-	/**
-	 * Node runtime config files
-	 */
-	{
-		files: ["astro.config.*", "*.config.{js,mjs,cjs,ts}"],
-		languageOptions: {
-			globals: nodeGlobals,
-		},
+
 		rules: {
 			...commonRules,
 			...typescriptRules,
