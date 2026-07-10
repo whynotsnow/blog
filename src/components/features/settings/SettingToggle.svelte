@@ -16,24 +16,24 @@
 
 <button
 	type="button"
-	class="setting-toggle btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-left transition-all active:scale-[0.98]"
+	class="setting-toggle btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-left transition-all active:scale-95"
 	class:bg-[var(--btn-regular-bg-hover)]={enabled}
 	aria-pressed={enabled}
 	onclick={onToggle}
 >
 	{#if icon}
-		<Icon {icon} class="shrink-0 text-[1.125rem] opacity-80" />
+		<Icon {icon} class="shrink-0 text-[1.25rem] opacity-80" />
 	{/if}
-	<span class="min-w-0 flex-1 truncate text-sm font-medium">{label}</span>
+	<span class="min-w-0 flex-1 truncate text-sm">{label}</span>
 	<div
-		class="toggle-track relative h-[22px] w-10 shrink-0 rounded-full transition-all duration-200"
+		class="toggle-track relative h-5 w-10 shrink-0 rounded-full transition-all duration-200"
 		class:bg-[var(--primary)]={enabled}
 		class:bg-[var(--btn-regular-bg-active)]={!enabled}
 	>
 		<div
-			class="toggle-thumb absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-sm transition-all duration-200"
-			class:left-[3px]={!enabled}
-			class:left-[21px]={enabled}
+			class="toggle-thumb absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-200"
+			class:left-0.5={!enabled}
+			class:left-5={enabled}
 		></div>
 	</div>
 </button>

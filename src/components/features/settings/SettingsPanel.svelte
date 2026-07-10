@@ -325,7 +325,7 @@
 				<div class="space-y-1">
 					<button
 						type="button"
-						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-left transition-all active:scale-[0.98]"
+						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-left transition-all active:scale-95"
 						class:opacity-60={wallpaperMode !== WALLPAPER_BANNER}
 						class:bg-[var(--btn-regular-bg-hover)]={wallpaperMode ===
 							WALLPAPER_BANNER}
@@ -347,7 +347,7 @@
 					</button>
 					<button
 						type="button"
-						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-left transition-all active:scale-[0.98]"
+						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-left transition-all active:scale-95"
 						class:opacity-60={wallpaperMode !==
 							WALLPAPER_FULLSCREEN}
 						class:bg-[var(--btn-regular-bg-hover)]={wallpaperMode ===
@@ -371,7 +371,7 @@
 					</button>
 					<button
 						type="button"
-						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-left transition-all active:scale-[0.98]"
+						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-left transition-all active:scale-95"
 						class:opacity-60={wallpaperMode !== WALLPAPER_OVERLAY}
 						class:bg-[var(--btn-regular-bg-hover)]={wallpaperMode ===
 							WALLPAPER_OVERLAY}
@@ -393,7 +393,7 @@
 					</button>
 					<button
 						type="button"
-						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-left transition-all active:scale-[0.98]"
+						class="btn-regular relative flex w-full items-center gap-3 overflow-hidden rounded-md px-3 py-2 text-left transition-all active:scale-95"
 						class:opacity-60={wallpaperMode !== WALLPAPER_NONE}
 						class:bg-[var(--btn-regular-bg-hover)]={wallpaperMode ===
 							WALLPAPER_NONE}
@@ -529,7 +529,7 @@
 					<button
 						type="button"
 						aria-label={i18n(I18nKey.postListLayoutList)}
-						class="btn-regular relative flex min-w-0 items-center justify-center gap-2 overflow-hidden rounded-lg px-3 py-2.5 transition-all active:scale-[0.98]"
+						class="btn-regular relative flex min-w-0 items-center justify-center gap-2 overflow-hidden rounded-md px-3 py-2 transition-all active:scale-95"
 						class:opacity-60={currentLayout !== "list"}
 						class:bg-[var(--btn-regular-bg-hover)]={currentLayout ===
 							"list"}
@@ -552,7 +552,7 @@
 					<button
 						type="button"
 						aria-label={i18n(I18nKey.postListLayoutGrid)}
-						class="btn-regular relative flex min-w-0 items-center justify-center gap-2 overflow-hidden rounded-lg px-3 py-2.5 transition-all active:scale-[0.98]"
+						class="btn-regular relative flex min-w-0 items-center justify-center gap-2 overflow-hidden rounded-md px-3 py-2 transition-all active:scale-95"
 						class:opacity-60={currentLayout !== "grid"}
 						class:bg-[var(--btn-regular-bg-hover)]={currentLayout ===
 							"grid"}
@@ -583,6 +583,8 @@
 		max-height: calc(100vh - 6rem);
 		overflow-y: auto;
 		overscroll-behavior: contain;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	#display-setting::-webkit-scrollbar {
@@ -627,10 +629,12 @@
 
 	@media (max-width: 640px) {
 		#display-setting {
-			right: 0.5rem;
-			width: calc(100vw - 1rem);
-			max-width: calc(100vw - 1rem);
+			left: max(0.5rem, env(safe-area-inset-left));
+			right: max(0.5rem, env(safe-area-inset-right));
+			width: auto;
+			max-width: none;
 			max-height: calc(100vh - 5rem);
+			max-height: calc(100dvh - 5rem);
 		}
 	}
 </style>

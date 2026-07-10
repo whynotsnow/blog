@@ -44,7 +44,7 @@
 	});
 </script>
 
-<div class="rounded-lg bg-[var(--btn-regular-bg)] p-2.5 transition-colors">
+<div class="rounded-md bg-[var(--btn-regular-bg)] p-2 transition-colors">
 	<div class="mb-1.5 flex items-center justify-between gap-2">
 		<span
 			class="min-w-0 truncate text-sm font-medium text-[var(--btn-content)] opacity-85"
@@ -73,8 +73,8 @@
 	.slider {
 		-webkit-appearance: none;
 		appearance: none;
-		height: 0.85rem;
-		border-radius: 999px;
+		height: 1.5rem;
+		border-radius: 0.375rem;
 		cursor: pointer;
 		outline: none;
 	}
@@ -90,34 +90,22 @@
 
 	.slider::-webkit-slider-thumb {
 		-webkit-appearance: none;
-		height: 0.875rem;
-		width: 0.875rem;
-		border-radius: 50%;
-		background: white;
-		box-shadow:
-			0 1px 4px rgba(0, 0, 0, 0.2),
-			0 0 0 2px var(--primary);
+		height: 0;
+		width: 0;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
 		cursor: pointer;
-		transition: transform 0.15s ease;
-	}
-
-	.slider::-webkit-slider-thumb:hover {
-		transform: scale(1.15);
-	}
-
-	.slider::-webkit-slider-thumb:active {
-		transform: scale(1.05);
 	}
 
 	.slider::-moz-range-thumb {
-		height: 0.875rem;
-		width: 0.875rem;
+		height: 0;
+		width: 0;
 		border: none;
-		border-radius: 50%;
-		background: white;
-		box-shadow:
-			0 1px 4px rgba(0, 0, 0, 0.2),
-			0 0 0 2px var(--primary);
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
 		cursor: pointer;
 	}
 </style>
