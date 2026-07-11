@@ -9,7 +9,10 @@
   border-radius: 0.5rem;
   font-weight: 500;
   font-size: 0.875rem;
-  transition: all 0.3s ease;
+  transition:
+    transform var(--motion-normal) var(--motion-ease-standard),
+    background var(--motion-normal) var(--motion-ease-standard),
+    box-shadow var(--motion-normal) var(--motion-ease-standard);
   border: none;
   cursor: pointer;
   text-decoration: none;

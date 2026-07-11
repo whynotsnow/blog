@@ -51,3 +51,26 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 		"three-column content-right",
 	);
 });
+
+test("global motion and scrollbar utilities stay active", async ({ page }) => {
+	await page.goto("/");
+
+	await expect(page.locator("html")).not.toHaveAttribute(
+		"data-overlayscrollbars-initialize",
+		/.+/,
+	);
+	await expect(page.locator("body")).not.toHaveAttribute(
+		"data-overlayscrollbars-initialize",
+		/.+/,
+	);
+
+	const navbarTransition = await page
+		.locator("#navbar > div")
+		.last()
+		.evaluate((node) => getComputedStyle(node).transitionProperty);
+	expect(navbarTransition).not.toContain("all");
+
+	await page.goto("/timeline/");
+	const timeline = page.locator("#timeline-scrollbar");
+	await expect(timeline).toHaveCSS("scrollbar-width", "thin");
+});

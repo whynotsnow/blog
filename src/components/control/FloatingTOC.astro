@@ -37,7 +37,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		</div>
 	</button>
 	<div id="floating-toc-panel" class="floating-toc-panel">
-		<div class="floating-toc-panel-content" id="floating-toc-content"></div>
+		<div class="floating-toc-panel-content scrollbar-thin" id="floating-toc-content"></div>
 	</div>
 </div>
 
@@ -128,19 +128,6 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		max-height: 60vh;
 		overflow-y: auto;
 		overflow-x: hidden;
-	}
-
-	.floating-toc-panel-content::-webkit-scrollbar {
-		width: 4px;
-	}
-
-	.floating-toc-panel-content::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.floating-toc-panel-content::-webkit-scrollbar-thumb {
-		background: var(--line-color);
-		border-radius: 2px;
 	}
 
 	@media (max-width: 1920px) {

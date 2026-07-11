@@ -332,7 +332,9 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 
   /* 桌面端轮播图片过渡优化 - 与移动端保持一致 */
   .carousel-item {
-    transition: all 0.5s ease-out !important; /* 优化过渡时间，避免与轮播间隔冲突 */
+    transition:
+      opacity 0.5s ease-out,
+      transform 0.5s ease-out !important;
     transform-origin: center center !important; /* 确保缩放从中心开始 */
   }
 
@@ -372,7 +374,9 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 
   /* 轮播图片过渡优化 - 与电脑端保持一致 */
   .carousel-item {
-    transition: all 1s ease-out !important; /* 包含opacity和transform的过渡 */
+    transition:
+      opacity 1s ease-out,
+      transform 1s ease-out !important;
     transform-origin: center center !important; /* 确保缩放从中心开始 */
   }
 
@@ -453,12 +457,8 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
       transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
       opacity 0.3s ease-out;
     transform-origin: top center;
-    /* 硬件加速优化 */
     will-change: transform, opacity;
     backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
   }
 
   .mobile-hide-banner {
@@ -474,12 +474,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   /* 手机端非首页时主内容区域从顶部开始 - 延迟出现的动画 */
   .absolute.w-full.z-30 {
     transition: top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s;
-    /* 硬件加速优化 */
-    will-change: top;
-    /* 禁用transform以保证back to top 按钮可以显示
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        */
   }
 
   .absolute.w-full.z-30.mobile-main-no-banner {
@@ -490,38 +484,14 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   }
 }
 
-/* 移动端导航栏与banner的协调 */
-@media (max-width: 1279px) {
-  #navbar-wrapper {
-    /* 移除覆盖样式，让Navbar.astro的圆角和半透明效果生效 */
-  }
-
-  /* 暗色主题下的导航栏 */
-  :root.dark #navbar-wrapper {
-    /* 移除覆盖样式，让Navbar.astro的圆角和半透明效果生效 */
-  }
-}
-
 /* 移动端banner性能优化 */
 @media (max-width: 1279px) {
   .banner-container {
-    /* 启用硬件加速 */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
     will-change: transform, opacity;
-
-    /* 优化渲染性能 */
-    contain: layout style paint;
-
-    /* 减少重绘 */
     backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
   }
 
   .carousel-item {
-    /* 硬件加速 */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
     will-change: transform, opacity;
 
     /* 优化触摸响应 */
@@ -536,9 +506,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-
-    /* 减少重排 */
-    contain: layout style;
   }
 
   /* 移动端图片优化 */
@@ -574,7 +541,9 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     height: 8px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.5);
-    transition: all 0.3s ease;
+    transition:
+      transform var(--motion-normal) var(--motion-ease-standard),
+      background-color var(--motion-normal) var(--motion-ease-standard);
     cursor: pointer;
   }
 

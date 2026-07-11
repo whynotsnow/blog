@@ -1,4 +1,3 @@
-import "overlayscrollbars/overlayscrollbars.css";
 import { pathsEqual, url } from "../utils/url-utils";
 import { DARK_MODE, DEFAULT_THEME } from "../constants/constants";
 
@@ -91,9 +90,7 @@ async function initializePanelManager() {
 
 initializePanelManager();
 
-function initCustomScrollbar() {
-	// 完全禁用OverlayScrollbars的body初始化，避免导致页面重新加载
-	// 只处理katex元素的滚动条
+function initKatexScrollbar() {
 	const katexElements = document.querySelectorAll(
 		".katex-display:not([data-scrollbar-initialized])",
 	) as NodeListOf<HTMLElement>;
@@ -102,39 +99,10 @@ function initCustomScrollbar() {
 		if (!element.parentNode) return;
 
 		const container = document.createElement("div");
-		container.className = "katex-display-container";
+		container.className = "katex-display-container scrollbar-thin";
 		element.parentNode.insertBefore(container, element);
 		container.appendChild(element);
-
-		// 使用简单的CSS滚动条而不是OverlayScrollbars
-		container.style.cssText = `
-            overflow-x: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0,0,0,0.3) transparent;
-        `;
-
-		// 为webkit浏览器添加自定义滚动条样式
-		const style = document.createElement("style");
-		style.textContent = `
-            .katex-display-container::-webkit-scrollbar {
-                height: 6px;
-            }
-            .katex-display-container::-webkit-scrollbar-track {
-                background: transparent;
-            }
-            .katex-display-container::-webkit-scrollbar-thumb {
-                background: rgba(0,0,0,0.3);
-                border-radius: 3px;
-            }
-            .katex-display-container::-webkit-scrollbar-thumb:hover {
-                background: rgba(0,0,0,0.5);
-            }
-        `;
-
-		if (!document.head.querySelector("style[data-katex-scrollbar]")) {
-			style.setAttribute("data-katex-scrollbar", "true");
-			document.head.appendChild(style);
-		}
+		container.style.overflowX = "auto";
 
 		element.setAttribute("data-scrollbar-initialized", "true");
 	});
@@ -466,7 +434,7 @@ const setup = () => {
 		// 初始化新页面的图片、公式、滚动条和TOC
 		initFancybox();
 		checkKatex();
-		initCustomScrollbar();
+		initKatexScrollbar();
 
 		// 检查当前页面是否为文章页面（有TOC元素）
 		const tocWrapper = document.getElementById("toc-wrapper");

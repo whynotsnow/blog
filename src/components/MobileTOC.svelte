@@ -341,7 +341,7 @@
 <!-- Mobile TOC Panel -->
 <div
 	id="mobile-toc-panel"
-	class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)]
+	class="float-panel float-panel-closed mobile-toc-panel scrollbar-thin absolute md:w-[20rem] w-[calc(100vw-2rem)]
 		top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
 >
 	<div class="flex items-center justify-between mb-4">
@@ -648,23 +648,5 @@
 
 	:global(.dark) .post-item:hover .post-category {
 		color: rgba(255, 255, 255, 0.75);
-	}
-
-	/* 滚动条样式 */
-	.mobile-toc-panel::-webkit-scrollbar {
-		width: 4px;
-	}
-
-	.mobile-toc-panel::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.mobile-toc-panel::-webkit-scrollbar-thumb {
-		background: var(--line-color);
-		border-radius: 2px;
-	}
-
-	.mobile-toc-panel::-webkit-scrollbar-thumb:hover {
-		background: var(--text-color-25);
 	}
 </style>
