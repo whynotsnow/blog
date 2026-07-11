@@ -136,6 +136,23 @@ Use:
 - Apply height inheritance to `#banner-carousel`, `.carousel-list`, `.carousel-item`, image wrapper slots, `#banner-single-container`, and images.
 - Scope wave positioning to `#header-waves` and restore `#header-waves > svg` to normal in-container sizing when generic `.waves` mobile rules would affect both the outer container and inner svg.
 
+### sidebar-sticky-containing-block
+
+Pattern:
+
+- A widget configured with `position: "sticky"` renders inside a sticky container but still scrolls out of the viewport.
+- Runtime styles show `position: sticky` and a valid `top`, while the sticky container sits at the bottom of a shorter sidebar root.
+- The outer grid column stretches to the main-content height, but the direct sidebar root only uses its content height.
+
+Use:
+
+- Keep the left and right sidebar roots at `h-full` so their sticky descendants use the full grid-row height as the containing block.
+- Keep desktop sticky containers at `top: 1rem` so widgets preserve the sidebar gap after crossing the page top.
+- On the banner-enabled home page, compensate both sticky columns with `calc(1rem - var(--banner-height-extend))`; this override must win over the responsive `top` utility.
+- Do not apply the banner-extension compensation in fullscreen banner mode because the fullscreen main grid does not use that translated offset; keep fullscreen sticky columns at `top: 1rem`.
+- Enable sticky positioning only at the desktop breakpoint; below `lg`, preserve the existing sidebar visibility and normal-flow behavior.
+- Verify on a page tall enough for the sticky element to cross its configured top offset; a short page may never reach the sticky threshold.
+
 ## Browser Verification
 
 ### playwright-chromium-mac-sandbox

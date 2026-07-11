@@ -335,7 +335,7 @@ export type WidgetComponentType =
 
 export type WidgetComponentConfig = {
 	type: WidgetComponentType; // 组件类型
-	position: "top" | "sticky"; // 组件位置：顶部固定区域或粘性区域
+	position: "top" | "sticky"; // 组件区域："top" 为侧栏顶部区域，"sticky" 为桌面端滚动到页面顶部后吸附
 	class?: string; // 自定义CSS类名
 	style?: string; // 自定义内联样式
 	animationDelay?: number; // 动画延迟时间（毫秒）

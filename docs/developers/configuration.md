@@ -46,6 +46,16 @@
 | `sidebarLayoutConfig` | 侧边栏位置和布局模式。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
+## 侧边栏 Widget 布局
+
+`src/config/sidebar.ts` 中的 `sidebarLayoutConfig` 同时控制 Widget 所属侧栏、排列顺序和滚动区域。
+
+- `components.left`、`components.right`、`components.drawer`：分别定义左侧栏、右侧栏和移动端抽屉中的 Widget 顺序。
+- `properties[].position: "top"`：将 Widget 放在侧栏顶部区域，保持现有普通排列行为。
+- `properties[].position: "sticky"`：将 Widget 放在滚动吸顶区域；滚动到页面顶部后保留 `1rem` 间距吸附。普通 Banner 首页会抵消 Banner 延伸偏移，Fullscreen Banner 首页直接使用 `1rem` 间距。吸顶仅在桌面断点 `lg` 生效，低于该断点时禁用吸顶并遵循现有侧栏可见性规则。
+
+Sticky 区域依赖侧栏根容器填满 Grid 行高。修改 `LeftSideBar.astro` 或 `RightSideBar.astro` 时，应保留根容器的 `h-full`，否则 Sticky 容器会被自身内容高度限制并随页面滚出视口。
+
 ## SettingsPanel 相关配置
 
 统一设置面板使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应入口。

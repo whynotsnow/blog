@@ -12,7 +12,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：用户资料组件
 			type: "profile",
 			// 组件位置："top" 表示固定在顶部
-			position: "top",
+			position: "sticky",
 			// CSS 类名，用于应用样式和动画
 			class: "onload-animation",
 			// 动画延迟时间（毫秒），用于错开动画效果
@@ -47,7 +47,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：标签组件
 			type: "tags",
 			// 组件位置："sticky" 表示粘性定位
-			position: "top",
+			position: "sticky",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
