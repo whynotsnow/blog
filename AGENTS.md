@@ -76,14 +76,14 @@ Do not record a machine-specific Skill installation path in tracked files. Resol
 
 Keep tool roles separate. Detailed routing lives in `docs/agents/workflow.md`; this file records the non-negotiable summary.
 
-- Browser (in-app) is only for documentation, API reference, and error explanation. Do not use it for localhost, UI rendering, DOM inspection, or runtime behavior validation.
-- Chrome is the default tool for exploratory/manual frontend debugging, visual checks, DOM inspection, layout debugging, network analysis, and localhost UI validation.
-- Playwright is for scripted, repeatable UI verification, regression tests, and CI-style checks. Use it when the requested validation should be deterministic.
+- Browser (in-app) is primarily for documentation, API reference, and error explanation. It may perform one narrowly scoped visual review only after Playwright cannot reliably answer a predefined visual question and only when the current Browser capability explicitly supports the target local URL. Follow the hard budget in `docs/agents/workflow.md`.
+- Agents must not use controlled Chrome for debugging, inspection, or validation. Chrome checks are developer-operated only, even when Chrome control is technically available.
+- Playwright is the default agent-operated browser validation tool. Prefer existing tests, then add a narrowly scoped check only when it provides useful coverage.
 - Computer Use is only for system-level execution such as starting dev servers, running commands, or file operations. Do not use it for UI validation.
 
-Any task involving layout, CSS, visual rendering, interaction behavior, or frontend runtime state must be validated successfully with Chrome or Playwright. Code review alone is not UI validation.
+Use source inspection and static checks before browser validation. Low-risk presentation changes may skip browser validation when the handoff states why and lists the checks performed. For browser-dependent behavior, do not treat code review alone as completed UI validation.
 
-If UI validation cannot be completed because of sandbox, origin policy, localhost access, or tool availability limits, do not mark the task as fully validated. Follow the routing policy in `docs/agents/workflow.md`, using the local machine/session profile to detect available execution surfaces and `docs/agents/runtime-requirements.md` for the public capability contract. If no valid route can run, report the validation gap explicitly.
+If Playwright cannot run, do not treat Browser as an execution fallback; route Playwright to an available shell, CI, or the developer. If Playwright cannot reliably answer a predefined visual question, a budgeted in-app Browser review is allowed. Otherwise, do not bypass the Chrome restriction with Computer Use or another interactive tool; provide a targeted manual Chrome procedure and keep the validation gap explicit.
 
 ## Editing Rules
 

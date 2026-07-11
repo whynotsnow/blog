@@ -164,11 +164,12 @@ Pattern:
 
 Use:
 
-- Report this as UI validation unavailable in the current sandbox, not necessarily unavailable for the task.
+- Report this as Playwright validation unavailable in the current sandbox, not necessarily unavailable for the task.
 - Do not claim browser validation passed.
-- Do not replace it with in-app Browser localhost validation; project policy reserves Browser for documentation/API lookup only.
+- Do not use in-app Browser merely because Playwright failed to launch. Browser is allowed only for a predefined visual question that Playwright cannot answer reliably.
 - Do not retry from the same restricted process or assume that pointing Playwright at system Chrome removes the process sandbox.
-- Resolve required surfaces through [Runtime Requirements](./runtime-requirements.md#capability-resolution), detect actual session availability, then follow the automated lane in [Agent Workflow](./workflow.md#automated-and-regression-lane).
+- Do not fall back to agent-controlled Chrome. Resolve required surfaces through [Runtime Requirements](./runtime-requirements.md#capability-resolution), detect actual session availability, then follow the automated lane in [Agent Workflow](./workflow.md#automated-and-regression-lane).
+- If no Playwright-capable surface is available, give the developer the exact command to run. Use the developer-operated manual lane only when Playwright cannot express the required check, not merely because it failed to launch.
 - Continue non-browser checks such as `pnpm check`, formatting checks, and code inspection independently of the browser result.
 
 ## Markdown

@@ -74,3 +74,17 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Created a reusable Agent Workspace Skill as an external operator for Agent Workspace Spec repositories.
 - Kept this repository's `.agent-workspace/tools/` as the project-local implementation rather than moving project-specific validation into the Skill.
 - Forward-tested the Skill against both this repository and a minimal temporary workspace.
+
+## 2026-07-11
+
+### Restricted Chrome to developer-operated validation
+
+- Prohibited agents from using controlled Chrome for debugging, inspection, or validation.
+- Established Playwright as the primary agent-operated browser validation tool, with static checks and existing tests preferred first.
+- Added a required manual Chrome guide for browser questions that Playwright cannot answer and removed controlled Chrome from sandbox fallback guidance.
+
+### Added budgeted in-app Browser visual review
+
+- Allowed the in-app Browser only after Playwright cannot reliably answer one predefined visual question.
+- Limited the default review to one route, one viewport, one navigation, and one screenshot or page-state inspection.
+- Kept Playwright launch failures on the Playwright execution lane and retained developer-operated Chrome as the final manual fallback.

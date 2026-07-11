@@ -66,28 +66,28 @@ Keep exploration, verification, knowledge retrieval, and environment execution s
 
 ### 1. Browser (in-app)
 
-- Use ONLY for documentation, API reference, and error explanation.
-- It is a knowledge retrieval tool, not a runtime tool.
-- Must NOT be used for UI rendering validation, DOM inspection, or interaction testing.
-- Must NOT access localhost or development servers for UI verification.
+- Use primarily for documentation, API reference, and error explanation.
+- For application validation, it is a restricted visual-review tool after Playwright, not a general runtime debugger or automated test runner.
+- It may inspect a local application only when the current Browser capability explicitly supports the target local URL. If local access is unavailable, stop after one failed access attempt and follow the developer-operated manual lane.
+- It must not be used for broad DOM exploration, network debugging, authenticated flows, multi-page regression, or interaction testing that Playwright can express.
 
 ---
 
-### 2. Chrome (manual UI debugging)
+### 2. Chrome (developer-operated only)
 
-- Use for real-time frontend debugging in a real browser environment.
-- Supports DOM inspection, layout debugging, network analysis, and human-like interaction.
-- Default choice for exploratory/manual localhost UI validation.
-- Preferred when the task requires visual judgment, DOM inspection, layout debugging, network inspection, or human-like interaction.
+- Agents must not open, control, inspect, debug, or validate the application with Chrome.
+- This restriction applies even when controlled Chrome is technically available.
+- Manual Chrome work belongs to the developer. The agent may only provide a targeted procedure and interpret sanitized results returned by the developer.
+- Do not use Computer Use, Browser, or another interactive UI tool to imitate or control Chrome. The separately budgeted in-app Browser visual-review lane is not a Chrome substitute.
 
 ---
 
-### 3. Playwright (automated testing)
+### 3. Playwright (default browser validation)
 
-- Use for reproducible UI testing, regression testing, and CI-style validation.
-- Used for deterministic verification of UI behavior.
-- Must NOT be used for exploratory debugging or ad-hoc inspection.
-- Prefer it when validation must be repeatable, script-based, or suitable for future regression coverage.
+- Playwright is the default browser tool agents may operate for frontend validation.
+- Reuse existing Playwright coverage before adding a new check.
+- Use narrowly scoped assertions for route rendering, element visibility, responsive behavior, deterministic interaction, DOM state, accessibility, console errors, failed requests, and predefined screenshot questions.
+- Do not add broad regression coverage for a one-off low-risk change unless the test provides lasting value.
 
 ---
 
@@ -116,10 +116,13 @@ If a task involves:
 
 Then:
 
-1. Use Chrome for exploratory/manual debugging and visual inspection.
-2. Use Playwright for scripted, repeatable, or CI-oriented verification.
-3. NEVER use Browser (in-app) for these tasks
-4. NEVER fall back to code review as a substitute for UI validation
+1. Inspect the affected source and run applicable static checks first.
+2. Skip browser validation for a low-risk presentation-only change when the handoff explains the decision and reports the static checks.
+3. Otherwise, reuse existing Playwright coverage or run a narrowly scoped Playwright check.
+4. If Playwright cannot reliably answer a predefined visual question, use the restricted in-app Browser visual-review lane when supported.
+5. NEVER use agent-controlled Chrome for these tasks.
+6. If neither Playwright nor the restricted Browser review can answer the question, stop agent browser work and provide a targeted developer-operated Chrome procedure.
+7. NEVER report browser-dependent validation as complete based on code review alone.
 
 ---
 
@@ -154,15 +157,31 @@ If a selected tool fails due to sandbox, origin policy, or access restriction:
 
 1. The task must NOT be marked as complete.
 2. The agent must NOT replace UI validation with code review.
-3. Resolve required surfaces from `runtime-requirements.md` and detect actual availability in the current session; do not assume that host Terminal, controlled Chrome, or CI is available.
+3. Resolve required surfaces from `runtime-requirements.md` and detect actual availability in the current session; do not assume that host Terminal or CI is available.
 4. Re-route within the matching validation lane below.
-5. UI validation is ONLY valid if executed successfully in Chrome or Playwright, regardless of whether Playwright was launched by the sandbox shell, host Terminal, or CI.
+5. Deterministic agent-operated UI validation requires a successful Playwright check. A budgeted in-app Browser result may support only the predefined visual question it inspected. A developer-operated Chrome result is valid manual evidence only after the developer reports it.
 
-### Manual and Exploratory Lane
+### Restricted In-App Browser Visual-Review Lane
 
-1. Use controlled Chrome.
-2. If controlled Chrome is unavailable, use Playwright only when deterministic assertions can adequately verify the requested behavior.
-3. If the task requires visual judgment or exploratory inspection that Playwright cannot replace, report the validation gap.
+Use this lane only when Playwright cannot reliably answer a concrete visual question. A Playwright launch failure alone does not qualify.
+
+Before invoking Browser, state the exact route, one representative viewport, the visual question, and the expected result. The default hard budget is:
+
+- one route;
+- one viewport;
+- one navigation;
+- one screenshot or page-state inspection;
+- no exploratory browsing, broad DOM inspection, or repeated unchanged refreshes.
+
+A second inspection is allowed only after a code change directly addresses evidence from the first inspection. Additional routes, viewports, or iterations require explicit user authorization. If the Browser cannot access the local URL, do not retry through alternate interactive tools; follow the developer-operated manual lane.
+
+### Developer-Operated Manual Lane
+
+1. First decide whether a deterministic Playwright check can adequately answer the question.
+2. If it can, use the automated lane instead.
+3. If it cannot, decide whether the restricted Browser lane can answer the single visual question within its budget.
+4. If neither can because the task requires human visual judgment, exploratory DevTools inspection, an authenticated host session, or host-browser state, stop agent browser work.
+5. Give the developer the manual Chrome guide defined below and keep validation incomplete until the developer returns the requested result.
 
 ### Automated and Regression Lane
 
@@ -170,17 +189,30 @@ If a selected tool fails due to sandbox, origin policy, or access restriction:
 2. If Chromium hits the known macOS Mach permission failure, stop retrying from that restricted process.
 3. Run the same Playwright command in host Terminal when that execution surface is available.
 4. Otherwise route the automated test to CI, or ask the user to run it in a normal host Terminal.
-5. A controlled Chrome check may provide separate manual validation, but it must not be reported as an automated Playwright pass.
+5. If none is available, give the developer the exact Playwright command to run and request the minimal result needed.
 
 If no valid route in the required lane is available, explicitly report inability to complete UI validation.
+
+### Manual Chrome Guide (REQUIRED FORMAT)
+
+When developer-operated Chrome is required, provide all applicable fields below. Keep the request limited to one concrete question by default.
+
+- **Reason:** Explain precisely why Playwright cannot answer the question.
+- **Setup:** Give the command, exact route, required state, and one representative viewport.
+- **Steps:** Provide numbered interactions and name the relevant DevTools panel (`Elements`, `Console`, `Network`, or `Performance`).
+- **Expected result:** Describe the observable success condition; never say only “check whether it looks correct.”
+- **Return evidence:** Request only the affected-area screenshot, sanitized console error, failed request URL/status, computed style, or yes/no result needed to continue.
+- **Safety:** Tell the developer not to return cookies, authorization headers, tokens, credentials, or unrelated page content.
+
+Do not request multiple routes, viewports, or broad DevTools exploration unless existing evidence shows that the problem spans them.
 
 ---
 
 ## Critical Mapping
 
-- Chrome = exploration / debugging (human-in-the-loop)
-- Playwright = verification / testing (machine-in-the-loop)
-- Browser = knowledge retrieval (read-only cognition layer)
+- Chrome = developer-operated manual evidence only
+- Playwright = default deterministic agent-operated browser validation
+- Browser = knowledge retrieval plus budgeted visual review after Playwright
 - Computer Use = environment execution (system layer)
 
 ## On-Demand Documentation Routing

@@ -120,9 +120,10 @@
 			],
 			"solutions": [
 				"run pnpm test:smoke in host Terminal through Computer Use when available",
-				"use controlled Chrome for manual UI validation",
 				"run automated browser validation in CI",
-				"ask the user to run pnpm test:smoke in a normal host Terminal when no external tool is available"
+				"ask the user to run pnpm test:smoke in a normal host Terminal when no external tool is available",
+				"do not use in-app Browser solely because Playwright failed to launch",
+				"do not fall back to agent-controlled Chrome"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#playwright-chromium-mac-sandbox",
 			"requirements": "docs/agents/runtime-requirements.md#project-browser-contract"
