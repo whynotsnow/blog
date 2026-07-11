@@ -3,8 +3,26 @@
 /* 主要内容区域的过渡动画 - 参考yukina的侧滑效果 */
 .transition-main {
   transition:
-    opacity 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The Swup container owns the route-level transition. Keeping the layout
+ * change near-transparent hides the desktop three-to-two-column swap. */
+.transition-swup-layout {
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: top center;
+}
+
+html.is-changing .transition-swup-layout {
+  will-change: opacity, transform;
+}
+
+html.is-animating .transition-swup-layout {
+  opacity: 0;
+  transform: translateY(0.4rem) scale(0.995);
 }
 
 /* 离开动画 - 内容向右上滑出并淡出 */
@@ -29,12 +47,12 @@ html.is-leaving .transition-main {
 /* 进入动画 - 从右下角轻微滑入，模仿yukina效果 */
 html.is-animating .transition-main {
   opacity: 0;
-  transform: translateY(1.5rem) translateX(0.5rem);
+  transform: translateY(0.35rem);
 }
 
 /* 离开动画 - 向左上角滑出 */
 html.is-animating.is-leaving .transition-leaving {
-  transform: translateY(-1rem) translateX(-0.5rem);
+  transform: translateY(-0.35rem);
   opacity: 0;
 }
 
@@ -45,7 +63,7 @@ html.is-changing .transition-swup-fade {
 
 html.is-animating .transition-swup-fade {
   opacity: 0;
-  transform: translateY(1.5rem);
+  transform: translateY(0.25rem);
 }
 
 /* 增强的淡入动画 - 添加侧滑效果 */
@@ -82,6 +100,17 @@ html.is-animating .transition-swup-fade {
   }
 }
 
+@keyframes widget-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes fade-out-down {
   from {
     opacity: 1;
@@ -97,6 +126,20 @@ html.is-animating .transition-swup-fade {
 .onload-animation {
   opacity: 0;
   animation: fade-in-up 300ms ease-out forwards;
+}
+
+/* Widget regions are replaced with the page layout. Their own entrance stays
+ * subtle so it supports, rather than repeats, the container crossfade. */
+.widget-region .onload-animation {
+  animation-name: widget-fade-in;
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page-main-content .onload-animation {
+  animation-name: widget-fade-in;
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Widget cards enter from the edge nearest their sidebar. */
@@ -225,6 +268,7 @@ html.is-animating .transition-swup-fade {
 
   /* 移动端优化：添加硬件加速和性能优化 */
   .transition-main,
+  .transition-swup-layout,
   .transition-leaving,
   .onload-animation,
   .transition-slide-in,
@@ -241,6 +285,7 @@ html.is-animating .transition-swup-fade {
 /* 减少动画的用户偏好设置 */
 @media (prefers-reduced-motion: reduce) {
   .transition-main,
+  .transition-swup-layout,
   .transition-leaving,
   .onload-animation,
   .transition-slide-in,

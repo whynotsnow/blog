@@ -2,17 +2,11 @@
 	@reference "../../styles/main.css";
 
 	@layer components {
-		.enable-banner.is-home #banner-wrapper {
+		.enable-banner #banner-wrapper {
 			@apply lg:h-(--banner-height-home) lg:translate-y-(--banner-height-extend);
 		}
-		.enable-banner #banner-wrapper {
-			@apply lg:h-(--banner-height-home);
-		}
-		.enable-banner.is-home #banner {
-			@apply lg:h-(--banner-height-home) lg:translate-y-0;
-		}
 		.enable-banner #banner {
-			@apply lg:h-(--banner-height-home) lg:translate-y-(--bannerOffset);
+			@apply lg:h-(--banner-height-home) lg:translate-y-0;
 		}
 		.enable-banner.fullscreen-banner #banner-wrapper {
 			@apply lg:h-screen lg:translate-y-0;
@@ -23,7 +17,7 @@
 		.enable-banner.fullscreen-banner #top-row {
 			@apply lg:h-[calc(100vh-4.5rem)];
 		}
-		.enable-banner.is-home #main-grid {
+		.enable-banner #main-grid {
 			@apply lg:translate-y-(--banner-height-extend);
 		}
 		.enable-banner.fullscreen-banner.is-home #main-grid {
@@ -33,7 +27,7 @@
 			@apply lg:h-[calc(var(--banner-height-home)-4.5rem)] transition-all duration-300;
 		}
 		@media (min-width: 1280px) {
-			.enable-banner.is-home:not(.fullscreen-banner)
+			.enable-banner:not(.fullscreen-banner)
 				:is(#sidebar-sticky, #right-sidebar-sticky) {
 				top: calc(1rem - var(--banner-height-extend)) !important;
 			}

@@ -88,3 +88,13 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Allowed the in-app Browser only after Playwright cannot reliably answer one predefined visual question.
 - Limited the default review to one route, one viewport, one navigation, and one screenshot or page-state inspection.
 - Kept Playwright launch failures on the Playwright execution lane and retained developer-operated Chrome as the final manual fallback.
+
+### Decoupled page layout from Widget placement
+
+- Replaced the mutable global `WidgetManager` with explicit viewport/region Widget placement presets and pure resolvers.
+- Added page layout policies: ordinary pages default to switchable `three-column`, while post detail pages are fixed to `content-right`.
+- Moved the complete Main Grid, page Widgets, Footer, and page TOC into the Swup replacement boundary while preserving the existing Banner and persistent Music Player/Pio boundary.
+- Removed cross-viewport Widget migration and the historical mobile `drawer` abstraction; empty regions remain valid configuration outcomes.
+- Updated the Swup container selector from the inner `main` element to `#swup-container`, ensuring route-specific Main Grid policies and Widget regions are replaced together during navigation.
+- Made `#swup-container` the route-level crossfade owner and reduced nested content/Widget movement so three-column to two-column navigation no longer exposes an abrupt grid swap.
+- Unified banner mode at the home-page height on every route, including matching carousel geometry, Main Grid offset, navbar threshold, and TOC threshold.
