@@ -60,6 +60,28 @@ html.is-animating .transition-swup-fade {
   }
 }
 
+@keyframes widget-fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) translateX(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+@keyframes widget-fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) translateX(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
 @keyframes fade-out-down {
   from {
     opacity: 1;
@@ -75,6 +97,34 @@ html.is-animating .transition-swup-fade {
 .onload-animation {
   opacity: 0;
   animation: fade-in-up 300ms ease-out forwards;
+}
+
+/* Widget cards enter from the edge nearest their sidebar. */
+.sidebar-widget-slot-left > .onload-animation {
+  animation-name: widget-fade-in-left;
+}
+
+.sidebar-widget-slot-right > .onload-animation {
+  animation-name: widget-fade-in-right;
+}
+
+/* Keep hover movement independent from the card's entrance transform. */
+.sidebar-widget-slot {
+  border-radius: var(--radius-large);
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sidebar-widget-slot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+  }
+
+  :root.dark .sidebar-widget-slot:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+  }
 }
 
 .onload-animation-fade-in {
@@ -199,5 +249,13 @@ html.is-animating .transition-swup-fade {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .sidebar-widget-slot {
+    transition: none;
+  }
+
+  .sidebar-widget-slot:hover {
+    transform: none;
   }
 }

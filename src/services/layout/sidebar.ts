@@ -66,7 +66,6 @@ export function buildSidebarLayoutViewModel(
 	`);
 
 	const rightSidebarClass = compactClass(`
-		onload-animation
 		hidden
 		md:block md:mb-4 md:max-w-[17.5rem]
 		${
@@ -82,7 +81,6 @@ export function buildSidebarLayoutViewModel(
 	`);
 
 	const leftSidebarClass = compactClass(`
-		onload-animation
 		block
 		md:hidden
 		${

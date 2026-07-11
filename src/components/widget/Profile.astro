@@ -7,10 +7,15 @@ import TypewriterText from "../TypewriterText.astro";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 
-export type Props = Record<string, never>;
+export interface Props {
+	class?: string;
+	style?: string;
+}
+
+const { class: className, style } = Astro.props;
 ---
 
-<div class="card-base p-3">
+<div class:list={["card-base p-3", className]} {style}>
 	<a
 		aria-label="Go to About Page"
 		href={url("/about/")}

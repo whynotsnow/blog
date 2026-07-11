@@ -83,7 +83,11 @@ function renderComponent(
 						if (!renderData) return null;
 
 						const { Component, props } = renderData;
-						return <Component {...props} />;
+						return (
+							<div class="sidebar-widget-slot sidebar-widget-slot-left grid w-full">
+								<Component {...props} />
+							</div>
+						);
 					})}
 				</div>
 			)
@@ -98,7 +102,11 @@ function renderComponent(
 						if (!renderData) return null;
 
 						const { Component, props } = renderData;
-						return <Component {...props} />;
+						return (
+							<div class="sidebar-widget-slot sidebar-widget-slot-left grid w-full">
+								<Component {...props} />
+							</div>
+						);
 					})}
 				</div>
 			)
@@ -119,7 +127,11 @@ function renderComponent(
 						if (!renderData) return null;
 
 						const { Component, props } = renderData;
-						return <Component {...props} />;
+						return (
+							<div class="sidebar-widget-slot sidebar-widget-slot-left grid w-full">
+								<Component {...props} />
+							</div>
+						);
 					})}
 				</div>
 			)
@@ -134,7 +146,11 @@ function renderComponent(
 						if (!renderData) return null;
 
 						const { Component, props } = renderData;
-						return <Component {...props} />;
+						return (
+							<div class="sidebar-widget-slot sidebar-widget-slot-left grid w-full">
+								<Component {...props} />
+							</div>
+						);
 					})}
 				</div>
 			)
