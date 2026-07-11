@@ -1,81 +1,22 @@
 import "overlayscrollbars/overlayscrollbars.css";
-// import {
-//  OverlayScrollbars,
-//  // ScrollbarsHidingPlugin,
-//  // SizeObserverPlugin,
-//  // ClickScrollPlugin
-// } from 'overlayscrollbars';
-// import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
 import { pathsEqual, url } from "../utils/url-utils";
-import {
-	// BANNER_HEIGHT,
-	// BANNER_HEIGHT_HOME,
-	// BANNER_HEIGHT_EXTEND,
-	// MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
-	DARK_MODE,
-	DEFAULT_THEME,
-} from "../constants/constants";
+import { DARK_MODE, DEFAULT_THEME } from "../constants/constants";
 
 const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
 const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
-// const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
 import { siteConfig } from "../config";
 import { widgetConfigs } from "../config";
 import { initSakura } from "../utils/sakura-manager";
 import type { PanelId } from "../utils/panel-manager";
 import { onPageLifecycle } from "../utils/page-lifecycle";
 
-// const setTimeout = window.setTimeout;
 const setTimeout = (
 	callback: TimerHandler,
 	delay?: number,
 	...args: unknown[]
 ) => window.setTimeout(callback, delay, ...args);
-
-/* Preload fonts */
-// (async function() {
-//  try {
-//      await Promise.all([
-//          document.fonts.load("400 1em Roboto"),
-//          document.fonts.load("700 1em Roboto"),
-//      ]);
-//      document.body.classList.remove("hidden");
-//  } catch (error) {
-//      console.log("Failed to load fonts:", error);
-//  }
-// })();
-
-/* TODO This is a temporary solution for style flicker issue when the transition is activated */
-/* issue link: https://github.com/withastro/astro/issues/8711, the solution get from here too */
-/* update: fixed in Astro 3.2.4 */
-/*
-function disableAnimation() {
-    const css = document.createElement('style')
-    css.appendChild(
-        document.createTextNode(
-            `*{
-              -webkit-transition:none!important;
-              -moz-transition:none!important;
-              -o-transition:none!important;
-              -ms-transition:none!important;
-              transition:none!important
-              }`
-        )
-    )
-    document.head.appendChild(css)
-
-    return () => {
-        // Force restyle
-        ;(() => window.getComputedStyle(document.body))()
-        // Wait for next tick before removing
-        setTimeout(() => {
-            document.head.removeChild(css)
-        }, 1)
-    }
-}
-*/
 
 const bannerEnabled = !!document.getElementById("banner-wrapper");
 let panelToggleDelegationBound = false;
@@ -107,7 +48,6 @@ async function initializePanelManager() {
 
 		function setClickOutsideToClose(panel: string, ignores: string[]) {
 			document.addEventListener("click", async (event) => {
-				// let _panelDom = document.getElementById(panel);
 				const tDom = event.target;
 				if (!(tDom instanceof Node)) return; // Ensure the event target is an HTML Node
 				for (const ig of ignores) {
@@ -150,15 +90,6 @@ async function initializePanelManager() {
 }
 
 initializePanelManager();
-
-// function _loadTheme() {
-//  const theme = getStoredTheme()
-//  setTheme(theme)
-// }
-
-// function _loadHue() {
-//  setHue(getHue())
-// }
 
 function initCustomScrollbar() {
 	// 完全禁用OverlayScrollbars的body初始化，避免导致页面重新加载

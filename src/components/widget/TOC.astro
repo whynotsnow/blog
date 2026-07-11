@@ -1,10 +1,6 @@
 ---
 import type { MarkdownHeading } from "astro";
 
-// import { siteConfig } from "../../config";
-
-// import { url } from "../../utils/url-utils";
-
 export interface Props {
 	class?: string;
 	headings: MarkdownHeading[];
@@ -18,21 +14,6 @@ for (const heading of headings) {
 }
 
 const className = Astro.props.class;
-// const isPostsRoute =
-// 	Astro.url.pathname.includes("/posts/") || headings.length > 0;
-
-// const removeTailingHash = (text: string) => {
-// 	let lastIndexOfHash = text.lastIndexOf("#");
-// 	if (lastIndexOfHash !== text.length - 1) {
-// 		return text;
-// 	}
-//
-// 	return text.substring(0, lastIndexOfHash);
-// };
-
-// let heading1Count = 1;
-
-// const maxLevel = siteConfig.toc.depth;
 ---
 
 <table-of-contents class:list={[className, "group"]} id="toc">
@@ -158,9 +139,7 @@ const className = Astro.props.class;
 		update = () => {
 			requestAnimationFrame(() => {
 				this.toggleActiveHeading();
-				// requestAnimationFrame(() => {
 				this.scrollToActiveHeading();
-				// });
 			});
 		};
 

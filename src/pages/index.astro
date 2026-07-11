@@ -5,8 +5,6 @@ import { getContentStore } from "@/services/core/content-store";
 import { toUIPost } from "@/services/core/inject";
 import { PAGE_SIZE } from "@constants/constants";
 
-// const { posts, categories } = await getHomeList();
-
 const store = await getContentStore();
 const { posts, categories } = store;
 

@@ -13,19 +13,10 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-// import { loadIconify } from "../utils/icon-loader";
-
 // 检查项目页面是否启用
 if (!siteConfig.featurePages.projects) {
 	return Astro.redirect("/404/");
 }
-
-// const { lang } = Astro.props;
-
-// 加载Iconify图标库 - 移至客户端执行
-// loadIconify().catch((error) => {
-// 	console.error("Failed to load Iconify:", error);
-// });
 
 // 获取项目统计信息
 const stats = getProjectStats();

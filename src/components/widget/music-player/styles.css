@@ -58,7 +58,6 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  /*left: 0;*/
 }
 
 .expanded-player {
@@ -91,7 +90,6 @@
 @media (max-width: 768px) {
   .music-player {
     max-width: 280px !important;
-    /*left: 0.5rem !important;*/
     bottom: 0.5rem !important;
     right: 0.5rem !important;
   }
@@ -103,13 +101,11 @@
   .music-player.expanded {
     width: calc(100vw - 16px);
     max-width: none;
-    /*left: 0.5rem !important;*/
     right: 0.5rem !important;
   }
 
   .playlist-panel {
     width: calc(100vw - 16px) !important;
-    /*left: 0.5rem !important;*/
     right: 0.5rem !important;
     max-width: none;
   }
