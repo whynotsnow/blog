@@ -15,7 +15,7 @@ const className = Astro.props.class;
 const style = Astro.props.style;
 ---
 
-<!-- 组件显示现在由sidebarLayoutConfig统一控制，无需检查config.enable -->
+<!-- Widget placement configuration owns whether this component is rendered. -->
 <WidgetLayout
 	name={config.title || i18n(I18nKey.announcement)}
 	id="announcement"

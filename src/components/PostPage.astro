@@ -1,6 +1,5 @@
 ---
 import { siteConfig } from "../config";
-import { widgetManager } from "../utils/widget-manager";
 import PostCard from "./PostCard.astro";
 import PostTaxonomyNav from "./post/PostTaxonomyNav.svelte";
 import type { PostNavigatorCategory, UIPost } from "@/services/core/types";
@@ -12,13 +11,6 @@ interface Props {
 
 const { posts, categories } = Astro.props;
 const { slug } = Astro.params;
-
-// 检查是否启用右侧边栏（通过检查右侧是否有组件）
-const hasRightSidebars =
-	widgetManager.getComponentsByPosition("top", "right", "desktop").length >
-		0 ||
-	widgetManager.getComponentsByPosition("sticky", "right", "desktop").length >
-		0;
 
 // 根据配置设置初始布局模式
 const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
@@ -32,7 +24,6 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 		id="post-list-container"
 		class={`transition-all duration-500 ease-in-out rounded-(--radius-large) bg-(--card-bg) md:bg-transparent mb-4 ${initialLayoutClass}`}
 		data-default-layout={defaultLayout}
-		data-both-sidebars={hasRightSidebars}
 	>
 		{
 			posts.map((entry, index) => (

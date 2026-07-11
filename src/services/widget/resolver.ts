@@ -12,25 +12,83 @@ import { buildCalendarPosts } from "@/services/calendar";
 import { widgetComponentRegistry } from "./registry";
 import { buildCalendarWidgetData } from "./data/calendar";
 import { buildSiteStatsWidgetData } from "./data/site-stats";
+import { widgetPlacementPresets } from "./presets";
+import { resolveWidgetClass, resolveWidgetStyle } from "./presentation";
+import type {
+	ResolvedWidget,
+	ResolvedWidgetPlacement,
+	WidgetInstanceConfig,
+	WidgetPlacementName,
+} from "./types";
 
 export interface SidebarContext {
 	store: ContentStore;
 	headings?: MarkdownHeading[];
 }
 
-export interface ResolvedWidget<TProps> {
+function resolveWidget(
+	instance: WidgetInstanceConfig,
+	index: number,
+	map: WidgetComponentMap,
+): ResolvedWidget | null {
+	const definition = map[instance.type];
+	if (!definition) return null;
+	return {
+		...instance,
+		component: definition.component,
+		resolvedProps: {
+			...(definition.props as Record<string, unknown>),
+			collapseThreshold: instance.collapseThreshold,
+			...instance.props,
+		},
+		className: resolveWidgetClass(instance),
+		resolvedStyle: resolveWidgetStyle(instance, index),
+	};
+}
+
+function resolveList(
+	instances: WidgetInstanceConfig[] | undefined,
+	map: WidgetComponentMap,
+): ResolvedWidget[] {
+	return (instances ?? [])
+		.map((instance, index) => resolveWidget(instance, index, map))
+		.filter((widget): widget is ResolvedWidget => widget !== null);
+}
+
+export function resolveWidgetPlacement(
+	name: WidgetPlacementName,
+	ctx: SidebarContext,
+): ResolvedWidgetPlacement {
+	const preset: import("./types").WidgetPlacementConfig =
+		widgetPlacementPresets[name];
+	const map = getWidgetComponentMap(ctx);
+	return {
+		desktop: {
+			left: resolveList(preset.desktop?.left, map),
+			right: resolveList(preset.desktop?.right, map),
+			sidebar: resolveList(preset.desktop?.sidebar, map),
+		},
+		tablet: { sidebar: resolveList(preset.tablet?.sidebar, map) },
+		mobile: {
+			beforeContent: resolveList(preset.mobile?.beforeContent, map),
+			afterContent: resolveList(preset.mobile?.afterContent, map),
+		},
+	};
+}
+
+export interface ResolvedWidgetDefinition<TProps> {
 	component: AstroComponentFactory;
 	props: TProps;
 }
 
 export type WidgetComponentMap = {
-	"site-stats": ResolvedWidget<SiteStatsProps>;
-	categories: ResolvedWidget<CategoriesProps>;
-	tags: ResolvedWidget<TagsProps>;
-	toc: ResolvedWidget<TocProps>;
-	profile: ResolvedWidget<ProfileProps>;
-	calendar: ResolvedWidget<CalendarProps>;
-	announcement: ResolvedWidget<AnnouncementProps>;
+	"site-stats": ResolvedWidgetDefinition<SiteStatsProps>;
+	categories: ResolvedWidgetDefinition<CategoriesProps>;
+	tags: ResolvedWidgetDefinition<TagsProps>;
+	toc: ResolvedWidgetDefinition<TocProps>;
+	profile: ResolvedWidgetDefinition<ProfileProps>;
+	calendar: ResolvedWidgetDefinition<CalendarProps>;
+	announcement: ResolvedWidgetDefinition<AnnouncementProps>;
 };
 
 export function getWidgetComponentMap(ctx: SidebarContext): WidgetComponentMap {

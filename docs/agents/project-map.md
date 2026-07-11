@@ -110,7 +110,8 @@ High-impact configuration groups:
 - `siteConfig`: site identity, language, feature pages, banners, typography, post list mode, feature switches.
 - `navBarConfig`: top navigation.
 - `profileConfig`: profile widget content.
-- `sidebarLayoutConfig`: left/right sidebar behavior.
+- `pageLayoutPolicies`: responsive page regions and the desktop layouts each page permits.
+- `widgetPlacementPresets`: explicit widgets for each viewport and region; no cross-viewport migration is inferred.
 - `commentConfig`: comment provider settings.
 
 When adding or changing configuration values, edit the nearest module under `src/config/` instead of expanding `src/config.ts`. Document user-facing config changes in `docs/developers/configuration.md`.

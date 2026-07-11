@@ -8,7 +8,7 @@ import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getFileDirFromPath, getPostUrlBySlug } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
-import { licenseConfig, shareConfig, sidebarLayoutConfig } from "@/config";
+import { licenseConfig, shareConfig } from "@/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../../config";
@@ -21,8 +21,6 @@ import { MarkdownHeading } from "astro";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { getContentStore } from "@/services/core/content-store";
 import { buildCategoryItems, buildTagItems } from "@/services/core/inject";
-import { WidgetManager } from "@utils/widget-manager";
-import { SidebarLayoutConfig } from "@/types/config";
 
 export const getStaticPaths = buildPostDetailStaticPaths;
 
@@ -50,17 +48,6 @@ const {
 const { words, minutes } = entry.meta;
 const store = await getContentStore();
 
-const detailLayoutConfig: SidebarLayoutConfig = {
-	...sidebarLayoutConfig,
-	// 特殊布局
-	components: {
-		left: ["categories", "tags"],
-		right: ["profile"],
-		drawer: ["profile", "announcement"],
-	},
-};
-
-const widgetManager = new WidgetManager(detailLayoutConfig);
 ---
 
 <MainGridLayout
@@ -72,7 +59,8 @@ const widgetManager = new WidgetManager(detailLayoutConfig);
 	postSlug={entry.id}
 	headings={headings}
 	store={store}
-	custom_widgetManager={widgetManager}
+	layoutPolicy="post"
+	widgetPlacement="post"
 >
 	<script
 		is:inline

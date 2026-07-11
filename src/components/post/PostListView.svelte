@@ -2,7 +2,6 @@
 	import { onMount } from "svelte";
 	import type { UIPost } from "./types";
 	import { siteConfig } from "@/config";
-	import { widgetManager } from "@/utils/widget-manager";
 	import PostCardView from "./PostCardView.svelte";
 	import type { PostNavigatorCategory } from "@utils/client-utils";
 	import PostTaxonomyNav from "./PostTaxonomyNav.svelte";
@@ -19,12 +18,6 @@
 	export let tag: string | undefined = undefined;
 
 	let container: HTMLDivElement | null = null;
-
-	const hasRightSidebars =
-		widgetManager.getComponentsByPosition("top", "right", "desktop")
-			.length > 0 ||
-		widgetManager.getComponentsByPosition("sticky", "right", "desktop")
-			.length > 0;
 
 	const defaultLayout: "grid" | "list" =
 		siteConfig.postListLayout.defaultMode === "grid" ? "grid" : "list";
@@ -133,7 +126,6 @@
 		class:grid-mode={defaultLayout === "grid"}
 		class:list-mode={defaultLayout !== "grid"}
 		data-default-layout={defaultLayout}
-		data-both-sidebars={hasRightSidebars}
 	>
 		{#each posts as post (post.id)}
 			<PostCardView {post} className="onload-animation" />

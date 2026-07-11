@@ -1,4 +1,5 @@
 import { siteConfig } from "@/config";
+import { setDesktopLayoutPreference } from "@/features/layout-preference/controller";
 
 export type LayoutMode = "list" | "grid";
 
@@ -56,10 +57,6 @@ export function applyLayoutMode(mode: LayoutMode = getLayoutMode()): void {
 		}, 500);
 	}
 
-	document
-		.querySelector(".left-sidebar-container")
-		?.classList.toggle("hidden-in-grid-mode", mode === "grid");
-
 	publishLayoutInit(mode);
 }
 
@@ -67,6 +64,9 @@ export function setLayoutMode(mode: LayoutMode): void {
 	sessionStorage.setItem(STORAGE_KEY, mode);
 	localStorage.setItem(STORAGE_KEY, mode);
 	applyLayoutMode(mode);
+	setDesktopLayoutPreference(
+		mode === "grid" ? "content-right" : "three-column",
+	);
 	publishLayoutChange(mode);
 }
 
@@ -74,6 +74,9 @@ export function syncStoredLayoutMode(): LayoutMode {
 	const mode = getLayoutMode();
 	sessionStorage.setItem(STORAGE_KEY, mode);
 	localStorage.setItem(STORAGE_KEY, mode);
+	setDesktopLayoutPreference(
+		mode === "grid" ? "content-right" : "three-column",
+	);
 	return mode;
 }
 

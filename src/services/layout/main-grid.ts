@@ -1,15 +1,12 @@
 import { getBannerImages, type BannerImages } from "@/services/banner";
 import type { SiteConfig } from "@/types/config";
-import type { WidgetManager } from "@/utils/widget-manager";
 import { BANNER_HEIGHT } from "@/constants/constants";
-import {
-	buildSidebarLayoutViewModel,
-	type SidebarLayoutViewModel,
-} from "./sidebar";
+import { resolvePageLayout } from "./resolver";
+import type { PageLayoutPolicyName, ResolvedPageLayout } from "./types";
 
 export type MainGridLayoutViewModel = {
 	bannerImages: BannerImages;
-	sidebarLayout: SidebarLayoutViewModel;
+	pageLayout: ResolvedPageLayout;
 	toc: {
 		mode: "float" | "sidebar";
 		enable: boolean;
@@ -35,13 +32,13 @@ export type MainGridLayoutViewModel = {
 
 export type BuildMainGridLayoutViewModelOptions = {
 	config: SiteConfig;
-	widgetManager: WidgetManager;
+	layoutPolicy: PageLayoutPolicyName;
 	pathname: string;
 };
 
 export async function buildMainGridLayoutViewModel({
 	config,
-	widgetManager,
+	layoutPolicy,
 	pathname,
 }: BuildMainGridLayoutViewModelOptions): Promise<MainGridLayoutViewModel> {
 	const tocMode = config.toc.mode || "float";
@@ -58,7 +55,7 @@ export async function buildMainGridLayoutViewModel({
 
 	return {
 		bannerImages: await getBannerImages(config),
-		sidebarLayout: buildSidebarLayoutViewModel(config, widgetManager),
+		pageLayout: resolvePageLayout(layoutPolicy),
 		toc: {
 			mode: tocMode,
 			enable: config.toc.enable,

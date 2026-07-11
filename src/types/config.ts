@@ -292,7 +292,7 @@ export type ExpressiveCodeConfig = {
 };
 
 export type AnnouncementConfig = {
-	// enable属性已移除，现在通过sidebarLayoutConfig统一控制
+	// enable 属性已移除，由 Widget placement 配置统一控制。
 	title?: string; // 公告栏标题
 	content: string; // 公告栏内容
 	icon?: string; // 公告栏图标
@@ -321,52 +321,6 @@ export type FooterConfig = {
 };
 
 // 组件配置类型定义
-export type WidgetComponentType =
-	| "profile"
-	| "announcement"
-	| "categories"
-	| "tags"
-	| "toc"
-	| "music-player"
-	| "pio" // 添加 pio 组件类型
-	| "site-stats" // 站点统计组件
-	| "calendar" // 日历组件
-	| "custom";
-
-export type WidgetComponentConfig = {
-	type: WidgetComponentType; // 组件类型
-	position: "top" | "sticky"; // 组件区域："top" 为侧栏顶部区域，"sticky" 为桌面端滚动到页面顶部后吸附
-	class?: string; // 自定义CSS类名
-	style?: string; // 自定义内联样式
-	animationDelay?: number; // 动画延迟时间（毫秒）
-	responsive?: {
-		hidden?: ("mobile" | "tablet" | "desktop")[]; // 在指定设备上隐藏
-		collapseThreshold?: number; // 折叠阈值
-	};
-	customProps?: Record<string, unknown>; // 自定义属性，用于扩展组件功能
-};
-
-export type SidebarLayoutConfig = {
-	properties: WidgetComponentConfig[]; // 组件配置列表
-	components: {
-		left: WidgetComponentType[];
-		right: WidgetComponentType[];
-		drawer: WidgetComponentType[];
-	};
-	defaultAnimation: {
-		enable: boolean; // 是否启用默认动画
-		baseDelay: number; // 基础延迟时间（毫秒）
-		increment: number; // 每个组件递增的延迟时间（毫秒）
-	};
-	responsive: {
-		breakpoints: {
-			mobile: number; // 移动端断点（px）
-			tablet: number; // 平板端断点（px）
-			desktop: number; // 桌面端断点（px）
-		};
-	};
-};
-
 export type SakuraConfig = {
 	enable: boolean; // 是否启用樱花特效
 	switchable?: boolean; // 是否允许在设置面板中切换

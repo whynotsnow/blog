@@ -1,7 +1,6 @@
 ---
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
-import { widgetManager } from "../../utils/widget-manager";
 import ButtonLink from "../control/ButtonLink.astro";
 import WidgetLayout from "./WidgetLayout.astro";
 import type { PostNavigatorCategory } from "@/services/core/types";
@@ -10,19 +9,14 @@ export interface Props {
 	class?: string;
 	style?: string;
 	categories: PostNavigatorCategory[];
+	collapseThreshold?: number;
 }
 
 const COLLAPSED_HEIGHT = "7.5rem";
 
-const { class: className, style, categories } = Astro.props;
-
-// 使用统一的组件管理器检查是否应该折叠
-const categoriesComponent = widgetManager
-	.getConfig()
-	.properties.find((p) => p.type === "categories");
-const isCollapsed = categoriesComponent
-	? widgetManager.isCollapsed(categoriesComponent, categories.length)
-	: false;
+const { class: className, style, categories, collapseThreshold } = Astro.props;
+const isCollapsed =
+	collapseThreshold !== undefined && categories.length >= collapseThreshold;
 ---
 
 <WidgetLayout

@@ -11,7 +11,6 @@ export { navBarConfig } from "./navbar";
 export { pioConfig } from "./pio";
 export { profileConfig } from "./profile";
 export { shareConfig } from "./share";
-export { sidebarLayoutConfig } from "./sidebar";
 export { SITE_LANG, SITE_TIMEZONE, siteConfig } from "./site";
 export { widgetConfigs } from "./widget-configs";
 export { fullscreenWallpaperConfig } from "./wallpaper";

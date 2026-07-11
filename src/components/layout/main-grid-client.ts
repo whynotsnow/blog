@@ -1,6 +1,11 @@
 import { sakuraConfig, siteConfig } from "@/config";
-import { BANNER_HEIGHT, BANNER_HEIGHT_FULLSCREEN } from "@/constants/constants";
+import {
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_HOME,
+	BANNER_HEIGHT_FULLSCREEN,
+} from "@/constants/constants";
 import { applyLayoutMode, bindLayoutModeEvents } from "@/utils/layout-mode";
+import { bindDesktopLayoutPreference } from "@/features/layout-preference/controller";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
 import { applyWallpaperVisualSettings } from "@/utils/setting-utils";
@@ -80,6 +85,8 @@ function syncMainContentPosition(mode: WALLPAPER_MODE) {
 		}
 
 		bannerWrapper?.classList.remove("mobile-hide-banner");
+		// The grid adds BANNER_HEIGHT_EXTEND via the shared banner CSS, matching
+		// the existing home-page composition at BANNER_HEIGHT_HOME.
 		mainContent.style.setProperty("top", `${BANNER_HEIGHT}vh`, "important");
 		return;
 	}
@@ -238,7 +245,8 @@ export function applyWallpaperMode() {
 			if (fullscreenWallpaper) fullscreenWallpaper.style.display = "none";
 			if (tocWrapper) {
 				const scrollTop = document.documentElement.scrollTop;
-				const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
+				const bannerHeight =
+					window.innerHeight * (BANNER_HEIGHT_HOME / 100);
 				if (scrollTop <= bannerHeight) {
 					tocWrapper.classList.add("toc-hide");
 				}
@@ -343,6 +351,7 @@ export function applyWallpaperMode() {
 
 function syncPageShell() {
 	bindLayoutModeEvents();
+	bindDesktopLayoutPreference();
 	window.applyWallpaperMode?.();
 	applyWallpaperVisualSettings();
 	requestAnimationFrame(() => applyLayoutMode());
@@ -354,6 +363,7 @@ function syncPageShell() {
 function bindMainGridClient() {
 	if (mainGridClientBound) return;
 	mainGridClientBound = true;
+	bindDesktopLayoutPreference();
 
 	window.addEventListener("wallpaper-mode-change", () => {
 		applyWallpaperMode();

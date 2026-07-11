@@ -25,7 +25,8 @@
 | `src/config/navbar.ts` | 顶部导航 `navBarConfig`。 |
 | `src/config/profile.ts` | 个人资料 `profileConfig`。 |
 | `src/config/wallpaper.ts` | 全屏壁纸 `fullscreenWallpaperConfig`。 |
-| `src/config/sidebar.ts` | 侧边栏布局 `sidebarLayoutConfig`。 |
+| `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
+| `src/services/widget/presets.ts` | 各端点、各区域的 Widget placement。 |
 | `src/config/music.ts` | 音乐播放器 `musicPlayerConfig`。 |
 | `src/config/effects.ts` | 站点特效 `sakuraConfig`。 |
 | `src/config/comments.ts` | 评论系统 `commentConfig`。 |
@@ -43,24 +44,28 @@
 | `profileConfig` | 个人资料组件内容。 |
 | `licenseConfig` | 默认内容协议展示。 |
 | `commentConfig` | 评论系统配置。 |
-| `sidebarLayoutConfig` | 侧边栏位置和布局模式。 |
+| `pageLayoutPolicies` | 页面基础布局与允许的桌面布局集合。 |
+| `widgetPlacementPresets` | Desktop、Tablet、Mobile 各区域的 Widget 实例。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
 ## 侧边栏 Widget 布局
 
-`src/config/sidebar.ts` 中的 `sidebarLayoutConfig` 同时控制 Widget 所属侧栏、排列顺序和滚动区域。
+页面布局和 Widget placement 是两个独立配置边界：`pageLayoutPolicies` 决定各端点有哪些区域以及如何排列，`widgetPlacementPresets` 只决定区域中渲染哪些 Widget。Widget 数量、空区域或某端点的配置不得改变页面布局，也不会触发跨端点自动迁移。
 
-- `components.left`、`components.right`、`components.drawer`：分别定义左侧栏、右侧栏和移动端抽屉中的 Widget 顺序。
-- `properties[].position: "top"`：将 Widget 放在侧栏顶部区域，保持现有普通排列行为。
-- `properties[].position: "sticky"`：将 Widget 放在滚动吸顶区域；滚动到页面顶部后保留 `1rem` 间距吸附。普通 Banner 首页会抵消 Banner 延伸偏移，Fullscreen Banner 首页直接使用 `1rem` 间距。吸顶仅在桌面断点 `lg` 生效，低于该断点时禁用吸顶并遵循现有侧栏可见性规则。
+- `desktop.left`、`desktop.right`、`desktop.sidebar`：显式定义 Desktop 各布局区域中的 Widget。
+- `tablet.sidebar`：显式定义 Tablet 侧栏，不会继承 Desktop 配置。
+- `mobile.beforeContent`、`mobile.afterContent`：显式定义 Mobile 内容前后的 Widget，不再使用历史 `drawer` 命名。
+- `position: "flow"`：Widget 按普通文档流排列。
+- `position: "sticky"`：Widget 放入吸顶区域；吸顶仅在 Desktop 断点生效。
 
-Sticky 区域依赖侧栏根容器填满 Grid 行高。修改 `LeftSideBar.astro` 或 `RightSideBar.astro` 时，应保留根容器的 `h-full`，否则 Sticky 容器会被自身内容高度限制并随页面滚出视口。
+Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`，否则 Sticky 容器会被自身内容高度限制并随页面滚出视口。
 
 ## SettingsPanel 相关配置
 
 统一设置面板使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应入口。
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
+- `desktopLayoutPreference`：保存用户的 Desktop 页面布局偏好。页面 policy 拥有最终约束权；文章详情页只允许 `content-right`，不会清除用户在其他页面使用的 `three-column` 偏好。
 - `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。`fullscreen` 表示全屏高度的 banner 模式；`overlay` 才会显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果。
 - `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。当前入口只保留 UI 状态预览，不会写入运行时配置。
 - `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 waves。

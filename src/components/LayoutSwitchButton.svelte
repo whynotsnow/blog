@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { siteConfig, sidebarLayoutConfig } from "../config";
+	import { siteConfig } from "../config";
 	import { i18n } from "@i18n/translation";
 	import I18nKey from "@i18n/i18nKey";
 	import {
@@ -18,8 +18,7 @@
 	let userPreference: LayoutMode = "list";
 	let mediaQueryList: MediaQueryList | null = null;
 
-	const BREAKPOINT =
-		sidebarLayoutConfig.responsive?.breakpoints?.desktop ?? 1280;
+	const BREAKPOINT = 1280;
 
 	$: currentLayout = isSmallScreen ? "list" : userPreference;
 

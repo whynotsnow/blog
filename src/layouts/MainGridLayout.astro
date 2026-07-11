@@ -5,11 +5,12 @@ import IconifyLoader from "@components/misc/IconifyLoader.astro";
 import Navbar from "@components/Navbar.astro";
 import Banner from "@/components/layout/Banner/Banner.astro";
 import MainGridContent from "@/components/layout/MainGridContent.astro";
-import SidebarTocRegion from "@/components/layout/SidebarTocRegion.astro";
 import { fullscreenWallpaperConfig, siteConfig } from "@/config";
 import type { ContentStore } from "@/services/core/types";
 import { buildMainGridLayoutViewModel } from "@/services/layout/main-grid";
-import { WidgetManager, widgetManager } from "@/utils/widget-manager";
+import type { PageLayoutPolicyName } from "@/services/layout/types";
+import { resolveWidgetPlacement } from "@/services/widget/resolver";
+import type { WidgetPlacementName } from "@/services/widget/types";
 import Layout from "./Layout.astro";
 import "@/styles/main-grid-layout.css";
 
@@ -22,7 +23,8 @@ interface Props {
 	postSlug?: string;
 	headings?: MarkdownHeading[];
 	store: ContentStore;
-	custom_widgetManager?: WidgetManager;
+	layoutPolicy?: PageLayoutPolicyName;
+	widgetPlacement?: WidgetPlacementName;
 }
 
 const {
@@ -34,14 +36,15 @@ const {
 	postSlug,
 	headings = [],
 	store,
-	custom_widgetManager,
+	layoutPolicy = "default",
+	widgetPlacement = "default",
 } = Astro.props;
-const applyWidgetManager = custom_widgetManager ?? widgetManager;
 const viewModel = await buildMainGridLayoutViewModel({
 	config: siteConfig,
-	widgetManager: applyWidgetManager,
+	layoutPolicy,
 	pathname: Astro.url.pathname,
 });
+const widgets = resolveWidgetPlacement(widgetPlacement, { store, headings });
 ---
 
 <Layout
@@ -82,12 +85,10 @@ const viewModel = await buildMainGridLayoutViewModel({
 
 	<MainGridContent
 		headings={headings}
-		store={store}
-		widgetManager={applyWidgetManager}
+		widgets={widgets}
 		viewModel={viewModel}
 	>
 		<slot />
 	</MainGridContent>
 
-	<SidebarTocRegion headings={headings} viewModel={viewModel} />
 </Layout>

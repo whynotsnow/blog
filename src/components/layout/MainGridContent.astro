@@ -3,33 +3,19 @@ import type { MarkdownHeading } from "astro";
 import BackToTop from "@components/control/BackToTop.astro";
 import FloatingTOC from "@components/control/FloatingTOC.astro";
 import Footer from "@components/Footer.astro";
-import LeftSideBar from "@components/layout/LeftSideBar.astro";
-import RightSideBar from "@components/layout/RightSideBar.astro";
-import type { ContentStore } from "@/services/core/types";
 import type { MainGridLayoutViewModel } from "@/services/layout/main-grid";
-import type { WidgetManager } from "@/utils/widget-manager";
+import type { ResolvedWidgetPlacement } from "@/services/widget/types";
 import BannerCredit from "./BannerCredit.astro";
+import WidgetRegion from "./WidgetRegion.astro";
+import SidebarTocRegion from "./SidebarTocRegion.astro";
 
 interface Props {
 	headings: MarkdownHeading[];
-	store: ContentStore;
-	widgetManager: WidgetManager;
+	widgets: ResolvedWidgetPlacement;
 	viewModel: MainGridLayoutViewModel;
 }
 
-const { headings, store, widgetManager, viewModel } = Astro.props;
-const {
-	defaultPostListLayout,
-	desktopShowSidebar,
-	mobileShowSidebar,
-	tabletShowSidebar,
-	hasMobileDrawerComponents,
-	hasRightSidebarComponents,
-	gridCols,
-	leftSidebarClass,
-	rightSidebarClass,
-	mainContentClass,
-} = viewModel.sidebarLayout;
+const { headings, widgets, viewModel } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
 ---
 
@@ -39,63 +25,43 @@ const { transparentClass } = viewModel.mainPanel;
 >
 	<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
 	<div class="relative max-w-(--page-width) mx-auto pointer-events-auto">
+		<div id="swup-container" class="transition-swup-layout">
 		<div
 			id="main-grid"
-			class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? "mobile-no-sidebar" : ""} ${hasRightSidebarComponents ? "mobile-both-sidebar" : ""}`}
-			data-layout-mode={defaultPostListLayout}
+			class="page-layout-grid transition duration-700 w-full left-0 right-0 grid grid-rows-none mx-auto gap-4 px-2 md:px-4"
+			data-base-desktop-layout={viewModel.pageLayout.desktop.base}
+			data-allowed-desktop-layouts={viewModel.pageLayout.allowedDesktopLayouts}
+			data-effective-desktop-layout={viewModel.pageLayout.desktop.base}
 		>
 			<BannerCredit
 				credit={viewModel.banner.credit}
 				hasCreditLink={viewModel.banner.hasCreditLink}
 			/>
 
-			<div class="contents">
-				{
-					(mobileShowSidebar ||
-						tabletShowSidebar ||
-						desktopShowSidebar) && (
-						<div
-							class={`left-sidebar-container ${leftSidebarClass} ${transparentClass}`}
-						>
-							<LeftSideBar
-								widgetManager={widgetManager}
-								headings={headings}
-								store={store}
-							/>
-						</div>
-					)
-				}
+			<div class={`desktop-left-region ${transparentClass}`}><WidgetRegion region="desktop-left" widgets={widgets.desktop.left} /></div>
+			<div class={`desktop-right-region ${transparentClass}`}><WidgetRegion region="desktop-right" widgets={widgets.desktop.right} /></div>
+			<div class={`desktop-sidebar-region ${transparentClass}`}><WidgetRegion region="desktop-sidebar" widgets={widgets.desktop.sidebar} /></div>
+			<div class={`tablet-sidebar-region ${transparentClass}`}><WidgetRegion region="tablet-sidebar" widgets={widgets.tablet.sidebar} /></div>
+			<div class={`mobile-before-region ${transparentClass}`}><WidgetRegion region="mobile-before-content" widgets={widgets.mobile.beforeContent} /></div>
 
-				{
-					hasRightSidebarComponents && (
-						<div
-							class={`right-sidebar-container ${rightSidebarClass} ${transparentClass}`}
-						>
-							<RightSideBar
-								headings={headings}
-								widgetManager={widgetManager}
-								store={store}
-							/>
-						</div>
-					)
-				}
-			</div>
-
-			<main id="swup-container" class={`${mainContentClass} transition-main`}>
+			<main class="page-main-content transition-swup-fade overflow-hidden w-full transition-main">
 				<div id="content-wrapper" class="onload-animation transition-leaving">
 					<slot />
-					<div class="footer col-span-full onload-animation hidden lg:block">
+					<div class="footer col-span-full hidden lg:block">
 						<Footer />
 					</div>
 				</div>
 			</main>
+			<div class={`mobile-after-region ${transparentClass}`}><WidgetRegion region="mobile-after-content" widgets={widgets.mobile.afterContent} /></div>
 
-			<div class="footer col-span-full onload-animation block lg:hidden">
+			<div class="footer col-span-full block lg:hidden">
 				<Footer />
 			</div>
 		</div>
+		<SidebarTocRegion headings={headings} viewModel={viewModel} />
+		{viewModel.toc.enable && viewModel.toc.isFloat && <FloatingTOC />}
+		</div>
 
 		<BackToTop />
-		{viewModel.toc.enable && viewModel.toc.isFloat && <FloatingTOC />}
 	</div>
 </div>

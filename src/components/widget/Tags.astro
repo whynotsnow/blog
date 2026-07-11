@@ -3,7 +3,6 @@ import { BaseSlug } from "@/services/core/types";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import { getTagUrl } from "../../utils/url-utils";
-import { widgetManager } from "../../utils/widget-manager";
 import ButtonTag from "../control/ButtonTag.astro";
 import WidgetLayout from "./WidgetLayout.astro";
 export interface Props {
@@ -11,19 +10,15 @@ export interface Props {
 	style?: string;
 
 	tags: BaseSlug[];
+	collapseThreshold?: number;
 }
 
-const { class: className, style, tags } = Astro.props;
+const { class: className, style, tags, collapseThreshold } = Astro.props;
 
 const COLLAPSED_HEIGHT = "7.5rem";
 
-// 使用统一的组件管理器检查是否应该折叠
-const tagsComponent = widgetManager
-	.getConfig()
-	.properties.find((p) => p.type === "tags");
-const isCollapsed = tagsComponent
-	? widgetManager.isCollapsed(tagsComponent, tags.length)
-	: false;
+const isCollapsed =
+	collapseThreshold !== undefined && tags.length >= collapseThreshold;
 ---
 
 <WidgetLayout

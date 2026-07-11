@@ -45,6 +45,7 @@
 		type LayoutMode,
 	} from "@/utils/layout-mode";
 	import type { WALLPAPER_MODE } from "@/types/config";
+	import { onPageLifecycle } from "@/utils/page-lifecycle";
 	import SettingSection from "./SettingSection.svelte";
 	import SettingSlider from "./SettingSlider.svelte";
 	import SettingToggle from "./SettingToggle.svelte";
@@ -92,6 +93,7 @@
 
 	const showModeValue = siteConfig.wallpaperMode.showModeSwitchOnMobile;
 	let isMobile = $state(false);
+	let pageAllowsLayoutSwitch = $state(true);
 
 	const isWallpaperModeSwitchable = $derived(
 		(showModeValue === "both" ||
@@ -104,7 +106,7 @@
 	const hasAnyContent = $derived(
 		showThemeColor ||
 			isWallpaperModeSwitchable ||
-			allowLayoutSwitch ||
+			(allowLayoutSwitch && pageAllowsLayoutSwitch) ||
 			hasOverlaySettings ||
 			hasBannerSettings ||
 			hasEffectsSettings,
@@ -245,6 +247,15 @@
 		isMobile = window.innerWidth <= 768;
 	}
 
+	function syncPageLayoutPolicy() {
+		const allowed = document
+			.getElementById("main-grid")
+			?.dataset.allowedDesktopLayouts?.split(" ");
+		pageAllowsLayoutSwitch =
+			allowed?.includes("three-column") === true &&
+			allowed.includes("content-right");
+	}
+
 	onMount(() => {
 		hue = getHue();
 		wallpaperMode = getPreviewSafeWallpaperMode();
@@ -256,7 +267,13 @@
 		bannerTitleEnabled = getStoredBannerTitleEnabled();
 		sakuraEnabled = getStoredSakuraEnabled();
 		checkMobile();
+		syncPageLayoutPolicy();
 		window.addEventListener("resize", checkMobile);
+		window.addEventListener("desktop-layout-applied", syncPageLayoutPolicy);
+		const unsubscribeContentReplace = onPageLifecycle(
+			"content-replace",
+			syncPageLayoutPolicy,
+		);
 
 		const handleLayoutChange = (event: Event) => {
 			const layout = (event as CustomEvent<{ layout?: LayoutMode }>)
@@ -269,7 +286,12 @@
 
 		return () => {
 			window.removeEventListener("resize", checkMobile);
+			window.removeEventListener(
+				"desktop-layout-applied",
+				syncPageLayoutPolicy,
+			);
 			window.removeEventListener("layoutChange", handleLayoutChange);
+			unsubscribeContentReplace();
 		};
 	});
 
@@ -519,7 +541,7 @@
 			</SettingSection>
 		{/if}
 
-		{#if allowLayoutSwitch}
+		{#if allowLayoutSwitch && pageAllowsLayoutSwitch}
 			<SettingSection
 				title={i18n(I18nKey.settingsLayout)}
 				showReset={currentLayout !== defaultLayout}

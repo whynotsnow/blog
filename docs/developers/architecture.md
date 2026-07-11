@@ -108,7 +108,8 @@ src/features/music-player/
 - `siteConfig`：站点信息、语言、特色页面、横幅、主题、字体、文章列表行为。
 - `navbarConfig`：顶部导航。
 - `profileConfig`：个人资料组件。
-- `sidebarLayoutConfig`：左右侧边栏布局。
+- `pageLayoutPolicies`：页面在 Desktop、Tablet、Mobile 下的区域结构，以及允许的桌面布局偏好。
+- `widgetPlacementPresets`：各端点、各区域中显式渲染的 Widget；端点之间不继承、不迁移。
 - `commentConfig`：评论系统。
 
 配置结构变化需要同步更新 [配置说明](./configuration.md)。
@@ -117,6 +118,6 @@ src/features/music-player/
 
 - 新增文章字段：先改 `src/content.config.ts`，再改 `src/services/core` 的派生逻辑。
 - 新增非文章数据：优先放到 `src/data`。
-- 新增 Widget：放入 `src/components/widget`，并在 `src/services/widget/registry.ts` 注册。
+- 新增 Widget：放入 `src/components/widget`，在 `src/services/widget/registry.ts` 注册，并在 `src/services/widget/presets.ts` 中按端点和区域显式配置。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。

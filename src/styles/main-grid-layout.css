@@ -590,40 +590,83 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   min-height: calc(100vh - 5.5rem) !important;
 }
 
-/* Grid 模式下隐藏右侧边栏 */
-.right-sidebar-container.hidden-in-grid-mode {
-  display: none !important;
+/* Page layout and Widget placement are independent. Empty regions stay valid. */
+.page-layout-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
-.left-sidebar-container.hidden-in-grid-mode {
-  display: none !important;
+.desktop-left-region,
+.desktop-right-region,
+.desktop-sidebar-region,
+.tablet-sidebar-region {
+  display: none;
+}
+.mobile-before-region,
+.mobile-after-region {
+  display: block;
+  grid-column: 1;
+}
+.page-main-content {
+  grid-column: 1;
 }
 
-/* Grid 模式下调整主网格布局 */
-#main-grid[data-layout-mode="grid"] {
-  /* 在桌面端只显示左侧边栏和主内容 */
-}
-
-/* 平板设备Grid模式：使用单列布局，和手机端保持一致 */
 @media (min-width: 768px) and (max-width: 1279px) {
-  #main-grid[data-layout-mode="grid"] {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto 1fr auto !important;
+  .page-layout-grid {
+    grid-template-columns: minmax(0, 1fr) 17.5rem;
   }
-
-  #main-grid[data-layout-mode="grid"] #swup-container {
-    grid-column: 1 / 2;
-    grid-row: 1 / 2;
+  .mobile-before-region,
+  .mobile-after-region {
+    display: none;
+  }
+  .tablet-sidebar-region {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .page-main-content {
+    grid-column: 1;
+    grid-row: 1;
   }
 }
 
-/* 桌面设备Grid模式：使用双列布局 */
 @media (min-width: 1280px) {
-  #main-grid[data-layout-mode="grid"] {
-    grid-template-columns: 1fr 17.5rem;
+  .mobile-before-region,
+  .mobile-after-region,
+  .tablet-sidebar-region {
+    display: none;
   }
-
-  #main-grid[data-layout-mode="grid"] #swup-container {
-    grid-column: 1 / 3;
+  #main-grid[data-effective-desktop-layout="three-column"] {
+    grid-template-columns: 17.5rem minmax(0, 1fr) 17.5rem;
+  }
+  #main-grid[data-effective-desktop-layout="three-column"] .desktop-left-region {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+  }
+  #main-grid[data-effective-desktop-layout="three-column"] .page-main-content {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  #main-grid[data-effective-desktop-layout="three-column"] .desktop-right-region {
+    display: block;
+    grid-column: 3;
+    grid-row: 1;
+  }
+  #main-grid[data-effective-desktop-layout="content-right"] {
+    grid-template-columns: minmax(0, 1fr) 17.5rem;
+  }
+  #main-grid[data-effective-desktop-layout="content-right"] .page-main-content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  #main-grid[data-effective-desktop-layout="content-right"] .desktop-sidebar-region {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+  }
+  #main-grid[data-effective-desktop-layout="content-right"] .desktop-right-region {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
   }
 }
 
