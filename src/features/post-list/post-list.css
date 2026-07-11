@@ -1,0 +1,74 @@
+@reference "../../styles/main.css";
+
+.post-list {
+  min-height: 200px;
+  transition: opacity var(--motion-slow) var(--motion-ease-standard);
+}
+
+.post-list.list-mode {
+  @apply flex flex-col gap-4;
+}
+
+.post-list.grid-mode {
+  @apply grid grid-cols-1 gap-6 md:grid-cols-2;
+}
+
+.post-list > .post-list__item {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px;
+  opacity: 0;
+  animation: post-list-item-enter var(--motion-slow) var(--motion-ease-standard) forwards;
+  animation-delay: calc(var(--content-delay) + var(--i, 0) * var(--interval, 50ms));
+}
+
+.post-list.grid-mode > .post-list__item {
+  animation-name: post-list-item-enter-grid;
+}
+
+.post-list.layout-switching {
+  opacity: 0.95;
+}
+
+.post-list.layout-switching > .post-list__item {
+  animation-delay: calc(var(--i, 0) * 50ms);
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .post-list,
+  .post-list.grid-mode,
+  .post-list.list-mode {
+    display: flex;
+    min-height: auto;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0;
+    background: transparent;
+  }
+}
+
+body.wallpaper-transparent .post-list {
+  background: transparent;
+}
+
+@keyframes post-list-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes post-list-item-enter-grid {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -71,6 +71,8 @@ src/features/music-player/
 
 Use feature-local helpers and types first. Promote code to `src/utils` or shared services only after multiple unrelated features reuse it.
 
+The post list intentionally keeps two thin renderers: Astro produces the home and category SSG snapshots, while Svelte renders category tag-query pagination in the browser. Both renderers share the semantic class contract and styles in `src/features/post-list/post-list.css`; the Svelte renderer uses the feature controller only to synchronize a dynamically mounted list with the global layout preference.
+
 ## Content Pipeline
 
 1. `src/content.config.ts` defines the `posts` and `spec` content collections.

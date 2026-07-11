@@ -20,7 +20,7 @@
 </script>
 
 <div
-	class={`post-item card-base flex flex-col-reverse md:flex-col w-full
+	class={`post-card post-item card-base flex flex-col-reverse md:flex-col w-full
     rounded-(--radius-large) overflow-hidden relative ${className}`}
 	style={`--coverWidth:${coverWidth}; ${style ?? ""}`}
 	data-tags={dataTags}

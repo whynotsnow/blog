@@ -74,3 +74,31 @@ test("global motion and scrollbar utilities stay active", async ({ page }) => {
 	const timeline = page.locator("#timeline-scrollbar");
 	await expect(timeline).toHaveCSS("scrollbar-width", "thin");
 });
+
+test("post list keeps Astro snapshots and switches to Svelte for tag pagination", async ({
+	page,
+}) => {
+	await page.goto("/");
+
+	const astroList = page.locator('[data-post-list-renderer="astro"]');
+	await expect(astroList).toBeVisible();
+	await expect(
+		astroList.locator(":scope > .post-list__item").first(),
+	).toBeVisible();
+
+	await page.goto("/category/tech/");
+	await expect(
+		page.locator('[data-post-list-renderer="astro"]'),
+	).toBeVisible();
+
+	const tagLink = page.locator('a[href^="/category/tech/?tag="]').first();
+	await expect(tagLink).toBeVisible();
+	await tagLink.click();
+
+	await expect(page).toHaveURL(/\?tag=/);
+	const svelteList = page.locator('[data-post-list-renderer="svelte"]');
+	await expect(svelteList).toBeVisible();
+	await expect(
+		svelteList.locator(":scope > .post-list__item").first(),
+	).toBeVisible();
+});

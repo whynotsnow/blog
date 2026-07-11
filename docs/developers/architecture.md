@@ -73,6 +73,8 @@ src/features/music-player/
 
 拆分时优先把 helper 和类型留在所属功能目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
 
+文章列表有意保留两个轻量 renderer：主页与分类页的 SSG 快照由 Astro 输出，分类页带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果。两种 renderer 统一使用 `src/features/post-list/post-list.css` 中的语义 class contract；Svelte 版本只通过 feature controller 将动态挂载的列表同步到全局布局偏好，不再重复注册布局事件。
+
 ## 内容管线
 
 1. `src/content.config.ts` 定义 `posts` 和 `spec` 内容集合。

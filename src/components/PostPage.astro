@@ -3,6 +3,7 @@ import { siteConfig } from "../config";
 import PostCard from "./PostCard.astro";
 import PostTaxonomyNav from "./post/PostTaxonomyNav.svelte";
 import type { PostNavigatorCategory, UIPost } from "@/services/core/types";
+import "@/features/post-list/post-list.css";
 
 interface Props {
 	posts: UIPost[];
@@ -22,171 +23,18 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 
 	<div
 		id="post-list-container"
-		class={`transition-all duration-500 ease-in-out rounded-(--radius-large) bg-(--card-bg) md:bg-transparent mb-4 ${initialLayoutClass}`}
+		class={`post-list rounded-(--radius-large) bg-(--card-bg) md:bg-transparent mb-4 ${initialLayoutClass}`}
 		data-default-layout={defaultLayout}
+		data-post-list-renderer="astro"
 	>
 		{
 			posts.map((entry, index) => (
 				<PostCard
 					entry={entry}
-					class:list="onload-animation"
+					class:list="post-list__item"
 					style={`--i: ${index}; --interval: 50ms;`}
 				/>
 			))
 		}
 	</div>
 </div>
-
-<script>
-	import { applyLayoutMode, getLayoutMode } from "@/utils/layout-mode";
-	import { onPageLifecycle } from "@/utils/page-lifecycle";
-
-	// 动态布局切换脚本
-	function initLayout() {
-		requestAnimationFrame(() => {
-			const postListContainer = document.getElementById(
-				"post-list-container",
-			);
-			if (!postListContainer) return;
-
-			const currentLayout = getLayoutMode();
-
-			// 检查现有状态是否一致，避免重复初始化
-			const hasGridClass =
-				postListContainer.classList.contains("grid-mode");
-			const isClassCorrect =
-				(currentLayout === "grid" && hasGridClass) ||
-				(currentLayout === "list" && !hasGridClass);
-
-			if (isClassCorrect) {
-				postListContainer.classList.add("js-initialized");
-				publishLayoutInit();
-				return;
-			}
-
-			// 桌面端执行布局更新，移动端由 CSS 处理
-			if (window.innerWidth >= 769) {
-				updatePostListLayout(currentLayout);
-			} else {
-				postListContainer.classList.add("js-initialized");
-			}
-
-			publishLayoutInit();
-		});
-	}
-
-	function updatePostListLayout(layout: string) {
-		const container = document.getElementById("post-list-container");
-		if (!container) return;
-		applyLayoutMode(layout === "grid" ? "grid" : "list");
-	}
-
-	// 监听布局变化
-	window.addEventListener("layoutChange", (event: Event) => {
-		const layout = (event as CustomEvent<{ layout?: string }>).detail
-			?.layout;
-		if (layout) updatePostListLayout(layout);
-	});
-
-	// Resize 防抖
-	let resizeTimeout: number | undefined;
-	window.addEventListener("resize", () => {
-		clearTimeout(resizeTimeout);
-		resizeTimeout = window.setTimeout(() => {
-			if (window.innerWidth >= 769) {
-				updatePostListLayout(getLayoutMode());
-			}
-		}, 100);
-	});
-
-	// 初始化
-	document.addEventListener("DOMContentLoaded", initLayout);
-	if (document.readyState !== "loading") initLayout();
-
-	onPageLifecycle("content-replace", initLayout);
-
-	function publishLayoutInit() {
-		const container = document.getElementById("post-list-container");
-		if (container) {
-			const layout = container.classList.contains("grid-mode")
-				? "grid"
-				: "list";
-			window.dispatchEvent(
-				new CustomEvent("layoutInit", { detail: { layout } }),
-			);
-		}
-	}
-	setTimeout(publishLayoutInit, 150);
-</script>
-
-<style>
-	@reference "tailwindcss";
-
-	/* 基础容器 */
-	#post-list-container {
-		min-height: 200px;
-		transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-
-	/* 布局模式 - 列表模式 */
-	#post-list-container.list-mode {
-		@apply flex flex-col gap-4;
-	}
-
-	/* 布局模式 - 网格模式 (仅在桌面端生效，移动端强制单列) */
-	#post-list-container.grid-mode {
-		@apply grid grid-cols-1 md:grid-cols-2 gap-6;
-	}
-
-	/* 内容可见性 (视口外不渲染) */
-	#post-list-container > :global(*) {
-		content-visibility: auto;
-		contain-intrinsic-size: 200px;
-		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		opacity: 0;
-		animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-		animation-delay: calc(
-			var(--content-delay) + var(--i) * var(--interval)
-		);
-	}
-
-	/* 网格模式动画调整 */
-	#post-list-container.grid-mode > :global(*) {
-		animation-name: fadeInScale;
-	}
-
-	/* 布局切换时的过渡状态 */
-	#post-list-container.layout-switching {
-		opacity: 0.95;
-	}
-
-	#post-list-container.layout-switching > :global(*) {
-		animation-delay: calc(var(--i) * 50ms);
-	}
-
-	#post-list-container.layout-switching > :global(*) {
-		transform: scale(0.98);
-	}
-
-	@keyframes fadeInScale {
-		from {
-			opacity: 0;
-			transform: scale(0.95);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1);
-		}
-	}
-
-	@keyframes fadeInSlide {
-		from {
-			opacity: 0;
-			transform: translateX(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateX(0);
-		}
-	}
-</style>
