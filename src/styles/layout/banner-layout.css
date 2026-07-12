@@ -2,8 +2,9 @@
   --banner-block-size: 65vh;
   --banner-text-width: 75%;
   --banner-text-padding: 2rem;
-  --banner-title-size: 4rem;
-  --banner-subtitle-size: 1.5rem;
+  --banner-title-size: 3.75rem;
+  --banner-title-margin-block-end: 1rem;
+  --banner-subtitle-size: 1.25rem;
   --banner-wave-size: 15vh;
 }
 
@@ -27,7 +28,7 @@
 }
 
 .banner-title {
-  margin-bottom: 1rem;
+  margin-block-end: var(--banner-title-margin-block-end);
   color: white;
   font-size: var(--banner-title-size);
   font-weight: bold;
@@ -63,6 +64,7 @@
     --banner-text-width: 95%;
     --banner-text-padding: 1rem;
     --banner-title-size: 3.2rem;
+    --banner-title-margin-block-end: 0.5rem;
     --banner-subtitle-size: 1rem;
     --banner-wave-size: 8vh;
   }
@@ -74,6 +76,7 @@
     --banner-text-width: 90%;
     --banner-text-padding: 1.5rem;
     --banner-title-size: 3.8rem;
+    --banner-title-margin-block-end: 0.75rem;
     --banner-subtitle-size: 1.125rem;
     --banner-wave-size: 10vh;
   }
@@ -87,12 +90,30 @@
   }
 }
 
+@media (min-width: 1280px) {
+  :root {
+    --banner-title-size: 6rem;
+    --banner-subtitle-size: 1.875rem;
+  }
+}
+
+/* Sticky positioning is bounded by #top-row. Keep that containing block as
+ * tall as the banner on desktop so the navbar remains pinned while the banner
+ * scrolls past. */
+@media (min-width: 1280px) {
+  body.enable-banner #top-row {
+    height: calc(var(--banner-block-size) - var(--main-content-offset));
+    transition: height var(--motion-normal) var(--motion-ease-standard);
+  }
+}
+
 /* Low-height landscape prioritizes article content in normal banner mode. */
 @media (orientation: landscape) and (max-height: 500px) {
   body.enable-banner:not(.fullscreen-banner) {
     --banner-block-size: 60vh;
     --banner-text-padding: 1rem 1.5rem;
     --banner-title-size: 2.2rem;
+    --banner-title-margin-block-end: 0.5rem;
     --banner-subtitle-size: 0.9rem;
     --banner-wave-size: 4vh;
   }
@@ -118,7 +139,7 @@ body.fullscreen-banner.enable-banner {
 }
 
 body.fullscreen-banner.enable-banner #top-row {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--main-content-offset));
 }
 
 body.fullscreen-banner.enable-banner #banner-wrapper:not(.mobile-hide-banner) {

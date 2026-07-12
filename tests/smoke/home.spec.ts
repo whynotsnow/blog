@@ -131,6 +131,76 @@ test("banner sizing follows the mode and responsive contract", async ({
 	);
 });
 
+test("navbar stays sticky while the desktop banner scrolls", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto("/");
+
+	const navbarWrapper = page.locator("#navbar-wrapper");
+	await expect(navbarWrapper).toBeVisible();
+	await page.evaluate(() => window.scrollTo(0, 200));
+	await expect
+		.poll(() =>
+			navbarWrapper.evaluate((node) => node.getBoundingClientRect().top),
+		)
+		.toBe(0);
+});
+
+test("banner home text stays centered across normal and fullscreen modes", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto("/");
+
+	const assertCentered = async () => {
+		const geometry = await page
+			.locator(".banner-text-overlay")
+			.evaluate((overlay) => {
+				const overlayRect = overlay.getBoundingClientRect();
+				const contentRect =
+					overlay.firstElementChild?.getBoundingClientRect();
+				return {
+					display: getComputedStyle(overlay).display,
+					alignItems: getComputedStyle(overlay).alignItems,
+					justifyContent: getComputedStyle(overlay).justifyContent,
+					overlayCenterX: overlayRect.left + overlayRect.width / 2,
+					overlayCenterY: overlayRect.top + overlayRect.height / 2,
+					contentCenterX: contentRect
+						? contentRect.left + contentRect.width / 2
+						: null,
+					contentCenterY: contentRect
+						? contentRect.top + contentRect.height / 2
+						: null,
+				};
+			});
+
+		expect(geometry.display).toBe("flex");
+		expect(geometry.alignItems).toBe("center");
+		expect(geometry.justifyContent).toBe("center");
+		expect(geometry.contentCenterX).toBeCloseTo(geometry.overlayCenterX, 0);
+		expect(geometry.contentCenterY).toBeCloseTo(geometry.overlayCenterY, 0);
+	};
+
+	await assertCentered();
+	await expect(page.locator(".banner-title")).toHaveCSS("font-size", "96px");
+
+	await page.setViewportSize({ width: 375, height: 812 });
+	await page.goto("/");
+	await assertCentered();
+	await expect(page.locator(".banner-title")).toHaveCSS(
+		"font-size",
+		"44.8px",
+	);
+
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "fullscreen");
+	});
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto("/");
+	await assertCentered();
+});
+
 test("banner theme and motion styles follow site state and user preference", async ({
 	page,
 }) => {
