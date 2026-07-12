@@ -56,7 +56,7 @@
 - `tablet.sidebar`：显式定义 Tablet 侧栏，不会继承 Desktop 配置。
 - `mobile.beforeContent`、`mobile.afterContent`：显式定义 Mobile 内容前后的 Widget，不再使用历史 `drawer` 命名。
 - `position: "flow"`：Widget 按普通文档流排列。
-- `position: "sticky"`：Widget 放入吸顶区域；吸顶仅在 Desktop 断点生效。
+- `position: "sticky"`：Widget 放入吸顶区域；当对应侧栏在 `md`（`>=768px`）及以上可见时由 CSS 启用吸顶，Desktop 与 Tablet 共用该规则，Mobile 保持普通流。
 
 Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`，否则 Sticky 容器会被自身内容高度限制并随页面滚出视口。
 

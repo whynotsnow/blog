@@ -150,7 +150,7 @@ Use:
 - Keep desktop sticky containers at `top: 1rem` so widgets preserve the sidebar gap after crossing the page top.
 - On the banner-enabled home page, compensate both sticky columns with `calc(1rem - var(--banner-height-extend))`; this override must win over the responsive `top` utility.
 - Do not apply the banner-extension compensation in fullscreen banner mode because the fullscreen main grid does not use that translated offset; keep fullscreen sticky columns at `top: 1rem`.
-- Enable sticky positioning only at the desktop breakpoint; below `lg`, preserve the existing sidebar visibility and normal-flow behavior.
+- Enable sticky positioning from the sidebar breakpoint (`md`, `768px`): Desktop and Tablet regions can both render configured sticky widgets, while Mobile remains normal flow.
 - Verify on a page tall enough for the sticky element to cross its configured top offset; a short page may never reach the sticky threshold.
 
 ## Browser Verification

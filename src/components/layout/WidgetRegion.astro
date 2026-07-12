@@ -23,7 +23,7 @@ const stickyWidgets = widgets.filter((widget) => widget.position === "sticky");
 		</div>
 	)}
 	{stickyWidgets.length > 0 && (
-		<div class="widget-region-sticky transition-all duration-700 flex flex-col w-full gap-4 xl:sticky xl:top-4">
+		<div class="widget-region__sticky transition-all duration-700 flex flex-col w-full gap-4">
 			{stickyWidgets.map(({ component: Component, resolvedProps, className, resolvedStyle, id }, index) => (
 				<div class="sidebar-widget-slot grid w-full" data-widget-id={id} style={`--i: ${index};`}>
 					<Component {...resolvedProps} class={className} style={resolvedStyle} />

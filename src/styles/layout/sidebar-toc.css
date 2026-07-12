@@ -1,3 +1,14 @@
+:root {
+  --sidebar-sticky-offset: 1rem;
+}
+
+@media (min-width: 768px) {
+  .widget-region__sticky {
+    position: sticky;
+    top: var(--sidebar-sticky-offset);
+  }
+}
+
 body.no-banner-mode #toc-inner-wrapper {
   top: var(--main-content-offset);
   max-height: calc(100dvh - 8rem);

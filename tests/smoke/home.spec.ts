@@ -147,6 +147,61 @@ test("navbar stays sticky while the desktop banner scrolls", async ({
 		.toBe(0);
 });
 
+test("visible sidebar sticky widgets remain pinned while their grid region scrolls", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto("/");
+
+	const assertPinned = async (
+		stickyRegion: ReturnType<typeof page.locator>,
+	) => {
+		const state = await stickyRegion.evaluate((node) => ({
+			position: getComputedStyle(node).position,
+			top: getComputedStyle(node).top,
+			viewportTop: node.getBoundingClientRect().top,
+		}));
+		expect(state.position).toBe("sticky");
+		expect(state.top).toBe("16px");
+		expect(state.viewportTop).toBeLessThanOrEqual(32);
+	};
+
+	const rightSticky = page.locator(
+		'[data-widget-region="desktop-right"] .widget-region__sticky',
+	);
+	await expect(rightSticky).toBeVisible();
+	await page.evaluate(() => {
+		document.documentElement.style.scrollBehavior = "auto";
+		window.scrollTo(0, 900);
+	});
+	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(900);
+	await assertPinned(rightSticky);
+
+	const leftSticky = page.locator(
+		'[data-widget-region="desktop-left"] .widget-region__sticky',
+	);
+	await leftSticky.evaluate((node) =>
+		node.scrollIntoView({ block: "start" }),
+	);
+	await page.evaluate(() => window.scrollBy(0, 200));
+	await assertPinned(leftSticky);
+
+	await page.setViewportSize({ width: 768, height: 900 });
+	await page.goto("/");
+	const tabletSticky = page.locator(
+		'[data-widget-region="tablet-sidebar"] .widget-region__sticky',
+	);
+	await expect(tabletSticky).toBeVisible();
+	await page.evaluate(() => {
+		document.documentElement.style.scrollBehavior = "auto";
+	});
+	await tabletSticky.evaluate((node) =>
+		node.scrollIntoView({ block: "start" }),
+	);
+	await page.evaluate(() => window.scrollBy(0, 200));
+	await assertPinned(tabletSticky);
+});
+
 test("banner home text stays centered across normal and fullscreen modes", async ({
 	page,
 }) => {
