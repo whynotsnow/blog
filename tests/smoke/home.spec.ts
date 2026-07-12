@@ -119,3 +119,32 @@ test("post detail components render through the thin route", async ({
 	await page.reload();
 	expect(errors).toEqual([]);
 });
+
+test("post content shares markdown styles and copy behavior", async ({
+	page,
+}) => {
+	await page.goto("/posts/markdown-tutorial/");
+
+	const content = page.locator(".post-content");
+	await expect(content).toBeVisible();
+	await expect(content.locator(".expressive-code").first()).toBeVisible();
+
+	const copyButton = content.locator(".copy-btn").first();
+	await expect(copyButton).toBeVisible();
+	await copyButton.click();
+	await expect(copyButton).toHaveClass(/success/);
+});
+
+test("encrypted posts reuse the shared post content contract", async ({
+	page,
+}) => {
+	await page.goto("/posts/encrypted-post/");
+
+	await expect(page.locator("#password-protection")).toBeVisible();
+	await page.locator("#password-input").fill("123456");
+	await page.locator("#unlock-btn").click();
+
+	const decryptedContent = page.locator("#decrypted-content");
+	await expect(decryptedContent).toBeVisible();
+	await expect(decryptedContent.locator(".post-content")).toBeVisible();
+});
