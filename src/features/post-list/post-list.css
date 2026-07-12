@@ -34,16 +34,21 @@
   transform: scale(0.98);
 }
 
-@media (max-width: 768px) {
-  .post-list,
-  .post-list.grid-mode,
-  .post-list.list-mode {
-    display: flex;
+@media (max-width: 767px) {
+  .post-list {
     min-height: auto;
-    flex-direction: column;
-    gap: 0.5rem;
     padding: 0;
     background: transparent;
+  }
+
+  .post-list.list-mode {
+    gap: 0.5rem;
+  }
+
+  /* Preserve the saved Grid preference while presenting a single card column. */
+  .post-list.grid-mode {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
   }
 }
 

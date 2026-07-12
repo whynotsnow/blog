@@ -1,5 +1,4 @@
 ---
-import { BANNER_HEIGHT_EXTEND } from "@constants/constants";
 import type { BannerImages } from "@/services/banner";
 import type { SiteConfig } from "@/types/config";
 import BannerCarousel from "./BannerCarousel.astro";
@@ -23,7 +22,6 @@ const hasCarousel =
 <div
 	id="banner-wrapper"
 	class={`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeClass}`}
-	style={`top: -${BANNER_HEIGHT_EXTEND}vh`}
 >
 	{
 		hasCarousel ? (

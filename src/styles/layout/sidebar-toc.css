@@ -1,0 +1,13 @@
+body.no-banner-mode #toc-inner-wrapper {
+  top: var(--main-content-offset);
+  max-height: calc(100dvh - 8rem);
+}
+
+body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded="true"]) {
+  background: var(--card-bg-transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-large);
+  padding: 0.5rem;
+  box-shadow: var(--shadow-lg);
+}

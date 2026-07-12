@@ -10,9 +10,9 @@ const { enabled } = Astro.props;
 	enabled && (
 		<div
 			data-setting-target="banner-waves"
-			class="waves absolute -bottom-px h-[10vh] max-h-37.5 min-h-12.5 w-full md:h-[15vh]"
+			class="waves absolute -bottom-px w-full"
 			id="header-waves"
-			style="transform: translateZ(0); will-change: fill;"
+			style="transform: translateZ(0);"
 		>
 			<svg
 				class="waves"
@@ -35,28 +35,28 @@ const { enabled } = Astro.props;
 						x="48"
 						y="0"
 						class="opacity-25 fill-(--page-bg)"
-						style="animation-delay: -2s; animation-duration: 7s; will-change: transform;"
+						style="animation-delay: -2s; animation-duration: 7s;"
 					/>
 					<use
 						xlink:href="#gentle-wave"
 						x="48"
 						y="3"
 						class="opacity-50 fill-(--page-bg)"
-						style="animation-delay: -3s; animation-duration: 10s; will-change: transform;"
+						style="animation-delay: -3s; animation-duration: 10s;"
 					/>
 					<use
 						xlink:href="#gentle-wave"
 						x="48"
 						y="5"
 						class="opacity-75 fill-(--page-bg)"
-						style="animation-delay: -4s; animation-duration: 13s; will-change: transform;"
+						style="animation-delay: -4s; animation-duration: 13s;"
 					/>
 					<use
 						xlink:href="#gentle-wave"
 						x="48"
 						y="7"
 						class="fill-(--page-bg)"
-						style="animation-delay: -5s; animation-duration: 20s; will-change: transform;"
+						style="animation-delay: -5s; animation-duration: 20s;"
 					/>
 				</g>
 			</svg>

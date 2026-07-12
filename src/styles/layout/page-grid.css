@@ -1,0 +1,112 @@
+/* Page layout and widget placement are independent. Empty regions stay valid. */
+.page-layout-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.desktop-left-region,
+.desktop-right-region,
+.desktop-sidebar-region,
+.tablet-sidebar-region {
+  display: none;
+}
+
+.mobile-before-region,
+.mobile-after-region {
+  display: block;
+  grid-column: 1;
+}
+
+.page-main-content {
+  grid-column: 1;
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .page-layout-grid {
+    grid-template-columns: minmax(0, 1fr) 17.5rem;
+  }
+
+  .mobile-before-region,
+  .mobile-after-region {
+    display: none;
+  }
+
+  .tablet-sidebar-region {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .page-main-content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+@media (min-width: 1280px) {
+  .mobile-before-region,
+  .mobile-after-region,
+  .tablet-sidebar-region {
+    display: none;
+  }
+
+  #main-grid[data-effective-desktop-layout="three-column"] {
+    grid-template-columns: 17.5rem minmax(0, 1fr) 17.5rem;
+  }
+
+  #main-grid[data-effective-desktop-layout="three-column"] .desktop-left-region {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #main-grid[data-effective-desktop-layout="three-column"] .page-main-content {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #main-grid[data-effective-desktop-layout="three-column"] .desktop-right-region {
+    display: block;
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  #main-grid[data-effective-desktop-layout="content-right"] {
+    grid-template-columns: minmax(0, 1fr) 17.5rem;
+  }
+
+  #main-grid[data-effective-desktop-layout="content-right"] .page-main-content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #main-grid[data-effective-desktop-layout="content-right"] .desktop-sidebar-region,
+  #main-grid[data-effective-desktop-layout="content-right"] .desktop-right-region {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-no-sidebar,
+  .mobile-no-sidebar main,
+  .mobile-no-sidebar #content-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .mobile-no-sidebar main {
+    padding-inline: 0;
+  }
+
+  .mobile-both-sidebar {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 0.5rem;
+  }
+
+  .mobile-both-sidebar main,
+  .mobile-both-sidebar .footer {
+    grid-column: 1 / -1;
+  }
+}

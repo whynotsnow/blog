@@ -1,0 +1,40 @@
+#header-waves,
+#header-waves .waves,
+#header-waves use {
+  will-change: auto;
+}
+
+#header-waves {
+  isolation: isolate;
+  margin-bottom: -1px;
+}
+
+.waves {
+  position: absolute;
+  bottom: -1px;
+  width: 100%;
+  height: var(--banner-wave-size);
+  min-height: 3rem;
+  max-height: 9.375rem;
+  overflow: visible;
+  contain: layout style paint;
+}
+
+.waves svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+html.is-theme-transitioning #header-waves,
+html.is-theme-transitioning #header-waves .waves,
+html.is-theme-transitioning #header-waves use {
+  will-change: transform, fill;
+}
+
+body.fullscreen-banner.enable-banner #header-waves {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+}

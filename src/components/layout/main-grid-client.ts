@@ -1,6 +1,5 @@
 import { sakuraConfig, siteConfig } from "@/config";
 import {
-	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
 	BANNER_HEIGHT_FULLSCREEN,
 } from "@/constants/constants";
@@ -14,7 +13,6 @@ import type { WALLPAPER_MODE } from "@/types/config";
 const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 const navbarTransparentMode =
 	siteConfig.banner?.navbar?.transparentMode || "semi";
-const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 let mainGridClientBound = false;
 
 function getWallpaperMode(): WALLPAPER_MODE {
@@ -35,7 +33,7 @@ function forceReflow() {
 }
 
 function getMainContent(): HTMLElement | null {
-	return document.querySelector(".absolute.w-full.z-30.pointer-events-none");
+	return document.querySelector(".main-content-layer");
 }
 
 function syncMainContentPosition(mode: WALLPAPER_MODE) {
@@ -48,10 +46,7 @@ function syncMainContentPosition(mode: WALLPAPER_MODE) {
 		window.location.pathname === "/" || window.location.pathname === "";
 
 	mainContent.classList.remove("mobile-main-no-banner", "no-banner-layout");
-	mainContent.style.removeProperty("position");
-	mainContent.style.removeProperty("z-index");
-	mainContent.style.removeProperty("min-height");
-	mainContent.style.removeProperty("transition");
+	mainContent.classList.remove("fullscreen-content");
 
 	if (mode === "fullscreen") {
 		if (isMobile && !isHomePage) {
@@ -59,41 +54,28 @@ function syncMainContentPosition(mode: WALLPAPER_MODE) {
 				"mobile-main-no-banner",
 				"no-banner-layout",
 			);
-			mainContent.style.setProperty("top", "5.5rem", "important");
-			mainContent.style.setProperty("margin-top", "0", "important");
 			bannerWrapper?.classList.add("mobile-hide-banner");
 			return;
 		}
 
 		bannerWrapper?.classList.remove("mobile-hide-banner");
-		mainContent.classList.add("no-banner-layout");
-		mainContent.style.position = "relative";
-		mainContent.style.zIndex = "30";
-		mainContent.style.setProperty("top", "0", "important");
-		mainContent.style.setProperty("margin-top", "1rem", "important");
+		mainContent.classList.add("fullscreen-content");
 		return;
 	}
-
-	mainContent.style.setProperty("margin-top", "0", "important");
 
 	if (mode === "banner") {
 		if (isMobile && !isHomePage) {
 			mainContent.classList.add("mobile-main-no-banner");
-			mainContent.style.setProperty("top", "5.5rem", "important");
 			bannerWrapper?.classList.add("mobile-hide-banner");
 			return;
 		}
 
 		bannerWrapper?.classList.remove("mobile-hide-banner");
-		// The grid adds BANNER_HEIGHT_EXTEND via the shared banner CSS, matching
-		// the existing home-page composition at BANNER_HEIGHT_HOME.
-		mainContent.style.setProperty("top", `${BANNER_HEIGHT}vh`, "important");
 		return;
 	}
 
 	bannerWrapper?.classList.remove("mobile-hide-banner");
 	mainContent.classList.add("no-banner-layout");
-	mainContent.style.setProperty("top", "5.5rem", "important");
 }
 
 function getStoredBoolean(key: string, fallback: boolean): boolean {
@@ -186,43 +168,7 @@ function applyInitialPageShell() {
 
 	requestAnimationFrame(() => {
 		syncMainContentPosition(wallpaperMode);
-
-		const mainGrid = document.getElementById("main-grid");
-		if (mainGrid) {
-			const savedLayout = localStorage.getItem("postListLayout");
-			const currentLayout = savedLayout || defaultPostListLayout;
-			mainGrid.setAttribute("data-layout-mode", currentLayout);
-
-			const postListContainer = document.getElementById(
-				"post-list-container",
-			);
-			if (postListContainer) {
-				postListContainer.classList.remove("list-mode", "grid-mode");
-
-				if (currentLayout === "grid") {
-					postListContainer.classList.add(
-						"grid-mode",
-						"grid",
-						"grid-cols-1",
-						"lg:grid-cols-2",
-						"gap-6",
-					);
-					postListContainer.classList.remove("flex", "flex-col");
-				} else {
-					postListContainer.classList.add(
-						"list-mode",
-						"flex",
-						"flex-col",
-					);
-					postListContainer.classList.remove(
-						"grid",
-						"grid-cols-1",
-						"lg:grid-cols-2",
-						"gap-6",
-					);
-				}
-			}
-		}
+		applyLayoutMode();
 	});
 }
 
@@ -234,7 +180,6 @@ export function applyWallpaperMode() {
 	) as HTMLElement | null;
 	const navbar = document.getElementById("navbar");
 	const body = document.body;
-	const mainContent = getMainContent();
 	const tocWrapper = document.getElementById("toc-wrapper");
 	applyWallpaperVisualSettings(wallpaperMode);
 	syncMainContentPosition(wallpaperMode);
@@ -258,7 +203,6 @@ export function applyWallpaperMode() {
 				"no-banner-mode",
 			);
 			forceReflow();
-			mainContent?.style.removeProperty("top");
 			body.classList.add("enable-banner");
 			if (navbar) {
 				navbar.removeAttribute("data-dynamic-transparent");
@@ -318,7 +262,6 @@ export function applyWallpaperMode() {
 			body.classList.remove("enable-banner");
 			body.classList.remove("wallpaper-transparent", "fullscreen-banner");
 			forceReflow();
-			mainContent?.style.removeProperty("top");
 			body.classList.add("wallpaper-overlay", "no-banner-mode");
 			if (navbar) {
 				navbar.setAttribute("data-dynamic-transparent", "semi");
@@ -338,7 +281,6 @@ export function applyWallpaperMode() {
 				"fullscreen-banner",
 			);
 			forceReflow();
-			mainContent?.style.removeProperty("top");
 			body.classList.add("no-banner-mode");
 			if (navbar) {
 				navbar.setAttribute("data-dynamic-transparent", "none");

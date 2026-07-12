@@ -1,6 +1,5 @@
 import { getBannerImages, type BannerImages } from "@/services/banner";
 import type { SiteConfig } from "@/types/config";
-import { BANNER_HEIGHT } from "@/constants/constants";
 import { resolvePageLayout } from "./resolver";
 import type { PageLayoutPolicyName, ResolvedPageLayout } from "./types";
 
@@ -23,7 +22,6 @@ export type MainGridLayoutViewModel = {
 		credit: SiteConfig["banner"]["credit"];
 	};
 	mainPanel: {
-		top: string;
 		mobileNonHomeClass: string;
 		noBannerLayoutClass: string;
 		transparentClass: string;
@@ -48,11 +46,6 @@ export async function buildMainGridLayoutViewModel({
 		config.wallpaperMode.defaultMode === "fullscreen"
 			? "wallpaper-transparent"
 			: "";
-	const mainPanelTop =
-		config.wallpaperMode.defaultMode === "banner"
-			? `${BANNER_HEIGHT}vh`
-			: "5.5rem";
-
 	return {
 		bannerImages: await getBannerImages(config),
 		pageLayout: resolvePageLayout(layoutPolicy),
@@ -72,7 +65,6 @@ export async function buildMainGridLayoutViewModel({
 			credit: config.banner.credit,
 		},
 		mainPanel: {
-			top: mainPanelTop,
 			mobileNonHomeClass: mobileNonHomeClass
 				? "mobile-main-no-banner"
 				: "",

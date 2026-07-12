@@ -162,9 +162,16 @@ function initCarousel() {
 		let isSwiping = false;
 
 		const carousel = document.getElementById("banner-carousel");
+		let animationCleanup: number | undefined;
 
 		// 切换图片的函数 - 基于有效项目
 		function switchToSlide(index: number) {
+			if (animationCleanup) window.clearTimeout(animationCleanup);
+			carousel?.classList.add("is-animating");
+			animationCleanup = window.setTimeout(() => {
+				carousel?.classList.remove("is-animating");
+			}, 550);
+
 			// 隐藏当前图片
 			const currentItem = validItems[currentIndex];
 			currentItem.classList.remove("opacity-100", "scale-100");
@@ -525,7 +532,7 @@ const setup = () => {
 			// Control mobile banner visibility based on page with improved staging animation
 			const bannerWrapper = document.getElementById("banner-wrapper");
 			const mainContentWrapper = document.querySelector(
-				".absolute.w-full.z-30",
+				".main-content-layer",
 			);
 
 			if (bannerWrapper && mainContentWrapper) {

@@ -63,7 +63,7 @@ export function initBannerSingle(options: BannerSingleOptions): void {
 		{
 			alt: "Mobile banner image of the blog",
 			className:
-				"block md:hidden object-cover h-full w-full transition duration-700 opacity-100",
+				"banner-enter-animation block md:hidden object-cover h-full w-full transition duration-700 opacity-100",
 			position: options.position,
 		},
 	);
@@ -75,7 +75,7 @@ export function initBannerSingle(options: BannerSingleOptions): void {
 			id: "banner",
 			alt: "Desktop banner image of the blog",
 			className:
-				"hidden md:block object-cover h-full w-full transition duration-700 opacity-100",
+				"banner-enter-animation hidden md:block object-cover h-full w-full transition duration-700 opacity-100",
 			position: options.position,
 		},
 	);
