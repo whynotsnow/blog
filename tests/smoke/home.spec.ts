@@ -12,6 +12,156 @@ test("home page renders", async ({ page }) => {
 	expect(errors).toEqual([]);
 });
 
+test("saved Grid preference remains single-column below md and restores at md", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("postListLayout", "grid");
+	});
+
+	await page.setViewportSize({ width: 375, height: 812 });
+	await page.goto("/");
+
+	const postList = page.locator("#post-list-container");
+	await expect(postList).toHaveClass(/grid-mode/);
+	await expect(postList).toHaveCSS("display", "grid");
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(1);
+
+	await page.reload();
+	await expect(postList).toHaveClass(/grid-mode/);
+
+	await page.setViewportSize({ width: 767, height: 812 });
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(1);
+
+	await page.setViewportSize({ width: 768, height: 812 });
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+});
+
+test("layout breakpoint boundaries do not overlap", async ({ page }) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "banner");
+	});
+	await page.setViewportSize({ width: 479, height: 812 });
+	await page.goto("/");
+
+	const banner = page.locator("#banner-wrapper");
+	expect(
+		await banner.evaluate(
+			(node) =>
+				Number.parseFloat(getComputedStyle(node).height) /
+				window.innerHeight,
+		),
+	).toBeCloseTo(0.7, 2);
+
+	await page.setViewportSize({ width: 480, height: 812 });
+	expect(
+		await banner.evaluate(
+			(node) =>
+				Number.parseFloat(getComputedStyle(node).height) /
+				window.innerHeight,
+		),
+	).toBeCloseTo(0.75, 2);
+
+	const mainGrid = page.locator("#main-grid");
+	await page.setViewportSize({ width: 1279, height: 812 });
+	expect(
+		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+
+	await page.setViewportSize({ width: 1280, height: 812 });
+	expect(
+		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(3);
+});
+
+test("banner sizing follows the mode and responsive contract", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 844, height: 390 });
+	await page.goto("/");
+
+	const normalBanner = page.locator("#banner-wrapper");
+	expect(
+		await normalBanner.evaluate(
+			(node) =>
+				Number.parseFloat(getComputedStyle(node).height) /
+				window.innerHeight,
+		),
+	).toBeCloseTo(0.6, 2);
+
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "fullscreen");
+	});
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto("/");
+	const fullscreenBanner = page.locator("#banner-wrapper");
+	expect(
+		await fullscreenBanner.evaluate(
+			(node) =>
+				Number.parseFloat(getComputedStyle(node).height) /
+				window.innerHeight,
+		),
+	).toBeCloseTo(1, 2);
+
+	await page.goto("/posts/markdown-tutorial/");
+	await expect(fullscreenBanner).toHaveClass(/mobile-hide-banner/);
+	await expect(page.locator(".main-content-layer")).toHaveClass(
+		/mobile-main-no-banner/,
+	);
+});
+
+test("banner theme and motion styles follow site state and user preference", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("theme", "light");
+	});
+	await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "dark" });
+	await page.goto("/");
+
+	const overlay = page.locator(".banner-text-overlay");
+	const lightBackground = await overlay.evaluate(
+		(node) => getComputedStyle(node).backgroundImage,
+	);
+	expect(lightBackground).toBe("none");
+
+	await page.locator("html").evaluate((node) => node.classList.add("dark"));
+	expect(
+		await overlay.evaluate(
+			(node) => getComputedStyle(node).backgroundImage,
+		),
+	).not.toBe("none");
+
+	const navbarAnimationDelay = await page
+		.locator("#navbar")
+		.evaluate((node) => getComputedStyle(node).animationDelay);
+	expect(navbarAnimationDelay).toBe("0s");
+	await expect(page.locator(".banner-enter-animation").first()).toHaveCount(
+		1,
+	);
+});
+
 test("page layout policy follows Swup navigation", async ({ page }) => {
 	await page.goto("/");
 
