@@ -1,0 +1,15 @@
+.post-detail__shell {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-large);
+  margin-bottom: 1rem;
+}
+
+.post-detail__article {
+  position: relative;
+  width: 100%;
+}
+
+.post-detail__content {
+  min-width: 0;
+}

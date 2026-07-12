@@ -102,3 +102,20 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 		svelteList.locator(":scope > .post-list__item").first(),
 	).toBeVisible();
 });
+
+test("post detail components render through the thin route", async ({
+	page,
+}) => {
+	await page.goto("/posts/markdown-tutorial/");
+
+	await expect(page.locator(".post-detail__shell")).toBeVisible();
+	await expect(page.locator(".post-detail__header h1")).toBeVisible();
+	await expect(page.locator(".post-detail__content")).toBeVisible();
+	await expect(page.locator(".post-detail__navigation")).toBeVisible();
+	await expect(page.locator("#post-container")).toHaveCount(1);
+
+	const errors: string[] = [];
+	page.on("pageerror", (error) => errors.push(error.message));
+	await page.reload();
+	expect(errors).toEqual([]);
+});

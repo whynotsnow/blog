@@ -73,6 +73,8 @@ Use feature-local helpers and types first. Promote code to `src/utils` or shared
 
 The post list intentionally keeps two thin renderers: Astro produces the home and category SSG snapshots, while Svelte renders category tag-query pagination in the browser. Both renderers share the semantic class contract and styles in `src/features/post-list/post-list.css`; the Svelte renderer uses the feature controller only to synchronize a dynamically mounted list with the global layout preference.
 
+Post detail routes remain thin: `src/pages/posts/[...slug].astro` owns static path generation and forwards the page model to `src/components/post-detail/PostDetailPage.astro`. Header, last-modified status, navigation, and page-level styles live beside that presentation component. Runtime consumers may continue to rely on the stable `#post-container` and `.markdown-content` hooks.
+
 ## Content Pipeline
 
 1. `src/content.config.ts` defines the `posts` and `spec` content collections.

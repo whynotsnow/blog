@@ -75,6 +75,8 @@ src/features/music-player/
 
 文章列表有意保留两个轻量 renderer：主页与分类页的 SSG 快照由 Astro 输出，分类页带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果。两种 renderer 统一使用 `src/features/post-list/post-list.css` 中的语义 class contract；Svelte 版本只通过 feature controller 将动态挂载的列表同步到全局布局偏好，不再重复注册布局事件。
 
+文章详情路由保持轻量：`src/pages/posts/[...slug].astro` 负责 static paths 并把页面模型转交给 `src/components/post-detail/PostDetailPage.astro`。Header、最后修改时间、上下篇导航和页面级样式与展示组件放在同一 feature 目录；TOC 等运行时消费者继续使用稳定的 `#post-container` 与 `.markdown-content` hook。
+
 ## 内容管线
 
 1. `src/content.config.ts` 定义 `posts` 和 `spec` 内容集合。
