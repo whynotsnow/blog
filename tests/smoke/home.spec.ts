@@ -70,6 +70,17 @@ test("global motion and scrollbar utilities stay active", async ({ page }) => {
 		.evaluate((node) => getComputedStyle(node).transitionProperty);
 	expect(navbarTransition).not.toContain("all");
 
+	const routeContainer = page.locator("#swup-container");
+	await expect(routeContainer).toHaveClass(/transition-swup-layout/);
+	await expect(page.locator("#content-wrapper")).not.toHaveClass(
+		/onload-animation|transition-leaving/,
+	);
+	const postItemAnimation = await page
+		.locator(".post-list__item")
+		.first()
+		.evaluate((node) => getComputedStyle(node).animationName);
+	expect(postItemAnimation).toContain("post-list-item-enter");
+
 	await page.goto("/timeline/");
 	const timeline = page.locator("#timeline-scrollbar");
 	await expect(timeline).toHaveCSS("scrollbar-width", "thin");
@@ -113,6 +124,11 @@ test("post detail components render through the thin route", async ({
 	await expect(page.locator(".post-detail__content")).toBeVisible();
 	await expect(page.locator(".post-detail__navigation")).toBeVisible();
 	await expect(page.locator("#post-container")).toHaveCount(1);
+	await expect(
+		page.locator(
+			"#post-cover.onload-animation, #share-component.onload-animation, .license-container.onload-animation",
+		),
+	).toHaveCount(0);
 
 	const errors: string[] = [];
 	page.on("pageerror", (error) => errors.push(error.message));

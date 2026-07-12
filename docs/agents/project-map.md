@@ -77,6 +77,8 @@ Post detail routes remain thin: `src/pages/posts/[...slug].astro` owns static pa
 
 `src/components/misc/Markdown.astro` is the single style entry for normal and encrypted post content. Shared Markdown, extended-content, and Expressive Code styles load there; encryption components own only protection and decrypted-state behavior. Code-copy interaction lives in `src/features/post-content/post-content-client.ts` rather than the presentation wrapper.
 
+Route motion has one owner: `#swup-container` uses `.transition-swup-layout` for page changes. Navbar and Widget cards may keep their feature-specific entrance, and post-list items keep their intentional sequence; post-detail sections must not add nested generic entrance animations.
+
 ## Content Pipeline
 
 1. `src/content.config.ts` defines the `posts` and `spec` content collections.

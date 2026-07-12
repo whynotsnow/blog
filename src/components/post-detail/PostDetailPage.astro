@@ -69,7 +69,7 @@ const store = await getContentStore();
 							id="post-cover"
 							src={entry.data.image}
 							basePath={getFileDirFromPath(entry.filePath || "")}
-							class="mb-8 rounded-xl banner-container onload-animation"
+							class="mb-8 rounded-xl banner-container"
 						/>
 					</>
 				)
@@ -94,7 +94,7 @@ const store = await getContentStore();
 					<div
 						id="share-component"
 						class:list={[
-							"p-6 bg-(--license-block-bg) rounded-xl mb-6 onload-animation",
+							"p-6 bg-(--license-block-bg) rounded-xl mb-6",
 							{ "encrypted-hidden": isEncrypted },
 						]}
 					>
@@ -154,7 +154,7 @@ const store = await getContentStore();
 							sourceLink={entry.data.sourceLink}
 							licenseName={entry.data.licenseName}
 							licenseUrl={entry.data.licenseUrl}
-							class="mb-6 rounded-xl license-container onload-animation"
+							class="mb-6 rounded-xl license-container"
 						/>
 					</div>
 				)

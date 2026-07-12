@@ -44,8 +44,8 @@ const { transparentClass } = viewModel.mainPanel;
 			<div class={`tablet-sidebar-region ${transparentClass}`}><WidgetRegion region="tablet-sidebar" widgets={widgets.tablet.sidebar} /></div>
 			<div class={`mobile-before-region ${transparentClass}`}><WidgetRegion region="mobile-before-content" widgets={widgets.mobile.beforeContent} /></div>
 
-			<main class="page-main-content transition-swup-fade overflow-hidden w-full transition-main">
-				<div id="content-wrapper" class="onload-animation transition-leaving">
+			<main class="page-main-content overflow-hidden w-full">
+				<div id="content-wrapper">
 					<slot />
 					<div class="footer col-span-full hidden lg:block">
 						<Footer />
