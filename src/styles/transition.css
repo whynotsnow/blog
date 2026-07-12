@@ -75,6 +75,7 @@ html.is-animating .transition-swup-fade {
 .onload-animation {
   opacity: 0;
   animation: fade-in-up 300ms ease-out forwards;
+  animation-delay: calc(var(--i, 0) * var(--interval, 50ms));
 }
 
 /* Widget regions are replaced with the page layout. Their own entrance stays
@@ -124,41 +125,5 @@ html.is-animating .transition-swup-fade {
   }
   to {
     opacity: 1;
-  }
-}
-
-/* 渐进式动画延迟 */
-.onload-animation:nth-child(1) {
-  animation-delay: 0ms;
-}
-.onload-animation:nth-child(2) {
-  animation-delay: 50ms;
-}
-.onload-animation:nth-child(3) {
-  animation-delay: 100ms;
-}
-.onload-animation:nth-child(4) {
-  animation-delay: 150ms;
-}
-.onload-animation:nth-child(5) {
-  animation-delay: 200ms;
-}
-
-/* 减少动画的用户偏好设置 */
-@media (prefers-reduced-motion: reduce) {
-  .transition-swup-layout,
-  .onload-animation,
-  .onload-animation-fade-in {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  .sidebar-widget-slot {
-    transition: none;
-  }
-
-  .sidebar-widget-slot:hover {
-    transform: none;
   }
 }

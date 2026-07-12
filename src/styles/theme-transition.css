@@ -1,0 +1,72 @@
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: theme-fade-out;
+  z-index: 2;
+}
+
+::view-transition-new(root) {
+  animation-name: theme-fade-in;
+  z-index: 1;
+}
+
+@keyframes theme-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The fallback is intentionally broad: it only runs when View Transitions are
+ * unavailable and prevents stale component transitions during a theme swap. */
+html.is-theme-transitioning:not(.use-view-transition) *,
+html.is-theme-transitioning:not(.use-view-transition) *::before,
+html.is-theme-transitioning:not(.use-view-transition) *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+html.is-theme-transitioning .expressive-code,
+html.is-theme-transitioning .expressive-code * {
+  will-change: auto !important;
+}
+
+html.is-theme-transitioning .expressive-code.hide-during-transition {
+  content-visibility: hidden !important;
+  opacity: 0.99;
+}
+
+html.is-theme-transitioning:not(.use-view-transition) :is(#navbar > div, .dropdown-content, .float-panel, #display-setting, #nav-menu-panel, #translate-panel, #mobile-toc-panel, #search-panel) {
+  backdrop-filter: none !important;
+}
+
+html.is-theme-transitioning:not(.use-view-transition) :is(.post-card, .widget, .float-panel) {
+  contain: layout style paint;
+}
+
+html.is-theme-transitioning #header-waves {
+  color: var(--page-bg);
+  isolation: isolate;
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+html.is-theme-transitioning #header-waves use {
+  fill: currentColor;
+  transform: translateZ(0);
+}
