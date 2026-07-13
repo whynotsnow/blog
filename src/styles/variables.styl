@@ -9,34 +9,7 @@ rainbow-light = linear-gradient(to right, oklch(0.80 0.10 0), oklch(0.80 0.10 30
 rainbow-dark = linear-gradient(to right, oklch(0.70 0.10 0), oklch(0.70 0.10 30), oklch(0.70 0.10 60), oklch(0.70 0.10 90), oklch(0.70 0.10 120), oklch(0.70 0.10 150), oklch(0.70 0.10 180), oklch(0.70 0.10 210), oklch(0.70 0.10 240), oklch(0.70 0.10 270), oklch(0.70 0.10 300), oklch(0.70 0.10 330), oklch(0.70 0.10 360))
 
 :root
-  --radius-large 1rem
   --content-delay 150ms
-
-  /* Transitional visual foundations. The dedicated Design layer is planned
-     separately; these tokens provide a stable semantic API for home and posts. */
-  --width-reading 48rem
-  --width-reading-wide 52rem
-  --width-listing 58rem
-  --width-shell 80rem
-  --width-shell-wide 96rem
-  --measure-body 42em
-  --measure-heading 28ch
-
-  --space-page-x clamp(1rem, 3vw, 2rem)
-  --space-section clamp(2.5rem, 6vw, 5rem)
-  --space-content 1.5rem
-  --space-card 1.25rem
-  --space-cluster 0.75rem
-
-  --font-body var(--font-sans)
-  --font-heading var(--font-body)
-  --font-mono "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
-  --text-body-size clamp(1rem, 0.97rem + 0.15vw, 1.125rem)
-  --text-body-leading 1.9
-  --text-small 0.875rem
-  --text-meta 0.875rem
-  --text-title clamp(1.75rem, 4vw, 2.5rem)
-  --text-display clamp(2.25rem, 6vw, 4rem)
 
 /* An util to define variables that vary with light and dark mode */
 define(vars)
@@ -49,11 +22,6 @@ define(vars)
         {key}: value[1]
 
 define({
-  --primary: oklch(0.70 0.14 var(--hue)) oklch(0.75 0.14 var(--hue))
-  --page-bg: oklch(0.95 0.01 var(--hue)) oklch(0.16 0.014 var(--hue))
-  --card-bg: white oklch(0.23 0.015 var(--hue))
-  --card-bg-transparent: rgba(255, 255, 255, 0.8) rgba(23, 23, 23, 0.8)
-
   --btn-content: oklch(0.55 0.12 var(--hue)) oklch(0.75 0.1 var(--hue))
 
   --btn-regular-bg: oklch(0.95 0.025 var(--hue)) oklch(0.33 0.035 var(--hue))
@@ -72,13 +40,7 @@ define({
 
   --deep-text: oklch(0.25 0.02 var(--hue))
 
-  --title-active: oklch(0.6 0.1 var(--hue))
-
-  --line-divider: black(0.08) white(0.08)
-
-  --line-color: black(0.1) white(0.1)
   --meta-divider: black(0.2) white(0.2)
-  --content-meta: black(0.7) white(0.6)
 
   --inline-code-bg: var(--btn-regular-bg)
   --inline-code-color: var(--btn-content)
@@ -92,8 +54,6 @@ define({
   --link-underline: oklch(0.93 0.04 var(--hue)) oklch(0.40 0.08 var(--hue))
   --link-hover: oklch(0.95 0.025 var(--hue)) oklch(0.40 0.08 var(--hue))
   --link-active: oklch(0.90 0.05 var(--hue)) oklch(0.35 0.07 var(--hue))
-
-  --float-panel-bg: white oklch(0.19 0.015 var(--hue))
 
   --scrollbar-bg-light: black(0.4)
   --scrollbar-bg-hover-light: black(0.5)
@@ -124,41 +84,4 @@ define({
   --toc-width: calc((100vw - var(--page-width)) / 2 - 1rem)
   --toc-item-active: oklch(0.70 0.13 var(--hue)) oklch(0.35 0.07 var(--hue))
 
-  /* Semantic colors. Existing variables stay available as compatibility APIs
-     while the home and post-detail paths migrate first. */
-  --surface-page: var(--page-bg) var(--page-bg)
-  --surface-content: transparent transparent
-  --surface-card: var(--card-bg) var(--card-bg)
-  --surface-raised: var(--float-panel-bg) var(--float-panel-bg)
-  --surface-overlay: var(--float-panel-bg) var(--float-panel-bg)
-
-  --text-primary: black(0.90) white(0.90)
-  --text-secondary: black(0.72) white(0.72)
-  --text-muted: black(0.58) white(0.62)
-  --text-on-accent: white white
-
-  --border-subtle: var(--line-divider) var(--line-divider)
-  --border-default: var(--line-color) var(--line-color)
-  --accent: var(--primary) var(--primary)
-  --accent-hover: oklch(0.64 0.15 var(--hue)) oklch(0.80 0.14 var(--hue))
-  --accent-active: var(--title-active) var(--title-active)
 })
-
-/* 非全屏壁纸模式下，--card-bg-transparent 应该和 --card-bg 一致（不透明） */
-body:not(.wallpaper-transparent)
-  --card-bg-transparent: var(--card-bg)
-
-/* 全屏壁纸模式下，--card-bg-transparent 使用真正的半透明值 */
-body.wallpaper-transparent
-  --card-bg-transparent: rgba(255, 255, 255, 0.8)
-
-:root.dark body.wallpaper-transparent
-  --card-bg-transparent: rgba(23, 23, 23, 0.8)
-
-/* 只有 overlay 壁纸模式允许 SettingsPanel 调整卡片透明度 */
-body.wallpaper-overlay
-  --card-transparent-opacity: 0.8
-  --card-bg-transparent: unquote("rgba(255, 255, 255, var(--card-transparent-opacity))")
-
-:root.dark body.wallpaper-overlay
-  --card-bg-transparent: unquote("rgba(23, 23, 23, var(--card-transparent-opacity))")

@@ -1,0 +1,22 @@
+@import "./tokens/primitive.css";
+@import "./tokens/semantic.css";
+@import "./tokens/typography.css";
+@import "./tokens/layout.css";
+@import "./tokens/shape.css";
+@import "./tokens/motion.css";
+
+@import "./themes/light.css";
+@import "./themes/dark.css";
+@import "./themes/wallpaper.css";
+
+@import "./foundations/document.css";
+@import "./foundations/focus.css";
+@import "./foundations/selection.css";
+
+@import "./patterns/surface.css";
+@import "./patterns/page-shell.css";
+@import "./patterns/reading-flow.css";
+@import "./patterns/stack.css";
+@import "./patterns/cluster.css";
+
+@import "./compatibility/legacy-tokens.css";

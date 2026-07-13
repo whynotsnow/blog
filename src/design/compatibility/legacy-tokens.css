@@ -1,0 +1,12 @@
+:root {
+  --radius-large: var(--radius-lg);
+  --page-bg: var(--surface-page);
+  --card-bg: var(--surface-card);
+  --card-bg-transparent: var(--surface-card);
+  --float-panel-bg: var(--surface-raised);
+  --primary: var(--accent);
+  --title-active: var(--accent-active);
+  --line-divider: var(--border-subtle);
+  --line-color: var(--border-default);
+  --content-meta: var(--text-muted);
+}

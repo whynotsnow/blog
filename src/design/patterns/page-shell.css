@@ -1,0 +1,4 @@
+.ds-page-shell {
+  width: min(calc(100% - var(--space-page-x) - var(--space-page-x)), var(--width-shell));
+  margin-inline: auto;
+}

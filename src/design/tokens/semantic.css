@@ -1,0 +1,22 @@
+:root {
+  --surface-page: var(--color-page-light);
+  --surface-content: transparent;
+  --surface-card: var(--color-card-light);
+  --surface-raised: var(--color-raised-light);
+  --surface-overlay: var(--color-raised-light);
+
+  --text-document: rgb(0 0 0 / 80%);
+  --text-primary: rgb(0 0 0 / 90%);
+  --text-secondary: rgb(0 0 0 / 72%);
+  --text-muted: rgb(0 0 0 / 58%);
+  --text-disabled: rgb(0 0 0 / 30%);
+  --text-on-accent: var(--color-white);
+
+  --border-subtle: rgb(0 0 0 / 8%);
+  --border-default: rgb(0 0 0 / 10%);
+  --border-strong: rgb(0 0 0 / 20%);
+
+  --accent: var(--color-accent-light);
+  --accent-hover: var(--color-accent-hover-light);
+  --accent-active: var(--color-accent-active-light);
+}

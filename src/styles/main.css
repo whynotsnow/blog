@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../design/index.css";
 
 /* 导入动画样式 */
 @import "./transition.css";
@@ -7,15 +8,6 @@
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-  --motion-fast: 150ms;
-  --motion-normal: 250ms;
-  --motion-slow: 400ms;
-  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --motion-ease-enter: cubic-bezier(0, 0, 0.2, 1);
-  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
-}
 
 /* Migrate from v3 config */
 @theme {
@@ -48,38 +40,6 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-}
-
-/* 确保平滑滚动 */
-html {
-  @apply scroll-smooth;
-  @apply text-black/80;
-
-  &.dark {
-    @apply text-white/80;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto !important;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  ::view-transition-old(root),
-  ::view-transition-new(root),
-  ::view-transition-group(root) {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0ms !important;
-  }
 }
 
 /* 页面顶部渐变高光效果 */
@@ -240,21 +200,6 @@ html {
 .custom-md img,
 #post-cover img {
   @apply cursor-zoom-in;
-}
-
-::selection {
-  background-color: var(--selection-bg);
-  color: inherit;
-}
-
-/* 白天模式下选中文本的颜色 */
-:root:not(.dark) ::selection {
-  color: #000000;
-}
-
-/* 夜间模式下选中文本的颜色 */
-:root.dark ::selection {
-  color: #ffffff;
 }
 
 .dash-line {

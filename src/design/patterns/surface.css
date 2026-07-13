@@ -1,0 +1,19 @@
+.ds-surface-content {
+  color: var(--text-primary);
+  background: var(--surface-content);
+}
+
+.ds-surface-card {
+  color: var(--text-primary);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.ds-surface-raised {
+  color: var(--text-primary);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-raised);
+}

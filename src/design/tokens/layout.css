@@ -1,0 +1,15 @@
+:root {
+  --width-reading: 48rem;
+  --width-reading-wide: 52rem;
+  --width-listing: 58rem;
+  --width-shell: 80rem;
+  --width-shell-wide: 96rem;
+  --measure-body: 42em;
+  --measure-heading: 28ch;
+
+  --space-page-x: clamp(1rem, 3vw, 2rem);
+  --space-section: clamp(2.5rem, 6vw, 5rem);
+  --space-content: var(--size-6);
+  --space-card: var(--size-5);
+  --space-cluster: var(--size-3);
+}

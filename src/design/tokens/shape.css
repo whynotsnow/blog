@@ -1,0 +1,9 @@
+:root {
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-full: 999px;
+
+  --shadow-raised: 0 8px 24px rgb(0 0 0 / 10%);
+  --shadow-overlay: 0 16px 48px rgb(0 0 0 / 18%);
+}

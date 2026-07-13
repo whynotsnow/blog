@@ -1,0 +1,10 @@
+body.wallpaper-transparent,
+body.wallpaper-overlay {
+  --card-transparent-opacity: 0.8;
+  --surface-card: rgb(255 255 255 / var(--card-transparent-opacity));
+}
+
+:root.dark body.wallpaper-transparent,
+:root.dark body.wallpaper-overlay {
+  --surface-card: rgb(23 23 23 / var(--card-transparent-opacity));
+}

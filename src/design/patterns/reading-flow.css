@@ -1,0 +1,9 @@
+.ds-reading-flow {
+  width: min(100%, var(--width-reading));
+  margin-inline: auto;
+}
+
+.ds-reading-wide {
+  width: min(100%, var(--width-reading-wide));
+  margin-inline: auto;
+}

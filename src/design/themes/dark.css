@@ -1,0 +1,21 @@
+:root.dark {
+  color-scheme: dark;
+  --surface-page: var(--color-page-dark);
+  --surface-card: var(--color-card-dark);
+  --surface-raised: var(--color-raised-dark);
+  --surface-overlay: var(--color-raised-dark);
+
+  --text-document: rgb(255 255 255 / 80%);
+  --text-primary: rgb(255 255 255 / 90%);
+  --text-secondary: rgb(255 255 255 / 72%);
+  --text-muted: rgb(255 255 255 / 62%);
+  --text-disabled: rgb(255 255 255 / 30%);
+
+  --border-subtle: rgb(255 255 255 / 8%);
+  --border-default: rgb(255 255 255 / 10%);
+  --border-strong: rgb(255 255 255 / 20%);
+
+  --accent: var(--color-accent-dark);
+  --accent-hover: var(--color-accent-hover-dark);
+  --accent-active: var(--color-accent-active-dark);
+}

@@ -1,0 +1,8 @@
+::selection {
+  color: var(--text-primary);
+  background: var(--selection-bg);
+}
+
+:root.dark ::selection {
+  color: var(--text-primary);
+}
