@@ -14,6 +14,7 @@
 | --- | --- |
 | [开发者文档索引](./developers/README.md) | 中文开发者文档总入口。 |
 | [项目架构](./developers/architecture.md) | 项目目录、内容管线、路由、配置和扩展原则。 |
+| [Design System](./developers/design-system.md) | 视觉 token、Theme、Pattern、兼容层和治理规则。 |
 | [开发工作流](./developers/development.md) | 环境、命令、构建、检查和常用任务。 |
 | [内容编写指南](./developers/content-guide.md) | 文章 schema、frontmatter、分类标签、草稿和资源规则。 |
 | [配置说明](./developers/configuration.md) | 站点配置、环境变量、特色页面和 URL 工具。 |

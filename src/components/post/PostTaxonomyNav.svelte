@@ -36,7 +36,10 @@
 
 <nav class="post-taxonomy-nav">
 	<!-- ================= 统一 Card ================= -->
-	<div class="ds-surface-card rounded-xl bg-[var(--card-bg-transparent)] p-4">
+	<div
+		class="rounded-xl bg-[var(--card-bg-transparent)] p-4"
+		class:ds-surface-card={!currentCategory}
+	>
 		<!-- ================= 面包屑 ================= -->
 		<div
 			class="flex items-center gap-2 text-sm font-medium mb-4"

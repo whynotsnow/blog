@@ -58,6 +58,21 @@ The current project uses `node .agent-workspace/tools/agent-workspace.mjs` as it
 5. Run the narrowest meaningful validation command.
 6. Report changed files, validation results, and any skipped checks.
 
+## Design-Aware UI Workflow
+
+Before changing UI, read [Design System](../developers/design-system.md) and classify the requirement as shared Design, Feature-local styling, or third-party adaptation. Reuse existing Semantic tokens and `ds-` Patterns before creating a new visual convention.
+
+During implementation:
+
+1. Keep Primitive `--color-*` consumption inside `src/design/`.
+2. Make Feature-local tokens reference Semantic tokens where practical.
+3. Do not create global visual rules in route pages.
+4. Preserve shared semantic classes across Astro and Svelte renderers.
+5. Check Light, Dark, and Wallpaper contexts when changing Theme values.
+6. Do not move interaction state or Feature animation ownership into the Design layer.
+
+After a Design or UI change, run `pnpm design:check` before the usual static and browser checks. Update the Design System document when the public Design API changes. The Design gate runs in CI and is intentionally not part of precommit yet.
+
 ## Tool Role Boundaries
 
 Keep exploration, verification, knowledge retrieval, and environment execution strictly separated. Tool selection must follow the routing rules below.

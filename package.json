@@ -33,6 +33,7 @@
 		"lint:md:fix": "markdownlint-cli2 --fix",
 		"lint": "eslint src scripts \"*.config.{js,mjs,cjs,ts}\"",
 		"lint:fix": "eslint src scripts \"*.config.{js,mjs,cjs,ts}\" --fix",
+		"design:check": "node scripts/check-design-system.mjs",
 		"prepare": "node scripts/install-git-hooks.mjs",
 		"precommit": "node scripts/check-env.mjs && node scripts/pre-commit-check.mjs",
 		"preinstall": "node scripts/check-env.mjs && npx only-allow pnpm",

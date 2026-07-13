@@ -24,6 +24,7 @@ flowchart TD
 | `src/pages` | Astro 路由和静态端点。页面应尽量保持轻量。 |
 | `src/layouts` | 页面外壳和网格布局。 |
 | `src/components` | Astro 与 Svelte UI 组件。 |
+| `src/design` | 跨功能视觉规则的唯一所有者：token、Theme、Foundation、Pattern 与 Legacy 兼容。 |
 | `src/services/core` | 内容读取、排序、派生元数据、分类标签索引、内容缓存。 |
 | `src/services` | 首页、归档、分类、Feed、日历数据、组件、文章详情等业务服务。 |
 | `src/content` | Astro 内容集合，包含文章和特殊页面。 |
@@ -132,12 +133,12 @@ src/features/music-player/
 
 ## 首页与文章视觉基础
 
-首页和文章详情页当前通过 `src/styles/variables.styl` 中的过渡性 semantic token 统一主要视觉决策。该范围包含 Surface、文本层级、内容宽度、页面间距与 Typography；其他功能页仍通过旧变量保持兼容，后续由独立的 Design 层计划统一迁移。
+首页和文章详情页通过 `src/design/` 统一 Surface、文本层级、内容宽度、页面间距与 Typography。其他功能页仍可通过 Legacy token 保持兼容，详细分层和迁移规则见 [Design System](./design-system.md)。
 
 - 首页文章列表使用 `--width-listing`，不随主内容列无限扩张。
 - 文章正文阅读宽度使用 `--width-reading: 48rem`；代码、表格、图片与数学公式可扩展到 `--width-reading-wide`。
 - 普通模式下文章正文使用无卡片背景的 Content Surface；壁纸透明或 Overlay 模式仍使用半透明背景、轻边框与 blur，以维持可读性。
-- 首页和文章详情页优先消费 `--surface-*`、`--text-*`、`--border-*` 与 `--accent` 等 semantic token。旧的 `--card-bg`、`--primary`、`--line-*` 等变量仍是兼容 API，不应仅为本轮迁移而批量修改其他页面。
+- 首页和文章详情页优先消费 `--surface-*`、`--text-*`、`--border-*` 与 `--accent` 等 Semantic token。旧的 `--card-bg`、`--primary`、`--line-*` 等变量由 Compatibility 层供值，不应在新代码中继续扩散。
 - 页面级留白使用 `--space-page-x`、`--space-content` 与 `--space-cluster`；组件内部的小型布局仍可使用 Tailwind spacing utility。
 
-本阶段没有建立独立 `src/design/` 目录，也没有改变动效所有权。完整 Design System、开发门禁和 Agent workflow 约束属于后续独立计划。
+Design 层不拥有具体 Feature 动画、浏览器交互或第三方库主题；这些规则继续由所属 Feature 管理。

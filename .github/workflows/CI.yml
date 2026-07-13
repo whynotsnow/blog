@@ -45,6 +45,9 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            - name: Check Design System boundaries
+              run: pnpm design:check
+
             - name: Run ESLint
               run: pnpm lint
 

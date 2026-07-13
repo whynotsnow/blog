@@ -104,6 +104,7 @@ If Playwright cannot run, do not treat Browser as an execution fallback; route P
 - Store machine-specific paths, personal identities, raw command output, and unreviewed runtime observations under `.agent-workspace/local/`, `.agent-workspace/raw/`, or `.agent-workspace/quarantine/`. These directories are private and ignored by Git.
 - Only promote sanitized, reusable knowledge into tracked Agent Workspace Spec documents. Follow `docs/agents/disclosure-policy.md` and run `node .agent-workspace/tools/agent-workspace.mjs validate` before committing.
 - Preserve local customizations in `src/config.ts`; this repository is intentionally personal and not a clean upstream Mizuki copy.
+- UI changes must consume the project Design layer in `src/design/` when an existing Semantic token or `ds-` Pattern covers the requirement. Primitive `--color-*` tokens are Design-only, and Feature-local tokens should reference Semantic tokens. Read `docs/developers/design-system.md` before non-trivial UI work.
 
 ## Documentation Reading Rules
 
@@ -118,6 +119,7 @@ Read only the documents needed for the current task:
 - Local setup, commands, checks, or development workflow: `docs/developers/development.md`.
 - Content separation, content repository, migration, deployment, or build triggers: the matching document under `docs/developers/`.
 - Maintenance risks, generated files, or dependency updates: `docs/developers/maintenance.md`.
+- Design token, Theme, Pattern, Surface, typography, spacing, width, radius, or shadow changes: `docs/developers/design-system.md`.
 
 When a change affects multiple areas, read the relevant documents for each area. When a task clearly does not touch a document's topic, do not read that document just to appear thorough.
 

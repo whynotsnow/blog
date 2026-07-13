@@ -6,14 +6,14 @@
 .ds-surface-card {
   color: var(--text-primary);
   background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
+  border: var(--surface-card-border, 0 solid transparent);
   border-radius: var(--radius-lg);
 }
 
 .ds-surface-raised {
   color: var(--text-primary);
   background: var(--surface-raised);
-  border: 1px solid var(--border-subtle);
+  border: var(--surface-raised-border, 0 solid transparent);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-raised);
 }
