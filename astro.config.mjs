@@ -46,6 +46,7 @@ export default defineConfig({
 			smoothScrolling: false, // 禁用平滑滚动以提升性能，避免与锚点导航冲突
 			cache: true,
 			preload: true, // swup 默认鼠标悬停预加载
+			progress: false,
 			accessibility: true,
 			updateHead: true,
 			updateBodyClass: false,

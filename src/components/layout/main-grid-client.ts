@@ -14,6 +14,11 @@ const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 const navbarTransparentMode =
 	siteConfig.banner?.navbar?.transparentMode || "semi";
 let mainGridClientBound = false;
+let navigationProgressStartedAt = 0;
+let navigationProgressTimer: number | undefined;
+let navigationProgressRun = 0;
+
+const NAVIGATION_PROGRESS_MIN_VISIBLE_MS = 260;
 
 function getWallpaperMode(): WALLPAPER_MODE {
 	const stored = localStorage.getItem("wallpaperMode");
@@ -44,12 +49,20 @@ function syncMainContentPosition(mode: WALLPAPER_MODE) {
 	const isMobile = window.innerWidth < 1280;
 	const isHomePage =
 		window.location.pathname === "/" || window.location.pathname === "";
+	const isPostPage =
+		document.body.classList.contains("is-post") ||
+		window.location.pathname.startsWith("/posts/");
+	const targetsContentStart =
+		document.getElementById("swup-container")?.dataset.entryScroll ===
+		"content-start";
 
 	mainContent.classList.remove("mobile-main-no-banner", "no-banner-layout");
 	mainContent.classList.remove("fullscreen-content");
 
 	if (mode === "fullscreen") {
-		if (isMobile && !isHomePage) {
+		const keepsFullscreenBanner =
+			isHomePage || (targetsContentStart && !isPostPage);
+		if (isMobile && !keepsFullscreenBanner) {
 			mainContent.classList.add(
 				"mobile-main-no-banner",
 				"no-banner-layout",
@@ -64,7 +77,7 @@ function syncMainContentPosition(mode: WALLPAPER_MODE) {
 	}
 
 	if (mode === "banner") {
-		if (isMobile && !isHomePage) {
+		if (isMobile && !isHomePage && !targetsContentStart) {
 			mainContent.classList.add("mobile-main-no-banner");
 			bannerWrapper?.classList.add("mobile-hide-banner");
 			return;
@@ -300,11 +313,137 @@ function syncPageShell() {
 	applyWavesSetting();
 	applyBannerTitleSetting();
 	applySakuraSetting();
+	syncPageInteraction();
+}
+
+function syncPageInteraction() {
+	const container = document.getElementById("swup-container");
+	const fixedNavbar = container?.dataset.navbarBehavior === "fixed-visible";
+	document.body.classList.toggle("navbar-fixed-visible", fixedNavbar);
+	window.initSemifullScrollDetection?.();
+}
+
+function alignPageEntry() {
+	const container = document.getElementById("swup-container");
+	if (window.location.hash) return;
+	const targetsContentStart =
+		container?.dataset.entryScroll === "content-start" &&
+		getWallpaperMode() === "banner";
+	if (!targetsContentStart) return;
+
+	const anchor = container.querySelector<HTMLElement>(
+		"[data-page-entry-anchor]",
+	);
+	if (!anchor) return;
+
+	const clearance = Number.parseFloat(
+		window.getComputedStyle(anchor).scrollMarginBlockStart,
+	);
+	const anchorDocumentTop =
+		window.scrollY + anchor.getBoundingClientRect().top;
+	const targetScrollTop = Math.max(
+		0,
+		anchorDocumentTop - (Number.isFinite(clearance) ? clearance : 0),
+	);
+
+	const root = document.documentElement;
+	const previousScrollBehavior = root.style.scrollBehavior;
+	root.style.scrollBehavior = "auto";
+	window.scrollTo({ top: targetScrollTop, behavior: "auto" });
+	root.style.scrollBehavior = previousScrollBehavior;
+}
+
+function settlePageEntry() {
+	const mainContent = getMainContent();
+	const previousTransition = mainContent?.style.transition ?? "";
+	if (mainContent) mainContent.style.transition = "none";
+
+	syncMainContentPosition(getWallpaperMode());
+	forceReflow();
+	alignPageEntry();
+
+	requestAnimationFrame(() => {
+		if (mainContent) mainContent.style.transition = previousTransition;
+	});
+}
+
+function applyHistoryScrollPolicy(visit?: {
+	to?: { url?: string; hash?: string };
+	history?: { popstate?: boolean };
+	scroll?: { reset: boolean; target?: string | false };
+}) {
+	if (!visit?.history?.popstate || !visit.scroll || visit.to?.hash) return;
+
+	const pathname = visit.to?.url ?? window.location.pathname;
+	const targetsContentStart =
+		(pathname.startsWith("/category/") || pathname.startsWith("/posts/")) &&
+		getWallpaperMode() === "banner";
+
+	visit.scroll.reset = !targetsContentStart;
+	visit.scroll.target = false;
+}
+
+function getNavigationProgress() {
+	return document.getElementById("navigation-progress");
+}
+
+function setNavigationProgress(value: number) {
+	getNavigationProgress()?.style.setProperty(
+		"--navigation-progress",
+		`${value}%`,
+	);
+}
+
+function startNavigationProgress() {
+	const progress = getNavigationProgress();
+	if (!progress) return;
+
+	navigationProgressRun += 1;
+	navigationProgressStartedAt = performance.now();
+	window.clearInterval(navigationProgressTimer);
+	progress.dataset.state = "active";
+	setNavigationProgress(8);
+	requestAnimationFrame(() => setNavigationProgress(24));
+
+	let value = 24;
+	navigationProgressTimer = window.setInterval(() => {
+		value = Math.min(88, value + Math.max(2, (88 - value) * 0.14));
+		setNavigationProgress(value);
+	}, 120);
+}
+
+function advanceNavigationProgress() {
+	const progress = getNavigationProgress();
+	if (progress?.dataset.state !== "active") return;
+	setNavigationProgress(92);
+}
+
+function finishNavigationProgress(onSettled?: () => void) {
+	const progress = getNavigationProgress();
+	if (!progress || progress.dataset.state !== "active") return;
+
+	const run = navigationProgressRun;
+	window.clearInterval(navigationProgressTimer);
+	const elapsed = performance.now() - navigationProgressStartedAt;
+	const delay = Math.max(0, NAVIGATION_PROGRESS_MIN_VISIBLE_MS - elapsed);
+
+	window.setTimeout(() => {
+		if (run !== navigationProgressRun) return;
+		setNavigationProgress(100);
+		progress.dataset.state = "complete";
+		window.setTimeout(() => {
+			if (run !== navigationProgressRun) return;
+			onSettled?.();
+			progress.dataset.state = "idle";
+			setNavigationProgress(0);
+		}, 180);
+	}, delay);
 }
 
 function bindMainGridClient() {
 	if (mainGridClientBound) return;
 	mainGridClientBound = true;
+	window.history.scrollRestoration = "manual";
 	bindDesktopLayoutPreference();
 
 	window.addEventListener("wallpaper-mode-change", () => {
@@ -339,6 +478,16 @@ function bindMainGridClient() {
 	onPageLifecycle("first-load", syncPageShell);
 	onPageLifecycle("content-replace", syncPageShell);
 	onPageLifecycle("page-view", syncPageShell);
+	onPageLifecycle("first-load", () => alignPageEntry());
+	onPageLifecycle("visit-start", ({ visit }) => {
+		applyHistoryScrollPolicy(visit);
+		startNavigationProgress();
+	});
+	onPageLifecycle("content-replace", advanceNavigationProgress);
+	onPageLifecycle("visit-end", () => {
+		alignPageEntry();
+		finishNavigationProgress(settlePageEntry);
+	});
 }
 
 applyInitialPageShell();

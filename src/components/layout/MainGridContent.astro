@@ -27,7 +27,13 @@ const { transparentClass } = viewModel.mainPanel;
 >
 	<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
 	<div class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto">
-		<div id="swup-container" class="transition-swup-layout">
+		<div
+			id="swup-container"
+			class="transition-swup-layout"
+			data-navbar-behavior={viewModel.interaction.navbar}
+			data-entry-scroll={viewModel.interaction.entryScroll}
+		>
+		<div id="page-entry-anchor" class="page-entry-anchor" data-page-entry-anchor aria-hidden="true"></div>
 		{siteNotice && <SiteNoticeBar notice={siteNotice} />}
 		<div
 			id="main-grid"

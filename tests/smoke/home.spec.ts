@@ -12,13 +12,208 @@ test("home page renders", async ({ page }) => {
 	expect(errors).toEqual([]);
 });
 
+test("home sections expose six-card guide destinations", async ({ page }) => {
+	await page.setViewportSize({ width: 1536, height: 900 });
+	await page.goto("/");
+
+	const sections = page.locator(".home-section");
+	await expect(sections).toHaveCount(3);
+	await expect(sections.nth(0).locator("h2")).toHaveText("最近更新");
+	await expect(sections.nth(1).locator("h2")).toHaveText("推荐阅读");
+	await expect(sections.nth(2).locator("h2")).toHaveText("技术文章");
+	await expect(
+		sections.nth(0).locator('a[href="/archive/?sort=updated"]'),
+	).toBeVisible();
+	await expect(sections.nth(1).locator('a[href="/archive/"]')).toBeVisible();
+	await expect(
+		sections.nth(2).locator('a[href="/category/technology/"]'),
+	).toBeVisible();
+
+	for (let index = 0; index < 3; index += 1) {
+		const cards = sections.nth(index).locator(".post-list__item");
+		await expect(cards).toHaveCount(6);
+		await expect(cards.locator(".home-post-card__cover")).toHaveCount(6);
+		const heights = await cards.evaluateAll((items) =>
+			items.map((item) => getComputedStyle(item).height),
+		);
+		expect(new Set(heights).size).toBe(1);
+		expect(Number.parseFloat(heights[0])).toBeGreaterThan(350);
+	}
+});
+
+test("category and post pages use content anchors and keep a fixed visible navbar", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "banner");
+	});
+	await page.setViewportSize({ width: 1024, height: 900 });
+	await page.goto("/category/tech/");
+
+	const banner = page.locator("#banner-wrapper");
+	const mainContent = page.locator(".main-content-layer");
+	await expect(banner).not.toHaveClass(/mobile-hide-banner/);
+	await expect(mainContent).not.toHaveClass(/mobile-main-no-banner/);
+	await expect
+		.poll(() => page.evaluate(() => window.scrollY))
+		.toBeGreaterThan(0);
+
+	const entryAnchor = page.locator("[data-page-entry-anchor]");
+	await expect
+		.poll(() =>
+			entryAnchor.evaluate(
+				(node) =>
+					Math.abs(
+						node.getBoundingClientRect().top -
+							Number.parseFloat(
+								getComputedStyle(node).scrollMarginTop,
+							),
+					) < 1,
+			),
+		)
+		.toBe(true);
+
+	const navbar = page.locator("#navbar");
+	await expect(navbar).toHaveClass(/scrolled/);
+	await expect(page.locator("body")).toHaveClass(/navbar-fixed-visible/);
+	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+	await expect(navbar).toHaveClass(/scrolled/);
+	await expect(page.locator("#top-row")).toHaveCSS("position", "fixed");
+
+	await page.goto("/posts/markdown-tutorial/");
+	await expect
+		.poll(() => page.evaluate(() => window.scrollY))
+		.toBeGreaterThan(0);
+	await expect(banner).not.toHaveClass(/mobile-hide-banner/);
+	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+	await expect(navbar).toHaveClass(/scrolled/);
+
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "overlay");
+	});
+	await page.goto("/category/tech/");
+	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+	await expect(banner).toBeHidden();
+});
+
+test("home retains banner-aware navbar behavior", async ({ page }) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "banner");
+	});
+	await page.goto("/");
+
+	const navbar = page.locator("#navbar");
+	await expect(page.locator("body")).not.toHaveClass(/navbar-fixed-visible/);
+	await expect(navbar).not.toHaveClass(/scrolled/);
+	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+	await expect(navbar).not.toHaveClass(/scrolled/);
+	await page.evaluate(() => window.scrollTo({ top: 120, behavior: "auto" }));
+	await expect(navbar).toHaveClass(/scrolled/);
+});
+
+test("Swup shows navigation progress independently from page entry scrolling", async ({
+	page,
+}) => {
+	await page.goto("/");
+	await page.route("**/*", async (route) => {
+		if (route.request().url().includes("progress-test=1")) {
+			await new Promise((resolve) => setTimeout(resolve, 120));
+		}
+		await route.continue();
+	});
+	await expect
+		.poll(() => page.evaluate(() => Boolean(window.swup)))
+		.toBe(true);
+
+	await page.evaluate(() => {
+		window.swup.navigate("/archive/?progress-test=1");
+	});
+	const progress = page.locator("#navigation-progress");
+	await expect(progress).toHaveAttribute("data-state", "active");
+	await expect(progress).toBeVisible();
+	await expect(page).toHaveURL(/\/archive\/\?progress-test=1$/);
+	await expect(progress).toHaveAttribute("data-state", "idle");
+});
+
+test("browser history reapplies category and post entry anchors", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "banner");
+	});
+	await page.goto("/category/tech/");
+	await expect
+		.poll(() => page.evaluate(() => Boolean(window.swup)))
+		.toBe(true);
+
+	await page.evaluate(() => {
+		window.swup.navigate("/posts/markdown-tutorial/");
+	});
+	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	await expect(page.locator("#navigation-progress")).toHaveAttribute(
+		"data-state",
+		"idle",
+	);
+	const readEntryGeometry = () =>
+		page.locator("[data-page-entry-anchor]").evaluate((node) => ({
+			top: node.getBoundingClientRect().top,
+			clearance: Number.parseFloat(
+				getComputedStyle(node).scrollMarginBlockStart,
+			),
+		}));
+	const normalEntry = await readEntryGeometry();
+	expect(Math.abs(normalEntry.top - normalEntry.clearance)).toBeLessThan(1);
+	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
+
+	await page.evaluate(() => window.history.back());
+	await expect(page).toHaveURL(/\/category\/tech\/$/);
+	await expect(page.locator("#navigation-progress")).toHaveAttribute(
+		"data-state",
+		"active",
+	);
+	await expect(page.locator("#navigation-progress")).toHaveAttribute(
+		"data-state",
+		"idle",
+	);
+	await expect
+		.poll(async () => {
+			const geometry = await readEntryGeometry();
+			return Math.abs(geometry.top - geometry.clearance);
+		})
+		.toBeLessThan(1);
+	const backEntry = await readEntryGeometry();
+	expect(Math.abs(backEntry.top - normalEntry.top)).toBeLessThan(1);
+
+	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
+	await page.evaluate(() => window.history.forward());
+	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	await expect(page.locator("#navigation-progress")).toHaveAttribute(
+		"data-state",
+		"active",
+	);
+	await expect(page.locator("#navigation-progress")).toHaveAttribute(
+		"data-state",
+		"idle",
+	);
+	await expect
+		.poll(async () => {
+			const geometry = await readEntryGeometry();
+			return Math.abs(geometry.top - geometry.clearance);
+		})
+		.toBeLessThan(1);
+	const forwardEntry = await readEntryGeometry();
+	expect(Math.abs(forwardEntry.top - normalEntry.top)).toBeLessThan(1);
+});
+
 test("site notice renders as a shell-level status bar", async ({ page }) => {
 	await page.goto("/");
 
 	const notice = page.locator("[data-site-notice]");
 	await expect(notice).toBeVisible();
-	await expect(notice).toHaveAttribute("data-status", "info");
-	await expect(notice).toContainText("网站建设中");
+	await expect(notice).toHaveAttribute("data-status", /^(info|success)$/);
+	await expect(notice).toContainText(
+		/网站建设中，更多功能敬请期待！|本站内容持续更新，感谢你的关注。/,
+	);
 	await expect(notice.locator("xpath=ancestor::widget-layout")).toHaveCount(
 		0,
 	);
@@ -34,7 +229,7 @@ test("saved Grid preference remains single-column below md and restores at md", 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.goto("/");
 
-	const postList = page.locator("#post-list-container");
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
 	await expect(postList).toHaveClass(/grid-mode/);
 	await expect(postList).toHaveCSS("display", "grid");
 	expect(
@@ -104,6 +299,22 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 			(node) =>
 				getComputedStyle(node).gridTemplateColumns.split(" ").length,
 		),
+	).toBe(2);
+
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+
+	await page.setViewportSize({ width: 1536, height: 812 });
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
 	).toBe(3);
 });
 
@@ -159,61 +370,34 @@ test("navbar stays sticky while the desktop banner scrolls", async ({
 		.toBe(0);
 });
 
-test("visible sidebar sticky widgets remain pinned while their grid region scrolls", async ({
+test("listing widget placements follow viewport and page contracts", async ({
 	page,
 }) => {
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await page.goto("/");
-
-	const assertPinned = async (
-		stickyRegion: ReturnType<typeof page.locator>,
-	) => {
-		const state = await stickyRegion.evaluate((node) => ({
-			position: getComputedStyle(node).position,
-			top: getComputedStyle(node).top,
-			viewportTop: node.getBoundingClientRect().top,
-		}));
-		expect(state.position).toBe("sticky");
-		expect(state.top).toBe("16px");
-		expect(state.viewportTop).toBeLessThanOrEqual(32);
-	};
-
-	const rightSticky = page.locator(
-		'[data-widget-region="desktop-right"] .widget-region__sticky',
-	);
-	await expect(rightSticky).toBeVisible();
-	await page.evaluate(() => {
-		document.documentElement.style.scrollBehavior = "auto";
-	});
-	await rightSticky.evaluate((node) =>
-		node.scrollIntoView({ block: "start" }),
-	);
-	await page.evaluate(() => window.scrollBy(0, 200));
-	await assertPinned(rightSticky);
-
-	const leftSticky = page.locator(
-		'[data-widget-region="desktop-left"] .widget-region__sticky',
-	);
-	await leftSticky.evaluate((node) =>
-		node.scrollIntoView({ block: "start" }),
-	);
-	await page.evaluate(() => window.scrollBy(0, 200));
-	await assertPinned(leftSticky);
+	await expect(
+		page.locator('[data-widget-id="home-desktop-profile"]'),
+	).toBeVisible();
+	await expect(
+		page.locator('[data-widget-id="home-desktop-site-stats"]'),
+	).toBeVisible();
+	await expect(
+		page.locator('[data-widget-region="desktop-left"]'),
+	).toBeHidden();
 
 	await page.setViewportSize({ width: 768, height: 900 });
 	await page.goto("/");
-	const tabletSticky = page.locator(
-		'[data-widget-region="tablet-sidebar"] .widget-region__sticky',
-	);
-	await expect(tabletSticky).toBeVisible();
-	await page.evaluate(() => {
-		document.documentElement.style.scrollBehavior = "auto";
-	});
-	await tabletSticky.evaluate((node) =>
-		node.scrollIntoView({ block: "start" }),
-	);
-	await page.evaluate(() => window.scrollBy(0, 200));
-	await assertPinned(tabletSticky);
+	await expect(
+		page.locator('[data-widget-id="home-tablet-profile"]'),
+	).toBeVisible();
+
+	await page.setViewportSize({ width: 375, height: 812 });
+	await page.goto("/");
+	await expect(
+		page.locator('[data-widget-id="home-mobile-profile"]'),
+	).toBeVisible();
+	await page.goto("/category/tech/");
+	await expect(page.locator(".widget-region:visible")).toHaveCount(0);
 });
 
 test("banner home text stays centered across normal and fullscreen modes", async ({
@@ -307,17 +491,23 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 	const grid = page.locator("#main-grid");
 	await expect(grid).toHaveAttribute(
 		"data-base-desktop-layout",
-		"three-column",
+		"content-right",
 	);
 	await expect(grid).toHaveAttribute(
 		"data-allowed-desktop-layouts",
-		"three-column content-right",
+		"content-right",
 	);
 
 	const postLink = page.locator('a[href^="/posts/"]').first();
 	await expect(postLink).toBeVisible();
 	await postLink.click();
 	await expect(page).toHaveURL(/\/posts\/.+\/$/);
+	await expect(page.locator("#swup-container")).toHaveAttribute(
+		"data-navbar-behavior",
+		"fixed-visible",
+	);
+	await expect(page.locator("body")).toHaveClass(/navbar-fixed-visible/);
+	await expect(page.locator("#navbar")).toHaveClass(/scrolled/);
 	await expect(grid).toHaveAttribute(
 		"data-base-desktop-layout",
 		"content-right",
@@ -331,13 +521,18 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 
 	await page.goBack();
 	await expect(page).toHaveURL(/\/$/);
+	await expect(page.locator("#swup-container")).toHaveAttribute(
+		"data-navbar-behavior",
+		"banner-aware",
+	);
+	await expect(page.locator("body")).not.toHaveClass(/navbar-fixed-visible/);
 	await expect(grid).toHaveAttribute(
 		"data-base-desktop-layout",
-		"three-column",
+		"content-right",
 	);
 	await expect(grid).toHaveAttribute(
 		"data-allowed-desktop-layouts",
-		"three-column content-right",
+		"content-right",
 	);
 });
 
@@ -380,7 +575,7 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 }) => {
 	await page.goto("/");
 
-	const astroList = page.locator('[data-post-list-renderer="astro"]');
+	const astroList = page.locator('[data-post-list-renderer="astro"]').first();
 	await expect(astroList).toBeVisible();
 	await expect(
 		astroList.locator(":scope > .post-list__item").first(),
@@ -388,7 +583,7 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 
 	await page.goto("/category/tech/");
 	await expect(
-		page.locator('[data-post-list-renderer="astro"]'),
+		page.locator('[data-post-list-renderer="astro"]').first(),
 	).toBeVisible();
 
 	const tagLink = page.locator('a[href^="/category/tech/?tag="]').first();

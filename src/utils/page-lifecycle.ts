@@ -1,6 +1,14 @@
 type SwupVisit = {
 	to?: {
 		url?: string;
+		hash?: string;
+	};
+	history?: {
+		popstate?: boolean;
+	};
+	scroll?: {
+		reset: boolean;
+		target?: string | false;
 	};
 };
 
@@ -20,7 +28,8 @@ export type PageLifecycleEvent =
 type PageLifecycleCallback = (payload: PageLifecyclePayload) => void;
 
 const callbacks = new Map<PageLifecycleEvent, Set<PageLifecycleCallback>>();
-let swupBound = false;
+let boundSwup: Window["swup"] | undefined;
+let swupEnableListenerBound = false;
 let firstLoadDispatched = false;
 
 function emit(event: PageLifecycleEvent, payload: PageLifecyclePayload = {}) {
@@ -42,19 +51,19 @@ function onReady(callback: () => void) {
 }
 
 function bindSwup() {
-	if (swupBound || !window.swup?.hooks) return Boolean(window.swup?.hooks);
+	const swup = window.swup;
+	if (!swup?.hooks) return false;
+	if (boundSwup === swup) return true;
 
-	swupBound = true;
-	window.swup.hooks.on("link:click", () => emit("link-click"));
-	window.swup.hooks.on("animation:out:start", () =>
-		emit("animation-out-start"),
-	);
-	window.swup.hooks.on("content:replace", () => emit("content-replace"));
-	window.swup.hooks.on("page:view", () => emit("page-view"));
-	window.swup.hooks.on("visit:start", (visit: unknown) =>
+	boundSwup = swup;
+	swup.hooks.on("link:click", () => emit("link-click"));
+	swup.hooks.on("animation:out:start", () => emit("animation-out-start"));
+	swup.hooks.on("content:replace", () => emit("content-replace"));
+	swup.hooks.on("page:view", () => emit("page-view"));
+	swup.hooks.on("visit:start", (visit: unknown) =>
 		emit("visit-start", { visit: toSwupVisit(visit) }),
 	);
-	window.swup.hooks.on("visit:end", (visit: unknown) =>
+	swup.hooks.on("visit:end", (visit: unknown) =>
 		emit("visit-end", { visit: toSwupVisit(visit) }),
 	);
 
@@ -69,15 +78,13 @@ function toSwupVisit(visit: unknown): SwupVisit | undefined {
 function ensureLifecycle() {
 	onReady(runFirstLoad);
 
-	if (bindSwup()) return;
-
-	const onSwupEnable = () => {
-		if (bindSwup()) {
-			document.removeEventListener("swup:enable", onSwupEnable);
-		}
-	};
-
-	document.addEventListener("swup:enable", onSwupEnable);
+	bindSwup();
+	if (swupEnableListenerBound) return;
+	swupEnableListenerBound = true;
+	document.addEventListener("swup:enable", () => {
+		queueMicrotask(bindSwup);
+		window.setTimeout(bindSwup, 0);
+	});
 }
 
 export function onPageLifecycle(

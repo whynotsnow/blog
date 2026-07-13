@@ -1,11 +1,16 @@
 import { getBannerImages, type BannerImages } from "@/services/banner";
 import type { SiteConfig } from "@/types/config";
 import { resolvePageLayout } from "./resolver";
-import type { PageLayoutPolicyName, ResolvedPageLayout } from "./types";
+import type {
+	PageInteractionPolicy,
+	PageLayoutPolicyName,
+	ResolvedPageLayout,
+} from "./types";
 
 export type MainGridLayoutViewModel = {
 	bannerImages: BannerImages;
 	pageLayout: ResolvedPageLayout;
+	interaction: PageInteractionPolicy;
 	toc: {
 		mode: "float" | "sidebar";
 		enable: boolean;
@@ -41,7 +46,12 @@ export async function buildMainGridLayoutViewModel({
 }: BuildMainGridLayoutViewModelOptions): Promise<MainGridLayoutViewModel> {
 	const tocMode = config.toc.mode || "float";
 	const isHomePage = pathname === "/" || pathname === "";
-	const mobileNonHomeClass = !isHomePage ? "mobile-hide-banner" : "";
+	const isCategoryPage = pathname.startsWith("/category/");
+	const isPostPage = pathname.startsWith("/posts/");
+	const keepsBannerOnContentPage =
+		layoutPolicy === "listing" || layoutPolicy === "post";
+	const mobileNonHomeClass =
+		!isHomePage && !keepsBannerOnContentPage ? "mobile-hide-banner" : "";
 	const transparentClass =
 		config.wallpaperMode.defaultMode === "fullscreen"
 			? "wallpaper-transparent"
@@ -49,6 +59,10 @@ export async function buildMainGridLayoutViewModel({
 	return {
 		bannerImages: await getBannerImages(config),
 		pageLayout: resolvePageLayout(layoutPolicy),
+		interaction: {
+			navbar: isHomePage ? "banner-aware" : "fixed-visible",
+			entryScroll: isCategoryPage || isPostPage ? "content-start" : "top",
+		},
 		toc: {
 			mode: tocMode,
 			enable: config.toc.enable,

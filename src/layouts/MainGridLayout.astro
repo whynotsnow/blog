@@ -56,6 +56,7 @@ const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname
 	lang={lang}
 	setOGTypeArticle={setOGTypeArticle}
 	postSlug={postSlug}
+	navbarBehavior={viewModel.interaction.navbar}
 >
 	<script>
 		import "@/components/layout/main-grid-client";
@@ -63,6 +64,14 @@ const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname
 
 	<FullscreenWallpaper config={fullscreenWallpaperConfig} />
 	<IconifyLoader />
+	<div
+		id="navigation-progress"
+		class="navigation-progress"
+		data-state="idle"
+		aria-hidden="true"
+	>
+		<div class="navigation-progress__indicator"></div>
+	</div>
 
 	<slot slot="head" name="head" />
 	<div

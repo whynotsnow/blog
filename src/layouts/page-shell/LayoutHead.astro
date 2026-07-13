@@ -121,6 +121,11 @@ const {
 <meta name="twitter:description" content={description || pageTitle} />
 <meta name="viewport" content="width=device-width" />
 <meta name="generator" content={generator} />
+<script is:inline>
+	if ("scrollRestoration" in history) {
+		history.scrollRestoration = "manual";
+	}
+</script>
 {
 	favicons.map((favicon) => (
 		<link

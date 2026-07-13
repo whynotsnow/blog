@@ -8,6 +8,7 @@ type SwupHookName =
 	| "animation:out:start"
 	| "animation:in:start"
 	| "content:replace"
+	| "history:popstate"
 	| "link:click"
 	| "page:view"
 	| "visit:start"

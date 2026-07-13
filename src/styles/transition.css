@@ -1,4 +1,36 @@
 /* The Swup container is the only route-level transition owner. */
+.navigation-progress {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 70;
+  height: 0.1875rem;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-exit);
+}
+
+.navigation-progress__indicator {
+  width: var(--navigation-progress, 0%);
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 0.75rem color-mix(in srgb, var(--accent) 65%, transparent);
+  transition: width var(--motion-normal) var(--motion-ease-enter);
+}
+
+.navigation-progress[data-state="active"],
+.navigation-progress[data-state="complete"] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation-progress,
+  .navigation-progress__indicator {
+    transition-duration: 0ms !important;
+  }
+}
+
 .transition-swup-layout {
   transition:
     opacity 180ms ease,

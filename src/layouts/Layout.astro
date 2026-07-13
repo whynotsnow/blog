@@ -16,6 +16,7 @@ import "../styles/mobile-navbar.css";
 import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
 import "../styles/panel-animations.css";
+import type { NavbarBehavior } from "@/services/layout/types";
 
 interface Props {
 	title?: string;
@@ -24,9 +25,16 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
+	navbarBehavior?: NavbarBehavior;
 }
 
-const { title, description, setOGTypeArticle, postSlug } = Astro.props;
+const {
+	title,
+	description,
+	setOGTypeArticle,
+	postSlug,
+	navbarBehavior = "fixed-visible",
+} = Astro.props;
 const { banner, lang } = Astro.props;
 const pageShell = buildLayoutPageShellModel({
 	title,
@@ -68,6 +76,7 @@ const pageShell = buildLayoutPageShellModel({
 				"is-home": pageShell.isHomePage,
 				"is-post": Boolean(postSlug),
 				"enable-banner": pageShell.enableBanner,
+				"navbar-fixed-visible": navbarBehavior === "fixed-visible",
 			},
 		]}
 		style={pageShell.bodyFontFamily

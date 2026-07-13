@@ -137,11 +137,13 @@ function initSemifullScrollDetection() {
         window.removeEventListener('scroll', window.semifullScrollHandler);
     }
     
-    // 获取当前是否为首页
-    const isHomePage = navbar.dataset.isHome === 'true';
+    const behavior = document
+        .getElementById('swup-container')
+        ?.getAttribute('data-navbar-behavior');
+    const usesBannerScrollState = behavior === 'banner-aware';
 
-    // 如果不是首页，在平板/桌面端强制显示为scrolled状态
-    if (!isHomePage) {
+    // Feature pages without a visible Banner keep the compact scrolled state.
+    if (!usesBannerScrollState) {
         navbar.classList.add('scrolled');
         return;
     }
