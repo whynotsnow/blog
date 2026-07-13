@@ -102,8 +102,8 @@ const pageShell = buildLayoutPageShellModel({
 		<!-- Pio 看板娘组件 - 仅在启用时加载 -->
 		{pioConfig.enable && <Pio client:idle />}
 
-		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
-		<div id="page-height-extend" class="hidden h-[300vh]"></div>
+		<!-- Dynamic route-height compensation; the Shell runtime owns its exact size. -->
+		<div id="page-height-guard" class="page-height-guard" data-state="idle" aria-hidden="true"></div>
 	</body>
 </html>
 

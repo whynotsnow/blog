@@ -17,8 +17,15 @@ let mainGridClientBound = false;
 let navigationProgressStartedAt = 0;
 let navigationProgressTimer: number | undefined;
 let navigationProgressRun = 0;
+let pageEntryAnimationFrame: number | undefined;
+let pageEntryAnimationCleanup: (() => void) | undefined;
+let activeVisitIsHistory = false;
+let activeVisitUsesHeightGuard = false;
+let previousPageScrollHeight = 0;
+let heightGuardReleaseTimer: number | undefined;
 
 const NAVIGATION_PROGRESS_MIN_VISIBLE_MS = 260;
+const PAGE_ENTRY_SCROLL_DURATION_MS = 380;
 
 function getWallpaperMode(): WALLPAPER_MODE {
 	const stored = localStorage.getItem("wallpaperMode");
@@ -323,64 +330,235 @@ function syncPageInteraction() {
 	window.initSemifullScrollDetection?.();
 }
 
-function alignPageEntry() {
+type PageEntryScrollBehavior = "instant" | "smooth";
+
+function usesMainRegionEntry(mode = getWallpaperMode()) {
+	return mode === "banner" || mode === "fullscreen";
+}
+
+function getPageEntryTarget(): number | null {
 	const container = document.getElementById("swup-container");
-	if (window.location.hash) return;
+	if (window.location.hash) return null;
 	const targetsContentStart =
 		container?.dataset.entryScroll === "content-start" &&
-		getWallpaperMode() === "banner";
-	if (!targetsContentStart) return;
+		usesMainRegionEntry();
+	if (!targetsContentStart) return null;
 
-	const anchor = container.querySelector<HTMLElement>(
-		"[data-page-entry-anchor]",
-	);
-	if (!anchor) return;
+	const pageMain = container.querySelector<HTMLElement>(".page-main-content");
+	if (!pageMain) return null;
 
 	const clearance = Number.parseFloat(
-		window.getComputedStyle(anchor).scrollMarginBlockStart,
+		window.getComputedStyle(pageMain).scrollMarginBlockStart,
 	);
-	const anchorDocumentTop =
-		window.scrollY + anchor.getBoundingClientRect().top;
-	const targetScrollTop = Math.max(
+	const mainDocumentTop =
+		window.scrollY + pageMain.getBoundingClientRect().top;
+	return Math.max(
 		0,
-		anchorDocumentTop - (Number.isFinite(clearance) ? clearance : 0),
+		mainDocumentTop - (Number.isFinite(clearance) ? clearance : 0),
 	);
+}
+
+function getPageHeightGuard() {
+	return document.getElementById("page-height-guard");
+}
+
+function resetPageHeightGuard() {
+	const guard = getPageHeightGuard();
+	window.clearTimeout(heightGuardReleaseTimer);
+	if (!guard) return;
+	guard.style.transition = "none";
+	guard.style.height = "0px";
+	guard.dataset.state = "idle";
+	forceReflow();
+	guard.style.removeProperty("transition");
+}
+
+function capturePageHeight() {
+	resetPageHeightGuard();
+	previousPageScrollHeight = document.documentElement.scrollHeight;
+}
+
+function stabilizePageHeight() {
+	const guard = getPageHeightGuard();
+	if (!guard || !activeVisitUsesHeightGuard) return;
+
+	guard.style.transition = "none";
+	guard.style.height = "0px";
+	guard.dataset.state = "active";
+	forceReflow();
+	const nextPageScrollHeight = document.documentElement.scrollHeight;
+	const compensation = Math.max(
+		0,
+		previousPageScrollHeight - nextPageScrollHeight,
+	);
+	guard.style.height = `${compensation}px`;
+	forceReflow();
+}
+
+function releasePageHeightGuard() {
+	const guard = getPageHeightGuard();
+	if (!guard || guard.dataset.state === "idle") return;
+
+	guard.style.removeProperty("transition");
+	forceReflow();
+	guard.dataset.state = "releasing";
+	guard.style.height = "0px";
+	window.clearTimeout(heightGuardReleaseTimer);
+	heightGuardReleaseTimer = window.setTimeout(() => {
+		guard.dataset.state = "idle";
+	}, 260);
+}
+
+function alignPageEntry(behavior: PageEntryScrollBehavior = "instant") {
+	const targetScrollTop = getPageEntryTarget();
+	if (targetScrollTop === null) return;
+
+	const root = document.documentElement;
+	const previousScrollBehavior = root.style.scrollBehavior;
+	const prefersReducedMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+	const shouldScrollSmoothly = behavior === "smooth" && !prefersReducedMotion;
+	root.style.scrollBehavior = shouldScrollSmoothly ? "smooth" : "auto";
+	window.scrollTo({
+		top: targetScrollTop,
+		behavior: shouldScrollSmoothly ? "smooth" : "auto",
+	});
+	root.style.scrollBehavior = previousScrollBehavior;
+}
+
+function cancelPageEntryAnimation() {
+	if (pageEntryAnimationFrame !== undefined) {
+		cancelAnimationFrame(pageEntryAnimationFrame);
+		pageEntryAnimationFrame = undefined;
+	}
+	pageEntryAnimationCleanup?.();
+	pageEntryAnimationCleanup = undefined;
+	releasePageHeightGuard();
+}
+
+function animatePageEntry() {
+	cancelPageEntryAnimation();
+	const mainContent = getMainContent();
+	const previousTransition = mainContent?.style.transition ?? "";
+	if (mainContent) mainContent.style.transition = "none";
+	syncMainContentPosition(getWallpaperMode());
+	forceReflow();
+
+	const targetScrollTop = getPageEntryTarget();
+	if (mainContent) mainContent.style.transition = previousTransition;
+	if (targetScrollTop === null) {
+		releasePageHeightGuard();
+		return;
+	}
+
+	const startScrollTop = window.scrollY;
+	const distance = targetScrollTop - startScrollTop;
+	const prefersReducedMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+	if (prefersReducedMotion || Math.abs(distance) < 1) {
+		alignPageEntry("instant");
+		releasePageHeightGuard();
+		return;
+	}
 
 	const root = document.documentElement;
 	const previousScrollBehavior = root.style.scrollBehavior;
 	root.style.scrollBehavior = "auto";
-	window.scrollTo({ top: targetScrollTop, behavior: "auto" });
-	root.style.scrollBehavior = previousScrollBehavior;
+	const startedAt = performance.now();
+	const interrupt = () => cancelPageEntryAnimation();
+	const interruptOnKeydown = (event: KeyboardEvent) => {
+		if (
+			[
+				"ArrowDown",
+				"ArrowUp",
+				"End",
+				"Home",
+				"PageDown",
+				"PageUp",
+				" ",
+			].includes(event.key)
+		) {
+			interrupt();
+		}
+	};
+
+	window.addEventListener("wheel", interrupt, { passive: true });
+	window.addEventListener("touchstart", interrupt, { passive: true });
+	window.addEventListener("pointerdown", interrupt, { passive: true });
+	window.addEventListener("keydown", interruptOnKeydown);
+	pageEntryAnimationCleanup = () => {
+		root.style.scrollBehavior = previousScrollBehavior;
+		window.removeEventListener("wheel", interrupt);
+		window.removeEventListener("touchstart", interrupt);
+		window.removeEventListener("pointerdown", interrupt);
+		window.removeEventListener("keydown", interruptOnKeydown);
+	};
+
+	const tick = (now: number) => {
+		const progress = Math.min(
+			1,
+			(now - startedAt) / PAGE_ENTRY_SCROLL_DURATION_MS,
+		);
+		const easedProgress = 1 - Math.pow(1 - progress, 4);
+		window.scrollTo({
+			top: startScrollTop + distance * easedProgress,
+			behavior: "auto",
+		});
+
+		if (progress < 1) {
+			pageEntryAnimationFrame = requestAnimationFrame(tick);
+			return;
+		}
+
+		const finalTargetScrollTop = getPageEntryTarget();
+		if (finalTargetScrollTop !== null) {
+			window.scrollTo({ top: finalTargetScrollTop, behavior: "auto" });
+		}
+		pageEntryAnimationFrame = undefined;
+		pageEntryAnimationCleanup?.();
+		pageEntryAnimationCleanup = undefined;
+		releasePageHeightGuard();
+	};
+
+	pageEntryAnimationFrame = requestAnimationFrame(tick);
 }
 
-function settlePageEntry() {
+function settlePageEntry(behavior: PageEntryScrollBehavior = "instant") {
 	const mainContent = getMainContent();
 	const previousTransition = mainContent?.style.transition ?? "";
 	if (mainContent) mainContent.style.transition = "none";
 
 	syncMainContentPosition(getWallpaperMode());
 	forceReflow();
-	alignPageEntry();
+	alignPageEntry(behavior);
 
 	requestAnimationFrame(() => {
 		if (mainContent) mainContent.style.transition = previousTransition;
+		if (behavior === "instant") alignPageEntry("instant");
+		releasePageHeightGuard();
 	});
 }
 
-function applyHistoryScrollPolicy(visit?: {
+function applyPageEntryScrollPolicy(visit?: {
 	to?: { url?: string; hash?: string };
 	history?: { popstate?: boolean };
 	scroll?: { reset: boolean; target?: string | false };
 }) {
-	if (!visit?.history?.popstate || !visit.scroll || visit.to?.hash) return;
+	if (!visit?.scroll || visit.to?.hash) return false;
 
 	const pathname = visit.to?.url ?? window.location.pathname;
 	const targetsContentStart =
 		(pathname.startsWith("/category/") || pathname.startsWith("/posts/")) &&
-		getWallpaperMode() === "banner";
+		usesMainRegionEntry();
 
-	visit.scroll.reset = !targetsContentStart;
-	visit.scroll.target = false;
+	if (targetsContentStart) {
+		visit.scroll.reset = false;
+		visit.scroll.target = false;
+	}
+
+	return targetsContentStart;
 }
 
 function getNavigationProgress() {
@@ -480,13 +658,24 @@ function bindMainGridClient() {
 	onPageLifecycle("page-view", syncPageShell);
 	onPageLifecycle("first-load", () => alignPageEntry());
 	onPageLifecycle("visit-start", ({ visit }) => {
-		applyHistoryScrollPolicy(visit);
+		cancelPageEntryAnimation();
+		activeVisitIsHistory = Boolean(visit?.history?.popstate);
+		activeVisitUsesHeightGuard = applyPageEntryScrollPolicy(visit);
+		if (activeVisitUsesHeightGuard) capturePageHeight();
 		startNavigationProgress();
 	});
-	onPageLifecycle("content-replace", advanceNavigationProgress);
-	onPageLifecycle("visit-end", () => {
-		alignPageEntry();
-		finishNavigationProgress(settlePageEntry);
+	onPageLifecycle("content-replace", () => {
+		advanceNavigationProgress();
+		stabilizePageHeight();
+		if (!activeVisitIsHistory) animatePageEntry();
+	});
+	onPageLifecycle("visit-end", ({ visit }) => {
+		if (visit?.history?.popstate) {
+			finishNavigationProgress(() => settlePageEntry("instant"));
+			return;
+		}
+
+		finishNavigationProgress();
 	});
 }
 

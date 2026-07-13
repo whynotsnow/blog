@@ -529,41 +529,6 @@ const setup = () => {
 				}
 			}
 
-			// Control mobile banner visibility based on page with improved staging animation
-			const bannerWrapper = document.getElementById("banner-wrapper");
-			const mainContentWrapper = document.querySelector(
-				".main-content-layer",
-			);
-
-			if (bannerWrapper && mainContentWrapper) {
-				if (isHomePage) {
-					// 首页：延迟移除隐藏类，让banner和内容优雅地出现
-					setTimeout(() => {
-						bannerWrapper.classList.remove("mobile-hide-banner");
-					}, 100);
-					setTimeout(() => {
-						mainContentWrapper.classList.remove(
-							"mobile-main-no-banner",
-						);
-					}, 150);
-				} else {
-					// 非首页：分阶段隐藏，先隐藏banner，再移动内容
-					bannerWrapper.classList.add("mobile-hide-banner");
-					// 延迟移动内容，让banner先完全消失
-					setTimeout(() => {
-						mainContentWrapper.classList.add(
-							"mobile-main-no-banner",
-						);
-					}, 100);
-				}
-			}
-
-			// increase the page height during page transition to prevent the scrolling animation from jumping
-			const heightExtend = document.getElementById("page-height-extend");
-			if (heightExtend) {
-				heightExtend.classList.remove("hidden");
-			}
-
 			// Hide the TOC while scrolling back to top
 			const toc = document.getElementById("toc-wrapper");
 			if (toc) {
@@ -573,17 +538,15 @@ const setup = () => {
 	);
 
 	onPageLifecycle("page-view", () => {
-		// hide the temp high element when the transition is done
-		const heightExtend = document.getElementById("page-height-extend");
-		if (heightExtend) {
-			heightExtend.classList.remove("hidden");
+		const ownsPageEntryScroll =
+			document.getElementById("swup-container")?.dataset.entryScroll ===
+			"content-start";
+		if (!ownsPageEntryScroll) {
+			window.scrollTo({
+				top: 0,
+				behavior: "instant",
+			});
 		}
-
-		// 确保页面滚动到顶部，特别是移动端banner关闭时
-		window.scrollTo({
-			top: 0,
-			behavior: "instant",
-		});
 
 		// 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
 		const storedTheme = localStorage.getItem("theme") || DEFAULT_THEME;
@@ -638,11 +601,6 @@ const setup = () => {
 
 	onPageLifecycle("visit-end", () => {
 		setTimeout(() => {
-			const heightExtend = document.getElementById("page-height-extend");
-			if (heightExtend) {
-				heightExtend.classList.add("hidden");
-			}
-
 			// Just make the transition looks better
 			const toc = document.getElementById("toc-wrapper");
 			if (toc) {

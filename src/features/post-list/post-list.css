@@ -21,6 +21,7 @@
   max-width: 24rem;
   height: 29rem;
   max-height: 29rem;
+  contain-intrinsic-size: auto 29rem;
   justify-self: center;
 }
 

@@ -16,13 +16,6 @@ function getAvailableNotices(region: HTMLElement) {
 	).filter((notice) => !notice.hidden);
 }
 
-function updateViewport(region: HTMLElement, notice: HTMLElement) {
-	const viewport = region.querySelector<HTMLElement>(
-		"[data-site-notice-viewport]",
-	);
-	if (viewport) viewport.style.height = `${notice.offsetHeight}px`;
-}
-
 function setInteractiveState(notice: HTMLElement, isActive: boolean) {
 	notice.setAttribute("aria-hidden", String(!isActive));
 	notice.inert = !isActive;
@@ -40,7 +33,6 @@ function showNotice(region: HTMLElement, nextIndex: number, direction: 1 | -1) {
 	const normalizedIndex = (nextIndex + notices.length) % notices.length;
 	const next = notices[normalizedIndex];
 	if (current === next) {
-		updateViewport(region, next);
 		return;
 	}
 
@@ -53,7 +45,6 @@ function showNotice(region: HTMLElement, nextIndex: number, direction: 1 | -1) {
 	next.dataset.state = "inactive";
 	next.dataset.entry = direction === 1 ? "from-bottom" : "from-top";
 	setInteractiveState(next, true);
-	updateViewport(region, next);
 
 	requestAnimationFrame(() => {
 		requestAnimationFrame(() => {
@@ -131,7 +122,6 @@ function initSiteNotice() {
 
 	firstNotice.dataset.state = "active";
 	setInteractiveState(firstNotice, true);
-	updateViewport(region, firstNotice);
 	startRotation(region);
 }
 
@@ -205,4 +195,3 @@ document.addEventListener("focusout", (event) => {
 
 onPageLifecycle("first-load", initSiteNotice);
 onPageLifecycle("content-replace", initSiteNotice);
-onPageLifecycle("page-view", initSiteNotice);

@@ -24,19 +24,20 @@ const { transparentClass } = viewModel.mainPanel;
 
 <div
 	class={`main-content-layer absolute w-full z-30 pointer-events-none ${viewModel.mainPanel.mobileNonHomeClass} ${viewModel.mainPanel.noBannerLayoutClass} ${transparentClass}`}
->
-	<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-	<div class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto">
-		<div
-			id="swup-container"
+	>
+		<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
+		<div class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto">
+			<div id="site-notice-container">
+				{siteNotice && <SiteNoticeBar notice={siteNotice} />}
+			</div>
+			<div
+				id="swup-container"
 			class="transition-swup-layout"
-			data-navbar-behavior={viewModel.interaction.navbar}
-			data-entry-scroll={viewModel.interaction.entryScroll}
-		>
-		<div id="page-entry-anchor" class="page-entry-anchor" data-page-entry-anchor aria-hidden="true"></div>
-		{siteNotice && <SiteNoticeBar notice={siteNotice} />}
-		<div
-			id="main-grid"
+				data-navbar-behavior={viewModel.interaction.navbar}
+				data-entry-scroll={viewModel.interaction.entryScroll}
+			>
+			<div
+				id="main-grid"
 			class="page-layout-grid transition duration-700 w-full left-0 right-0 grid grid-rows-none mx-auto gap-4 px-2 md:px-4"
 			data-base-desktop-layout={viewModel.pageLayout.desktop.base}
 			data-allowed-desktop-layouts={viewModel.pageLayout.allowedDesktopLayouts}

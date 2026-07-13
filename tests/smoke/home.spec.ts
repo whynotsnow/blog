@@ -41,7 +41,7 @@ test("home sections expose six-card guide destinations", async ({ page }) => {
 	}
 });
 
-test("category and post pages use content anchors and keep a fixed visible navbar", async ({
+test("category and post pages align the main region and keep a fixed visible navbar", async ({
 	page,
 }) => {
 	await page.addInitScript(() => {
@@ -58,10 +58,10 @@ test("category and post pages use content anchors and keep a fixed visible navba
 		.poll(() => page.evaluate(() => window.scrollY))
 		.toBeGreaterThan(0);
 
-	const entryAnchor = page.locator("[data-page-entry-anchor]");
+	const pageMain = page.locator(".page-main-content");
 	await expect
 		.poll(() =>
-			entryAnchor.evaluate(
+			pageMain.evaluate(
 				(node) =>
 					Math.abs(
 						node.getBoundingClientRect().top -
@@ -94,6 +94,42 @@ test("category and post pages use content anchors and keep a fixed visible navba
 	await page.goto("/category/tech/");
 	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 	await expect(banner).toBeHidden();
+});
+
+test("fullscreen category and post pages align the main region", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "fullscreen");
+	});
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.goto("/category/tech/");
+
+	const readMainOffset = () =>
+		page
+			.locator(".page-main-content")
+			.evaluate((node) =>
+				Math.abs(
+					node.getBoundingClientRect().top -
+						Number.parseFloat(
+							getComputedStyle(node).scrollMarginBlockStart,
+						),
+				),
+			);
+	await expect.poll(readMainOffset).toBeLessThan(1);
+	await expect
+		.poll(() => page.evaluate(() => window.scrollY))
+		.toBeGreaterThan(0);
+
+	await page.evaluate(() => {
+		window.swup.navigate("/posts/markdown-tutorial/");
+	});
+	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	await expect(page.locator("#navigation-progress")).toHaveAttribute(
+		"data-state",
+		"idle",
+	);
+	await expect.poll(readMainOffset).toBeLessThan(1);
 });
 
 test("home retains banner-aware navbar behavior", async ({ page }) => {
@@ -135,7 +171,94 @@ test("Swup shows navigation progress independently from page entry scrolling", a
 	await expect(progress).toHaveAttribute("data-state", "idle");
 });
 
-test("browser history reapplies category and post entry anchors", async ({
+test("category links use one smooth page-entry scroll", async ({ page }) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("wallpaperMode", "banner");
+	});
+	await page.goto("/category/tech/");
+	await expect
+		.poll(() => page.evaluate(() => Boolean(window.swup)))
+		.toBe(true);
+	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
+	const initialScrollHeight = await page.evaluate(
+		() => document.documentElement.scrollHeight,
+	);
+
+	await page.evaluate(() => {
+		const state = window as typeof window & {
+			__pageEntryScrollCalls?: number[];
+			__pageEntryScrollHeights?: number[];
+		};
+		const nativeScrollTo = window.scrollTo.bind(window);
+		state.__pageEntryScrollCalls = [];
+		state.__pageEntryScrollHeights = [];
+		window.scrollTo = ((options: ScrollToOptions) => {
+			state.__pageEntryScrollCalls?.push(options.top ?? window.scrollY);
+			state.__pageEntryScrollHeights?.push(
+				document.documentElement.scrollHeight,
+			);
+			nativeScrollTo(options);
+		}) as typeof window.scrollTo;
+		window.swup.navigate("/category/work/");
+	});
+
+	await expect(page).toHaveURL(/\/category\/work\/$/);
+	await expect(page.locator("#navigation-progress")).toHaveAttribute(
+		"data-state",
+		"idle",
+	);
+	await expect
+		.poll(() =>
+			page
+				.locator(".page-main-content")
+				.evaluate((node) =>
+					Math.abs(
+						node.getBoundingClientRect().top -
+							Number.parseFloat(
+								getComputedStyle(node).scrollMarginBlockStart,
+							),
+					),
+				),
+		)
+		.toBeLessThan(1);
+	const scrollCalls = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__pageEntryScrollCalls?: number[];
+				}
+			).__pageEntryScrollCalls ?? [],
+	);
+	expect(scrollCalls.length).toBeGreaterThan(3);
+	expect(scrollCalls[0]).toBeGreaterThan(scrollCalls.at(-1) ?? 0);
+	expect(
+		scrollCalls.every(
+			(value, index) => index === 0 || value <= scrollCalls[index - 1],
+		),
+	).toBe(true);
+	const scrollHeights = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__pageEntryScrollHeights?: number[];
+				}
+			).__pageEntryScrollHeights ?? [],
+	);
+	expect(Math.max(...scrollHeights)).toBeLessThanOrEqual(
+		initialScrollHeight + 1,
+	);
+	await expect(page.locator("#page-height-extend")).toHaveCount(0);
+	await expect
+		.poll(() =>
+			page.locator("#page-height-guard").evaluate((node) => ({
+				height: Number.parseFloat(getComputedStyle(node).height),
+				state: (node as HTMLElement).dataset.state,
+			})),
+		)
+		.toEqual({ height: 0, state: "idle" });
+});
+
+test("browser history realigns the category and post main regions", async ({
 	page,
 }) => {
 	await page.addInitScript(() => {
@@ -155,14 +278,19 @@ test("browser history reapplies category and post entry anchors", async ({
 		"idle",
 	);
 	const readEntryGeometry = () =>
-		page.locator("[data-page-entry-anchor]").evaluate((node) => ({
+		page.locator(".page-main-content").evaluate((node) => ({
 			top: node.getBoundingClientRect().top,
 			clearance: Number.parseFloat(
 				getComputedStyle(node).scrollMarginBlockStart,
 			),
 		}));
+	await expect
+		.poll(async () => {
+			const geometry = await readEntryGeometry();
+			return Math.abs(geometry.top - geometry.clearance);
+		})
+		.toBeLessThan(1);
 	const normalEntry = await readEntryGeometry();
-	expect(Math.abs(normalEntry.top - normalEntry.clearance)).toBeLessThan(1);
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
 
 	await page.evaluate(() => window.history.back());
@@ -346,6 +474,23 @@ test("banner sizing follows the mode and responsive contract", async ({
 				window.innerHeight,
 		),
 	).toBeCloseTo(1, 2);
+
+	const fullscreenGeometry = await page.evaluate(() => {
+		const banner = document.querySelector<HTMLElement>("#banner-wrapper");
+		const content = document.querySelector<HTMLElement>(
+			".main-content-layer",
+		);
+		if (!banner || !content) return null;
+		return {
+			bannerHeight: banner.getBoundingClientRect().height,
+			contentDocumentTop:
+				content.getBoundingClientRect().top + window.scrollY,
+		};
+	});
+	expect(fullscreenGeometry).not.toBeNull();
+	expect(fullscreenGeometry!.contentDocumentTop).toBeGreaterThanOrEqual(
+		fullscreenGeometry!.bannerHeight - 1,
+	);
 
 	await page.goto("/posts/markdown-tutorial/");
 	await expect(fullscreenBanner).toHaveClass(/mobile-hide-banner/);
