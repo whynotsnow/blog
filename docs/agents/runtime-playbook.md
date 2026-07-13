@@ -133,6 +133,7 @@ Use:
 
 - Keep fullscreen banner override rules after all generic banner height and orientation media queries.
 - In fullscreen banner mode, force `#banner-wrapper` to `top: 0`, `height: 100vh`, `min-height: 100vh`, `max-height: none`, and `transform: translateY(0)`.
+- Start the fullscreen main content at the fullscreen Banner block size (`100dvh`) and disable its generic `top` transition. Interpolating from a normal responsive Banner height temporarily overlays content on the fullscreen Banner.
 - Apply height inheritance to `#banner-carousel`, `.carousel-list`, `.carousel-item`, image wrapper slots, `#banner-single-container`, and images.
 - Scope wave positioning to `#header-waves` and restore `#header-waves > svg` to normal in-container sizing when generic `.waves` mobile rules would affect both the outer container and inner svg.
 
@@ -148,12 +149,18 @@ Symptoms:
 Response:
 
 - Keep Navbar behavior explicit in the page interaction policy; only home is `banner-aware`.
-- Give category and post pages a semantic content-entry anchor and calculate its document coordinate minus the CSS `scroll-margin` clearance. Do not delegate the final coordinate to `scrollIntoView()`.
+- In Banner and Fullscreen modes, use the actual `.page-main-content` region as the only category/post entry target and calculate its document coordinate minus the CSS `scroll-margin` clearance. Do not maintain a separate zero-height anchor or delegate the final coordinate to `scrollIntoView()`.
 - Derive Banner retention from the incoming container's page interaction policy, not a transient `window.location.pathname` during content replacement.
+- Keep page-entry scrolling and Banner visibility under one runtime owner. The legacy layout client must not add `mobile-main-no-banner` or force an instant top scroll when the incoming container declares `content-start`.
 - Keep Hash navigation native. For `popstate`, disable cached/reset scrolling and let the page-level entry routine own the final coordinate.
-- At Shell progress settlement, temporarily suppress the content layer's `top` transition, synchronize its Banner class, force layout, align the anchor with instant scrolling, then restore the transition on the next frame.
+- Start one Shell-owned `380ms` eased entry animation after `content:replace` for normal content-page links, while browser history keeps one settled instant correction phase. Disable Swup smooth scrolling and do not add a second `visit:end` correction for the same normal visit.
+- Cancel the Shell animation on wheel, touch, pointer, or scroll-navigation key input, and fall back to instant positioning for `prefers-reduced-motion`.
+- Never use a fixed `300vh` transition spacer. Capture the previous document height, compensate only a shorter incoming `content-start` page with the exact difference, and release that dynamic Guard with a short height transition after entry positioning settles.
+- Keep Grid item intrinsic sizing equal to the fixed `29rem` Card height so `content-visibility: auto` cannot revise the document height as off-screen rows become visible.
+- At Shell progress settlement, temporarily suppress the content layer's `top` transition, synchronize its Banner class, force layout, align `.page-main-content` with instant scrolling, then restore the transition on the next frame.
 - Publish the progress `idle` state only after this correction so tests and consumers cannot observe an intermediate coordinate.
 - Bind lifecycle callbacks to the current `window.swup` instance. A permanent boolean can silently leave callbacks attached to an obsolete instance after route scripts refresh the global instance.
+- Keep fixed Shell overlays such as the Site Notice outside the transformed `#swup-container`. A transformed ancestor becomes the fixed element's containing block during route animation, making the overlay jump between content-relative and viewport-relative coordinates.
 
 ### sidebar-sticky-containing-block
 

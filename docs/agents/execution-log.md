@@ -120,8 +120,14 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 ### Decoupled content-page entry scrolling from Banner geometry
 
 - Made home the only `banner-aware` Navbar page while category and post detail keep a persistent `fixed-visible` Navbar.
-- Replaced live Banner rectangle measurement with a semantic content-entry anchor and CSS scroll clearance.
+- Replaced live Banner rectangle measurement and the extra zero-height entry anchor with direct `.page-main-content` alignment plus CSS scroll clearance in both Banner and Fullscreen modes.
 - Preserved native Hash scrolling while applying the page-level content-entry contract to both normal and browser-history Banner-mode visits.
 - Added a persistent Shell navigation progress indicator with a minimum visible duration, without coupling it to entry positioning or hydration completion.
 - Rebound page lifecycle hooks by Swup instance and moved normal/history entry positioning into one page-owned coordinate routine.
 - Fixed history-only Banner overlap by deriving Banner retention from the incoming interaction policy, suppressing the stale content-layer `top` transition during settled geometry synchronization, and publishing progress idle only after exact alignment.
+- Removed duplicate category scrolling by excluding `content-start` pages from the legacy layout client's instant top reset; normal links now use one smooth entry scroll while history keeps one settled instant correction.
+- Replaced browser-native smooth behavior with a cancellable `380ms` Shell animation starting after content replacement, leaving Swup smooth scrolling disabled and preserving reduced-motion behavior.
+- Replaced the fixed `300vh` transition extender with an exact previous/new scroll-height Guard and aligned Grid intrinsic sizing with the fixed Card height to prevent scrollbar thumb jumps.
+- Stabilized the fixed Site Notice viewport so notice rotation no longer performs post-load height writes; confirmed that the fixed notice does not change document scroll height.
+- Moved the fixed Site Notice into its own non-animated Swup replacement container so route transforms cannot change its containing block or loading position.
+- Restored fullscreen Banner flow geometry by starting Main Content at `100dvh` and removing the transient `top` interpolation that exposed content over the Banner.
