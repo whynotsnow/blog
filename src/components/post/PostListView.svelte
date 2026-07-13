@@ -23,7 +23,10 @@
 	});
 </script>
 
-<div id="page-content">
+<div
+	id="page-content"
+	class="home-post-feed mx-auto w-full max-w-(--width-listing)"
+>
 	<PostTaxonomyNav
 		{categories}
 		currentCategory={categorySlug}
@@ -33,7 +36,7 @@
 	<div
 		bind:this={container}
 		id="post-list-container"
-		class="post-list rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4"
+		class="post-list home-post-list rounded-[var(--radius-large)] bg-[var(--surface-card)] md:bg-transparent mb-4"
 		class:grid-mode={defaultLayout === "grid"}
 		class:list-mode={defaultLayout !== "grid"}
 		data-default-layout={defaultLayout}

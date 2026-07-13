@@ -20,14 +20,14 @@
 </script>
 
 <div
-	class={`post-card post-item card-base flex flex-col-reverse md:flex-col w-full
+	class={`post-card post-item home-post-card card-base flex flex-col-reverse md:flex-col w-full
     rounded-(--radius-large) overflow-hidden relative ${className}`}
 	style={`--coverWidth:${coverWidth}; ${style ?? ""}`}
 	data-tags={dataTags}
 >
 	<!-- ================= 内容区域 ================= -->
 	<div
-		class={`pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative
+		class={`home-post-card__content pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative
       ${
 			!hasCover
 				? "w-full md:w-[calc(100%-3.25rem-0.75rem)]"
@@ -37,7 +37,7 @@
 		<!-- ================= 标题 ================= -->
 		<a
 			href={url}
-			class="transition group w-full block font-bold mb-3 text-3xl text-90
+			class="home-post-card__title transition group w-full block font-bold mb-3 text-3xl text-90
         hover:text-(--primary)
         active:text-(--title-active)
         before:w-1 before:h-5 before:rounded-md before:bg-(--primary)
@@ -74,7 +74,7 @@
 
 		<!-- ================= 描述 ================= -->
 		<div
-			class={`transition text-75 mb-3.5 pr-4
+			class={`home-post-card__summary transition text-75 mb-3.5 pr-4
         ${!post.description ? "line-clamp-2 md:line-clamp-1" : ""}`}
 		>
 			{post.description ?? post.meta?.excerpt ?? ""}

@@ -6,11 +6,32 @@
 }
 
 .post-list.list-mode {
-  @apply flex flex-col gap-4;
+  @apply flex flex-col;
+  gap: var(--space-content);
 }
 
 .post-list.grid-mode {
-  @apply grid grid-cols-1 gap-6 md:grid-cols-2;
+  @apply grid grid-cols-1 md:grid-cols-2;
+  gap: var(--space-content);
+}
+
+body.is-home .home-post-card {
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+body.is-home .home-post-card__content {
+  padding-block: var(--space-content);
+}
+
+body.is-home .home-post-card__title {
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+}
+
+body.is-home .home-post-card__summary {
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
 
 .post-list > .post-list__item {
@@ -42,13 +63,13 @@
   }
 
   .post-list.list-mode {
-    gap: 0.5rem;
+    gap: var(--space-cluster);
   }
 
   /* Preserve the saved Grid preference while presenting a single card column. */
   .post-list.grid-mode {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.5rem;
+    gap: var(--space-cluster);
   }
 }
 

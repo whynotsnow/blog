@@ -23,7 +23,7 @@ const { transparentClass } = viewModel.mainPanel;
 	class={`main-content-layer absolute w-full z-30 pointer-events-none ${viewModel.mainPanel.mobileNonHomeClass} ${viewModel.mainPanel.noBannerLayoutClass} ${transparentClass}`}
 >
 	<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-	<div class="relative max-w-(--page-width) mx-auto pointer-events-auto">
+	<div class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto">
 		<div id="swup-container" class="transition-swup-layout">
 		<div
 			id="main-grid"

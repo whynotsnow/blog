@@ -2,6 +2,15 @@
   --main-content-offset: 5.5rem;
 }
 
+body:is(.is-home, .is-post) .main-grid-shell {
+  padding-inline: var(--space-page-x);
+}
+
+body:is(.is-home, .is-post) #main-grid {
+  padding-inline: 0;
+  gap: var(--space-content);
+}
+
 .main-content-layer {
   top: var(--main-content-offset);
   min-height: calc(100dvh - var(--main-content-offset));

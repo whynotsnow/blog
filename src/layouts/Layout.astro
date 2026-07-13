@@ -66,11 +66,12 @@ const pageShell = buildLayoutPageShellModel({
 		class:list={[
 			{
 				"is-home": pageShell.isHomePage,
+				"is-post": Boolean(postSlug),
 				"enable-banner": pageShell.enableBanner,
 			},
 		]}
 		style={pageShell.bodyFontFamily
-			? `font-family: ${pageShell.bodyFontFamily};`
+			? `--font-body: ${pageShell.bodyFontFamily}; font-family: var(--font-body);`
 			: ""}
 	>
 		<noscript

@@ -129,3 +129,15 @@ src/features/music-player/
 - 新增 Widget：放入 `src/components/widget`，在 `src/services/widget/registry.ts` 注册，并在 `src/services/widget/presets.ts` 中按端点和区域显式配置。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。
+
+## 首页与文章视觉基础
+
+首页和文章详情页当前通过 `src/styles/variables.styl` 中的过渡性 semantic token 统一主要视觉决策。该范围包含 Surface、文本层级、内容宽度、页面间距与 Typography；其他功能页仍通过旧变量保持兼容，后续由独立的 Design 层计划统一迁移。
+
+- 首页文章列表使用 `--width-listing`，不随主内容列无限扩张。
+- 文章正文阅读宽度使用 `--width-reading: 48rem`；代码、表格、图片与数学公式可扩展到 `--width-reading-wide`。
+- 普通模式下文章正文使用无卡片背景的 Content Surface；壁纸透明或 Overlay 模式仍使用半透明背景、轻边框与 blur，以维持可读性。
+- 首页和文章详情页优先消费 `--surface-*`、`--text-*`、`--border-*` 与 `--accent` 等 semantic token。旧的 `--card-bg`、`--primary`、`--line-*` 等变量仍是兼容 API，不应仅为本轮迁移而批量修改其他页面。
+- 页面级留白使用 `--space-page-x`、`--space-content` 与 `--space-cluster`；组件内部的小型布局仍可使用 Tailwind spacing utility。
+
+本阶段没有建立独立 `src/design/` 目录，也没有改变动效所有权。完整 Design System、开发门禁和 Agent workflow 约束属于后续独立计划。

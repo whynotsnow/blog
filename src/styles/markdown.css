@@ -1,6 +1,24 @@
 @reference "tailwindcss";
 
 .custom-md {
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
+
+  > :where(p, ul, ol, blockquote) {
+    max-width: var(--measure-body);
+    margin-inline: auto;
+  }
+
+  > :where(h1, h2, h3, h4, h5, h6) {
+    max-width: var(--measure-heading);
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+
   h1 {
     @apply text-3xl;
   }
@@ -39,7 +57,7 @@
   code {
     @apply bg-(--inline-code-bg) text-(--inline-code-color) px-1 py-0.5 rounded-md overflow-hidden;
 
-    font-family: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: var(--font-mono);
 
     &:before,
     &:after {
@@ -188,6 +206,14 @@
     padding-right: 3rem;
     box-sizing: border-box;
   }
+}
+
+body.is-post .post-detail__content > :is(.expressive-code, .table-wrapper, .katex-display, figure, p:has(> img:only-child)) {
+  position: relative;
+  left: 50%;
+  width: min(var(--width-reading-wide), calc(100vw - var(--space-page-x) - var(--space-page-x)));
+  max-width: none;
+  transform: translateX(-50%);
 }
 
 /* 外部覆盖样式 */

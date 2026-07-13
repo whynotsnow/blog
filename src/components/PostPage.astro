@@ -18,12 +18,12 @@ const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
 const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 ---
 
-<div id="page-content">
+<div id="page-content" class="home-post-feed mx-auto w-full max-w-(--width-listing)">
 	<PostTaxonomyNav categories={categories} currentCategory={slug} />
 
 	<div
 		id="post-list-container"
-		class={`post-list rounded-(--radius-large) bg-(--card-bg) md:bg-transparent mb-4 ${initialLayoutClass}`}
+		class={`post-list home-post-list rounded-(--radius-large) bg-(--surface-card) md:bg-transparent mb-4 ${initialLayoutClass}`}
 		data-default-layout={defaultLayout}
 		data-post-list-renderer="astro"
 	>
