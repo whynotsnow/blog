@@ -12,9 +12,10 @@ interface Props {
 	class?: string;
 	entry: UIPost;
 	style?: string;
+	variant?: "adaptive" | "list" | "grid";
 }
 
-const { entry, style } = Astro.props;
+const { entry, style, variant = "adaptive" } = Astro.props;
 const className = Astro.props.class;
 
 const {
@@ -36,11 +37,12 @@ const coverWidth = "28%";
 
 <div
 	class:list={[
-		"post-card post-item home-post-card card-base ds-surface-card flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative",
+		"post-card post-item home-post-card ds-surface-card flex flex-col-reverse md:flex-col w-full overflow-hidden relative",
 		className,
 	]}
 	style={style}
 	data-tags={tags.map((t) => t.name).join(",")}
+	data-card-variant={variant}
 >
 	<div
 		class:list={[
@@ -70,11 +72,11 @@ const coverWidth = "28%";
 			}
 			{title}
 			<Icon
-				class="inline text-[2rem] text-(--primary) md:hidden translate-y-0.5 absolute"
+				class="home-post-card__title-chevron inline text-[2rem] text-(--accent) md:hidden translate-y-0.5 absolute"
 				name="material-symbols:chevron-right-rounded"
 			/>
 			<Icon
-				class="text-(--primary) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0"
+				class="home-post-card__title-chevron text-(--accent) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0"
 				name="material-symbols:chevron-right-rounded"
 			/>
 		</a>
@@ -101,10 +103,10 @@ const coverWidth = "28%";
 			{description || meta.excerpt}
 		</div>
 
-		<div class="flex flex-wrap gap-2 mt-2">
+		<div class="home-post-card__tags flex flex-wrap gap-2 mt-2">
 			{
 				tags && tags.length > 0 ? (
-					tags.map((tag) => (
+					tags.slice(0, 2).map((tag) => (
 						<a
 							href={getTagUrl(tag.slug)}
 							class:list={[
@@ -115,7 +117,7 @@ const coverWidth = "28%";
 							aria-label={`View all posts tagged with ${tag.slug}`}
 						>
 							<span class="transition-transform group-hover/tag:translate-x-0.5">
-								# {tag.name}
+							# {tag.name}
 							</span>
 						</a>
 					))
@@ -126,47 +128,30 @@ const coverWidth = "28%";
 		</div>
 	</div>
 
-	{
-		hasCover ? (
-			<a
-				href={url}
-				aria-label={title}
-				class:list={[
-					"group",
-					"max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
-					"md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95",
-				]}
-			>
-				<div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
-				<div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
-					<Icon
-						name="material-symbols:chevron-right-rounded"
-						class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl"
-					/>
-				</div>
+	<a
+		href={url}
+		aria-label={title}
+		class="home-post-card__cover group max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0 md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
+	>
+		<div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
+		<div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center">
+			<Icon name="material-symbols:chevron-right-rounded" class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl" />
+		</div>
+		{
+			hasCover ? (
 				<ImageWrapper
 					src={image?.src}
 					basePath={getFileDirFromPath(entry.filePath || "")}
 					alt="Cover Image of the Post"
 					class="w-full h-full"
 				/>
-			</a>
-		) : (
-			<a
-				href={url}
-				aria-label={title}
-				class="!hidden md:flex! btn-regular w-13
-         absolute right-3 top-3 bottom-3 rounded-xl bg-(--enter-btn-bg)
-         hover:bg-(--enter-btn-bg-hover) active:bg-(--enter-btn-bg-active) active:scale-95
-        "
-			>
-				<Icon
-					name="material-symbols:chevron-right-rounded"
-					class="transition text-(--primary) text-4xl mx-auto"
-				/>
-			</a>
-		)
-	}
+			) : (
+				<div class="home-post-card__cover-placeholder flex h-full w-full items-center justify-center" aria-hidden="true">
+					<Icon name="material-symbols:article-outline-rounded" class="text-5xl text-(--accent)" />
+				</div>
+			)
+		}
+	</a>
 </div>
 
 <style define:vars={{ coverWidth }}></style>

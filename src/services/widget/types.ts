@@ -27,7 +27,7 @@ export type WidgetPlacementConfig = {
 	};
 };
 
-export type WidgetPlacementName = "default" | "post";
+export type WidgetPlacementName = "default" | "home" | "category" | "post";
 
 export type ResolvedWidget = WidgetInstanceConfig & {
 	component: AstroComponentFactory;

@@ -1,0 +1,22 @@
+---
+import { Icon } from "astro-icon/components";
+import type { HomePostSection } from "@/services/home";
+import HomePostGrid from "./HomePostGrid.astro";
+
+interface Props {
+	section: HomePostSection;
+}
+
+const { section } = Astro.props;
+---
+
+<section class="home-section ds-stack" style="--stack-space: var(--space-content);">
+	<header class="ds-cluster items-end justify-between" style="--cluster-space: var(--space-cluster);">
+		<h2 class="min-w-0 font-heading text-2xl font-bold text-(--text-primary)">{section.title}</h2>
+		<a class="ds-cluster shrink-0 text-sm font-semibold text-(--accent) hover:text-(--accent-hover)" href={section.href}>
+			{section.linkLabel}
+			<Icon name="material-symbols:arrow-forward-rounded" />
+		</a>
+	</header>
+	<HomePostGrid posts={section.posts} id={`post-list-${section.id}`} />
+</section>

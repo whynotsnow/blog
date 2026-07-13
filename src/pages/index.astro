@@ -1,18 +1,11 @@
 ---
-import PostPage from "../components/PostPage.astro";
+import HomePage from "@components/home/HomePage.astro";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import { getContentStore } from "@/services/core/content-store";
-import { toUIPost } from "@/services/core/inject";
-import { PAGE_SIZE } from "@constants/constants";
+import { getHomePageViewModel } from "@/services/home";
 
-const store = await getContentStore();
-const { posts, categories } = store;
-
-const uiPosts = await Promise.all(posts.map(toUIPost));
-
-const sliced = uiPosts.slice(0, PAGE_SIZE);
+const model = await getHomePageViewModel();
 ---
 
-<MainGridLayout store={store}>
-	<PostPage posts={sliced} categories={categories} />
+<MainGridLayout store={model.store} layoutPolicy="listing" widgetPlacement="home">
+	<HomePage {model} />
 </MainGridLayout>

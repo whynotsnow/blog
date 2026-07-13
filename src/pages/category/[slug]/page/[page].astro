@@ -1,9 +1,7 @@
 ---
 import type { GetStaticPaths } from "astro";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
-import PostPage from "@/components/PostPage.astro";
-import Pagination from "@/components/control/Pagination.astro";
-import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
+import CategoryPage from "@components/category/CategoryPage.astro";
 import {
 	getCategoryPaginatedStaticPaths,
 	type CategoryPageProps,
@@ -22,19 +20,6 @@ const { posts, allPosts, page, categorySlug, categories, store } =
 if (!slug) return Astro.redirect("/404");
 ---
 
-<MainGridLayout store={store}>
-	<CategoryPostListClient
-		client:load
-		posts={allPosts}
-		categories={categories}
-		categorySlug={categorySlug}
-	>
-		<PostPage posts={posts} categories={categories} />
-
-		<Pagination
-			page={page}
-			class="mx-auto"
-			style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`}
-		/>
-	</CategoryPostListClient>
+<MainGridLayout store={store} layoutPolicy="listing" widgetPlacement="category">
+	<CategoryPage {posts} {allPosts} {page} {categories} {categorySlug} {store} />
 </MainGridLayout>

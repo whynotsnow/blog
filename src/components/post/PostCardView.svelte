@@ -20,10 +20,11 @@
 </script>
 
 <div
-	class={`post-card post-item home-post-card card-base ds-surface-card flex flex-col-reverse md:flex-col w-full
+	class={`post-card post-item home-post-card ds-surface-card flex flex-col-reverse md:flex-col w-full
     rounded-(--radius-large) overflow-hidden relative ${className}`}
 	style={`--coverWidth:${coverWidth}; ${style ?? ""}`}
 	data-tags={dataTags}
+	data-card-variant="adaptive"
 >
 	<!-- ================= 内容区域 ================= -->
 	<div
@@ -81,9 +82,9 @@
 		</div>
 
 		<!-- ================= 标签 ================= -->
-		<div class="flex flex-wrap gap-2 mt-2">
+		<div class="home-post-card__tags flex flex-wrap gap-2 mt-2">
 			{#if post.tags && post.tags.length > 0}
-				{#each post.tags as tag (tag.slug)}
+				{#each post.tags.slice(0, 2) as tag (tag.slug)}
 					<a
 						href={tag.url}
 						class={siteConfig.tagStyle?.useNewStyle
@@ -105,61 +106,53 @@
 	</div>
 
 	<!-- ================= 封面区域 ================= -->
-	{#if hasCover}
-		<a
-			href={url}
-			aria-label={post.title}
-			class="group
+	<a
+		href={url}
+		aria-label={post.title}
+		class="home-post-card__cover group
         max-h-[20vh] md:max-h-none
         mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0
         md:w-(--coverWidth)
         relative md:absolute md:top-3 md:bottom-3 md:right-3
         rounded-xl overflow-hidden active:scale-95"
-		>
-			<!-- hover 蒙层 -->
-			<div
-				class="absolute pointer-events-none z-10 w-full h-full
+	>
+		<!-- hover 蒙层 -->
+		<div
+			class="absolute pointer-events-none z-10 w-full h-full
         group-hover:bg-black/30 group-active:bg-black/50 transition"
-			></div>
+		></div>
 
-			<!-- 中心箭头 -->
-			<div
-				class="absolute pointer-events-none z-20 w-full h-full
+		<!-- 中心箭头 -->
+		<div
+			class="absolute pointer-events-none z-20 w-full h-full
         flex items-center justify-center"
-			>
-				<Icon
-					icon="material-symbols:chevron-right-rounded"
-					class="transition opacity-0 group-hover:opacity-100
+		>
+			<Icon
+				icon="material-symbols:chevron-right-rounded"
+				class="transition opacity-0 group-hover:opacity-100
             scale-50 group-hover:scale-100 text-white text-5xl"
-				/>
-			</div>
+			/>
+		</div>
 
+		{#if hasCover}
 			<ImageWrapper
 				src={post.image}
 				alt="Cover Image of the Post"
 				className="w-full h-full"
 				loading="lazy"
 			/>
-		</a>
-	{/if}
-
-	<!-- ================= 无封面按钮 ================= -->
-	{#if !hasCover}
-		<a
-			href={url}
-			aria-label={post.title}
-			class="hidden! md:flex! btn-regular w-13
-        absolute right-3 top-3 bottom-3 rounded-xl
-        bg-(--enter-btn-bg)
-        hover:bg-(--enter-btn-bg-hover)
-        active:bg-(--enter-btn-bg-active) active:scale-95"
-		>
-			<Icon
-				icon="material-symbols:chevron-right-rounded"
-				class="transition text-(--primary) text-4xl mx-auto"
-			/>
-		</a>
-	{/if}
+		{:else}
+			<div
+				class="home-post-card__cover-placeholder flex h-full w-full items-center justify-center"
+				aria-hidden="true"
+			>
+				<Icon
+					icon="material-symbols:article-outline-rounded"
+					class="text-5xl text-(--accent)"
+				/>
+			</div>
+		{/if}
+	</a>
 </div>
 
 <!-- 移动端分割线 -->

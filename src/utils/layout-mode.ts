@@ -45,8 +45,10 @@ export function applyLayoutMode(mode: LayoutMode = getLayoutMode()): void {
 	const mainGrid = document.getElementById("main-grid");
 	mainGrid?.setAttribute("data-layout-mode", mode);
 
-	const postListContainer = document.getElementById("post-list-container");
-	if (postListContainer) {
+	const postListContainers = document.querySelectorAll<HTMLElement>(
+		"[data-post-list-renderer]",
+	);
+	postListContainers.forEach((postListContainer) => {
 		postListContainer.classList.add("layout-switching");
 		postListContainer.classList.toggle("grid-mode", mode === "grid");
 		postListContainer.classList.toggle("list-mode", mode === "list");
@@ -55,7 +57,7 @@ export function applyLayoutMode(mode: LayoutMode = getLayoutMode()): void {
 		window.setTimeout(() => {
 			postListContainer.classList.remove("layout-switching");
 		}, 500);
-	}
+	});
 
 	publishLayoutInit(mode);
 }

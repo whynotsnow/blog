@@ -12,6 +12,7 @@
 	export let categories: PostNavigatorCategory[];
 	export let categorySlug: string;
 	export let tag: string | undefined = undefined;
+	export let resultCount: number = posts.length;
 
 	let container: HTMLDivElement | null = null;
 
@@ -25,7 +26,7 @@
 
 <div
 	id="page-content"
-	class="home-post-feed ds-stack mx-auto w-full max-w-(--width-listing)"
+	class="listing-page category-page home-post-feed ds-stack mx-auto w-full"
 	style="--stack-space: var(--size-4);"
 >
 	<PostTaxonomyNav
@@ -33,6 +34,7 @@
 		currentCategory={categorySlug}
 		currentTag={tag}
 	/>
+	<p class="text-sm text-(--text-secondary)">{resultCount} 篇文章</p>
 
 	<div
 		bind:this={container}

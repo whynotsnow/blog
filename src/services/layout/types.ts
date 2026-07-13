@@ -1,5 +1,7 @@
 export type DesktopPageLayout = "three-column" | "content-right";
-export type PageLayoutPolicyName = "default" | "post";
+export type PageLayoutPolicyName = "default" | "listing" | "post";
+export type NavbarBehavior = "banner-aware" | "fixed-visible";
+export type EntryScrollBehavior = "top" | "content-start";
 
 export type PageLayoutPolicy = {
 	desktop: {
@@ -13,4 +15,9 @@ export type PageLayoutPolicy = {
 export type ResolvedPageLayout = PageLayoutPolicy & {
 	name: PageLayoutPolicyName;
 	allowedDesktopLayouts: string;
+};
+
+export type PageInteractionPolicy = {
+	navbar: NavbarBehavior;
+	entryScroll: EntryScrollBehavior;
 };

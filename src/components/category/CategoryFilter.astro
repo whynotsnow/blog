@@ -1,0 +1,75 @@
+---
+import type { PostNavigatorCategory } from "@/services/core/types";
+import { url } from "@utils/url-utils";
+
+interface Props {
+	categories: PostNavigatorCategory[];
+	categorySlug: string;
+	currentTag?: string;
+	resultCount: number;
+}
+
+const { categories, categorySlug, currentTag, resultCount } = Astro.props;
+const activeCategory = categories.find((category) => category.slug === categorySlug);
+---
+
+<section class="category-filter ds-surface-card p-4 md:p-5" aria-labelledby="category-filter-title">
+	<div class="ds-cluster justify-between" style="--cluster-space: var(--space-cluster);">
+		<div>
+			<h1 id="category-filter-title" class="text-xl font-bold text-(--text-primary)">
+				{activeCategory?.name ?? "文章分类"}
+			</h1>
+			<p class="mt-1 text-sm text-(--text-secondary)">
+				{currentTag ? `# ${currentTag} · ` : ""}{resultCount} 篇文章
+			</p>
+		</div>
+		<details class="category-filter__mobile md:hidden">
+			<summary class="cursor-pointer rounded-(--radius-md) border border-(--border-default) px-3 py-2 text-sm font-semibold text-(--text-primary)">筛选</summary>
+		</details>
+	</div>
+
+	<div class="category-filter__options mt-4">
+		<div class="ds-cluster" style="--cluster-space: var(--size-2);">
+			{categories.map((category) => (
+				<a
+					href={url(`/category/${category.slug}/`)}
+					aria-current={category.slug === categorySlug ? "page" : undefined}
+					class:list={[
+						"rounded-(--radius-md) border px-3 py-2 text-sm font-semibold transition",
+						category.slug === categorySlug
+							? "border-(--accent) bg-(--accent) text-(--text-on-accent)"
+							: "border-(--border-subtle) text-(--text-secondary) hover:border-(--border-strong) hover:text-(--accent)",
+					]}
+				>
+					{category.name} <span class="opacity-70">{category.count}</span>
+				</a>
+			))}
+		</div>
+
+		{activeCategory && activeCategory.tags.length > 0 && (
+			<div class="mt-4 border-t border-(--border-subtle) pt-4">
+				<div class="ds-cluster" style="--cluster-space: var(--size-2);">
+					<a href={url(`/category/${activeCategory.slug}/`)} class:list={["rounded-(--radius-md) px-2.5 py-1.5 text-xs font-semibold", !currentTag ? "bg-(--accent) text-(--text-on-accent)" : "text-(--text-secondary) hover:text-(--accent)"]}>全部标签</a>
+					{activeCategory.tags.map((tag) => (
+						<a
+							href={url(`/category/${activeCategory.slug}/?tag=${tag.slug}`)}
+							class:list={[
+								"rounded-(--radius-md) px-2.5 py-1.5 text-xs font-semibold transition",
+								currentTag === tag.slug ? "bg-(--accent) text-(--text-on-accent)" : "text-(--text-secondary) hover:text-(--accent)",
+							]}
+						>
+							# {tag.name} <span class="opacity-70">{tag.count}</span>
+						</a>
+					))}
+				</div>
+			</div>
+		)}
+	</div>
+</section>
+
+<style>
+	@media (max-width: 767px) {
+		.category-filter__options { display: none; }
+		.category-filter:has(details[open]) .category-filter__options { display: block; }
+	}
+</style>

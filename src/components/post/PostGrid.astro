@@ -1,0 +1,32 @@
+---
+import type { UIPost } from "@/services/core/types";
+import PostCard from "@components/PostCard.astro";
+import "@/features/post-list/post-list.css";
+
+interface Props {
+	posts: UIPost[];
+	class?: string;
+	renderer?: "astro" | "svelte";
+	id?: string;
+}
+
+const { posts, class: className, renderer = "astro", id } = Astro.props;
+---
+
+<div
+	{id}
+	class:list={["post-list home-post-list grid-mode", className]}
+	data-default-layout="grid"
+	data-post-list-renderer={renderer}
+>
+	{
+		posts.map((entry, index) => (
+			<PostCard
+				entry={entry}
+				variant="adaptive"
+				class="post-list__item"
+				style={`--i: ${index}; --interval: 50ms;`}
+			/>
+		))
+	}
+</div>

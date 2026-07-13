@@ -1,8 +1,6 @@
 ---
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
-import PostPage from "@/components/PostPage.astro";
-import Pagination from "@/components/control/Pagination.astro";
-import CategoryPostListClient from "@components/post/CategoryPostListClient.svelte";
+import CategoryPage from "@components/category/CategoryPage.astro";
 import {
 	getCategoryIndexStaticPaths,
 	type CategoryPageProps,
@@ -14,19 +12,6 @@ const { posts, allPosts, page, categories, categorySlug, store } =
 	Astro.props as CategoryPageProps;
 ---
 
-<MainGridLayout store={store}>
-	<CategoryPostListClient
-		client:load
-		posts={allPosts}
-		categories={categories}
-		categorySlug={categorySlug}
-	>
-		<PostPage posts={posts} categories={categories} />
-
-		<Pagination
-			page={page}
-			class="mx-auto"
-			style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`}
-		/>
-	</CategoryPostListClient>
+<MainGridLayout store={store} layoutPolicy="listing" widgetPlacement="category">
+	<CategoryPage {posts} {allPosts} {page} {categories} {categorySlug} {store} />
 </MainGridLayout>

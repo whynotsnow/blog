@@ -1,5 +1,5 @@
 import type { GetStaticPathsItem, Page } from "astro";
-import { PAGE_SIZE } from "@constants/constants";
+import { CATEGORY_PAGE_SIZE } from "@constants/constants";
 import { toUIPost } from "./core/inject";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
@@ -24,15 +24,15 @@ function buildCategoryPage(
 	slug: string,
 	currentPage: number,
 ): Page<ListPost> {
-	const lastPageNumber = Math.ceil(allPosts.length / PAGE_SIZE);
-	const start = (currentPage - 1) * PAGE_SIZE;
-	const end = start + PAGE_SIZE;
+	const lastPageNumber = Math.ceil(allPosts.length / CATEGORY_PAGE_SIZE);
+	const start = (currentPage - 1) * CATEGORY_PAGE_SIZE;
+	const end = start + CATEGORY_PAGE_SIZE;
 
 	return {
 		data: allPosts.slice(start, end),
 		start,
 		end: Math.min(end, allPosts.length),
-		size: PAGE_SIZE,
+		size: CATEGORY_PAGE_SIZE,
 		total: allPosts.length,
 		currentPage,
 		lastPage: lastPageNumber,
@@ -110,7 +110,9 @@ export async function getCategoryPaginatedStaticPaths(): Promise<
 
 	return Array.from(categoryMap.entries()).flatMap(([slug, entry]) => {
 		const sortedPosts = sortByScore(entry.posts);
-		const lastPageNumber = Math.ceil(sortedPosts.length / PAGE_SIZE);
+		const lastPageNumber = Math.ceil(
+			sortedPosts.length / CATEGORY_PAGE_SIZE,
+		);
 
 		return Array.from({ length: lastPageNumber }, (_, index) => {
 			const currentPage = index + 1;

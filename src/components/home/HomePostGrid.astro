@@ -1,0 +1,13 @@
+---
+import PostGrid from "@components/post/PostGrid.astro";
+import type { UIPost } from "@/services/core/types";
+
+interface Props {
+	posts: UIPost[];
+	id: string;
+}
+
+const { posts, id } = Astro.props;
+---
+
+<PostGrid posts={posts} {id} />

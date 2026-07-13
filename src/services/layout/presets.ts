@@ -9,6 +9,14 @@ export const pageLayoutPolicies = {
 		tablet: { base: "content-sidebar" },
 		mobile: { base: "content" },
 	},
+	listing: {
+		desktop: {
+			base: "content-right",
+			allowed: ["content-right"],
+		},
+		tablet: { base: "content-sidebar" },
+		mobile: { base: "content" },
+	},
 	post: {
 		desktop: {
 			base: "content-right",
