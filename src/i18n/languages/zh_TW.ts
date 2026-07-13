@@ -24,6 +24,8 @@ export const zh_TW: Translation = {
 	// 公告欄
 	[Key.siteNotice]: "網站通知",
 	[Key.siteNoticeDismiss]: "關閉通知",
+	[Key.siteNoticePrevious]: "上一則通知",
+	[Key.siteNoticeNext]: "下一則通知",
 
 	[Key.comments]: "評論",
 	[Key.friends]: "友鏈",

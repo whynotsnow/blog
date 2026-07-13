@@ -10,52 +10,91 @@ interface Props {
 }
 
 const { notice } = Astro.props;
+const hasMultipleNotices = notice.notices.length > 1;
 ---
 
 <aside
 	class="site-notice-bar"
-	aria-label={notice.title || i18n(I18nKey.siteNotice)}
-	data-site-notice
-	data-notice-id={notice.id}
-	data-status={notice.status}
+	aria-label={i18n(I18nKey.siteNotice)}
+	data-site-notice-region
+	data-auto-rotate={String(notice.autoRotate)}
+	data-rotation-interval={notice.rotationIntervalMs}
 >
-	<div class="site-notice-bar__layout ds-cluster">
-		<Icon
-			name={notice.icon}
-			class="site-notice-bar__icon"
-			aria-hidden="true"
-		/>
-
-		<div class="site-notice-bar__message">
-			{notice.title && (
-				<strong class="site-notice-bar__title">{notice.title}</strong>
-			)}
-			<span>{notice.content}</span>
-		</div>
-
-		{notice.action && (
-			<a
-				class="site-notice-bar__action"
-				href={notice.action.href}
-				target={notice.action.external ? "_blank" : undefined}
-				rel={notice.action.external ? "noopener noreferrer" : undefined}
+	<div class="site-notice-bar__viewport" data-site-notice-viewport>
+		{notice.notices.map((item, index) => (
+			<article
+				class="site-notice-bar__item"
+				data-site-notice-item
+				data-site-notice={index === 0 ? "" : undefined}
+				data-notice-id={item.id}
+				data-status={item.status}
+				data-state={index === 0 ? "active" : "inactive"}
+				aria-hidden={index === 0 ? "false" : "true"}
 			>
-				{notice.action.label}
-				<Icon name="material-symbols:arrow-forward-rounded" aria-hidden="true" />
-			</a>
-		)}
+				<div class="site-notice-bar__layout ds-cluster">
+					<Icon
+						name={item.icon}
+						class="site-notice-bar__icon"
+						aria-hidden="true"
+					/>
 
-		{notice.dismissible && (
+					<div class="site-notice-bar__message">
+						{item.title && (
+							<strong class="site-notice-bar__title">{item.title}</strong>
+						)}
+						<span>{item.content}</span>
+					</div>
+
+					{item.action && (
+						<a
+							class="site-notice-bar__action"
+							href={item.action.href}
+							target={item.action.external ? "_blank" : undefined}
+							rel={item.action.external ? "noopener noreferrer" : undefined}
+						>
+							{item.action.label}
+							<Icon name="material-symbols:arrow-forward-rounded" aria-hidden="true" />
+						</a>
+					)}
+
+					{item.dismissible && (
+						<button
+							type="button"
+							class="site-notice-bar__icon-button"
+							data-site-notice-dismiss
+							aria-label={i18n(I18nKey.siteNoticeDismiss)}
+						>
+							<Icon name="material-symbols:close-rounded" aria-hidden="true" />
+						</button>
+					)}
+				</div>
+			</article>
+		))}
+	</div>
+
+	{hasMultipleNotices && (
+		<div class="site-notice-bar__controls">
 			<button
 				type="button"
-				class="site-notice-bar__dismiss"
-				data-site-notice-dismiss
-				aria-label={i18n(I18nKey.siteNoticeDismiss)}
+				class="site-notice-bar__icon-button"
+				data-site-notice-previous
+				aria-label={i18n(I18nKey.siteNoticePrevious)}
 			>
-				<Icon name="material-symbols:close-rounded" aria-hidden="true" />
+				<Icon name="material-symbols:keyboard-arrow-up-rounded" aria-hidden="true" />
 			</button>
-		)}
-	</div>
+			<span class="site-notice-bar__counter" aria-live="polite">
+				<span data-site-notice-index>1</span>/{notice.notices.length}
+			</span>
+			<button
+				type="button"
+				class="site-notice-bar__icon-button"
+				data-site-notice-next
+				aria-label={i18n(I18nKey.siteNoticeNext)}
+			>
+				<Icon name="material-symbols:keyboard-arrow-down-rounded" aria-hidden="true" />
+			</button>
+		</div>
+	)}
 </aside>
 
 <script>

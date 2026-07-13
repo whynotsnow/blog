@@ -64,10 +64,13 @@ Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`
 
 ## 网站通知
 
-`siteNoticeConfig` 独立于 Widget placement，在主内容 Shell 内、页面 Grid 之前渲染为 `SiteNoticeBar`。它不会占用 Desktop、Tablet 或 Mobile 的 Widget 区域。
+`siteNoticeConfig` 独立于 Widget placement。`SiteNoticeBar` 以站点级浮层固定在 Navbar 下方，限制为阅读宽度，不参与页面流布局，也不会占用 Desktop、Tablet 或 Mobile 的 Widget 区域。
 
 - `enable`：启用或关闭网站通知。
-- `id`：通知的稳定版本 ID；用户关闭状态以 `site-notice:dismissed:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
+- `autoRotate`：多条通知时是否自动轮播；用户 Hover 或将焦点移入通知区域时暂停。
+- `rotationIntervalMs`：自动轮播间隔，运行时最低为 3000ms；系统启用 `prefers-reduced-motion` 时不自动轮播。
+- `notices`：通知条目数组，按配置顺序显示并支持手动上下切换。
+- `notices[].id`：通知的稳定版本 ID；用户关闭状态以 `site-notice:dismissed:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
 - `title`、`content`、`icon`：通知标题、纯文本正文和可选图标。
 - `status`：支持 `info`、`success`、`warning`、`danger`，视觉由 Design Semantic status token 提供。
 - `dismissible`：是否允许用户关闭。

@@ -1,7 +1,11 @@
-import type { SiteNoticeConfig, SiteNoticeStatus } from "@/types/config";
+import type {
+	SiteNoticeConfig,
+	SiteNoticeItemConfig,
+	SiteNoticeStatus,
+} from "@/types/config";
 import { url } from "@/utils/url-utils";
 
-export type SiteNoticeViewModel = {
+export type SiteNoticeItemViewModel = {
 	id: string;
 	title?: string;
 	content: string;
@@ -13,6 +17,12 @@ export type SiteNoticeViewModel = {
 		href: string;
 		external: boolean;
 	};
+};
+
+export type SiteNoticeViewModel = {
+	autoRotate: boolean;
+	rotationIntervalMs: number;
+	notices: SiteNoticeItemViewModel[];
 };
 
 const defaultIcons: Record<SiteNoticeStatus, string> = {
@@ -38,9 +48,7 @@ function matchesRoute(pathname: string, routes: string[] | undefined) {
 	});
 }
 
-function isVisible(config: SiteNoticeConfig, pathname: string) {
-	if (!config.enable) return false;
-
+function isVisible(config: SiteNoticeItemConfig, pathname: string) {
 	const normalizedPathname = normalizePathname(pathname);
 	const visibility = config.visibility;
 	if (!visibility) return true;
@@ -58,23 +66,33 @@ export function buildSiteNoticeViewModel(
 	config: SiteNoticeConfig,
 	pathname: string,
 ): SiteNoticeViewModel | undefined {
-	if (!isVisible(config, pathname)) return;
+	if (!config.enable) return;
+
+	const notices = config.notices
+		.filter((notice) => isVisible(notice, pathname))
+		.map((notice) => ({
+			id: notice.id,
+			title: notice.title?.trim() || undefined,
+			content: notice.content,
+			icon: notice.icon || defaultIcons[notice.status],
+			status: notice.status,
+			dismissible: notice.dismissible,
+			action: notice.action
+				? {
+						label: notice.action.label,
+						href: notice.action.external
+							? notice.action.href
+							: url(notice.action.href),
+						external: notice.action.external ?? false,
+					}
+				: undefined,
+		}));
+
+	if (!notices.length) return;
 
 	return {
-		id: config.id,
-		title: config.title?.trim() || undefined,
-		content: config.content,
-		icon: config.icon || defaultIcons[config.status],
-		status: config.status,
-		dismissible: config.dismissible,
-		action: config.action
-			? {
-					label: config.action.label,
-					href: config.action.external
-						? config.action.href
-						: url(config.action.href),
-					external: config.action.external ?? false,
-				}
-			: undefined,
+		autoRotate: config.autoRotate,
+		rotationIntervalMs: Math.max(config.rotationIntervalMs, 3000),
+		notices,
 	};
 }

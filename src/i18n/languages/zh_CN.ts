@@ -24,6 +24,8 @@ export const zh_CN: Translation = {
 	// 网站通知
 	[Key.siteNotice]: "网站通知",
 	[Key.siteNoticeDismiss]: "关闭通知",
+	[Key.siteNoticePrevious]: "上一条通知",
+	[Key.siteNoticeNext]: "下一条通知",
 
 	[Key.comments]: "评论",
 	[Key.friends]: "友链",

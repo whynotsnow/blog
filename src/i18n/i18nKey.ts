@@ -21,6 +21,8 @@ enum I18nKey {
 	// 网站通知
 	siteNotice = "siteNotice",
 	siteNoticeDismiss = "siteNoticeDismiss",
+	siteNoticePrevious = "siteNoticePrevious",
+	siteNoticeNext = "siteNoticeNext",
 
 	comments = "comments",
 

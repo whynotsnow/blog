@@ -24,6 +24,8 @@ export const ja: Translation = {
 	// お知らせ
 	[Key.siteNotice]: "サイトのお知らせ",
 	[Key.siteNoticeDismiss]: "お知らせを閉じる",
+	[Key.siteNoticePrevious]: "前のお知らせ",
+	[Key.siteNoticeNext]: "次のお知らせ",
 
 	[Key.comments]: "コメント",
 	[Key.friends]: "友達",

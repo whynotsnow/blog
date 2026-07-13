@@ -24,6 +24,8 @@ export const en: Translation = {
 	// Site notice
 	[Key.siteNotice]: "Site notice",
 	[Key.siteNoticeDismiss]: "Dismiss notice",
+	[Key.siteNoticePrevious]: "Previous notice",
+	[Key.siteNoticeNext]: "Next notice",
 
 	[Key.comments]: "Comments",
 	[Key.friends]: "Friends",

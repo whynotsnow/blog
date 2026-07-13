@@ -293,8 +293,7 @@ export type ExpressiveCodeConfig = {
 
 export type SiteNoticeStatus = "info" | "success" | "warning" | "danger";
 
-export type SiteNoticeConfig = {
-	enable: boolean;
+export type SiteNoticeItemConfig = {
 	id: string;
 	title?: string;
 	content: string;
@@ -311,6 +310,13 @@ export type SiteNoticeConfig = {
 		include?: string[];
 		exclude?: string[];
 	};
+};
+
+export type SiteNoticeConfig = {
+	enable: boolean;
+	autoRotate: boolean;
+	rotationIntervalMs: number;
+	notices: SiteNoticeItemConfig[];
 };
 
 export type MusicPlayerConfig = {
