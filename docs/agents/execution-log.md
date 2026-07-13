@@ -98,3 +98,12 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Updated the Swup container selector from the inner `main` element to `#swup-container`, ensuring route-specific Main Grid policies and Widget regions are replaced together during navigation.
 - Made `#swup-container` the route-level crossfade owner and reduced nested content/Widget movement so three-column to two-column navigation no longer exposes an abrupt grid swap.
 - Unified banner mode at the home-page height on every route, including matching carousel geometry, Main Grid offset, navbar threshold, and TOC threshold.
+
+## 2026-07-13
+
+### Replaced the announcement Widget with a shell-level site notice
+
+- Moved the site notice out of viewport-specific Widget placement and into the Main Content Shell before the page Grid.
+- Added reusable Semantic status accents while keeping notice Surface composition and dismissal behavior feature-local.
+- Versioned dismissal state by notice ID so a newly published notice is not hidden by an older dismissal.
+- Made the sticky Widget smoke check scroll to the target threshold instead of depending on a fixed document offset, which changes when shell-level content is added.

@@ -72,6 +72,8 @@ src/features/music-player/
 
 Use feature-local helpers and types first. Promote code to `src/utils` or shared services only after multiple unrelated features reuse it.
 
+The site notice is a shell-level feature rather than a Widget. `src/config/site-notice.ts` owns its configuration, `src/services/site-notice.ts` normalizes route visibility and builds the view model, and `src/components/site-notice` owns presentation and dismissal state. `MainGridContent.astro` renders it before the page Grid so it spans the shell without entering Desktop, Tablet, or Mobile Widget placement.
+
 The post list intentionally keeps two thin renderers: Astro produces the home and category SSG snapshots, while Svelte renders category tag-query pagination in the browser. Both renderers share the semantic class contract and styles in `src/features/post-list/post-list.css`; the Svelte renderer uses the feature controller only to synchronize a dynamically mounted list with the global layout preference.
 
 Post detail routes remain thin: `src/pages/posts/[...slug].astro` owns static path generation and forwards the page model to `src/components/post-detail/PostDetailPage.astro`. Header, last-modified status, navigation, and page-level styles live beside that presentation component. Runtime consumers may continue to rely on the stable `#post-container` and `.markdown-content` hooks.

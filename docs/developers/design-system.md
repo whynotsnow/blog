@@ -28,12 +28,15 @@ Primitive → Semantic → Theme/Pattern → Component
 | Text | `--text-*` | Primary、Secondary、Muted、Disabled、On Accent |
 | Border | `--border-*` | Subtle、Default、Strong 边界 |
 | Accent | `--accent*` | 品牌色及 Hover、Active 状态 |
+| Status | `--status-*` | Info、Success、Warning、Danger 状态强调色 |
 | Layout | `--width-*`、`--measure-*`、`--space-*` | Shell、阅读宽度和页面节奏 |
 | Typography | `--font-*`、`--text-*-size` | 正文、标题和代码排版 |
 | Shape | `--radius-*`、`--shadow-*` | 圆角与 Raised 层级 |
 | Motion | `--motion-*` | 时长和 easing；具体动画仍由 Feature 所有 |
 
 不要为了消除所有 CSS 数值而创建 token。只有跨功能重复、需要主题切换或代表稳定设计决策的值才进入 Design 层。
+
+`--status-info`、`--status-success`、`--status-warning`、`--status-danger` 表示状态强调色，不直接表示背景或正文颜色。Feature 应基于状态强调色与 `--surface-*`、`--border-*` 组合局部 Surface 和边界；Form、Toast、Badge、Site Notice 等功能因此可以共享状态语言，而不必共享相同的背景强度。
 
 ### Pattern
 

@@ -6,7 +6,6 @@ import type { Props as CategoriesProps } from "@components/widget/Categories.ast
 import type { Props as TagsProps } from "@components/widget/Tags.astro";
 import type { Props as TocProps } from "@components/widget/TOC.astro";
 import type { Props as ProfileProps } from "@components/widget/Profile.astro";
-import type { Props as AnnouncementProps } from "@components/widget/Announcement.astro";
 import type { Props as CalendarProps } from "@components/widget/Calendar.astro";
 import { buildCalendarPosts } from "@/services/calendar";
 import { widgetComponentRegistry } from "./registry";
@@ -88,7 +87,6 @@ export type WidgetComponentMap = {
 	toc: ResolvedWidgetDefinition<TocProps>;
 	profile: ResolvedWidgetDefinition<ProfileProps>;
 	calendar: ResolvedWidgetDefinition<CalendarProps>;
-	announcement: ResolvedWidgetDefinition<AnnouncementProps>;
 };
 
 export function getWidgetComponentMap(ctx: SidebarContext): WidgetComponentMap {
@@ -136,11 +134,6 @@ export function getWidgetComponentMap(ctx: SidebarContext): WidgetComponentMap {
 
 		profile: {
 			component: widgetComponentRegistry.profile,
-			props: {},
-		},
-
-		announcement: {
-			component: widgetComponentRegistry.announcement,
 			props: {},
 		},
 	};

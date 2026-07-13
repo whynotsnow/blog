@@ -19,4 +19,9 @@
   --accent: var(--color-accent-light);
   --accent-hover: var(--color-accent-hover-light);
   --accent-active: var(--color-accent-active-light);
+
+  --status-info: var(--color-status-info-light);
+  --status-success: var(--color-status-success-light);
+  --status-warning: var(--color-status-warning-light);
+  --status-danger: var(--color-status-danger-light);
 }

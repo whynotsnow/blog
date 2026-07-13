@@ -128,6 +128,7 @@ src/features/music-player/
 - 新增文章字段：先改 `src/content.config.ts`，再改 `src/services/core` 的派生逻辑。
 - 新增非文章数据：优先放到 `src/data`。
 - 新增 Widget：放入 `src/components/widget`，在 `src/services/widget/registry.ts` 注册，并在 `src/services/widget/presets.ts` 中按端点和区域显式配置。
+- 网站级通知不属于 Widget。`src/config/site-notice.ts` 拥有配置，`src/services/site-notice.ts` 生成 View Model，`src/components/site-notice` 拥有呈现与关闭状态交互，并在主内容 Shell 的页面 Grid 之前渲染。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。
 

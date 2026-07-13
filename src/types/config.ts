@@ -291,18 +291,25 @@ export type ExpressiveCodeConfig = {
 	hideDuringThemeTransition?: boolean; // 是否在主题切换时隐藏代码块
 };
 
-export type AnnouncementConfig = {
-	// enable 属性已移除，由 Widget placement 配置统一控制。
-	title?: string; // 公告栏标题
-	content: string; // 公告栏内容
-	icon?: string; // 公告栏图标
-	type?: "info" | "warning" | "success" | "error"; // 公告类型
-	closable?: boolean; // 是否可关闭
-	link?: {
-		enable: boolean; // 是否启用链接
-		text: string; // 链接文字
-		url: string; // 链接地址
-		external?: boolean; // 是否外部链接
+export type SiteNoticeStatus = "info" | "success" | "warning" | "danger";
+
+export type SiteNoticeConfig = {
+	enable: boolean;
+	id: string;
+	title?: string;
+	content: string;
+	icon?: string;
+	status: SiteNoticeStatus;
+	dismissible: boolean;
+	action?: {
+		label: string;
+		href: string;
+		external?: boolean;
+	};
+	visibility?: {
+		scope: "all" | "home" | "content";
+		include?: string[];
+		exclude?: string[];
 	};
 };
 

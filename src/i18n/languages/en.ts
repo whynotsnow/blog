@@ -21,9 +21,9 @@ export const en: Translation = {
 	[Key.tableOfContents]: "Table of Contents",
 	[Key.tocEmpty]: "No table of contents",
 
-	// Announcement
-	[Key.announcement]: "Announcement",
-	[Key.announcementClose]: "Close",
+	// Site notice
+	[Key.siteNotice]: "Site notice",
+	[Key.siteNoticeDismiss]: "Dismiss notice",
 
 	[Key.comments]: "Comments",
 	[Key.friends]: "Friends",

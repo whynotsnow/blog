@@ -12,6 +12,18 @@ test("home page renders", async ({ page }) => {
 	expect(errors).toEqual([]);
 });
 
+test("site notice renders as a shell-level status bar", async ({ page }) => {
+	await page.goto("/");
+
+	const notice = page.locator("[data-site-notice]");
+	await expect(notice).toBeVisible();
+	await expect(notice).toHaveAttribute("data-status", "info");
+	await expect(notice).toContainText("网站建设中");
+	await expect(notice.locator("xpath=ancestor::widget-layout")).toHaveCount(
+		0,
+	);
+});
+
 test("saved Grid preference remains single-column below md and restores at md", async ({
 	page,
 }) => {
@@ -172,9 +184,11 @@ test("visible sidebar sticky widgets remain pinned while their grid region scrol
 	await expect(rightSticky).toBeVisible();
 	await page.evaluate(() => {
 		document.documentElement.style.scrollBehavior = "auto";
-		window.scrollTo(0, 900);
 	});
-	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(900);
+	await rightSticky.evaluate((node) =>
+		node.scrollIntoView({ block: "start" }),
+	);
+	await page.evaluate(() => window.scrollBy(0, 200));
 	await assertPinned(rightSticky);
 
 	const leftSticky = page.locator(

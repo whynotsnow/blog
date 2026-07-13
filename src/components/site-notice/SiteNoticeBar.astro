@@ -1,0 +1,63 @@
+---
+import { Icon } from "astro-icon/components";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import type { SiteNoticeViewModel } from "@/services/site-notice";
+import "./site-notice-bar.css";
+
+interface Props {
+	notice: SiteNoticeViewModel;
+}
+
+const { notice } = Astro.props;
+---
+
+<aside
+	class="site-notice-bar"
+	aria-label={notice.title || i18n(I18nKey.siteNotice)}
+	data-site-notice
+	data-notice-id={notice.id}
+	data-status={notice.status}
+>
+	<div class="site-notice-bar__layout ds-cluster">
+		<Icon
+			name={notice.icon}
+			class="site-notice-bar__icon"
+			aria-hidden="true"
+		/>
+
+		<div class="site-notice-bar__message">
+			{notice.title && (
+				<strong class="site-notice-bar__title">{notice.title}</strong>
+			)}
+			<span>{notice.content}</span>
+		</div>
+
+		{notice.action && (
+			<a
+				class="site-notice-bar__action"
+				href={notice.action.href}
+				target={notice.action.external ? "_blank" : undefined}
+				rel={notice.action.external ? "noopener noreferrer" : undefined}
+			>
+				{notice.action.label}
+				<Icon name="material-symbols:arrow-forward-rounded" aria-hidden="true" />
+			</a>
+		)}
+
+		{notice.dismissible && (
+			<button
+				type="button"
+				class="site-notice-bar__dismiss"
+				data-site-notice-dismiss
+				aria-label={i18n(I18nKey.siteNoticeDismiss)}
+			>
+				<Icon name="material-symbols:close-rounded" aria-hidden="true" />
+			</button>
+		)}
+	</div>
+</aside>
+
+<script>
+	import "./site-notice-client";
+</script>

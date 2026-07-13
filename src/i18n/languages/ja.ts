@@ -22,8 +22,8 @@ export const ja: Translation = {
 	[Key.tocEmpty]: "目次はありません",
 
 	// お知らせ
-	[Key.announcement]: "お知らせ",
-	[Key.announcementClose]: "閉じる",
+	[Key.siteNotice]: "サイトのお知らせ",
+	[Key.siteNoticeDismiss]: "お知らせを閉じる",
 
 	[Key.comments]: "コメント",
 	[Key.friends]: "友達",

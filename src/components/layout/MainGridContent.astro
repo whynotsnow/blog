@@ -6,6 +6,8 @@ import Footer from "@components/Footer.astro";
 import type { MainGridLayoutViewModel } from "@/services/layout/main-grid";
 import type { ResolvedWidgetPlacement } from "@/services/widget/types";
 import BannerCredit from "./BannerCredit.astro";
+import SiteNoticeBar from "@components/site-notice/SiteNoticeBar.astro";
+import type { SiteNoticeViewModel } from "@/services/site-notice";
 import WidgetRegion from "./WidgetRegion.astro";
 import SidebarTocRegion from "./SidebarTocRegion.astro";
 
@@ -13,9 +15,10 @@ interface Props {
 	headings: MarkdownHeading[];
 	widgets: ResolvedWidgetPlacement;
 	viewModel: MainGridLayoutViewModel;
+	siteNotice?: SiteNoticeViewModel;
 }
 
-const { headings, widgets, viewModel } = Astro.props;
+const { headings, widgets, viewModel, siteNotice } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
 ---
 
@@ -25,6 +28,7 @@ const { transparentClass } = viewModel.mainPanel;
 	<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
 	<div class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto">
 		<div id="swup-container" class="transition-swup-layout">
+		{siteNotice && <SiteNoticeBar notice={siteNotice} />}
 		<div
 			id="main-grid"
 			class="page-layout-grid transition duration-700 w-full left-0 right-0 grid grid-rows-none mx-auto gap-4 px-2 md:px-4"

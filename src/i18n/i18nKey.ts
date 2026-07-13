@@ -18,9 +18,9 @@ enum I18nKey {
 	tableOfContents = "tableOfContents",
 	tocEmpty = "tocEmpty",
 
-	// 公告栏
-	announcement = "announcement",
-	announcementClose = "announcementClose",
+	// 网站通知
+	siteNotice = "siteNotice",
+	siteNoticeDismiss = "siteNoticeDismiss",
 
 	comments = "comments",
 

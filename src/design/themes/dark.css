@@ -18,4 +18,9 @@
   --accent: var(--color-accent-dark);
   --accent-hover: var(--color-accent-hover-dark);
   --accent-active: var(--color-accent-active-dark);
+
+  --status-info: var(--color-status-info-dark);
+  --status-success: var(--color-status-success-dark);
+  --status-warning: var(--color-status-warning-dark);
+  --status-danger: var(--color-status-danger-dark);
 }

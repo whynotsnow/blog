@@ -21,9 +21,9 @@ export const zh_CN: Translation = {
 	[Key.tableOfContents]: "目录",
 	[Key.tocEmpty]: "当前页面没有目录",
 
-	// 公告栏
-	[Key.announcement]: "公告",
-	[Key.announcementClose]: "关闭",
+	// 网站通知
+	[Key.siteNotice]: "网站通知",
+	[Key.siteNoticeDismiss]: "关闭通知",
 
 	[Key.comments]: "评论",
 	[Key.friends]: "友链",

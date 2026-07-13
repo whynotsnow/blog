@@ -22,8 +22,8 @@ export const zh_TW: Translation = {
 	[Key.tocEmpty]: "當前頁面沒有目錄",
 
 	// 公告欄
-	[Key.announcement]: "公告",
-	[Key.announcementClose]: "關閉",
+	[Key.siteNotice]: "網站通知",
+	[Key.siteNoticeDismiss]: "關閉通知",
 
 	[Key.comments]: "評論",
 	[Key.friends]: "友鏈",

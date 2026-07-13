@@ -20,9 +20,6 @@ export const widgetPlacementPresets = {
 	default: {
 		desktop: {
 			left: [
-				widget("desktop-announcement", "announcement", "flow", {
-					animationDelay: 50,
-				}),
 				widget("desktop-categories", "categories", "flow", {
 					animationDelay: 150,
 					collapseThreshold: 5,
@@ -44,7 +41,6 @@ export const widgetPlacementPresets = {
 		},
 		tablet: {
 			sidebar: [
-				widget("tablet-announcement", "announcement", "flow"),
 				widget("tablet-categories", "categories", "flow", {
 					collapseThreshold: 5,
 				}),
@@ -55,10 +51,7 @@ export const widgetPlacementPresets = {
 			],
 		},
 		mobile: {
-			beforeContent: [
-				widget("mobile-profile", "profile", "flow"),
-				widget("mobile-announcement", "announcement", "flow"),
-			],
+			beforeContent: [widget("mobile-profile", "profile", "flow")],
 		},
 	},
 	post: {
@@ -76,10 +69,7 @@ export const widgetPlacementPresets = {
 			],
 		},
 		mobile: {
-			beforeContent: [
-				widget("post-mobile-profile", "profile", "flow"),
-				widget("post-mobile-announcement", "announcement", "flow"),
-			],
+			beforeContent: [widget("post-mobile-profile", "profile", "flow")],
 		},
 	},
 } satisfies Record<WidgetPlacementName, WidgetPlacementConfig>;

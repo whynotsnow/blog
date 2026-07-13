@@ -24,6 +24,7 @@
 | `src/config/site.ts` | 站点核心配置 `siteConfig`、`SITE_LANG`、`SITE_TIMEZONE`。 |
 | `src/config/navbar.ts` | 顶部导航 `navBarConfig`。 |
 | `src/config/profile.ts` | 个人资料 `profileConfig`。 |
+| `src/config/site-notice.ts` | 网站级通知 `siteNoticeConfig`。 |
 | `src/config/wallpaper.ts` | 全屏壁纸 `fullscreenWallpaperConfig`。 |
 | `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
 | `src/services/widget/presets.ts` | 各端点、各区域的 Widget placement。 |
@@ -46,6 +47,7 @@
 | `commentConfig` | 评论系统配置。 |
 | `pageLayoutPolicies` | 页面基础布局与允许的桌面布局集合。 |
 | `widgetPlacementPresets` | Desktop、Tablet、Mobile 各区域的 Widget 实例。 |
+| `siteNoticeConfig` | 主内容 Shell 顶部的网站级通知、状态、操作与可见范围。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
 ## 侧边栏 Widget 布局
@@ -59,6 +61,21 @@
 - `position: "sticky"`：Widget 放入吸顶区域；当对应侧栏在 `md`（`>=768px`）及以上可见时由 CSS 启用吸顶，Desktop 与 Tablet 共用该规则，Mobile 保持普通流。
 
 Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`，否则 Sticky 容器会被自身内容高度限制并随页面滚出视口。
+
+## 网站通知
+
+`siteNoticeConfig` 独立于 Widget placement，在主内容 Shell 内、页面 Grid 之前渲染为 `SiteNoticeBar`。它不会占用 Desktop、Tablet 或 Mobile 的 Widget 区域。
+
+- `enable`：启用或关闭网站通知。
+- `id`：通知的稳定版本 ID；用户关闭状态以 `site-notice:dismissed:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
+- `title`、`content`、`icon`：通知标题、纯文本正文和可选图标。
+- `status`：支持 `info`、`success`、`warning`、`danger`，视觉由 Design Semantic status token 提供。
+- `dismissible`：是否允许用户关闭。
+- `action`：可选操作链接，包含 `label`、`href` 和 `external`；配置存在即显示，不需要额外 enable 字段。
+- `visibility.scope`：`all` 表示全部页面，`home` 仅首页，`content` 表示非首页。
+- `visibility.include`、`visibility.exclude`：可进一步按路径控制。路径默认精确匹配，以 `*` 结尾时匹配该路径及其子路径，例如 `/posts/*`。
+
+网站通知内容保持纯文本。较长信息应通过 `action` 链接到详情页，不在 Notice Bar 内嵌 Markdown 或 HTML。
 
 ## SettingsPanel 相关配置
 
