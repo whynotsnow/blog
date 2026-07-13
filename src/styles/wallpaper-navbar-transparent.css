@@ -6,13 +6,13 @@
   --radius-std: 0.75rem;
 
   /* --- 状态变量 (默认值) --- */
-  --nav-bg: var(--card-bg);
+  --nav-bg: var(--surface-card);
   --nav-blur: none;
   --nav-shadow: var(--shadow-sm);
   --nav-radius: var(--radius-std);
 
   /* --- 面板变量 (默认跟随 Navbar，特定情况分离) --- */
-  --panel-bg: var(--card-bg-transparent);
+  --panel-bg: var(--surface-card);
   --panel-blur: blur(20px);
 }
 
@@ -26,19 +26,19 @@
 
 /* Semi (毛玻璃) */
 #navbar[data-dynamic-transparent="semi"] {
-  --nav-bg: var(--card-bg-transparent);
+  --nav-bg: var(--surface-card);
   --nav-blur: blur(8px);
   --nav-shadow: var(--shadow-lg);
 }
 
 /* None (实心) */
 #navbar[data-dynamic-transparent="none"] {
-  --nav-bg: var(--card-bg);
+  --nav-bg: var(--surface-card);
   --nav-blur: none;
   --nav-shadow: var(--shadow-sm);
 
   /* 联动子面板 */
-  --panel-bg: var(--card-bg);
+  --panel-bg: var(--surface-card);
   --panel-blur: none;
 }
 
@@ -81,7 +81,7 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"][data-is-hom
 
 /* 混合模式滚动后 -> 回归毛玻璃 */
 body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
-  --nav-bg: var(--card-bg-transparent);
+  --nav-bg: var(--surface-card);
   --nav-blur: blur(8px);
   --nav-shadow: var(--shadow-lg);
   --nav-radius: var(--radius-std);
@@ -148,7 +148,7 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
 
   /* 非首页时，移动端各个弹出面板不透明 */
   #navbar:not([data-is-home="true"]) :is(#nav-menu-panel, #mobile-toc-panel, #search-panel, #display-setting) {
-    background: var(--card-bg);
+    background: var(--surface-card);
     backdrop-filter: none;
   }
 }

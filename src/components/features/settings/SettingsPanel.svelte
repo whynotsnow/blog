@@ -305,7 +305,7 @@
 {#if hasAnyContent}
 	<div
 		id="display-setting"
-		class="float-panel float-panel-closed absolute right-4 w-80 max-w-[calc(100vw-2rem)] px-4 py-2 transition-all"
+		class="float-panel float-panel-closed ds-surface-raised absolute right-4 w-80 max-w-[calc(100vw-2rem)] px-4 py-2 transition-all"
 		class:list={[className]}
 	>
 		{#if showThemeColor}

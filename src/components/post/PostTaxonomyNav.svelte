@@ -34,9 +34,9 @@
 	const isActiveTag = (slug: string) => slug === tagSlug;
 </script>
 
-<nav class="post-taxonomy-nav mb-4">
+<nav class="post-taxonomy-nav">
 	<!-- ================= 统一 Card ================= -->
-	<div class="rounded-xl bg-[var(--card-bg-transparent)] p-4">
+	<div class="ds-surface-card rounded-xl bg-[var(--card-bg-transparent)] p-4">
 		<!-- ================= 面包屑 ================= -->
 		<div
 			class="flex items-center gap-2 text-sm font-medium mb-4"
@@ -70,7 +70,7 @@
 		</div>
 
 		<!-- ================= 分类按钮组 ================= -->
-		<div class="flex flex-wrap gap-2">
+		<div class="ds-cluster" style="--cluster-space: var(--size-2);">
 			{#each categories as cat (cat.slug)}
 				<div
 					class="relative group text-[var(--btn-content)]"
@@ -116,7 +116,7 @@
 		<!-- ================= 当前分类 Tags ================= -->
 		{#if activeCategory}
 			<div class="mt-5 pt-4 border-t border-[var(--line-divider)]">
-				<div class="flex flex-wrap gap-2">
+				<div class="ds-cluster" style="--cluster-space: var(--size-2);">
 					{#each activeCategory.tags as tag (tag.slug)}
 						<div
 							class="relative group text-[var(--btn-content)]"

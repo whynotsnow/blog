@@ -8,7 +8,7 @@ const { lastModified } = Astro.props;
 ---
 
 <div id="last-modified" data-last-modified={lastModified} data-prefix={i18n(I18nKey.lastModifiedPrefix)} data-year={i18n(I18nKey.year)} data-month={i18n(I18nKey.month)} data-day={i18n(I18nKey.day)} data-hour={i18n(I18nKey.hour)} data-minute={i18n(I18nKey.minute)} data-second={i18n(I18nKey.second)} hidden />
-<aside class="post-detail__notice card-base p-6 mb-4">
+<aside class="post-detail__notice card-base ds-surface-card p-6 mb-4">
 	<div class="flex items-center gap-3">
 		<div class="flex items-center justify-center h-12 w-12 rounded-lg bg-(--enter-btn-bg)"><Icon name="material-symbols:history-rounded" class="text-3xl text-(--primary)" /></div>
 		<div class="flex flex-col gap-1">

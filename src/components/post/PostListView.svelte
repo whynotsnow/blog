@@ -25,7 +25,8 @@
 
 <div
 	id="page-content"
-	class="home-post-feed mx-auto w-full max-w-(--width-listing)"
+	class="home-post-feed ds-stack mx-auto w-full max-w-(--width-listing)"
+	style="--stack-space: var(--size-4);"
 >
 	<PostTaxonomyNav
 		{categories}

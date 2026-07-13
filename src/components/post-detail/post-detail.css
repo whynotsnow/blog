@@ -24,6 +24,11 @@
   margin-inline: auto;
 }
 
+.post-detail__header.ds-reading-flow,
+.post-detail__content.ds-reading-flow {
+  width: min(100%, var(--width-reading));
+}
+
 #post-cover,
 #share-component,
 #license-component {
