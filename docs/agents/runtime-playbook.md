@@ -136,6 +136,25 @@ Use:
 - Apply height inheritance to `#banner-carousel`, `.carousel-list`, `.carousel-item`, image wrapper slots, `#banner-single-container`, and images.
 - Scope wave positioning to `#header-waves` and restore `#header-waves > svg` to normal in-container sizing when generic `.waves` mobile rules would affect both the outer container and inner svg.
 
+### banner-entry-geometry-feedback
+
+Symptoms:
+
+- Category or post entry scrolling lands at slightly different positions across viewports or Swup visits.
+- Scrolling changes Navbar height/state, which then makes a previously measured Banner offset incorrect.
+- Browser history returns with `.mobile-main-no-banner`, so the listing layer starts at the Navbar offset and covers the Banner carousel.
+- A `top` transition can make a geometry read observe the old content-layer position even after its class is corrected.
+
+Response:
+
+- Keep Navbar behavior explicit in the page interaction policy; only home is `banner-aware`.
+- Give category and post pages a semantic content-entry anchor and calculate its document coordinate minus the CSS `scroll-margin` clearance. Do not delegate the final coordinate to `scrollIntoView()`.
+- Derive Banner retention from the incoming container's page interaction policy, not a transient `window.location.pathname` during content replacement.
+- Keep Hash navigation native. For `popstate`, disable cached/reset scrolling and let the page-level entry routine own the final coordinate.
+- At Shell progress settlement, temporarily suppress the content layer's `top` transition, synchronize its Banner class, force layout, align the anchor with instant scrolling, then restore the transition on the next frame.
+- Publish the progress `idle` state only after this correction so tests and consumers cannot observe an intermediate coordinate.
+- Bind lifecycle callbacks to the current `window.swup` instance. A permanent boolean can silently leave callbacks attached to an obsolete instance after route scripts refresh the global instance.
+
 ### sidebar-sticky-containing-block
 
 Pattern:

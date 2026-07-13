@@ -74,7 +74,13 @@ src/features/music-player/
 
 拆分时优先把 helper 和类型留在所属功能目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
 
-文章列表有意保留两个轻量 renderer：主页与分类页的 SSG 快照由 Astro 输出，分类页带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果。两种 renderer 统一使用 `src/features/post-list/post-list.css` 中的语义 class contract；Svelte 版本只通过 feature controller 将动态挂载的列表同步到全局布局偏好，不再重复注册布局事件。
+首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块，每组 6 篇；分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro 输出 SSG 快照，带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果；查询参数、history、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
+
+文章列表页使用固定的 `listing` 布局策略：`1536px` 及以上为三列文章加 Sidebar，`768px` 至 `1535px` 为两列文章加 Sidebar，更小视口为单列且隐藏 Sidebar。首页和分类页分别使用 `home`、`category` Widget placement，只有首页在 Mobile 内容前显示 Profile。
+
+分类页与文章详情页在 Banner 模式下保留横幅占位，但 Navbar 行为与首页解耦：只有首页使用 `banner-aware` 的透明度/滚动状态，分类页与文章详情页使用始终可见的 `fixed-visible` 状态。Banner 模式的普通导航以及浏览器前进/后退都会通过页面 Shell 的语义 `content-start` 锚点定位，以锚点文档坐标减去 CSS clearance 得出统一滚动位置；Overlay、None、Fullscreen 和 Hash 导航不执行该定位。页面身份取自新容器的 interaction policy，不依赖内容替换阶段的瞬时 URL。
+
+Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion token 表达 Swup 请求和替换状态。它从 `visit:start` 开始、在 `content:replace` 推进并于 `visit:end` 完成，快速导航也保留最短可见时间。历史访问禁用 Swup 的缓存位置恢复，并在 settled 阶段临时关闭内容层 `top` transition、同步 Banner class、完成语义入口定位后才发布 `idle`。进度条不占布局高度，也不等待图片、统计、搜索或 Svelte hydration 完成。
 
 文章详情路由保持轻量：`src/pages/posts/[...slug].astro` 负责 static paths 并把页面模型转交给 `src/components/post-detail/PostDetailPage.astro`。Header、最后修改时间、上下篇导航和页面级样式与展示组件放在同一 feature 目录；TOC 等运行时消费者继续使用稳定的 `#post-container` 与 `.markdown-content` hook。
 

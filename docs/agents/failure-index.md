@@ -43,6 +43,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: fullscreen banner mode does not fill the first viewport, or waves are not aligned to the first screen bottom.
 - Playbook: [fullscreen-banner-responsive-override](./runtime-playbook.md#fullscreen-banner-responsive-override)
 
+### banner-entry-geometry-feedback
+
+- Symptom: category or post entry scrolling differs between link and browser-history navigation, or history leaves the grid covering the Banner carousel.
+- Playbook: [banner-entry-geometry-feedback](./runtime-playbook.md#banner-entry-geometry-feedback)
+
 ### sidebar-sticky-containing-block
 
 - Symptom: a configured sticky sidebar widget has `position: sticky` but scrolls out of view because its direct sidebar root does not fill the grid row.

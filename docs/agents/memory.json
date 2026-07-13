@@ -1,6 +1,6 @@
 {
 	"version": 2,
-	"updated": "2026-07-10",
+	"updated": "2026-07-14",
 	"principle": "This project is not debugged repeatedly. It is learned once and reused forever.",
 	"architecture_constraints": [
 		{
@@ -102,6 +102,17 @@
 				"later responsive banner height rules override fullscreen 100vh"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#fullscreen-banner-responsive-override"
+		},
+		{
+			"id": "banner-entry-geometry-feedback",
+			"cluster": "runtime-layout",
+			"symptoms": [
+				"category or post entry scrolling lands at inconsistent offsets",
+				"scripted scroll changes Navbar state and invalidates the measured target",
+				"browser history leaves mobile-main-no-banner on a Banner listing page",
+				"a content-layer top transition makes entry geometry use the old position"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#banner-entry-geometry-feedback"
 		},
 		{
 			"id": "playwright-chromium-mac-sandbox",

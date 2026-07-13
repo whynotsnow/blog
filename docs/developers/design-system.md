@@ -53,6 +53,10 @@ Primitive → Semantic → Theme/Pattern → Component
 
 Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Svelte 的同一 UI 应消费相同 Pattern class。
 
+文章列表的 Grid 由共享语义 class 控制：Mobile 单列、Tablet/中等屏幕双列、大屏三列。Grid Card 最大宽度为 `24rem`、固定高度为 `29rem`，所有文章保留顶部固定比例封面区，无图片时使用 Semantic token 生成占位封面；List 模式继续使用 `--width-listing` 阅读宽度。Astro 与 Svelte renderer 必须保持同一 Card 结构和 Semantic token 契约。
+
+顶部 Navigation Progress 是 Shell-local Pattern：颜色消费 `--accent`，过渡消费 `--motion-*`，固定覆盖在页面顶部且不占文档流高度。它消费 Swup 生命周期并保证快速导航仍有短暂的可见反馈，但不作为内容、图片或 Svelte hydration 的完成状态。
+
 ## Theme 与 Wallpaper
 
 Light Theme 在 Semantic 层提供默认值，`:root.dark` 只重映射主题相关 token。Wallpaper 模式通过 body class 重映射 Card Surface；组件不得自行重新计算 Light/Dark 颜色。

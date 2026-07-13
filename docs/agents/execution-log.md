@@ -107,3 +107,21 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Added reusable Semantic status accents while keeping notice Surface composition and dismissal behavior feature-local.
 - Versioned dismissal state by notice ID so a newly published notice is not hidden by an older dismissal.
 - Made the sticky Widget smoke check scroll to the target threshold instead of depending on a fixed document offset, which changes when shell-level content is added.
+
+## 2026-07-14
+
+### Split home and category listing compositions
+
+- Added a fixed listing layout policy with responsive one-, two-, and three-column post grids plus explicit home and category Widget placements.
+- Made home a six-post section-based guide while category pages use independent twelve-post Astro/Svelte pagination.
+- Kept category URL, history, Tag filtering, and client pagination behavior beside the category components instead of adding another `src/features` module.
+- Expanded home into three six-post guide sections and normalized Grid Cards with fixed geometry plus a semantic fallback cover.
+
+### Decoupled content-page entry scrolling from Banner geometry
+
+- Made home the only `banner-aware` Navbar page while category and post detail keep a persistent `fixed-visible` Navbar.
+- Replaced live Banner rectangle measurement with a semantic content-entry anchor and CSS scroll clearance.
+- Preserved native Hash scrolling while applying the page-level content-entry contract to both normal and browser-history Banner-mode visits.
+- Added a persistent Shell navigation progress indicator with a minimum visible duration, without coupling it to entry positioning or hydration completion.
+- Rebound page lifecycle hooks by Swup instance and moved normal/history entry positioning into one page-owned coordinate routine.
+- Fixed history-only Banner overlap by deriving Banner retention from the incoming interaction policy, suppressing the stale content-layer `top` transition during settled geometry synchronization, and publishing progress idle only after exact alignment.
