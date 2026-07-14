@@ -22,11 +22,14 @@ const { headings, widgets, viewModel, siteNotice } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
 ---
 
-<div
+	<div
 	class={`main-content-layer absolute w-full z-30 pointer-events-none ${viewModel.mainPanel.mobileNonHomeClass} ${viewModel.mainPanel.noBannerLayoutClass} ${transparentClass}`}
 	>
 		<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-		<div class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto">
+		<div
+			class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto"
+			data-responsive-strategy={viewModel.pageLayout.responsiveStrategy}
+		>
 			<div id="site-notice-container">
 				{siteNotice && <SiteNoticeBar notice={siteNotice} />}
 			</div>
@@ -42,17 +45,18 @@ const { transparentClass } = viewModel.mainPanel;
 			data-base-desktop-layout={viewModel.pageLayout.desktop.base}
 			data-allowed-desktop-layouts={viewModel.pageLayout.allowedDesktopLayouts}
 			data-effective-desktop-layout={viewModel.pageLayout.desktop.base}
+			data-responsive-strategy={viewModel.pageLayout.responsiveStrategy}
 		>
 			<BannerCredit
 				credit={viewModel.banner.credit}
 				hasCreditLink={viewModel.banner.hasCreditLink}
 			/>
 
-			<div class={`desktop-left-region ${transparentClass}`}><WidgetRegion region="desktop-left" widgets={widgets.desktop.left} /></div>
-			<div class={`desktop-right-region ${transparentClass}`}><WidgetRegion region="desktop-right" widgets={widgets.desktop.right} /></div>
-			<div class={`desktop-sidebar-region ${transparentClass}`}><WidgetRegion region="desktop-sidebar" widgets={widgets.desktop.sidebar} /></div>
-			<div class={`tablet-sidebar-region ${transparentClass}`}><WidgetRegion region="tablet-sidebar" widgets={widgets.tablet.sidebar} /></div>
-			<div class={`mobile-before-region ${transparentClass}`}><WidgetRegion region="mobile-before-content" widgets={widgets.mobile.beforeContent} /></div>
+			<div class={`desktop-left-region ${transparentClass}`} data-has-widgets={widgets.desktop.left.length > 0}><WidgetRegion region="desktop-left" widgets={widgets.desktop.left} /></div>
+			<div class={`desktop-right-region ${transparentClass}`} data-has-widgets={widgets.desktop.right.length > 0}><WidgetRegion region="desktop-right" widgets={widgets.desktop.right} /></div>
+			<div class={`desktop-sidebar-region ${transparentClass}`} data-has-widgets={widgets.desktop.sidebar.length > 0}><WidgetRegion region="desktop-sidebar" widgets={widgets.desktop.sidebar} /></div>
+			<div class={`tablet-sidebar-region ${transparentClass}`} data-has-widgets={widgets.tablet.sidebar.length > 0}><WidgetRegion region="tablet-sidebar" widgets={widgets.tablet.sidebar} /></div>
+			<div class={`mobile-before-region ${transparentClass}`} data-has-widgets={widgets.mobile.beforeContent.length > 0}><WidgetRegion region="mobile-before-content" widgets={widgets.mobile.beforeContent} /></div>
 
 			<main class="page-main-content overflow-hidden w-full">
 				<div id="content-wrapper">
@@ -62,7 +66,7 @@ const { transparentClass } = viewModel.mainPanel;
 					</div>
 				</div>
 			</main>
-			<div class={`mobile-after-region ${transparentClass}`}><WidgetRegion region="mobile-after-content" widgets={widgets.mobile.afterContent} /></div>
+			<div class={`mobile-after-region ${transparentClass}`} data-has-widgets={widgets.mobile.afterContent.length > 0}><WidgetRegion region="mobile-after-content" widgets={widgets.mobile.afterContent} /></div>
 
 			<div class="footer col-span-full block lg:hidden">
 				<Footer />

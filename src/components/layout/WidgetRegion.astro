@@ -14,7 +14,7 @@ const stickyWidgets = widgets.filter((widget) => widget.position === "sticky");
 
 <aside class:list={["widget-region w-full h-full", className]} data-widget-region={region}>
 	{flowWidgets.length > 0 && (
-		<div class="flex flex-col w-full gap-4 mb-4">
+		<div class="widget-region__flow flex flex-col w-full gap-4 mb-4">
 			{flowWidgets.map(({ component: Component, resolvedProps, className, resolvedStyle, id }, index) => (
 				<div class="sidebar-widget-slot grid w-full" data-widget-id={id} style={`--i: ${index};`}>
 					<Component {...resolvedProps} class={className} style={resolvedStyle} />

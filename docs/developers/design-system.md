@@ -53,7 +53,9 @@ Primitive → Semantic → Theme/Pattern → Component
 
 Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Svelte 的同一 UI 应消费相同 Pattern class。
 
-文章列表的 Grid 由共享语义 class 控制：Mobile 单列、Tablet/中等屏幕双列、大屏三列。Grid Card 最大宽度为 `24rem`、固定高度为 `29rem`，所有文章保留顶部固定比例封面区，无图片时使用 Semantic token 生成占位封面；List 模式继续使用 `--width-listing` 阅读宽度。Astro 与 Svelte renderer 必须保持同一 Card 结构和 Semantic token 契约。
+首页与分类页的文章 Grid 使用 `post-feed` Container Query：容器小于 `608px` 为单列，达到 `608px` 为双列，达到 `932px` 为三列。单列 Grid 最大 `440px`，双列组合最大 `736px`，三列组合最大 `1112px`。Card 的目标范围约为 `296px–360px`，列间距使用更紧凑的 `--space-grid-gap`，避免 Card 达到最大宽度后在两列到三列之间形成过长的闲置区。Grid Card 固定高度继续为 `29rem`，封面高度根据 Card 容器宽度在 `10rem–14rem` 内流式变化；无图片时使用 Semantic token 生成占位封面。List 模式继续使用 `--width-listing` 阅读宽度，Astro 与 Svelte renderer 必须保持同一 Card 结构和 Semantic token 契约。
+
+首页、分类页与文章详情页的 Main Grid 使用 `page-shell` Container Query，并共享一套按压缩预算退让的 Shell 契约。Banner 始终铺满 viewport；Navbar 与 Main Shell 最大宽度缩小为 `1480px`。Shell 达到 `1200px` 时显示三列 Feed + Sidebar，组合最大 `1400px`；低于该端点后切换为双列 Feed + Sidebar，组合最大 `1024px`。Shell 低于 `880px` 时隐藏右侧 Sidebar，将同一批 Widget 放到 Main 前方并占满布局宽度；Feed 保持双列，低于 `608px` 后再退为单列。Sidebar 在 `248px–272px` 内压缩。Sidebar 端点与双列 Feed 最小宽度由同一预算推导，因此禁止出现单列 Card + 右侧 Sidebar。Widget Slot 使用 `widget-card` Container Query 控制 Profile 与 Site Stats 的内部排列。
 
 顶部 Navigation Progress 是 Shell-local Pattern：颜色消费 `--accent`，过渡消费 `--motion-*`，固定覆盖在页面顶部且不占文档流高度。它消费 Swup 生命周期并保证快速导航仍有短暂的可见反馈，但不作为内容、图片或 Svelte hydration 的完成状态。
 

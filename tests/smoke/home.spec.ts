@@ -347,7 +347,7 @@ test("site notice renders as a shell-level status bar", async ({ page }) => {
 	);
 });
 
-test("saved Grid preference remains single-column below md and restores at md", async ({
+test("saved Grid preference follows the post Feed container width", async ({
 	page,
 }) => {
 	await page.addInitScript(() => {
@@ -370,7 +370,7 @@ test("saved Grid preference remains single-column below md and restores at md", 
 	await page.reload();
 	await expect(postList).toHaveClass(/grid-mode/);
 
-	await page.setViewportSize({ width: 767, height: 812 });
+	await page.setViewportSize({ width: 560, height: 812 });
 	expect(
 		await postList.evaluate(
 			(node) =>
@@ -378,13 +378,227 @@ test("saved Grid preference remains single-column below md and restores at md", 
 		),
 	).toBe(1);
 
-	await page.setViewportSize({ width: 768, height: 812 });
+	await page.setViewportSize({ width: 700, height: 812 });
 	expect(
 		await postList.evaluate(
 			(node) =>
 				getComputedStyle(node).gridTemplateColumns.split(" ").length,
 		),
 	).toBe(2);
+});
+
+test("fluid two-column post Grid fills the Feed and keeps the semantic gap", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("postListLayout", "grid");
+	});
+	await page.setViewportSize({ width: 1000, height: 900 });
+	await page.goto("/");
+
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
+	const cards = postList.locator(":scope > .post-list__item");
+	await expect(cards).toHaveCount(6);
+
+	const geometry = await postList.evaluate((node) => {
+		const items = Array.from(
+			node.querySelectorAll<HTMLElement>(":scope > .post-list__item"),
+		);
+		const first = items[0]?.getBoundingClientRect();
+		const second = items[1]?.getBoundingClientRect();
+		return {
+			columnCount:
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+			columnGap: Number.parseFloat(getComputedStyle(node).columnGap),
+			cardGap: first && second ? second.left - first.right : Number.NaN,
+			leftInset: first
+				? first.left - node.getBoundingClientRect().left
+				: Number.NaN,
+			rightInset: second
+				? node.getBoundingClientRect().right - second.right
+				: Number.NaN,
+		};
+	});
+
+	expect(geometry.columnCount).toBe(2);
+	expect(Math.abs(geometry.cardGap - geometry.columnGap)).toBeLessThan(1);
+	expect(Math.abs(geometry.leftInset)).toBeLessThan(1);
+	expect(Math.abs(geometry.rightInset)).toBeLessThan(1);
+
+	const coverHeight = await cards
+		.first()
+		.locator(".home-post-card__cover")
+		.evaluate((node) => Number.parseFloat(getComputedStyle(node).height));
+	expect(coverHeight).toBeGreaterThanOrEqual(160);
+	expect(coverHeight).toBeLessThanOrEqual(224);
+});
+
+test("responsive width budgets preserve Card and Sidebar stability", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("postListLayout", "grid");
+	});
+	await page.setViewportSize({ width: 1000, height: 900 });
+	await page.goto("/");
+
+	const mainGrid = page.locator("#main-grid");
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
+	const readFirstTrackWidth = () =>
+		postList.evaluate((node) =>
+			Number.parseFloat(getComputedStyle(node).gridTemplateColumns),
+		);
+	const mediumCardWidth = await readFirstTrackWidth();
+	expect(
+		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await expect(
+		page.locator('[data-widget-id="home-desktop-profile"]'),
+	).toBeVisible();
+	await expect
+		.poll(() =>
+			postList.evaluate(
+				(node) =>
+					getComputedStyle(node).gridTemplateColumns.split(" ")
+						.length,
+			),
+		)
+		.toBe(3);
+	const compressedLargeCardWidth = await readFirstTrackWidth();
+	const compressedSidebarWidth = await page
+		.locator(".desktop-sidebar-region")
+		.evaluate((node) => node.getBoundingClientRect().width);
+	expect(compressedLargeCardWidth).toBeGreaterThanOrEqual(295);
+	expect(compressedLargeCardWidth).toBeLessThanOrEqual(362);
+	expect(
+		Math.abs(compressedLargeCardWidth - mediumCardWidth) / mediumCardWidth,
+	).toBeLessThan(0.12);
+	expect(compressedSidebarWidth).toBeGreaterThanOrEqual(248 - 1);
+	expect(compressedSidebarWidth).toBeLessThanOrEqual(272 + 1);
+
+	await page.setViewportSize({ width: 1920, height: 1080 });
+	await expect
+		.poll(() =>
+			postList.evaluate(
+				(node) =>
+					getComputedStyle(node).gridTemplateColumns.split(" ")
+						.length,
+			),
+		)
+		.toBe(3);
+	const maximumCardWidth = await readFirstTrackWidth();
+	const maximumSidebarWidth = await page
+		.locator(".desktop-sidebar-region")
+		.evaluate((node) => node.getBoundingClientRect().width);
+	const shellGeometry = await page.evaluate(() => {
+		const shell = document.querySelector<HTMLElement>(".main-grid-shell")!;
+		const grid = document.querySelector<HTMLElement>("#main-grid")!;
+		const banner = document.querySelector<HTMLElement>("#banner-wrapper")!;
+		const navbar = document.querySelector<HTMLElement>(
+			"#navbar > .navbar__inner--container-content",
+		)!;
+		const shellRect = shell.getBoundingClientRect();
+		const gridRect = grid.getBoundingClientRect();
+		const bannerRect = banner.getBoundingClientRect();
+		const navbarRect = navbar.getBoundingClientRect();
+		const shellStyle = getComputedStyle(shell);
+		return {
+			shellWidth: shellRect.width,
+			shellContentWidth:
+				shellRect.width -
+				Number.parseFloat(shellStyle.paddingLeft) -
+				Number.parseFloat(shellStyle.paddingRight),
+			gridWidth: gridRect.width,
+			bannerWidth: bannerRect.width,
+			navbarWidth: navbarRect.width,
+			leftMargin: gridRect.left - shellRect.left,
+			rightMargin: shellRect.right - gridRect.right,
+		};
+	});
+
+	expect(
+		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+	expect(maximumCardWidth).toBeGreaterThan(compressedLargeCardWidth);
+	expect(maximumCardWidth).toBeLessThanOrEqual(362);
+	expect(maximumSidebarWidth).toBeCloseTo(272, 0);
+	expect(shellGeometry.shellWidth).toBeLessThanOrEqual(1480);
+	expect(shellGeometry.bannerWidth).toBeCloseTo(1920, 0);
+	expect(shellGeometry.gridWidth).toBeLessThanOrEqual(1400 + 1);
+	expect(
+		Math.abs(shellGeometry.navbarWidth - shellGeometry.shellContentWidth),
+	).toBeLessThan(1);
+	expect(
+		Math.abs(shellGeometry.leftMargin - shellGeometry.rightMargin),
+	).toBeLessThan(1);
+	expect(
+		await page
+			.locator(".desktop-sidebar-region")
+			.evaluate((node) =>
+				Array.from(
+					node.querySelectorAll<HTMLElement>(".sidebar-widget-slot"),
+				).every(
+					(widget) => widget.scrollWidth <= widget.clientWidth + 1,
+				),
+			),
+	).toBe(true);
+});
+
+test("container-content pages share the same Wide shell contract", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1536, height: 900 });
+
+	const readGeometry = async () =>
+		page.evaluate(() => {
+			const grid = document.querySelector<HTMLElement>("#main-grid")!;
+			const sidebar = document.querySelector<HTMLElement>(
+				".desktop-sidebar-region",
+			)!;
+			const navbar = document.querySelector<HTMLElement>(
+				"#navbar > .navbar__inner--container-content",
+			)!;
+			return {
+				gridWidth: grid.getBoundingClientRect().width,
+				sidebarWidth: sidebar.getBoundingClientRect().width,
+				navbarWidth: navbar.getBoundingClientRect().width,
+			};
+		});
+
+	const geometries = [];
+	for (const pathname of [
+		"/",
+		"/category/tech/",
+		"/posts/markdown-tutorial/",
+	]) {
+		await page.goto(pathname);
+		await expect(page.locator(".desktop-sidebar-region")).toBeVisible();
+		geometries.push(await readGeometry());
+	}
+
+	for (const geometry of geometries) {
+		expect(geometry.navbarWidth).toBeGreaterThanOrEqual(geometry.gridWidth);
+		expect(
+			Math.abs(geometry.gridWidth - geometries[0].gridWidth),
+		).toBeLessThan(1);
+		expect(
+			Math.abs(geometry.sidebarWidth - geometries[0].sidebarWidth),
+		).toBeLessThan(1);
+	}
 });
 
 test("layout breakpoint boundaries do not overlap", async ({ page }) => {
@@ -413,9 +627,47 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	).toBeCloseTo(0.75, 2);
 
 	const mainGrid = page.locator("#main-grid");
-	await page.setViewportSize({ width: 1279, height: 812 });
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
+	await page.setViewportSize({ width: 900, height: 812 });
 	expect(
 		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(1);
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+
+	await page.setViewportSize({ width: 920, height: 812 });
+	await expect(
+		page.locator('[data-widget-id="home-desktop-profile"]'),
+	).toBeVisible();
+	expect(
+		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+	expect(
+		await postList.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+
+	await page.setViewportSize({ width: 1024, height: 812 });
+	expect(
+		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+	expect(
+		await postList.evaluate(
 			(node) =>
 				getComputedStyle(node).gridTemplateColumns.split(" ").length,
 		),
@@ -428,22 +680,29 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 				getComputedStyle(node).gridTemplateColumns.split(" ").length,
 		),
 	).toBe(2);
-
-	const postList = page.locator('[data-post-list-renderer="astro"]').first();
-	expect(
-		await postList.evaluate(
-			(node) =>
-				getComputedStyle(node).gridTemplateColumns.split(" ").length,
-		),
-	).toBe(2);
-
-	await page.setViewportSize({ width: 1536, height: 812 });
 	expect(
 		await postList.evaluate(
 			(node) =>
 				getComputedStyle(node).gridTemplateColumns.split(" ").length,
 		),
 	).toBe(3);
+
+	await page.setViewportSize({ width: 1440, height: 812 });
+	expect(
+		await mainGrid.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(2);
+	await expect
+		.poll(() =>
+			postList.evaluate(
+				(node) =>
+					getComputedStyle(node).gridTemplateColumns.split(" ")
+						.length,
+			),
+		)
+		.toBe(3);
 });
 
 test("banner sizing follows the mode and responsive contract", async ({
@@ -502,7 +761,7 @@ test("banner sizing follows the mode and responsive contract", async ({
 test("navbar stays sticky while the desktop banner scrolls", async ({
 	page,
 }) => {
-	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.setViewportSize({ width: 1440, height: 900 });
 	await page.goto("/");
 
 	const navbarWrapper = page.locator("#navbar-wrapper");
@@ -515,10 +774,11 @@ test("navbar stays sticky while the desktop banner scrolls", async ({
 		.toBe(0);
 });
 
-test("listing widget placements follow viewport and page contracts", async ({
+test("container-content widget placements follow page intent", async ({
 	page,
 }) => {
-	await page.setViewportSize({ width: 1280, height: 900 });
+	test.setTimeout(60_000);
+	await page.setViewportSize({ width: 1536, height: 900 });
 	await page.goto("/");
 	await expect(
 		page.locator('[data-widget-id="home-desktop-profile"]'),
@@ -530,11 +790,17 @@ test("listing widget placements follow viewport and page contracts", async ({
 		page.locator('[data-widget-region="desktop-left"]'),
 	).toBeHidden();
 
-	await page.setViewportSize({ width: 768, height: 900 });
+	await page.setViewportSize({ width: 900, height: 900 });
 	await page.goto("/");
 	await expect(
 		page.locator('[data-widget-id="home-tablet-profile"]'),
 	).toBeVisible();
+	await expect(
+		page.locator('[data-widget-id="home-tablet-site-stats"]'),
+	).toBeVisible();
+	await expect(
+		page.locator('[data-widget-id="home-desktop-profile"]'),
+	).toBeHidden();
 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.goto("/");
@@ -543,6 +809,39 @@ test("listing widget placements follow viewport and page contracts", async ({
 	).toBeVisible();
 	await page.goto("/category/tech/");
 	await expect(page.locator(".widget-region:visible")).toHaveCount(0);
+
+	await page.setViewportSize({ width: 900, height: 900 });
+	await page.goto("/category/tech/");
+	await expect(
+		page.locator('[data-widget-id="category-tablet-profile"]'),
+	).toBeVisible();
+	await expect(
+		page.locator('[data-widget-id="category-tablet-site-stats"]'),
+	).toBeVisible();
+
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto("/category/tech/");
+	await expect(
+		page.locator('[data-widget-id="category-desktop-profile"]'),
+	).toBeVisible();
+
+	await page.setViewportSize({ width: 375, height: 812 });
+	await page.goto("/posts/markdown-tutorial/");
+	await expect(
+		page.locator('[data-widget-id="post-mobile-profile"]'),
+	).toBeVisible();
+
+	await page.setViewportSize({ width: 900, height: 900 });
+	await page.goto("/posts/markdown-tutorial/");
+	await expect(
+		page.locator('[data-widget-id="post-tablet-profile"]'),
+	).toBeVisible();
+
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto("/posts/markdown-tutorial/");
+	await expect(
+		page.locator('[data-widget-id="post-desktop-profile"]'),
+	).toBeVisible();
 });
 
 test("banner home text stays centered across normal and fullscreen modes", async ({
@@ -581,15 +880,30 @@ test("banner home text stays centered across normal and fullscreen modes", async
 	};
 
 	await assertCentered();
-	await expect(page.locator(".banner-title")).toHaveCSS("font-size", "96px");
+	const desktopTitleSize = await page
+		.locator(".banner-title")
+		.evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+	const desktopTextWidth = await page
+		.locator(".banner-text-overlay > div")
+		.evaluate((node) => node.getBoundingClientRect().width);
+	expect(desktopTitleSize).toBeLessThanOrEqual(96);
+	expect(desktopTextWidth).toBeLessThanOrEqual(832);
+
+	await page.setViewportSize({ width: 768, height: 812 });
+	await page.goto("/");
+	await assertCentered();
+	const tabletTitleSize = await page
+		.locator(".banner-title")
+		.evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.goto("/");
 	await assertCentered();
-	await expect(page.locator(".banner-title")).toHaveCSS(
-		"font-size",
-		"44.8px",
-	);
+	const mobileTitleSize = await page
+		.locator(".banner-title")
+		.evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+	expect(mobileTitleSize).toBeLessThan(tabletTitleSize);
+	expect(tabletTitleSize).toBeLessThan(desktopTitleSize);
 
 	await page.addInitScript(() => {
 		localStorage.setItem("wallpaperMode", "fullscreen");

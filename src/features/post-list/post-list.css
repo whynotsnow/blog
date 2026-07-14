@@ -5,6 +5,11 @@
   transition: opacity var(--motion-slow) var(--motion-ease-standard);
 }
 
+.listing-page {
+  container-name: post-feed;
+  container-type: inline-size;
+}
+
 .post-list.list-mode {
   @apply flex flex-col;
   gap: var(--space-content);
@@ -12,22 +17,23 @@
 
 .post-list.grid-mode {
   @apply grid grid-cols-1;
-  gap: var(--space-content);
+  gap: var(--space-grid-gap);
 }
 
 .post-list.grid-mode > .post-list__item {
+  container-name: post-card;
+  container-type: inline-size;
   min-width: 0;
   width: 100%;
-  max-width: 24rem;
   height: 29rem;
   max-height: 29rem;
   contain-intrinsic-size: auto 29rem;
-  justify-self: center;
 }
 
 .listing-page .post-list.grid-mode {
   width: 100%;
-  max-width: none;
+  max-width: var(--width-feed-one-max);
+  margin-inline: auto;
 }
 
 .post-list.grid-mode .home-post-card {
@@ -48,9 +54,9 @@
   inset: auto;
   order: -1;
   width: 100%;
+  height: clamp(10rem, 56.25cqi, 14rem);
   max-height: none;
   margin: 0;
-  aspect-ratio: 16 / 9;
   border-radius: 0;
 }
 
@@ -147,21 +153,34 @@ body.is-home .home-post-card__summary {
 
   /* Preserve the saved Grid preference while presenting a single card column. */
   .post-list.grid-mode {
-    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-cluster);
   }
 }
 
-@media (min-width: 768px) {
+@container post-feed (min-width: 608px) {
   .post-list.grid-mode {
-    grid-template-columns: repeat(2, minmax(0, 24rem));
-    justify-content: space-between;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-grid-gap);
+  }
+
+  .listing-page .post-list.grid-mode {
+    max-width: var(--width-feed-two-max);
   }
 }
 
-@media (min-width: 1536px) {
+@container post-feed (min-width: 932px) {
   .post-list.grid-mode {
-    grid-template-columns: repeat(3, minmax(0, 24rem));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .listing-page .post-list.grid-mode {
+    max-width: var(--width-feed-three-max);
+  }
+}
+
+@container post-feed (min-width: 1112px) {
+  .listing-page .post-list.grid-mode {
+    max-width: var(--width-feed-three-max);
   }
 }
 

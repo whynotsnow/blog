@@ -18,9 +18,13 @@ body:is(.is-home, .is-post) .main-grid-shell {
   padding-inline: var(--space-page-x);
 }
 
+body:is(.is-home, .is-post) .main-grid-shell[data-responsive-strategy="container-content"] {
+  padding-inline: var(--space-shell-wide-x);
+}
+
 body:is(.is-home, .is-post) #main-grid {
   padding-inline: 0;
-  gap: var(--space-content);
+  gap: var(--space-grid-gap);
 }
 
 .main-content-layer {

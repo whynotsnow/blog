@@ -94,14 +94,7 @@ export const widgetPlacementPresets = {
 			sidebar: [widget("post-desktop-profile", "profile", "sticky")],
 		},
 		tablet: {
-			sidebar: [
-				widget("post-tablet-categories", "categories", "flow", {
-					collapseThreshold: 5,
-				}),
-				widget("post-tablet-tags", "tags", "sticky", {
-					collapseThreshold: 20,
-				}),
-			],
+			sidebar: [widget("post-tablet-profile", "profile", "flow")],
 		},
 		mobile: {
 			beforeContent: [widget("post-mobile-profile", "profile", "flow")],

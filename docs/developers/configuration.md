@@ -58,7 +58,7 @@
 - `tablet.sidebar`：显式定义 Tablet 侧栏，不会继承 Desktop 配置。
 - `mobile.beforeContent`、`mobile.afterContent`：显式定义 Mobile 内容前后的 Widget，不再使用历史 `drawer` 命名。
 - `position: "flow"`：Widget 按普通文档流排列。
-- `position: "sticky"`：Widget 放入吸顶区域；当对应侧栏在 `md`（`>=768px`）及以上可见时由 CSS 启用吸顶，Desktop 与 Tablet 共用该规则，Mobile 保持普通流。
+- `position: "sticky"`：Widget 放入吸顶区域；默认页面沿用 viewport 规则，`container-content` 页面只在右侧 Sidebar 区域启用，前置 Supporting Row 保持普通流。
 
 Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`，否则 Sticky 容器会被自身内容高度限制并随页面滚出视口。
 
@@ -86,8 +86,8 @@ Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。
-- Listing 页面在小于 `768px` 时为单列且隐藏 Sidebar，`768px` 至 `1535px` 为双列加 Sidebar，`1536px` 及以上为三列加 Sidebar。
-- 首页与分类页分别使用 `home`、`category` Widget placement。两者的 Desktop/Tablet Sidebar 都显示 Profile 与 Site Stats；Mobile 仅首页在内容前显示 Profile。
+- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 最大 `1480px`；Shell 在 `1200px` 以上使用三列 Feed + Sidebar，在 `880px–1199px` 使用双列 Feed + Sidebar，在 `608px–879px` 把 Sidebar Widget 移到 Main 前方并保持双列，更窄时退为单列。三列、双列和单列 Feed 的最大宽度分别为 `1112px`、`736px`、`440px`，Sidebar 在 `248px–272px` 内变化。断点针对实际容器，不直接对应 viewport 宽度。
+- 首页与分类页分别使用 `home`、`category` Widget placement。首页和分类页在前置 Supporting Row 与右侧 Sidebar 都提供 Profile + Site Stats；文章页在前置 Supporting Row 与 Mobile 区显示 Profile，在右侧 Sidebar 显示 Sticky Profile。具体显示区域由 `page-shell` 的压缩预算状态决定。
 - `desktopLayoutPreference`：保存用户的 Desktop 页面布局偏好。页面 policy 拥有最终约束权；文章详情页只允许 `content-right`，不会清除用户在其他页面使用的 `three-column` 偏好。
 - `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。`fullscreen` 表示全屏高度的 banner 模式；`overlay` 才会显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果。
 - 共享布局断点固定为：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。Tailwind 同时显式使用 `sm: 640px`、`md: 768px`、`lg: 1280px`、`xl: 1920px`。

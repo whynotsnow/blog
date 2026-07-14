@@ -78,12 +78,17 @@ const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname
 		id="top-row"
 		class="z-50 pointer-events-none relative transition-all duration-700 max-w-(--page-width) px-0 md:px-4 mx-auto"
 		class:list={[""]}
+		data-responsive-strategy={viewModel.pageLayout.responsiveStrategy}
 	>
 		<div
 			id="navbar-wrapper"
 			class="pointer-events-auto sticky top-0 transition-all"
 		>
-			<Navbar />
+			<Navbar
+				class={viewModel.pageLayout.responsiveStrategy === "container-content"
+					? "navbar__inner--container-content"
+					: undefined}
+			/>
 		</div>
 	</div>
 

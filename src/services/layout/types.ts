@@ -2,8 +2,10 @@ export type DesktopPageLayout = "three-column" | "content-right";
 export type PageLayoutPolicyName = "default" | "listing" | "post";
 export type NavbarBehavior = "banner-aware" | "fixed-visible";
 export type EntryScrollBehavior = "top" | "content-start";
+export type ResponsiveLayoutStrategy = "viewport-legacy" | "container-content";
 
 export type PageLayoutPolicy = {
+	responsiveStrategy: ResponsiveLayoutStrategy;
 	desktop: {
 		base: DesktopPageLayout;
 		allowed: readonly DesktopPageLayout[];

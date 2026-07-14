@@ -110,6 +110,19 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 ## 2026-07-14
 
+### Replaced viewport listing breakpoints with layered Container Queries
+
+- Added named Page Shell, post Feed, and Widget Card containers so each layer responds to its actual available width.
+- Made post columns fluid; the later width-budget state machine now owns Card maxima and Sidebar transition points.
+- Kept Banner geometry viewport- and mode-owned while making its inner typography fluid.
+
+### Unified Wide Navbar, content, and Sidebar geometry
+
+- Kept Banner viewport-wide while reducing Navbar and Main Shell to `1480px`.
+- Rebased the state machine on smaller Cards and gaps: `1400px` for three Cards + Sidebar, `1024px` for two Cards + Sidebar, and `736px` for the no-Sidebar composition.
+- Bound Sidebar visibility to the same `608px` minimum used by the two-column Feed, eliminating the one-Card + Sidebar boundary state.
+- Moved the three-column transition to a `1200px` Shell so surplus width is reused earlier instead of accumulating as large centered margin.
+
 ### Split home and category listing compositions
 
 - Added a fixed listing layout policy with responsive one-, two-, and three-column post grids plus explicit home and category Widget placements.

@@ -76,7 +76,7 @@ src/features/music-player/
 
 首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块，每组 6 篇；分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro 输出 SSG 快照，带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果；查询参数、history、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
-文章列表页使用固定的 `listing` 布局策略：`1536px` 及以上为三列文章加 Sidebar，`768px` 至 `1535px` 为两列文章加 Sidebar，更小视口为单列且隐藏 Sidebar。首页和分类页分别使用 `home`、`category` Widget placement，只有首页在 Mobile 内容前显示 Profile。
+首页、分类页与文章详情页使用 `container-content` 布局策略，不再根据 viewport 猜测主内容剩余宽度。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用 `1480px` 最大宽度。Page Shell 通过四个稳定状态退让：`1200px` 以上为三列 Feed + `248px–272px` Sidebar；`880px–1199px` 为双列 Feed + 同一 Sidebar；`608px–879px` 隐藏 Sidebar 并把其 Widget 放到 Main 前方，Feed 维持双列；更窄时 Feed 退为单列。Main Grid 最大宽度分别为 `1400px`、`1024px` 和 `736px`，Card 使用约 `296px–360px` 的稳定宽度区间。Sidebar 显示端点与双列 Feed 最小预算绑定，任何带右侧 Sidebar 的状态都至少保留两列文章。首页、分类页和文章详情页都为前置 Supporting Row 提供与 Sidebar 对应的 Widget；进入 Mobile 后继续使用各页面已有的 Mobile placement。
 
 分类页与文章详情页在 Banner 与 Fullscreen 模式下保留横幅几何，但 Navbar 行为与首页解耦：只有首页使用 `banner-aware` 的透明度/滚动状态，分类页与文章详情页使用始终可见的 `fixed-visible` 状态。这两种模式的普通导航以及浏览器前进/后退都直接定位实际的 `.page-main-content` 区域，以其文档坐标减去 CSS `scroll-margin` clearance 得出统一位置，不再维护额外的零高度锚点；Overlay、None 和 Hash 导航不执行该定位。页面身份取自新容器的 interaction policy，不依赖内容替换阶段的瞬时 URL。
 
