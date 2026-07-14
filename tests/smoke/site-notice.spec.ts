@@ -12,11 +12,35 @@ test("site notice floats outside page flow and switches between notices", async 
 	await expect(region).toHaveCSS("position", "fixed");
 
 	const geometry = await region.evaluate((element) => ({
+		left: element.getBoundingClientRect().left,
+		right: element.getBoundingClientRect().right,
 		width: element.getBoundingClientRect().width,
 		viewportWidth: window.innerWidth,
+		zIndex: Number.parseInt(getComputedStyle(element).zIndex, 10),
+		navbarZIndex: Number.parseInt(
+			getComputedStyle(document.querySelector("#navbar")!).zIndex,
+			10,
+		),
+		messageClientWidth: element.querySelector<HTMLElement>(
+			".site-notice-bar__message",
+		)!.clientWidth,
+		messageScrollWidth: element.querySelector<HTMLElement>(
+			".site-notice-bar__message",
+		)!.scrollWidth,
+		messageWhiteSpace: getComputedStyle(
+			element.querySelector(".site-notice-bar__message")!,
+		).whiteSpace,
 	}));
 	expect(geometry.width).toBeLessThan(geometry.viewportWidth);
-	expect(geometry.width).toBeLessThanOrEqual(768);
+	expect(geometry.width).toBeLessThanOrEqual(576);
+	expect(geometry.left).toBeGreaterThan(geometry.viewportWidth / 2);
+	expect(geometry.viewportWidth - geometry.right).toBeGreaterThanOrEqual(16);
+	expect(geometry.viewportWidth - geometry.right).toBeLessThanOrEqual(40);
+	expect(geometry.zIndex).toBeLessThan(geometry.navbarZIndex);
+	expect(geometry.messageWhiteSpace).toBe("nowrap");
+	expect(geometry.messageScrollWidth).toBeLessThanOrEqual(
+		geometry.messageClientWidth,
+	);
 
 	await expect(notices.nth(0)).toHaveAttribute("data-state", "active");
 	const initialLayout = await page.evaluate(() => ({
@@ -35,6 +59,22 @@ test("site notice floats outside page flow and switches between notices", async 
 			?.getBoundingClientRect().height,
 	}));
 	expect(switchedLayout).toEqual(initialLayout);
+});
+
+test("site notice keeps safe mobile edges", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto("/");
+
+	const geometry = await page
+		.locator("[data-site-notice-region]")
+		.evaluate((element) => ({
+			left: element.getBoundingClientRect().left,
+			right: window.innerWidth - element.getBoundingClientRect().right,
+			width: element.getBoundingClientRect().width,
+		}));
+	expect(geometry.left).toBeGreaterThanOrEqual(12);
+	expect(geometry.right).toBeGreaterThanOrEqual(12);
+	expect(geometry.width).toBeLessThanOrEqual(362);
 });
 
 test("site notice keeps its viewport position during Swup navigation", async ({

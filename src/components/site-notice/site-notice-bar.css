@@ -1,10 +1,13 @@
 .site-notice-bar {
+  --site-notice-width: 26rem;
+
   position: fixed;
-  z-index: 45;
+  z-index: 35;
   inset-block-start: calc(4.5rem + var(--size-3));
-  inset-inline-start: 50%;
+  inset-inline-end: max(var(--space-page-x), calc((100vw - var(--width-shell)) / 2 + var(--space-page-x)));
   display: flex;
-  width: min(calc(100vw - var(--size-4) * 2), var(--width-reading));
+  box-sizing: border-box;
+  width: min(calc(100vw - var(--space-page-x) - var(--space-page-x)), var(--site-notice-width));
   align-items: stretch;
   overflow: hidden;
   color: var(--text-secondary);
@@ -12,7 +15,6 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-raised);
-  transform: translateX(-50%);
 }
 
 .site-notice-bar[hidden] {
@@ -168,17 +170,29 @@
 
 @media (min-width: 768px) {
   .site-notice-bar {
+    --site-notice-width: 36rem;
+
     inset-block-start: calc(4.5rem + var(--size-4));
+    inset-inline-end: var(--space-page-x);
   }
 
   .site-notice-bar__layout {
+    align-items: center;
     padding-inline: var(--size-4);
+  }
+
+  .site-notice-bar__message {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
 @media (max-width: 479px) {
   .site-notice-bar {
-    width: calc(100vw - var(--size-4));
+    inset-inline-start: var(--space-page-x);
+    inset-inline-end: var(--space-page-x);
+    width: auto;
   }
 
   .site-notice-bar__layout {

@@ -138,7 +138,7 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 - 新增文章字段：先改 `src/content.config.ts`，再改 `src/services/core` 的派生逻辑。
 - 新增非文章数据：优先放到 `src/data`。
 - 新增 Widget：放入 `src/components/widget`，在 `src/services/widget/registry.ts` 注册，并在 `src/services/widget/presets.ts` 中按端点和区域显式配置。
-- 网站级通知不属于 Widget。`src/config/site-notice.ts` 拥有配置，`src/services/site-notice.ts` 生成 View Model，`src/components/site-notice` 拥有呈现与关闭状态交互，并通过独立的 `#site-notice-container` 在主内容 Shell 中更新。通知不得放进带 `transform` 的 `#swup-container`，否则固定定位会在过渡期间改用内容容器作为 containing block。通知使用固定定位和按断点确定的 viewport 高度，轮播不得在客户端按单条内容重新测量高度；因此通知切换不会改变文档 `scrollHeight` 或滚动条比例。
+- 网站级通知不属于 Widget。`src/config/site-notice.ts` 拥有配置，`src/services/site-notice.ts` 生成 View Model，`src/components/site-notice` 拥有呈现与关闭状态交互，并通过独立的 `#site-notice-container` 在主内容 Shell 中更新。通知不得放进带 `transform` 的 `#swup-container`，否则固定定位会在过渡期间改用内容容器作为 containing block。Desktop/Tablet 通知使用贴近 viewport 右上角的单行状态卡，层级低于 Navbar 与交互浮层；Mobile 则限制在页面安全边距内并允许两行正文。通知 viewport 高度按断点固定，轮播不得在客户端按单条内容重新测量高度，因此通知切换不会改变文档 `scrollHeight` 或滚动条比例。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。
 

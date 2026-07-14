@@ -130,4 +130,5 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Replaced the fixed `300vh` transition extender with an exact previous/new scroll-height Guard and aligned Grid intrinsic sizing with the fixed Card height to prevent scrollbar thumb jumps.
 - Stabilized the fixed Site Notice viewport so notice rotation no longer performs post-load height writes; confirmed that the fixed notice does not change document scroll height.
 - Moved the fixed Site Notice into its own non-animated Swup replacement container so route transforms cannot change its containing block or loading position.
+- Repositioned the Site Notice as a viewport-right, single-line status card below interactive overlay layers, with safe full-width margins on Mobile.
 - Restored fullscreen Banner flow geometry by starting Main Content at `100dvh` and removing the transient `top` interpolation that exposed content over the Banner.
