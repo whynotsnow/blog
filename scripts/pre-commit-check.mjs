@@ -19,6 +19,17 @@ const PRETTIER_EXTENSIONS = new Set([
 	".yml",
 ]);
 
+const ESLINT_EXTENSIONS = new Set([
+	".astro",
+	".cjs",
+	".js",
+	".mjs",
+	".mts",
+	".svelte",
+	".ts",
+	".tsx",
+]);
+
 function run(command, args, options = {}) {
 	const result = spawnSync(command, args, {
 		stdio: "inherit",
@@ -78,6 +89,14 @@ function isPrettierTarget(file) {
 	return PRETTIER_EXTENSIONS.has(extname(file));
 }
 
+function isExistingFile(file) {
+	return existsSync(file);
+}
+
+function isUnder(file, directory) {
+	return file === directory || file.startsWith(`${directory}/`);
+}
+
 function localBin(name) {
 	const path = `node_modules/.bin/${name}`;
 	if (!existsSync(path)) {
@@ -127,26 +146,84 @@ if (prettierTargets.length > 0) {
 console.log("[pre-commit] Checking staged whitespace...");
 run("git", ["diff", "--cached", "--check"]);
 
-console.log("[pre-commit] Running ESLint...");
-run(
-	localBin("eslint"),
-	["src", "scripts", "*.config.{js,mjs,cjs,ts}", "--max-warnings", "0"],
-	{
+const markdownTargets = stagedFiles.filter(
+	(file) => extname(file) === ".md" && isExistingFile(file),
+);
+if (markdownTargets.length > 0) {
+	console.log("[pre-commit] Checking staged Markdown...");
+	run(localBin("markdownlint-cli2"), markdownTargets);
+}
+
+const eslintTargets = stagedFiles.filter(
+	(file) => ESLINT_EXTENSIONS.has(extname(file)) && isExistingFile(file),
+);
+if (eslintTargets.length > 0) {
+	console.log("[pre-commit] Running ESLint for staged code...");
+	run(localBin("eslint"), [...eslintTargets, "--max-warnings", "0"], {
 		failureAdvice:
 			"ESLint failed. Review the diagnostics above, then run `pnpm lint:fix` for automatically fixable issues and `pnpm lint` to verify.",
-	},
+	});
+}
+
+const affectsDependencies = stagedFiles.some((file) =>
+	["package.json", "pnpm-lock.yaml"].includes(file),
 );
+const affectsDesign = stagedFiles.some(
+	(file) =>
+		isUnder(file, "src/design") ||
+		file === "scripts/check-design-system.mjs",
+);
+if (affectsDesign || affectsDependencies) {
+	console.log("[pre-commit] Checking Design System boundaries...");
+	run(process.execPath, ["scripts/check-design-system.mjs"]);
+}
 
-console.log("[pre-commit] Running Astro type/content diagnostics...");
-run(localBin("astro"), ["check"], {
-	failureAdvice:
-		"Astro diagnostics failed. Review the file and line diagnostics above, then run `pnpm check` to verify the fix.",
-});
+const affectsAstro = stagedFiles.some(
+	(file) =>
+		isUnder(file, "src") ||
+		file === "astro.config.mjs" ||
+		file === "tsconfig.json" ||
+		affectsDependencies,
+);
+if (affectsAstro) {
+	console.log("[pre-commit] Running Astro type/content diagnostics...");
+	run(localBin("astro"), ["check"], {
+		failureAdvice:
+			"Astro diagnostics failed. Review the file and line diagnostics above, then run `pnpm check` to verify the fix.",
+	});
+}
 
-console.log("[pre-commit] Running TypeScript diagnostics...");
-run(localBin("tsc"), ["--noEmit"], {
-	failureAdvice:
-		"TypeScript diagnostics failed. Review the errors above, then run `pnpm type-check` to verify the fix.",
-});
+const affectsSourceTypes = stagedFiles.some(
+	(file) =>
+		(isUnder(file, "src") &&
+			[".ts", ".svelte", ".astro"].includes(extname(file))) ||
+		file === "tsconfig.json" ||
+		affectsDependencies,
+);
+if (affectsSourceTypes) {
+	console.log("[pre-commit] Running source TypeScript diagnostics...");
+	run(localBin("tsc"), ["--noEmit"], {
+		failureAdvice:
+			"TypeScript diagnostics failed. Review the errors above, then run `pnpm type-check` to verify the fix.",
+	});
+}
+
+const affectsTestTypes = stagedFiles.some(
+	(file) =>
+		isUnder(file, "tests") ||
+		[
+			"playwright.config.ts",
+			"vitest.config.ts",
+			"tsconfig.tests.json",
+		].includes(file) ||
+		affectsDependencies,
+);
+if (affectsTestTypes) {
+	console.log("[pre-commit] Running test TypeScript diagnostics...");
+	run(localBin("tsc"), ["-p", "tsconfig.tests.json", "--noEmit"], {
+		failureAdvice:
+			"Test TypeScript diagnostics failed. Run `pnpm type-check:tests` to verify the fix.",
+	});
+}
 
 console.log("[pre-commit] All checks passed.");

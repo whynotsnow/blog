@@ -16,6 +16,7 @@
 | [项目架构](./developers/architecture.md) | 项目目录、内容管线、路由、配置和扩展原则。 |
 | [Design System](./developers/design-system.md) | 视觉 token、Theme、Pattern、兼容层和治理规则。 |
 | [开发工作流](./developers/development.md) | 环境、命令、构建、检查和常用任务。 |
+| [测试策略](./developers/testing.md) | 按改动影响面选择测试、测试分层和全量回归升级条件。 |
 | [内容编写指南](./developers/content-guide.md) | 文章 schema、frontmatter、分类标签、草稿和资源规则。 |
 | [配置说明](./developers/configuration.md) | 站点配置、环境变量、特色页面和 URL 工具。 |
 | [维护指南](./developers/maintenance.md) | 定期检查、依赖更新、生成文件和高风险区域。 |
@@ -32,6 +33,7 @@
 | [Agent Workspace Spec](../spec/agent-workspace/SPEC.md) | Agent 工作区文件格式、合规等级、上下文解析与版本规则。 |
 | [Agent Documentation](./agents/README.md) | English documentation index for AI agents. |
 | [Agent Workflow](./agents/workflow.md) | English workflow for AI agents: inspect, modify, validate, and hand off work. |
+| [Testing Strategy](./agents/testing-strategy.md) | English impact-based test selection and escalation contract for agents. |
 | [Project Map](./agents/project-map.md) | English architecture map optimized for AI agents. |
 | [Runtime Playbook](./agents/runtime-playbook.md) | English playbook for known runtime and tooling pitfalls. |
 | [Runtime Requirements](./agents/runtime-requirements.md) | English execution capability contract and local profile resolution order. |

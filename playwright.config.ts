@@ -6,8 +6,11 @@ const port = Number(process.env.PLAYWRIGHT_PORT ?? 4321);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}`;
 
 export default defineConfig({
-	testDir: "./tests/smoke",
+	testDir: "./tests/e2e",
 	timeout: 30_000,
+	// Keep full-suite concurrency at the level used by the former two-file suite.
+	// Affected suites remain fast because they execute only their owning spec.
+	workers: 2,
 	expect: {
 		timeout: 5_000,
 	},

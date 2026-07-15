@@ -1,15 +1,29 @@
 import { expect, test } from "@playwright/test";
+import { gotoPage } from "../../support/navigation";
+
+test("site notice renders as a shell-level status bar", async ({ page }) => {
+	await gotoPage(page, "/");
+
+	const notice = page.locator("[data-site-notice]");
+	await expect(notice).toBeVisible();
+	await expect(notice).toHaveAttribute("data-status", /^(info|success)$/);
+	await expect(notice).toContainText(
+		/网站建设中，更多功能敬请期待！|本站内容持续更新，感谢你的关注。/,
+	);
+	await expect(notice.locator("xpath=ancestor::panel-card")).toHaveCount(0);
+});
 
 test("site notice floats outside page flow and switches between notices", async ({
 	page,
 }) => {
-	await page.goto("/");
+	await gotoPage(page, "/");
 
 	const region = page.locator("[data-site-notice-region]");
 	const notices = region.locator("[data-site-notice-item]");
 	await expect(region).toBeVisible();
 	await expect(notices).toHaveCount(2);
 	await expect(region).toHaveCSS("position", "fixed");
+	await region.hover();
 
 	const geometry = await region.evaluate((element) => ({
 		left: element.getBoundingClientRect().left,
@@ -42,16 +56,21 @@ test("site notice floats outside page flow and switches between notices", async 
 		geometry.messageClientWidth,
 	);
 
-	await expect(notices.nth(0)).toHaveAttribute("data-state", "active");
 	const initialLayout = await page.evaluate(() => ({
 		documentHeight: document.documentElement.scrollHeight,
 		viewportHeight: document
 			.querySelector<HTMLElement>("[data-site-notice-viewport]")
 			?.getBoundingClientRect().height,
 	}));
+	const counter = region.locator("[data-site-notice-index]");
+	const initialIndex = Number(await counter.textContent()) - 1;
+	const expectedIndex = (initialIndex + 1) % 2;
 	await region.locator("[data-site-notice-next]").click();
-	await expect(notices.nth(1)).toHaveAttribute("data-state", "active");
-	await expect(region.locator("[data-site-notice-index]")).toHaveText("2");
+	await expect(notices.nth(expectedIndex)).toHaveAttribute(
+		"data-state",
+		"active",
+	);
+	await expect(counter).toHaveText(String(expectedIndex + 1));
 	const switchedLayout = await page.evaluate(() => ({
 		documentHeight: document.documentElement.scrollHeight,
 		viewportHeight: document
@@ -63,7 +82,7 @@ test("site notice floats outside page flow and switches between notices", async 
 
 test("site notice keeps safe mobile edges", async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
-	await page.goto("/");
+	await gotoPage(page, "/");
 
 	const geometry = await page
 		.locator("[data-site-notice-region]")
@@ -80,7 +99,7 @@ test("site notice keeps safe mobile edges", async ({ page }) => {
 test("site notice keeps its viewport position during Swup navigation", async ({
 	page,
 }) => {
-	await page.goto("/");
+	await gotoPage(page, "/");
 	const region = page.locator("[data-site-notice-region]");
 	await expect(region).toBeVisible();
 	await expect(

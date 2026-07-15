@@ -1,0 +1,57 @@
+import { describe, expect, it } from "vitest";
+
+import { buildSiteNoticeViewModel } from "@/services/site-notice";
+import type { SiteNoticeConfig } from "@/types/config";
+
+const config: SiteNoticeConfig = {
+	enable: true,
+	autoRotate: true,
+	rotationIntervalMs: 1000,
+	notices: [
+		{
+			id: "home",
+			content: "Home notice",
+			status: "info",
+			dismissible: true,
+			visibility: { scope: "home" },
+			action: { label: "Read", href: "/about/" },
+		},
+		{
+			id: "post",
+			content: "Post notice",
+			status: "warning",
+			dismissible: false,
+			visibility: { scope: "content", include: ["/posts/*"] },
+		},
+	],
+};
+
+describe("buildSiteNoticeViewModel", () => {
+	it("filters route-owned notices and normalizes defaults", () => {
+		const viewModel = buildSiteNoticeViewModel(config, "/");
+
+		expect(viewModel).toMatchObject({
+			autoRotate: true,
+			rotationIntervalMs: 3000,
+			notices: [
+				{
+					id: "home",
+					icon: "material-symbols:info-outline-rounded",
+					action: { label: "Read", href: "/about/", external: false },
+				},
+			],
+		});
+	});
+
+	it("matches wildcard content routes", () => {
+		expect(
+			buildSiteNoticeViewModel(config, "/posts/example/")?.notices,
+		).toEqual([expect.objectContaining({ id: "post", status: "warning" })]);
+	});
+
+	it("returns no model when disabled", () => {
+		expect(
+			buildSiteNoticeViewModel({ ...config, enable: false }, "/"),
+		).toBeUndefined();
+	});
+});

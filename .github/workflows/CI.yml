@@ -2,7 +2,7 @@ name: snow build CI
 
 on:
     push:
-        branches: [main] # 监听 main 分支
+        branches: [main]
     pull_request:
         branches: [main]
     workflow_dispatch:
@@ -15,78 +15,176 @@ permissions:
     contents: read
 
 jobs:
-    # Step 1: static quality gates
-    check:
-        name: Quality Checks
+    plan:
+        name: Validation Plan
         runs-on: ubuntu-latest
+        outputs:
+            groups: ${{ steps.plan.outputs.groups }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v6
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v6
               with:
-                  node-version: lts/*
+                  fetch-depth: 0
 
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
+            - name: Select validation groups
+              id: plan
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  EVENT_NAME: ${{ github.event_name }}
+              run: |
+                  if [ "$EVENT_NAME" = "pull_request" ]; then
+                    node scripts/test-impact.mjs --base "$BASE_SHA" --json > test-plan.json
+                  else
+                    echo '{"groups":["full"],"files":[],"unmatched":[],"commands":[]}' > test-plan.json
+                  fi
+                  cat test-plan.json
+                  GROUPS=$(node -e 'const fs=require("node:fs");const plan=JSON.parse(fs.readFileSync("test-plan.json","utf8"));process.stdout.write(JSON.stringify(plan.groups))')
+                  echo "groups=$GROUPS" >> "$GITHUB_OUTPUT"
+
+    quality:
+        name: Quality Checks
+        needs: plan
+        if: >-
+            contains(needs.plan.outputs.groups, '"full"') ||
+            contains(needs.plan.outputs.groups, '"workspace"') ||
+            contains(needs.plan.outputs.groups, '"markdown"') ||
+            contains(needs.plan.outputs.groups, '"lint"') ||
+            contains(needs.plan.outputs.groups, '"type"') ||
+            contains(needs.plan.outputs.groups, '"test-type"') ||
+            contains(needs.plan.outputs.groups, '"astro"') ||
+            contains(needs.plan.outputs.groups, '"design"')
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v4
               with:
                   run_install: false
-
-            # 🔹 缓存 pnpm 依赖，提高构建速度
-            - name: Cache pnpm store
-              uses: actions/cache@v3
+            - uses: actions/setup-node@v6
               with:
-                  path: ~/.pnpm-store
-                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-pnpm-
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Check Design System boundaries
-              run: pnpm design:check
-
+                  node-version: lts/*
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - name: Validate Agent Workspace
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"workspace"')
+              run: node .agent-workspace/tools/agent-workspace.mjs validate
+            - name: Lint Markdown
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"markdown"')
+              run: pnpm lint:md
             - name: Run ESLint
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"lint"')
               run: pnpm lint
-
+            - name: Check Design System boundaries
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"design"')
+              run: pnpm design:check
             - name: Run Astro Check
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"astro"')
               run: pnpm check
-
-            - name: Run TypeScript Check
+            - name: Run source TypeScript Check
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"type"')
               run: pnpm type-check
+            - name: Run test TypeScript Check
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"test-type"')
+              run: pnpm type-check:tests
 
-    # Step 2: production build
+    fast-tests:
+        name: Fast Tests
+        needs: plan
+        if: >-
+            contains(needs.plan.outputs.groups, '"full"') ||
+            contains(needs.plan.outputs.groups, '"unit"') ||
+            contains(needs.plan.outputs.groups, '"integration"')
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v4
+              with:
+                  run_install: false
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - name: Run all fast tests
+              if: contains(needs.plan.outputs.groups, '"full"')
+              run: pnpm test:fast
+            - name: Run Unit tests
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"unit"') }}
+              run: pnpm test:unit
+            - name: Run Integration tests
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"integration"') }}
+              run: pnpm test:integration
+
+    browser-tests:
+        name: Browser Tests
+        needs: plan
+        if: >-
+            contains(needs.plan.outputs.groups, '"full"') ||
+            contains(needs.plan.outputs.groups, '"smoke"') ||
+            contains(needs.plan.outputs.groups, '"shell"') ||
+            contains(needs.plan.outputs.groups, '"home"') ||
+            contains(needs.plan.outputs.groups, '"page-support"') ||
+            contains(needs.plan.outputs.groups, '"post-list"') ||
+            contains(needs.plan.outputs.groups, '"post-detail"') ||
+            contains(needs.plan.outputs.groups, '"site-notice"') ||
+            contains(needs.plan.outputs.groups, '"design-contract"')
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v4
+              with:
+                  run_install: false
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm exec playwright install --with-deps chromium
+            - name: Run full browser regression
+              if: contains(needs.plan.outputs.groups, '"full"')
+              run: pnpm test:e2e:full
+            - name: Run Smoke suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"smoke"') }}
+              run: pnpm test:e2e:smoke
+            - name: Run Shell suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"shell"') }}
+              run: pnpm test:e2e:shell
+            - name: Run Home suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"home"') }}
+              run: pnpm exec playwright test tests/e2e/features/home.spec.ts
+            - name: Run Page Support suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"page-support"') }}
+              run: pnpm exec playwright test tests/e2e/features/page-support.spec.ts
+            - name: Run Post List suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"post-list"') }}
+              run: pnpm exec playwright test tests/e2e/features/post-list.spec.ts
+            - name: Run Post Detail suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"post-detail"') }}
+              run: pnpm exec playwright test tests/e2e/features/post-detail.spec.ts
+            - name: Run Site Notice suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"site-notice"') }}
+              run: pnpm exec playwright test tests/e2e/features/site-notice.spec.ts
+            - name: Run Design contract suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"design-contract"') }}
+              run: pnpm exec playwright test tests/e2e/contracts/design-system.spec.ts
+
     build:
         name: Astro Build
+        needs: plan
+        if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"astro-build"')
         runs-on: ubuntu-latest
-        needs: check
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v6
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v6
-              with:
-                  node-version: lts/*
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
+            - uses: actions/checkout@v6
+            - uses: pnpm/action-setup@v4
               with:
                   run_install: false
-
-            # 🔹 缓存 pnpm 依赖，提高构建速度
-            - name: Cache pnpm store
-              uses: actions/cache@v3
+            - uses: actions/setup-node@v6
               with:
-                  path: ~/.pnpm-store
-                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-pnpm-
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Run Build
+                  node-version: lts/*
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - name: Run complete production build
+              if: contains(needs.plan.outputs.groups, '"full"')
               run: pnpm build
+            - name: Run Astro build stage
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') }}
+              run: pnpm build:astro

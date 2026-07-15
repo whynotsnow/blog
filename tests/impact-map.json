@@ -1,0 +1,222 @@
+{
+	"version": 1,
+	"groups": {
+		"workspace": [
+			"node",
+			".agent-workspace/tools/agent-workspace.mjs",
+			"validate"
+		],
+		"markdown": ["pnpm", "lint:md"],
+		"lint": ["pnpm", "lint"],
+		"type": ["pnpm", "type-check"],
+		"test-type": ["pnpm", "type-check:tests"],
+		"astro": ["pnpm", "check"],
+		"design": ["pnpm", "design:check"],
+		"unit": ["pnpm", "test:unit"],
+		"integration": ["pnpm", "test:integration"],
+		"smoke": ["pnpm", "test:e2e:smoke"],
+		"shell": ["pnpm", "test:e2e:shell"],
+		"home": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/home.spec.ts"
+		],
+		"page-support": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/page-support.spec.ts"
+		],
+		"post-list": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/post-list.spec.ts"
+		],
+		"post-detail": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/post-detail.spec.ts"
+		],
+		"site-notice": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/site-notice.spec.ts"
+		],
+		"design-contract": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/contracts/design-system.spec.ts"
+		],
+		"astro-build": ["pnpm", "build:astro"],
+		"full": ["pnpm", "verify:full"]
+	},
+	"rules": [
+		{
+			"patterns": [
+				"AGENTS.md",
+				"docs/agents/**",
+				".agent-workspace/**",
+				"spec/agent-workspace/**"
+			],
+			"groups": ["workspace", "markdown"]
+		},
+		{
+			"patterns": ["README.md", "docs/developers/**", "docs/README.md"],
+			"groups": ["markdown"]
+		},
+		{
+			"patterns": [
+				"src/design/**",
+				"scripts/check-design-system.mjs",
+				"scripts/design-system-baseline.json"
+			],
+			"groups": ["lint", "astro", "design", "design-contract"]
+		},
+		{
+			"patterns": [
+				"src/services/core/**",
+				"src/content.config.ts",
+				"src/utils/url-utils.ts"
+			],
+			"groups": [
+				"lint",
+				"type",
+				"astro",
+				"unit",
+				"integration",
+				"astro-build",
+				"smoke"
+			]
+		},
+		{
+			"patterns": ["src/content/**"],
+			"groups": ["astro", "integration", "astro-build", "smoke"]
+		},
+		{
+			"patterns": [
+				"src/layouts/**",
+				"src/styles/layout/**",
+				"src/styles/main-grid-layout.css",
+				"src/styles/transition.css",
+				"src/scripts/layout-client.ts",
+				"src/utils/page-lifecycle.ts",
+				"src/services/layout/**"
+			],
+			"groups": ["lint", "type", "astro", "unit", "shell", "smoke"]
+		},
+		{
+			"patterns": [
+				"src/pages/index.astro",
+				"src/services/home.ts",
+				"src/components/home/**"
+			],
+			"groups": ["lint", "astro", "home"]
+		},
+		{
+			"patterns": [
+				"src/components/footer/**",
+				"src/components/profile/**",
+				"src/components/layout/MainGridContent.astro",
+				"src/services/footer.ts",
+				"src/services/layout/presets.ts"
+			],
+			"groups": ["lint", "type", "astro", "page-support"]
+		},
+		{
+			"patterns": [
+				"src/components/site-notice/**",
+				"src/services/site-notice.ts",
+				"src/config/site-notice.ts"
+			],
+			"groups": ["lint", "type", "astro", "integration", "site-notice"]
+		},
+		{
+			"patterns": [
+				"src/components/category/**",
+				"src/components/post/**",
+				"src/features/post-list/**",
+				"src/services/category-page.ts"
+			],
+			"groups": ["lint", "type", "astro", "post-list"]
+		},
+		{
+			"patterns": [
+				"src/components/post-detail/**",
+				"src/components/password-protection/**",
+				"src/components/Encryptor.astro",
+				"src/components/PasswordProtection.astro",
+				"src/features/post-content/**",
+				"src/services/post-detail/**",
+				"src/pages/posts/**"
+			],
+			"groups": ["lint", "type", "astro", "post-detail"]
+		},
+		{
+			"patterns": ["tests/unit/**"],
+			"groups": ["test-type", "unit"]
+		},
+		{
+			"patterns": ["tests/integration/**"],
+			"groups": ["test-type", "integration"]
+		},
+		{
+			"patterns": ["tests/e2e/smoke/**"],
+			"groups": ["test-type", "smoke"]
+		},
+		{
+			"patterns": ["tests/e2e/shell/**"],
+			"groups": ["test-type", "shell"]
+		},
+		{
+			"patterns": ["tests/e2e/features/home.spec.ts"],
+			"groups": ["test-type", "home"]
+		},
+		{
+			"patterns": ["tests/e2e/features/page-support.spec.ts"],
+			"groups": ["test-type", "page-support"]
+		},
+		{
+			"patterns": ["tests/e2e/features/post-list.spec.ts"],
+			"groups": ["test-type", "post-list"]
+		},
+		{
+			"patterns": ["tests/e2e/features/post-detail.spec.ts"],
+			"groups": ["test-type", "post-detail"]
+		},
+		{
+			"patterns": ["tests/e2e/features/site-notice.spec.ts"],
+			"groups": ["test-type", "site-notice"]
+		},
+		{
+			"patterns": ["tests/e2e/contracts/**"],
+			"groups": ["test-type", "design-contract"]
+		},
+		{
+			"patterns": [
+				"package.json",
+				"pnpm-lock.yaml",
+				"astro.config.*",
+				"tsconfig*.json",
+				"eslint.config.*",
+				"playwright.config.*",
+				"vitest.config.*",
+				"tests/impact-map.json",
+				"scripts/test-impact.mjs",
+				".github/workflows/**"
+			],
+			"groups": ["full"]
+		}
+	],
+	"fallback": ["full"]
+}

@@ -182,3 +182,12 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Made Archive own Calendar and taxonomy panels in its main flow, and made Home the only page that supplies one Profile support node.
 - Changed category and post-detail layouts to content-only compositions while preserving Container Query feed widths and Swup replacement behavior.
 - Verified the final code architecture with Astro diagnostics, type checks, production build, Design boundary checks, and the complete home smoke suite.
+## 2026-07-15
+
+### Replaced blanket validation with impact-based testing
+
+- Split the monolithic Playwright regression into smoke, Shell, Feature, and Contract owners while preserving the 32-scenario inventory.
+- Added fast Unit and Integration layers plus independent test TypeScript validation.
+- Added a versioned impact map with conservative full-regression fallback for unknown runtime paths.
+- Made pre-commit select staged static gates and made pull request CI select Quality, Fast, Browser, and Build jobs while retaining full main regression.
+- Preserved an explicit two-worker Playwright budget after learning that spec-file splits otherwise increase effective concurrency.
