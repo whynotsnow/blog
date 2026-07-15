@@ -1,6 +1,31 @@
 import { expect, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
 
+test("new shell icons resolve from repository assets without Iconify", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.route(/https:\/\/(?:api|code)\.iconify\.design\//, (route) =>
+		route.abort(),
+	);
+	await gotoPage(page, "/");
+	await page.locator("#floating-tools-switch").click();
+
+	const icons = page.locator(
+		"[data-local-icon='material-symbols:notifications-outline-rounded'], " +
+			"[data-local-icon='material-symbols:construction-rounded'], " +
+			"[data-local-icon='material-symbols:smart-toy-outline-rounded']",
+	);
+	await expect(icons).toHaveCount(4);
+	const sources = await icons.evaluateAll((elements) =>
+		elements.map((element) => getComputedStyle(element).maskImage),
+	);
+	for (const source of sources) {
+		expect(source).not.toBe("none");
+		expect(source).not.toContain("iconify.design");
+	}
+});
+
 test("activity center owns notice unread state in the top-right shell", async ({
 	page,
 }) => {

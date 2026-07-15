@@ -1,5 +1,5 @@
 ---
-import { Icon } from "astro-icon/components";
+import LocalIcon from "@/components/ui/LocalIcon.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import LightDarkSwitch from "@components/LightDarkSwitch.svelte";
@@ -37,7 +37,7 @@ import "./floating-tools.css";
 				aria-label={i18n(I18nKey.displaySettings)}
 				title={i18n(I18nKey.displaySettings)}
 			>
-				<Icon name="material-symbols:tune-rounded" aria-hidden="true" />
+				<LocalIcon name="material-symbols:tune-rounded" />
 			</button>
 		</div>
 
@@ -55,10 +55,9 @@ import "./floating-tools.css";
 				aria-expanded="false"
 				title={i18n(I18nKey.floatingTools)}
 			>
-				<Icon
+				<LocalIcon
 					name="material-symbols:construction-rounded"
 					class="floating-tools__switch-icon"
-					aria-hidden="true"
 				/>
 			</button>
 		</div>

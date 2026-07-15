@@ -1,0 +1,19 @@
+---
+import { resolveLocalIcon, type LocalIconName } from "./local-icons";
+import "./local-icon.css";
+
+interface Props {
+	name: LocalIconName;
+	class?: string;
+}
+
+const { name, class: className } = Astro.props;
+const source = resolveLocalIcon(name);
+---
+
+<span
+	class:list={["local-icon", className]}
+	style={`--local-icon-source: url("${source}")`}
+	data-local-icon={name}
+	aria-hidden="true"
+></span>

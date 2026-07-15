@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { onMount } from "svelte";
 	import { pioConfig } from "@/config";
 	import I18nKey from "@i18n/i18nKey";
@@ -56,11 +56,10 @@
 		title={label}
 		onclick={toggle}
 	>
-		<Icon
-			icon={visible
+		<LocalIcon
+			name={visible
 				? "material-symbols:smart-toy-outline-rounded"
 				: "material-symbols:hide-source-rounded"}
-			aria-hidden="true"
 		/>
 	</button>
 {/if}

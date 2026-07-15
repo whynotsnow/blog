@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { onMount } from "svelte";
 	import type { SiteNoticeItemViewModel } from "@/services/site-notice";
 	import { onPageLifecycle } from "@/utils/page-lifecycle";
@@ -175,10 +175,7 @@
 					(1 - (reading.active ? reading.progress : 0))}
 			/>
 		</svg>
-		<Icon
-			icon="material-symbols:notifications-outline-rounded"
-			aria-hidden="true"
-		/>
+		<LocalIcon name="material-symbols:notifications-outline-rounded" />
 		{#if unreadIds.length > 0}
 			<span class="activity-center__badge" data-activity-unread
 				>{unreadIds.length > 9 ? "9+" : unreadIds.length}</span
@@ -211,9 +208,8 @@
 				data-activity-reading
 			>
 				<div class="activity-center__section-heading">
-					<Icon
-						icon="material-symbols:auto-stories-outline-rounded"
-						aria-hidden="true"
+					<LocalIcon
+						name="material-symbols:auto-stories-outline-rounded"
 					/>
 					<strong>{labels.readingStatus}</strong>
 				</div>
@@ -240,10 +236,7 @@
 						type="button"
 						onclick={resumeReading}
 					>
-						<Icon
-							icon="material-symbols:history-rounded"
-							aria-hidden="true"
-						/>
+						<LocalIcon name="material-symbols:history-rounded" />
 						{labels.resumeReading}
 					</button>
 				{/if}
@@ -252,9 +245,8 @@
 
 		<section class="activity-center__section">
 			<div class="activity-center__section-heading">
-				<Icon
-					icon="material-symbols:notifications-outline-rounded"
-					aria-hidden="true"
+				<LocalIcon
+					name="material-symbols:notifications-outline-rounded"
 				/>
 				<strong>{labels.notifications}</strong>
 			</div>
@@ -265,7 +257,7 @@
 							class="activity-center__notice"
 							data-status={notice.status}
 						>
-							<Icon icon={notice.icon} aria-hidden="true" />
+							<LocalIcon name={notice.icon} />
 							<div>
 								{#if notice.title}<strong>{notice.title}</strong
 									>{/if}

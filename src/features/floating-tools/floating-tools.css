@@ -119,6 +119,7 @@
 }
 
 .floating-tool-button > svg,
+.floating-tool-button > .local-icon,
 .floating-tools :is(#scheme-switch, #floating-toc-btn, #back-to-top-btn) svg {
   width: 1.35rem;
   height: 1.35rem;
