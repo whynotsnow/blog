@@ -689,7 +689,7 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	const postList = page.locator('[data-post-list-renderer="astro"]').first();
 	await page.setViewportSize({ width: 900, height: 812 });
 	const supportingFlow = page.locator(
-		".tablet-sidebar-region .widget-region__flow",
+		".supporting-region .widget-region__flow",
 	);
 	await expect(supportingFlow).toBeVisible();
 	expect(
@@ -700,7 +700,7 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	).toBe(1);
 	expect(
 		await page
-			.locator('[data-widget-id="home-tablet-profile"] .profile-card')
+			.locator('[data-widget-id="home-supporting-profile"] .profile-card')
 			.evaluate(
 				(node) =>
 					getComputedStyle(node).gridTemplateColumns.split(" ")
@@ -710,7 +710,7 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	expect(
 		await page
 			.locator(
-				'[data-widget-id="home-tablet-site-stats"] .site-stats-grid',
+				'[data-widget-id="home-supporting-site-stats"] .site-stats-grid',
 			)
 			.evaluate(
 				(node) =>
@@ -735,7 +735,7 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	await expect(
 		page.locator('[data-widget-id="home-desktop-profile"]'),
 	).toBeVisible();
-	await expect(page.locator(".tablet-sidebar-region")).toBeHidden();
+	await expect(page.locator(".supporting-region")).toBeHidden();
 	expect(
 		await mainGrid.evaluate(
 			(node) =>
@@ -883,10 +883,10 @@ test("container-content widget placements follow page intent", async ({
 	await page.setViewportSize({ width: 900, height: 900 });
 	await page.goto("/");
 	await expect(
-		page.locator('[data-widget-id="home-tablet-profile"]'),
+		page.locator('[data-widget-id="home-supporting-profile"]'),
 	).toBeVisible();
 	await expect(
-		page.locator('[data-widget-id="home-tablet-site-stats"]'),
+		page.locator('[data-widget-id="home-supporting-site-stats"]'),
 	).toBeVisible();
 	await expect(
 		page.locator('[data-widget-id="home-desktop-profile"]'),
@@ -903,10 +903,10 @@ test("container-content widget placements follow page intent", async ({
 	await page.setViewportSize({ width: 900, height: 900 });
 	await page.goto("/category/tech/");
 	await expect(
-		page.locator('[data-widget-id="category-tablet-profile"]'),
+		page.locator('[data-widget-id="category-supporting-profile"]'),
 	).toBeVisible();
 	await expect(
-		page.locator('[data-widget-id="category-tablet-site-stats"]'),
+		page.locator('[data-widget-id="category-supporting-site-stats"]'),
 	).toBeVisible();
 
 	await page.setViewportSize({ width: 1280, height: 900 });
@@ -915,7 +915,7 @@ test("container-content widget placements follow page intent", async ({
 		page.locator('[data-widget-id="category-desktop-profile"]'),
 	).toBeVisible();
 	await expect(
-		page.locator('[data-widget-id="category-tablet-profile"]'),
+		page.locator('[data-widget-id="category-supporting-profile"]'),
 	).toBeHidden();
 
 	await page.setViewportSize({ width: 375, height: 812 });
@@ -927,7 +927,7 @@ test("container-content widget placements follow page intent", async ({
 	await page.setViewportSize({ width: 900, height: 900 });
 	await page.goto("/posts/markdown-tutorial/");
 	await expect(
-		page.locator('[data-widget-id="post-tablet-profile"]'),
+		page.locator('[data-widget-id="post-supporting-profile"]'),
 	).toBeVisible();
 
 	await page.setViewportSize({ width: 1280, height: 900 });
@@ -936,7 +936,7 @@ test("container-content widget placements follow page intent", async ({
 		page.locator('[data-widget-id="post-desktop-profile"]'),
 	).toBeVisible();
 	await expect(
-		page.locator('[data-widget-id="post-tablet-profile"]'),
+		page.locator('[data-widget-id="post-supporting-profile"]'),
 	).toBeHidden();
 });
 

@@ -57,7 +57,7 @@
 `pageLayoutPolicies.*.supporting.flowLayout` 控制 Sidebar 隐藏后 Main 前方 Supporting Region 的 Flow Widget 排列：`stack` 表示每行一张并填满区域，`two-column` 表示固定两列，`auto-grid` 表示根据 Card 最小宽度自动分列。首页、分类页与文章页使用 `stack`；Widget 获得整行宽度后，Profile 与 Site Stats 继续通过各自的 `widget-card` Container Query 切换左右或多列内部布局。
 
 - `desktop.left`、`desktop.right`、`desktop.sidebar`：显式定义 Desktop 各布局区域中的 Widget。
-- `tablet.sidebar`：显式定义 Tablet 侧栏，不会继承 Desktop 配置。
+- `supporting.beforeContent`：显式定义响应式 Supporting Region 中、Main 前方的 Widget，不会继承 Desktop 配置。
 - `mobile.beforeContent`、`mobile.afterContent`：显式定义 Mobile 内容前后的 Widget，不再使用历史 `drawer` 命名。
 - `position: "flow"`：Widget 按普通文档流排列。
 - `position: "sticky"`：Widget 放入吸顶区域；默认页面沿用 viewport 规则，`container-content` 页面只在右侧 Sidebar 区域启用，前置 Supporting Row 保持普通流。

@@ -67,7 +67,9 @@ export function resolveWidgetPlacement(
 			right: resolveList(preset.desktop?.right, map),
 			sidebar: resolveList(preset.desktop?.sidebar, map),
 		},
-		tablet: { sidebar: resolveList(preset.tablet?.sidebar, map) },
+		supporting: {
+			beforeContent: resolveList(preset.supporting?.beforeContent, map),
+		},
 		mobile: {
 			beforeContent: resolveList(preset.mobile?.beforeContent, map),
 			afterContent: resolveList(preset.mobile?.afterContent, map),

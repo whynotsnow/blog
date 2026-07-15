@@ -20,7 +20,7 @@ export type WidgetPlacementConfig = {
 		right?: WidgetInstanceConfig[];
 		sidebar?: WidgetInstanceConfig[];
 	};
-	tablet?: { sidebar?: WidgetInstanceConfig[] };
+	supporting?: { beforeContent?: WidgetInstanceConfig[] };
 	mobile?: {
 		beforeContent?: WidgetInstanceConfig[];
 		afterContent?: WidgetInstanceConfig[];
@@ -42,6 +42,6 @@ export type ResolvedWidgetPlacement = {
 		right: ResolvedWidget[];
 		sidebar: ResolvedWidget[];
 	};
-	tablet: { sidebar: ResolvedWidget[] };
+	supporting: { beforeContent: ResolvedWidget[] };
 	mobile: { beforeContent: ResolvedWidget[]; afterContent: ResolvedWidget[] };
 };

@@ -115,6 +115,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Added explicit `stack`, `two-column`, and `auto-grid` Supporting Widget flow strategies without coupling page geometry to Widget inventory.
 - Kept Widget Card container queries responsible for Profile and Site Stats internal presentation after the Page Layout Policy assigns Slot width.
 
+### Renamed the responsive Widget region by responsibility
+
+- Replaced the endpoint-specific `tablet.sidebar` placement and `.tablet-sidebar-region` selector with `supporting.beforeContent` and `.supporting-region`.
+- Kept legacy viewport and Container Shell geometry unchanged while making the shared region name describe its role instead of a device class.
+
 ### Replaced viewport listing breakpoints with layered Container Queries
 
 - Added named Page Shell, post Feed, and Widget Card containers so each layer responds to its actual available width.

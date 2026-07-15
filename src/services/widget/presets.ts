@@ -39,15 +39,15 @@ export const widgetPlacementPresets = {
 				}),
 			],
 		},
-		tablet: {
-			sidebar: [
-				widget("tablet-categories", "categories", "flow", {
+		supporting: {
+			beforeContent: [
+				widget("supporting-categories", "categories", "flow", {
 					collapseThreshold: 5,
 				}),
-				widget("tablet-tags", "tags", "sticky", {
+				widget("supporting-tags", "tags", "sticky", {
 					collapseThreshold: 20,
 				}),
-				widget("tablet-calendar", "calendar", "flow"),
+				widget("supporting-calendar", "calendar", "flow"),
 			],
 		},
 		mobile: {
@@ -63,10 +63,10 @@ export const widgetPlacementPresets = {
 				}),
 			],
 		},
-		tablet: {
-			sidebar: [
-				widget("home-tablet-profile", "profile", "flow"),
-				widget("home-tablet-site-stats", "site-stats", "flow"),
+		supporting: {
+			beforeContent: [
+				widget("home-supporting-profile", "profile", "flow"),
+				widget("home-supporting-site-stats", "site-stats", "flow"),
 			],
 		},
 		mobile: {
@@ -82,10 +82,10 @@ export const widgetPlacementPresets = {
 				}),
 			],
 		},
-		tablet: {
-			sidebar: [
-				widget("category-tablet-profile", "profile", "flow"),
-				widget("category-tablet-site-stats", "site-stats", "flow"),
+		supporting: {
+			beforeContent: [
+				widget("category-supporting-profile", "profile", "flow"),
+				widget("category-supporting-site-stats", "site-stats", "flow"),
 			],
 		},
 	},
@@ -93,8 +93,10 @@ export const widgetPlacementPresets = {
 		desktop: {
 			sidebar: [widget("post-desktop-profile", "profile", "sticky")],
 		},
-		tablet: {
-			sidebar: [widget("post-tablet-profile", "profile", "flow")],
+		supporting: {
+			beforeContent: [
+				widget("post-supporting-profile", "profile", "flow"),
+			],
 		},
 		mobile: {
 			beforeContent: [widget("post-mobile-profile", "profile", "flow")],
