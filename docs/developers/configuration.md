@@ -45,7 +45,7 @@
 | `profileConfig` | 个人资料组件内容。 |
 | `licenseConfig` | 默认内容协议展示。 |
 | `commentConfig` | 评论系统配置。 |
-| `pageLayoutPolicies` | 页面基础布局与允许的桌面布局集合。 |
+| `pageLayoutPolicies` | 页面基础布局、Supporting Region 排列与允许的桌面布局集合。 |
 | `widgetPlacementPresets` | Desktop、Tablet、Mobile 各区域的 Widget 实例。 |
 | `siteNoticeConfig` | 主内容 Shell 顶部的网站级通知、状态、操作与可见范围。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
@@ -53,6 +53,8 @@
 ## 侧边栏 Widget 布局
 
 页面布局和 Widget placement 是两个独立配置边界：`pageLayoutPolicies` 决定各端点有哪些区域以及如何排列，`widgetPlacementPresets` 只决定区域中渲染哪些 Widget。Widget 数量、空区域或某端点的配置不得改变页面布局，也不会触发跨端点自动迁移。
+
+`pageLayoutPolicies.*.supporting.flowLayout` 控制 Sidebar 隐藏后 Main 前方 Supporting Region 的 Flow Widget 排列：`stack` 表示每行一张并填满区域，`two-column` 表示固定两列，`auto-grid` 表示根据 Card 最小宽度自动分列。首页、分类页与文章页使用 `stack`；Widget 获得整行宽度后，Profile 与 Site Stats 继续通过各自的 `widget-card` Container Query 切换左右或多列内部布局。
 
 - `desktop.left`、`desktop.right`、`desktop.sidebar`：显式定义 Desktop 各布局区域中的 Widget。
 - `tablet.sidebar`：显式定义 Tablet 侧栏，不会继承 Desktop 配置。

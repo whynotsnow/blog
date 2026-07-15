@@ -75,8 +75,19 @@
 
   #main-grid[data-responsive-strategy="container-content"] .tablet-sidebar-region .widget-region__flow {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
     margin-bottom: 0;
+  }
+
+  #main-grid[data-responsive-strategy="container-content"][data-supporting-flow="stack"] .tablet-sidebar-region .widget-region__flow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #main-grid[data-responsive-strategy="container-content"][data-supporting-flow="two-column"] .tablet-sidebar-region .widget-region__flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #main-grid[data-responsive-strategy="container-content"][data-supporting-flow="auto-grid"] .tablet-sidebar-region .widget-region__flow {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   }
 }
 

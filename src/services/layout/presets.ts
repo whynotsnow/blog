@@ -3,6 +3,7 @@ import type { PageLayoutPolicy, PageLayoutPolicyName } from "./types";
 export const pageLayoutPolicies = {
 	default: {
 		responsiveStrategy: "viewport-legacy",
+		supporting: { flowLayout: "stack" },
 		desktop: {
 			base: "three-column",
 			allowed: ["three-column", "content-right"],
@@ -12,6 +13,7 @@ export const pageLayoutPolicies = {
 	},
 	listing: {
 		responsiveStrategy: "container-content",
+		supporting: { flowLayout: "stack" },
 		desktop: {
 			base: "content-right",
 			allowed: ["content-right"],
@@ -21,6 +23,7 @@ export const pageLayoutPolicies = {
 	},
 	post: {
 		responsiveStrategy: "container-content",
+		supporting: { flowLayout: "stack" },
 		desktop: {
 			base: "content-right",
 			allowed: ["content-right"],

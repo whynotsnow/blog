@@ -688,6 +688,36 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	const mainGrid = page.locator("#main-grid");
 	const postList = page.locator('[data-post-list-renderer="astro"]').first();
 	await page.setViewportSize({ width: 900, height: 812 });
+	const supportingFlow = page.locator(
+		".tablet-sidebar-region .widget-region__flow",
+	);
+	await expect(supportingFlow).toBeVisible();
+	expect(
+		await supportingFlow.evaluate(
+			(node) =>
+				getComputedStyle(node).gridTemplateColumns.split(" ").length,
+		),
+	).toBe(1);
+	expect(
+		await page
+			.locator('[data-widget-id="home-tablet-profile"] .profile-card')
+			.evaluate(
+				(node) =>
+					getComputedStyle(node).gridTemplateColumns.split(" ")
+						.length,
+			),
+	).toBe(2);
+	expect(
+		await page
+			.locator(
+				'[data-widget-id="home-tablet-site-stats"] .site-stats-grid',
+			)
+			.evaluate(
+				(node) =>
+					getComputedStyle(node).gridTemplateColumns.split(" ")
+						.length,
+			),
+	).toBe(2);
 	expect(
 		await mainGrid.evaluate(
 			(node) =>

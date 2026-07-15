@@ -110,6 +110,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 ## 2026-07-14
 
+### Made Supporting Row flow a Page Layout Policy decision
+
+- Added explicit `stack`, `two-column`, and `auto-grid` Supporting Widget flow strategies without coupling page geometry to Widget inventory.
+- Kept Widget Card container queries responsible for Profile and Site Stats internal presentation after the Page Layout Policy assigns Slot width.
+
 ### Replaced viewport listing breakpoints with layered Container Queries
 
 - Added named Page Shell, post Feed, and Widget Card containers so each layer responds to its actual available width.
