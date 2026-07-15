@@ -1,66 +1,66 @@
 /* Viewport-based layout retained for pages that have not migrated to the
  * container-content contract yet. Keep it isolated from the listing/post shell. */
 @media (min-width: 768px) and (max-width: 1279px) {
-  #main-grid:not([data-responsive-strategy="container-content"]) {
+  #main-grid:not([data-shell-strategy="container-content"]) {
     grid-template-columns: minmax(0, 1fr) 17.5rem;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"]) .mobile-before-region,
-  #main-grid:not([data-responsive-strategy="container-content"]) .mobile-after-region {
+  #main-grid:not([data-shell-strategy="container-content"]) .mobile-before-region,
+  #main-grid:not([data-shell-strategy="container-content"]) .mobile-after-region {
     display: none;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"]) .supporting-region {
+  #main-grid:not([data-shell-strategy="container-content"]) .supporting-region {
     display: block;
     grid-column: 2;
     grid-row: 1;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"]) .page-main-content {
+  #main-grid:not([data-shell-strategy="container-content"]) .page-main-content {
     grid-column: 1;
     grid-row: 1;
   }
 }
 
 @media (min-width: 1280px) {
-  #main-grid:not([data-responsive-strategy="container-content"]) .mobile-before-region,
-  #main-grid:not([data-responsive-strategy="container-content"]) .mobile-after-region,
-  #main-grid:not([data-responsive-strategy="container-content"]) .supporting-region {
+  #main-grid:not([data-shell-strategy="container-content"]) .mobile-before-region,
+  #main-grid:not([data-shell-strategy="container-content"]) .mobile-after-region,
+  #main-grid:not([data-shell-strategy="container-content"]) .supporting-region {
     display: none;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="three-column"] {
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="three-column"] {
     grid-template-columns: 17.5rem minmax(0, 1fr) 17.5rem;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="three-column"] .desktop-left-region {
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="three-column"] .desktop-left-region {
     display: block;
     grid-column: 1;
     grid-row: 1;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="three-column"] .page-main-content {
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="three-column"] .page-main-content {
     grid-column: 2;
     grid-row: 1;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="three-column"] .desktop-right-region {
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="three-column"] .desktop-right-region {
     display: block;
     grid-column: 3;
     grid-row: 1;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="content-right"] {
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="content-right"] {
     grid-template-columns: minmax(0, 1fr) 17.5rem;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="content-right"] .page-main-content {
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="content-right"] .page-main-content {
     grid-column: 1;
     grid-row: 1;
   }
 
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="content-right"] .desktop-sidebar-region,
-  #main-grid:not([data-responsive-strategy="container-content"])[data-effective-desktop-layout="content-right"] .desktop-right-region {
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="content-right"] .desktop-sidebar-region,
+  #main-grid:not([data-shell-strategy="container-content"])[data-effective-desktop-layout="content-right"] .desktop-right-region {
     display: block;
     grid-column: 2;
     grid-row: 1;
@@ -68,7 +68,7 @@
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
-  #main-grid[data-base-desktop-layout="content-right"]:not([data-responsive-strategy="container-content"]) {
+  #main-grid[data-base-desktop-layout="content-right"]:not([data-shell-strategy="container-content"]) {
     grid-template-columns: minmax(0, 1fr) 17.5rem;
   }
 }

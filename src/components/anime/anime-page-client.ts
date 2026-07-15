@@ -2,7 +2,7 @@ type FilterListener = [Element, string, EventListener];
 
 interface AnimePageState {
 	animeFilterEventListeners?: FilterListener[];
-	__animeLayoutChangeHandler?: EventListener;
+	__animePostListViewChangeHandler?: EventListener;
 	__animeLazyObserver?: IntersectionObserver;
 }
 
@@ -395,27 +395,27 @@ function initFilterButtons() {
 	}
 }
 
-function bindLayoutChangeListener() {
-	if (animePageState.__animeLayoutChangeHandler) {
+function bindPostListViewChangeListener() {
+	if (animePageState.__animePostListViewChangeHandler) {
 		window.removeEventListener(
-			"layoutChange",
-			animePageState.__animeLayoutChangeHandler,
+			"postListViewChange",
+			animePageState.__animePostListViewChangeHandler,
 		);
 	}
 
-	animePageState.__animeLayoutChangeHandler = (event) => {
+	animePageState.__animePostListViewChangeHandler = (event) => {
 		if (!(event instanceof CustomEvent)) return;
-		updateAnimeListLayout(event.detail.layout);
+		updateAnimeListLayout(event.detail.view);
 	};
 	window.addEventListener(
-		"layoutChange",
-		animePageState.__animeLayoutChangeHandler,
+		"postListViewChange",
+		animePageState.__animePostListViewChangeHandler,
 	);
 }
 
 export function initAnimePage() {
 	tryInitAnimeLayout();
-	bindLayoutChangeListener();
+	bindPostListViewChangeListener();
 
 	const initFilters = () => setTimeout(initFilterButtons, 150);
 	if (document.readyState === "loading") {

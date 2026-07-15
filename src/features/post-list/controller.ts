@@ -1,8 +1,11 @@
-import { applyLayoutMode, getLayoutMode } from "@/utils/layout-mode";
+import {
+	applyPostListViewMode,
+	getPostListViewMode,
+} from "@/utils/post-list-view-mode";
 
 export function initializePostList(container: HTMLElement): void {
 	requestAnimationFrame(() => {
 		if (!container.isConnected) return;
-		applyLayoutMode(getLayoutMode());
+		applyPostListViewMode(getPostListViewMode());
 	});
 }

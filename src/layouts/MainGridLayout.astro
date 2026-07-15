@@ -57,7 +57,7 @@ const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname
 	setOGTypeArticle={setOGTypeArticle}
 	postSlug={postSlug}
 	navbarBehavior={viewModel.interaction.navbar}
-	responsiveStrategy={viewModel.pageLayout.responsiveStrategy}
+	shellStrategy={viewModel.pageLayout.shellStrategy}
 >
 	<script>
 		import "@/components/layout/main-grid-client";
@@ -81,18 +81,18 @@ const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname
 			"z-50 pointer-events-none relative transition-all duration-700 mx-auto",
 			{
 				"max-w-(--page-width) px-0 md:px-4":
-					viewModel.pageLayout.responsiveStrategy !== "container-content",
+					viewModel.pageLayout.shellStrategy !== "container-content",
 			},
 		]}
-		data-responsive-strategy={viewModel.pageLayout.responsiveStrategy}
+		data-shell-strategy={viewModel.pageLayout.shellStrategy}
 	>
 		<div
 			id="navbar-wrapper"
 			class="pointer-events-auto sticky top-0 transition-all"
 		>
 			<Navbar
-				containerContent={viewModel.pageLayout.responsiveStrategy === "container-content"}
-				class={viewModel.pageLayout.responsiveStrategy === "container-content"
+				containerContent={viewModel.pageLayout.shellStrategy === "container-content"}
+				class={viewModel.pageLayout.shellStrategy === "container-content"
 					? "navbar__inner--container-content"
 					: undefined}
 			/>

@@ -1045,6 +1045,10 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 
 	const grid = page.locator("#main-grid");
 	await expect(grid).toHaveAttribute(
+		"data-shell-strategy",
+		"container-content",
+	);
+	await expect(grid).toHaveAttribute(
 		"data-base-desktop-layout",
 		"content-right",
 	);
@@ -1088,6 +1092,28 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 	await expect(grid).toHaveAttribute(
 		"data-allowed-desktop-layouts",
 		"content-right",
+	);
+});
+
+test("post list view does not imply desktop page layout preference", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("postListLayout", "grid");
+		localStorage.removeItem("desktopLayoutPreference");
+	});
+	await page.setViewportSize({ width: 1400, height: 900 });
+	await page.goto("/anime/");
+
+	const grid = page.locator("#main-grid");
+	await expect(grid).toHaveAttribute(
+		"data-shell-strategy",
+		"viewport-legacy",
+	);
+	await expect(grid).toHaveAttribute("data-post-list-view", "grid");
+	await expect(grid).toHaveAttribute(
+		"data-effective-desktop-layout",
+		"three-column",
 	);
 });
 

@@ -20,7 +20,7 @@ interface Props {
 
 const { headings, widgets, viewModel, siteNotice } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
-const usesContainerContent = viewModel.pageLayout.responsiveStrategy === "container-content";
+const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-content";
 ---
 
 	<div
@@ -32,7 +32,7 @@ const usesContainerContent = viewModel.pageLayout.responsiveStrategy === "contai
 				"main-grid-shell relative mx-auto pointer-events-auto",
 				{ "max-w-(--page-width)": !usesContainerContent },
 			]}
-			data-responsive-strategy={viewModel.pageLayout.responsiveStrategy}
+			data-shell-strategy={viewModel.pageLayout.shellStrategy}
 		>
 			<div id="site-notice-container">
 				{siteNotice && <SiteNoticeBar notice={siteNotice} />}
@@ -52,7 +52,7 @@ const usesContainerContent = viewModel.pageLayout.responsiveStrategy === "contai
 			data-base-desktop-layout={viewModel.pageLayout.desktop.base}
 			data-allowed-desktop-layouts={viewModel.pageLayout.allowedDesktopLayouts}
 			data-effective-desktop-layout={viewModel.pageLayout.desktop.base}
-			data-responsive-strategy={viewModel.pageLayout.responsiveStrategy}
+			data-shell-strategy={viewModel.pageLayout.shellStrategy}
 			data-supporting-flow={viewModel.pageLayout.supporting.flowLayout}
 		>
 			<BannerCredit

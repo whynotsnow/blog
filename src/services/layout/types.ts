@@ -2,11 +2,11 @@ export type DesktopPageLayout = "three-column" | "content-right";
 export type PageLayoutPolicyName = "default" | "listing" | "post";
 export type NavbarBehavior = "banner-aware" | "fixed-visible";
 export type EntryScrollBehavior = "top" | "content-start";
-export type ResponsiveLayoutStrategy = "viewport-legacy" | "container-content";
+export type ResponsiveShellStrategy = "viewport-legacy" | "container-content";
 export type SupportingWidgetFlowLayout = "stack" | "two-column" | "auto-grid";
 
 export type PageLayoutPolicy = {
-	responsiveStrategy: ResponsiveLayoutStrategy;
+	shellStrategy: ResponsiveShellStrategy;
 	supporting: {
 		flowLayout: SupportingWidgetFlowLayout;
 	};
@@ -14,8 +14,6 @@ export type PageLayoutPolicy = {
 		base: DesktopPageLayout;
 		allowed: readonly DesktopPageLayout[];
 	};
-	tablet: { base: "content-sidebar" };
-	mobile: { base: "content" };
 };
 
 export type ResolvedPageLayout = PageLayoutPolicy & {

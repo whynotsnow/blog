@@ -129,7 +129,7 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 - `siteConfig`：站点信息、语言、特色页面、横幅、主题、字体、文章列表行为。
 - `navbarConfig`：顶部导航。
 - `profileConfig`：个人资料组件。
-- `pageLayoutPolicies`：页面在 Desktop、Tablet、Mobile 下的区域结构，以及允许的桌面布局偏好。
+- `pageLayoutPolicies`：页面 Shell Strategy、Supporting Region 排列，以及允许的 Desktop Page Layout Preference。
 - `widgetPlacementPresets`：各端点、各区域中显式渲染的 Widget；端点之间不继承、不迁移。
 - `commentConfig`：评论系统。
 

@@ -131,11 +131,11 @@ body.is-home .home-post-card__summary {
   animation-name: post-list-item-enter-grid;
 }
 
-.post-list.layout-switching {
+.post-list.post-list-view-switching {
   opacity: 0.95;
 }
 
-.post-list.layout-switching > .post-list__item {
+.post-list.post-list-view-switching > .post-list__item {
   animation-delay: calc(var(--i, 0) * 50ms);
   transform: scale(0.98);
 }

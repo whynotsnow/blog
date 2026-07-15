@@ -120,6 +120,12 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Replaced the endpoint-specific `tablet.sidebar` placement and `.tablet-sidebar-region` selector with `supporting.beforeContent` and `.supporting-region`.
 - Kept legacy viewport and Container Shell geometry unchanged while making the shared region name describe its role instead of a device class.
 
+### Separated Shell Strategy from view preferences
+
+- Renamed the page-level responsive contract to `ResponsiveShellStrategy` and the post renderer contract to `PostListViewMode`.
+- Stopped Post List View changes and legacy `postListLayout` storage from writing or implying Desktop Page Layout Preference.
+- Removed unused Tablet and Mobile fields from Page Layout Policy so every remaining field has an active renderer consumer.
+
 ### Replaced viewport listing breakpoints with layered Container Queries
 
 - Added named Page Shell, post Feed, and Widget Card containers so each layer responds to its actual available width.

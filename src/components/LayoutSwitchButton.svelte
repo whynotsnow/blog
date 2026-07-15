@@ -4,18 +4,18 @@
 	import { i18n } from "@i18n/translation";
 	import I18nKey from "@i18n/i18nKey";
 	import {
-		getLayoutMode,
-		setLayoutMode,
-		syncStoredLayoutMode,
-		type LayoutMode,
-	} from "@/utils/layout-mode";
+		getPostListViewMode,
+		setPostListViewMode,
+		syncStoredPostListViewMode,
+		type PostListViewMode,
+	} from "@/utils/post-list-view-mode";
 
-	export let currentLayout: LayoutMode = "list";
+	export let currentLayout: PostListViewMode = "list";
 
 	let mounted = false;
 	let isSmallScreen = false;
 	let isSwitching = false;
-	let userPreference: LayoutMode = "list";
+	let userPreference: PostListViewMode = "list";
 	let mediaQueryList: MediaQueryList | null = null;
 
 	const BREAKPOINT = 1280;
@@ -28,7 +28,7 @@
 		isSwitching = true;
 		const newLayout = userPreference === "list" ? "grid" : "list";
 		userPreference = newLayout;
-		setLayoutMode(newLayout);
+		setPostListViewMode(newLayout);
 	}
 
 	function onAnimationEnd() {
@@ -41,7 +41,7 @@
 
 	onMount(() => {
 		mounted = true;
-		userPreference = syncStoredLayoutMode();
+		userPreference = syncStoredPostListViewMode();
 
 		mediaQueryList = window.matchMedia(`(min-width: ${BREAKPOINT}px)`);
 		handleMediaQueryChange(mediaQueryList);
@@ -53,17 +53,17 @@
 		}
 
 		const handleCustomEvent = (
-			event: CustomEvent<{ layout: LayoutMode }>,
+			event: CustomEvent<{ view: PostListViewMode }>,
 		) => {
-			if (event.detail?.layout) userPreference = event.detail.layout;
+			if (event.detail?.view) userPreference = event.detail.view;
 		};
 
 		const handleSwupEvent = () => {
-			userPreference = getLayoutMode();
+			userPreference = getPostListViewMode();
 		};
 
 		window.addEventListener(
-			"layoutChange",
+			"postListViewChange",
 			handleCustomEvent as EventListener,
 		);
 
@@ -95,7 +95,7 @@
 				}
 			}
 			window.removeEventListener(
-				"layoutChange",
+				"postListViewChange",
 				handleCustomEvent as EventListener,
 			);
 			window.removeEventListener("popstate", handleSwupEvent);

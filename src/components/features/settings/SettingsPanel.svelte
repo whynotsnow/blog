@@ -40,10 +40,10 @@
 		setWavesEnabled,
 	} from "@/utils/setting-utils";
 	import {
-		getLayoutMode,
-		setLayoutMode,
-		type LayoutMode,
-	} from "@/utils/layout-mode";
+		getPostListViewMode,
+		setPostListViewMode,
+		type PostListViewMode,
+	} from "@/utils/post-list-view-mode";
 	import type { WALLPAPER_MODE } from "@/types/config";
 	import { onPageLifecycle } from "@/utils/page-lifecycle";
 	import SettingSection from "./SettingSection.svelte";
@@ -56,7 +56,7 @@
 	const allowLayoutSwitch =
 		(siteConfig.postListLayout.enable ?? true) &&
 		siteConfig.postListLayout.allowSwitch;
-	const defaultLayout: LayoutMode =
+	const defaultLayout: PostListViewMode =
 		siteConfig.postListLayout.defaultMode === "grid" ? "grid" : "list";
 	const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 
@@ -174,7 +174,7 @@
 
 	function resetLayout() {
 		currentLayout = defaultLayout;
-		setLayoutMode(defaultLayout);
+		setPostListViewMode(defaultLayout);
 	}
 
 	function resetOverlaySettings() {
@@ -238,9 +238,9 @@
 		}
 	}
 
-	function setLayout(newLayout: LayoutMode) {
+	function setLayout(newLayout: PostListViewMode) {
 		currentLayout = newLayout;
-		setLayoutMode(newLayout);
+		setPostListViewMode(newLayout);
 	}
 
 	function checkMobile() {
@@ -259,7 +259,7 @@
 	onMount(() => {
 		hue = getHue();
 		wallpaperMode = getPreviewSafeWallpaperMode();
-		currentLayout = getLayoutMode();
+		currentLayout = getPostListViewMode();
 		overlayOpacity = getStoredOverlayOpacity();
 		overlayBlur = getStoredOverlayBlur();
 		overlayCardOpacity = getStoredOverlayCardOpacity();
@@ -275,14 +275,14 @@
 			syncPageLayoutPolicy,
 		);
 
-		const handleLayoutChange = (event: Event) => {
-			const layout = (event as CustomEvent<{ layout?: LayoutMode }>)
-				.detail?.layout;
+		const handlePostListViewChange = (event: Event) => {
+			const layout = (event as CustomEvent<{ view?: PostListViewMode }>)
+				.detail?.view;
 			if (layout === "list" || layout === "grid") {
 				currentLayout = layout;
 			}
 		};
-		window.addEventListener("layoutChange", handleLayoutChange);
+		window.addEventListener("postListViewChange", handlePostListViewChange);
 
 		return () => {
 			window.removeEventListener("resize", checkMobile);
@@ -290,7 +290,10 @@
 				"desktop-layout-applied",
 				syncPageLayoutPolicy,
 			);
-			window.removeEventListener("layoutChange", handleLayoutChange);
+			window.removeEventListener(
+				"postListViewChange",
+				handlePostListViewChange,
+			);
 			unsubscribeContentReplace();
 		};
 	});

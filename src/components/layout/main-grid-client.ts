@@ -3,7 +3,10 @@ import {
 	BANNER_HEIGHT_HOME,
 	BANNER_HEIGHT_FULLSCREEN,
 } from "@/constants/constants";
-import { applyLayoutMode, bindLayoutModeEvents } from "@/utils/layout-mode";
+import {
+	applyPostListViewMode,
+	bindPostListViewModeEvents,
+} from "@/utils/post-list-view-mode";
 import { bindDesktopLayoutPreference } from "@/features/layout-preference/controller";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
@@ -188,7 +191,7 @@ function applyInitialPageShell() {
 
 	requestAnimationFrame(() => {
 		syncMainContentPosition(wallpaperMode);
-		applyLayoutMode();
+		applyPostListViewMode();
 	});
 }
 
@@ -312,11 +315,11 @@ export function applyWallpaperMode() {
 }
 
 function syncPageShell() {
-	bindLayoutModeEvents();
+	bindPostListViewModeEvents();
 	bindDesktopLayoutPreference();
 	window.applyWallpaperMode?.();
 	applyWallpaperVisualSettings();
-	requestAnimationFrame(() => applyLayoutMode());
+	requestAnimationFrame(() => applyPostListViewMode());
 	applyWavesSetting();
 	applyBannerTitleSetting();
 	applySakuraSetting();

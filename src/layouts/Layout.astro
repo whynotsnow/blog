@@ -17,7 +17,7 @@ import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
 import "../styles/panel-animations.css";
 import type { NavbarBehavior } from "@/services/layout/types";
-import type { ResponsiveLayoutStrategy } from "@/services/layout/types";
+import type { ResponsiveShellStrategy } from "@/services/layout/types";
 
 interface Props {
 	title?: string;
@@ -27,7 +27,7 @@ interface Props {
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 	navbarBehavior?: NavbarBehavior;
-	responsiveStrategy?: ResponsiveLayoutStrategy;
+	shellStrategy?: ResponsiveShellStrategy;
 }
 
 const {
@@ -36,7 +36,7 @@ const {
 	setOGTypeArticle,
 	postSlug,
 	navbarBehavior = "fixed-visible",
-	responsiveStrategy = "viewport-legacy",
+	shellStrategy = "viewport-legacy",
 } = Astro.props;
 const { banner, lang } = Astro.props;
 const pageShell = buildLayoutPageShellModel({
@@ -68,7 +68,7 @@ const pageShell = buildLayoutPageShellModel({
 			pageWidth={`${PAGE_WIDTH}rem`}
 			pageTitle={pageShell.pageTitle}
 				setOGTypeArticle={setOGTypeArticle}
-				allowPageScaling={responsiveStrategy === "viewport-legacy"}
+				allowPageScaling={shellStrategy === "viewport-legacy"}
 		>
 			<slot name="head" />
 		</LayoutHead>

@@ -18,7 +18,7 @@ body:is(.is-home, .is-post) .main-grid-shell {
   padding-inline: var(--space-page-x);
 }
 
-body:is(.is-home, .is-post) .main-grid-shell[data-responsive-strategy="container-content"] {
+body:is(.is-home, .is-post) .main-grid-shell[data-shell-strategy="container-content"] {
   padding-inline: 0;
 }
 
