@@ -1,6 +1,7 @@
 <script>
 	import { onDestroy, onMount } from "svelte";
 	import { pioConfig } from "@/config";
+	import { getPioVisible, PIO_VISIBILITY_EVENT } from "./preferences";
 
 	// 将配置转换为 Pio 插件需要的格式
 	const pioOptions = {
@@ -15,6 +16,9 @@
 	let pioInitialized = false;
 	let pioContainer;
 	let pioCanvas;
+	let userVisible = true;
+	let removeVisibilityListener = () => {};
+	let removePioControlListener = () => {};
 
 	// 样式已通过 Layout.astro 静态引入，无需动态加载
 
@@ -89,11 +93,51 @@
 			return;
 		}
 
+		userVisible = getPioVisible();
+		const handleVisibilityChange = (event) => {
+			const detail = event.detail;
+			userVisible = detail.visible;
+			if (!_pioInstance || detail.source === "pio") return;
+
+			if (userVisible) {
+				pioContainer?.classList.remove("pio-hidden");
+				_pioInstance.init(true);
+			} else {
+				_pioInstance.destroy();
+			}
+		};
+		window.addEventListener(PIO_VISIBILITY_EVENT, handleVisibilityChange);
+		removeVisibilityListener = () =>
+			window.removeEventListener(
+				PIO_VISIBILITY_EVENT,
+				handleVisibilityChange,
+			);
+
+		const handlePioControlClick = (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+			const isClose = Boolean(target.closest(".pio-close"));
+			const isShow = Boolean(target.closest(".pio-show"));
+			if (!isClose && !isShow) return;
+
+			userVisible = isShow;
+			window.dispatchEvent(
+				new CustomEvent(PIO_VISIBILITY_EVENT, {
+					detail: { visible: userVisible, source: "pio" },
+				}),
+			);
+		};
+		document.addEventListener("click", handlePioControlClick);
+		removePioControlListener = () =>
+			document.removeEventListener("click", handlePioControlClick);
+
 		// 加载资源并初始化
 		loadPioAssets();
 	});
 
 	onDestroy(() => {
+		removeVisibilityListener();
+		removePioControlListener();
 		// Svelte 组件销毁时不需要清理 Pio 实例
 		// 因为我们希望它在页面切换时保持状态
 		console.log("Pio Svelte component destroyed (keeping instance alive)");
@@ -103,6 +147,7 @@
 {#if pioConfig.enable}
 	<div
 		class={`pio-container ${pioConfig.position || "right"}`}
+		data-user-visible={String(userVisible)}
 		bind:this={pioContainer}
 	>
 		<div class="pio-action"></div>

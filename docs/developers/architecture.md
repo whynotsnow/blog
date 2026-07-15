@@ -141,6 +141,7 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 - 新增页面模块：放入所属领域目录，通过路由或 layout 显式组合；只有被多个无关功能复用的视觉外壳才提升为 `src/components/ui` 组件。不要恢复通用 placement registry。
 - 网站级通知由 `src/config/site-notice.ts` 配置，`src/services/site-notice.ts` 生成 View Model，`src/components/site-notice` 拥有呈现与关闭状态交互，并通过独立的 `#site-notice-container` 在主内容 Shell 中更新。通知不得放进带 `transform` 的 `#swup-container`，否则固定定位会在过渡期间改用内容容器作为 containing block。Desktop/Tablet 通知使用贴近 viewport 右上角的单行状态卡，层级低于 Navbar 与交互浮层；Mobile 则限制在页面安全边距内并允许两行正文。通知 viewport 高度按断点固定，轮播不得在客户端按单条内容重新测量高度，因此通知切换不会改变文档 `scrollHeight` 或滚动条比例。
 - 右下角 Floating Tools 由 `src/features/floating-tools` 统一拥有 viewport placement、响应式触摸尺寸与展开状态，并在 `MainGridContent.astro` 中挂载到 `#swup-container` 外。Theme、Settings、Floating TOC 与 Back to Top 继续拥有各自行为，只把入口组合进统一 Rail；新的 Shell 悬浮入口不得再单独声明互相竞争的右下角 fixed 坐标。
+- Pio 的 `pioConfig.enable` 与 `hiddenOnMobile` 决定功能是否可用，`src/features/pio/preferences.ts` 则封装访客的显示偏好；Tools 开关与 Pio 自带关闭/恢复入口共享同一事件契约。Music Player 展开时由播放器主动发布占用高度，Floating Tools 收起快捷项并移动到播放器上方，不通过 `MutationObserver` 反推其他 Feature 状态。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。
 

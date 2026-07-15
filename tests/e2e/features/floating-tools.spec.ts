@@ -78,3 +78,62 @@ test("floating tools keeps a safe mobile touch target", async ({ page }) => {
 	expect(geometry.right).toBeGreaterThanOrEqual(12);
 	expect(geometry.bottom).toBeGreaterThanOrEqual(12);
 });
+
+test("floating tools controls the user Pio preference", async ({ page }) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await gotoPage(page, "/");
+
+	await page.locator("#floating-tools-switch").click();
+	const toggle = page.getByRole("button", { name: "隐藏看板娘" });
+	await expect(toggle).toBeVisible();
+	await toggle.click();
+
+	await expect
+		.poll(() => page.evaluate(() => localStorage.getItem("posterGirl")))
+		.toBe("0");
+	await expect(page.locator(".pio-container")).toHaveAttribute(
+		"data-user-visible",
+		"false",
+	);
+
+	const showToggle = page.getByRole("button", { name: "显示看板娘" });
+	await showToggle.click();
+	await expect
+		.poll(() => page.evaluate(() => localStorage.getItem("posterGirl")))
+		.toBe("1");
+	await expect(page.locator(".pio-container")).toHaveAttribute(
+		"data-user-visible",
+		"true",
+	);
+});
+
+test("floating tools moves above the expanded music player", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await gotoPage(page, "/");
+
+	await page
+		.locator('.mini-player [role="button"][aria-label="展开音乐播放器"]')
+		.click();
+	await expect(page.locator(".expanded-player")).toBeVisible();
+	await expect(page.locator("#floating-tools")).toHaveAttribute(
+		"data-music-expanded",
+		"true",
+	);
+
+	const geometry = await page.evaluate(() => {
+		const tools = document
+			.getElementById("floating-tools-switch")
+			?.getBoundingClientRect();
+		const player = document
+			.querySelector<HTMLElement>(".expanded-player")
+			?.getBoundingClientRect();
+		return {
+			toolsBottom: tools?.bottom ?? Number.POSITIVE_INFINITY,
+			playerTop: player?.top ?? 0,
+		};
+	});
+
+	expect(geometry.toolsBottom).toBeLessThanOrEqual(geometry.playerTop - 8);
+});

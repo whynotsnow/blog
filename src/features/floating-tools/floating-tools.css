@@ -30,8 +30,16 @@
     transform var(--motion-normal) var(--motion-ease-standard);
 }
 
+.floating-tools[data-music-expanded="true"] {
+  inset-block-end: calc(var(--music-player-occupied-height, 20rem) + var(--size-4) + env(safe-area-inset-bottom));
+}
+
 .floating-tools__item:first-child {
   margin-block-start: 0;
+}
+
+.floating-tools__item--optional:not(:has(*)) {
+  display: none;
 }
 
 .floating-tools__item--expandable {
@@ -128,6 +136,11 @@
 
 .floating-tools[data-open="true"] .floating-tools__switch-icon {
   transform: rotate(45deg);
+}
+
+.floating-tool-button.is-active {
+  color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 12%, var(--surface-raised));
 }
 
 #display-setting.floating-tools__settings-panel {

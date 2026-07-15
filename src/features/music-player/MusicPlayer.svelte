@@ -87,6 +87,7 @@
 	let isPointerDown = false;
 	let volumeBarRect: DOMRect | null = null;
 	let rafId: number | null = null;
+	let layoutRafId: number | null = null;
 
 	const interactionEvents = ["click", "keydown", "touchstart"];
 
@@ -132,6 +133,7 @@
 			showPlaylist = false;
 			isHidden = false;
 		}
+		publishLayoutState();
 	}
 
 	function toggleHidden() {
@@ -140,10 +142,48 @@
 			isExpanded = false;
 			showPlaylist = false;
 		}
+		publishLayoutState();
 	}
 
 	function togglePlaylist() {
 		showPlaylist = !showPlaylist;
+		publishLayoutState();
+	}
+
+	function publishLayoutState() {
+		if (typeof window === "undefined") return;
+		if (layoutRafId) cancelAnimationFrame(layoutRafId);
+		layoutRafId = requestAnimationFrame(() => {
+			layoutRafId = null;
+			const player = document.querySelector<HTMLElement>(".music-player");
+			const panels = player
+				? Array.from(
+						player.querySelectorAll<HTMLElement>(
+							".expanded-player, .playlist-panel",
+						),
+					).filter(
+						(panel) =>
+							getComputedStyle(panel).pointerEvents !== "none",
+					)
+				: [];
+			const top = panels.length
+				? Math.min(
+						...panels.map(
+							(panel) => panel.getBoundingClientRect().top,
+						),
+					)
+				: window.innerHeight;
+			window.dispatchEvent(
+				new CustomEvent("music-player-layout-change", {
+					detail: {
+						expanded: isExpanded,
+						occupiedHeight: isExpanded
+							? Math.max(0, window.innerHeight - top)
+							: 0,
+					},
+				}),
+			);
+		});
 	}
 
 	function toggleShuffle() {
@@ -336,6 +376,8 @@
 
 	onMount(() => {
 		volume = loadStoredVolume();
+		window.addEventListener("resize", publishLayoutState);
+		publishLayoutState();
 		interactionEvents.forEach((event) => {
 			document.addEventListener(event, handleUserInteraction, {
 				capture: true,
@@ -365,6 +407,8 @@
 					capture: true,
 				});
 			});
+			window.removeEventListener("resize", publishLayoutState);
+			if (layoutRafId) cancelAnimationFrame(layoutRafId);
 		}
 	});
 </script>

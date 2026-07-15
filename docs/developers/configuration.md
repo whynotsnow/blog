@@ -90,6 +90,8 @@
 - `fullscreenWallpaperConfig.overlay`：提供叠加壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。用户设置会分别写入 `localStorage.overlayOpacity`、`localStorage.overlayBlur`、`localStorage.overlayCardOpacity`。
 - `fullscreenWallpaperConfig.fullscreen.switchable`：预留全屏横幅相关设置入口；当前全屏横幅不显示 `[data-fullscreen-wallpaper]` 图层。
 - `sakuraConfig.switchable`：控制樱花特效设置入口。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
+- `pioConfig.enable`：决定是否提供看板娘功能；`hiddenOnMobile` 继续作为设备限制。允许显示时，Floating Tools 提供访客级开关，偏好复用 Pio 的 `localStorage.posterGirl`，因此 Tools 与 Pio 自带关闭/恢复入口保持同步。隐藏只改变运行时可见性，不重复加载 Live2D 脚本。
+- Music Player 仍拥有播放与展开状态；展开面板会发布占用高度，让 Floating Tools 自动收起并避让。Floating Tools 不读取或改写播放状态。
 
 ## 特色页面
 

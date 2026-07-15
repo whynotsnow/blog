@@ -19,6 +19,8 @@ enum I18nKey {
 	tocEmpty = "tocEmpty",
 	floatingTools = "floatingTools",
 	displaySettings = "displaySettings",
+	pioShow = "pioShow",
+	pioHide = "pioHide",
 
 	// 网站通知
 	siteNotice = "siteNotice",

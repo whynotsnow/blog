@@ -22,6 +22,8 @@ export const en: Translation = {
 	[Key.tocEmpty]: "No table of contents",
 	[Key.floatingTools]: "Quick tools",
 	[Key.displaySettings]: "Display settings",
+	[Key.pioShow]: "Show Pio",
+	[Key.pioHide]: "Hide Pio",
 
 	// Site notice
 	[Key.siteNotice]: "Site notice",

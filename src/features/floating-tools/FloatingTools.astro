@@ -6,6 +6,7 @@ import LightDarkSwitch from "@components/LightDarkSwitch.svelte";
 import SettingsPanel from "@components/features/settings/SettingsPanel.svelte";
 import BackToTop from "@components/control/BackToTop.astro";
 import FloatingTOC from "@components/control/FloatingTOC.astro";
+import PioToggle from "./PioToggle.svelte";
 import "./floating-tools.css";
 ---
 
@@ -22,6 +23,10 @@ import "./floating-tools.css";
 
 		<div class="floating-tools__item floating-tools__item--expandable">
 			<LightDarkSwitch client:only="svelte" />
+		</div>
+
+		<div class="floating-tools__item floating-tools__item--expandable floating-tools__item--optional">
+			<PioToggle client:idle />
 		</div>
 
 		<div class="floating-tools__item floating-tools__item--expandable">
@@ -85,6 +90,20 @@ import "./floating-tools.css";
 		if (root.dataset.initialized === "true") return;
 
 		root.dataset.initialized = "true";
+		window.addEventListener("music-player-layout-change", (event) => {
+			const detail = (
+				event as CustomEvent<{
+					expanded: boolean;
+					occupiedHeight: number;
+				}>
+			).detail;
+			root.dataset.musicExpanded = String(detail.expanded);
+			root.style.setProperty(
+				"--music-player-occupied-height",
+				`${detail.occupiedHeight}px`,
+			);
+			if (detail.expanded) setFloatingToolsOpen(false);
+		});
 		toggle.addEventListener("click", () => {
 			setFloatingToolsOpen(root.dataset.open !== "true");
 		});
