@@ -8,13 +8,13 @@
   display: none;
 }
 
-@media (min-width: 1820px) {
+@media (min-width: 1768px) {
   .sidebar-toc-region--container {
     display: block;
   }
 
   .sidebar-toc-region--container .sidebar-toc-region__rail {
-    left: calc(50% + var(--width-shell-wide) / 2 + var(--space-grid-gap) - var(--space-shell-wide-x));
+    left: calc(50% + var(--width-shell-wide) / 2 + var(--space-grid-gap));
     width: var(--toc-rail-width);
   }
 

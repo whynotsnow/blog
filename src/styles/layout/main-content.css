@@ -19,7 +19,7 @@ body:is(.is-home, .is-post) .main-grid-shell {
 }
 
 body:is(.is-home, .is-post) .main-grid-shell[data-responsive-strategy="container-content"] {
-  padding-inline: var(--space-shell-wide-x);
+  padding-inline: 0;
 }
 
 body:is(.is-home, .is-post) #main-grid {

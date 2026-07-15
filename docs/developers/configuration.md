@@ -86,7 +86,7 @@ Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。
-- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 最大 `1400px`；Shell 在 `1200px` 以上使用三列 Feed + Sidebar，在 `880px–1199px` 使用双列 Feed + Sidebar，在 `608px–879px` 把 Sidebar Widget 移到 Main 前方并保持双列，更窄时退为单列。三列、双列和单列 Feed 的最大宽度分别为 `1064px`、`704px`、`400px`，Sidebar 在 `248px–272px` 内变化。断点针对实际容器，不直接对应 viewport 宽度。
+- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar、Main Shell 与三列 Main Grid 共享 `1352px` 外部最大宽度；Shell 的安全留白由外部 margin 提供，不占用内部布局预算。Shell 在 `1200px` 以上使用三列 Feed + Sidebar，在 `880px–1199px` 使用双列 Feed + Sidebar，在 `608px–879px` 把 Sidebar Widget 移到 Main 前方并保持双列，更窄时退为单列。三列、双列和单列 Feed 的最大宽度分别为 `1064px`、`704px`、`400px`，Sidebar 在 `248px–272px` 内变化。断点针对实际容器，不直接对应 viewport 宽度。
 - 首页与分类页分别使用 `home`、`category` Widget placement。首页和分类页在前置 Supporting Row 与右侧 Sidebar 都提供 Profile + Site Stats；文章页在前置 Supporting Row 与 Mobile 区显示 Profile，在右侧 Sidebar 显示 Sticky Profile。具体显示区域由 `page-shell` 的压缩预算状态决定。
 - `siteConfig.pageScaling` 仅保留给尚未迁移的 `viewport-legacy` 页面；首页、分类页和文章详情页会主动清除根字号缩放，不能依赖该配置改变 Card、Sidebar 或 Typography 尺寸。
 - `desktopLayoutPreference`：保存用户的 Desktop 页面布局偏好。页面 policy 拥有最终约束权；文章详情页只允许 `content-right`，不会清除用户在其他页面使用的 `three-column` 偏好。

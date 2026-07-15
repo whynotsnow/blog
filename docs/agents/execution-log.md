@@ -131,6 +131,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Rebased the post Sidebar TOC rail on `--width-shell-wide` and moved category/post-detail internal responsive behavior to their owning containers.
 - Tightened the legacy page width from `90rem` to `86rem`, reduced the Container Shell to `1400px`, and rebased multi-column Feed maxima so article Cards top out near `344px` without changing the established state boundaries.
 - Moved the three-column transition to a `1200px` Shell so surplus width is reused earlier instead of accumulating as large centered margin.
+- Unified the Navbar, Container Shell, and three-column Main Grid on a `1352px` outer maximum, moving the responsive safe gutter outside the Shell so its declared width matches its usable layout width.
 
 ### Split home and category listing compositions
 

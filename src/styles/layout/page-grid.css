@@ -34,13 +34,15 @@
 .main-grid-shell[data-responsive-strategy="container-content"] {
   container-name: page-shell;
   container-type: inline-size;
+  width: calc(100% - 2 * var(--space-shell-wide-x));
   max-width: var(--width-shell-wide);
-  padding-inline: var(--space-shell-wide-x);
+  padding-inline: 0;
 }
 
 #top-row[data-responsive-strategy="container-content"] {
+  width: calc(100% - 2 * var(--space-shell-wide-x));
   max-width: var(--width-shell-wide);
-  padding-inline: var(--space-shell-wide-x);
+  padding-inline: 0;
 }
 
 #top-row[data-responsive-strategy="container-content"] #navbar > .navbar__inner--container-content {

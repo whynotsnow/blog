@@ -536,9 +536,12 @@ test("responsive width budgets preserve Card and Sidebar stability", async ({
 	expect(maximumCardWidth).toBeGreaterThan(compressedLargeCardWidth);
 	expect(maximumCardWidth).toBeLessThanOrEqual(346);
 	expect(maximumSidebarWidth).toBeCloseTo(272, 0);
-	expect(shellGeometry.shellWidth).toBeLessThanOrEqual(1400);
+	expect(shellGeometry.shellWidth).toBeLessThanOrEqual(1352 + 1);
 	expect(shellGeometry.bannerWidth).toBeCloseTo(1920, 0);
 	expect(shellGeometry.gridWidth).toBeLessThanOrEqual(1352 + 1);
+	expect(
+		Math.abs(shellGeometry.shellWidth - shellGeometry.gridWidth),
+	).toBeLessThan(1);
 	expect(
 		Math.abs(shellGeometry.navbarWidth - shellGeometry.shellContentWidth),
 	).toBeLessThan(1);
@@ -633,12 +636,12 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	await expect(mobileFilter).toBeHidden();
 	await expect(filterOptions).toBeVisible();
 
-	await page.setViewportSize({ width: 1819, height: 900 });
+	await page.setViewportSize({ width: 1767, height: 900 });
 	await page.goto("/posts/markdown-tutorial/");
 	const tocRegion = page.locator(".sidebar-toc-region--container");
 	await expect(tocRegion).toHaveCSS("display", "none");
 
-	await page.setViewportSize({ width: 1820, height: 900 });
+	await page.setViewportSize({ width: 1768, height: 900 });
 	await expect(tocRegion).toHaveCSS("display", "block");
 	const tocGeometry = await page.evaluate(() => {
 		const shell = document.querySelector<HTMLElement>(".main-grid-shell")!;
@@ -654,7 +657,7 @@ test("category filter and post TOC follow their owning width budgets", async ({
 		};
 	});
 	expect(tocGeometry.railLeft).toBeGreaterThan(tocGeometry.shellRight);
-	expect(tocGeometry.railRight).toBeLessThanOrEqual(1820 + 1);
+	expect(tocGeometry.railRight).toBeLessThanOrEqual(1768 + 1);
 });
 
 test("layout breakpoint boundaries do not overlap", async ({ page }) => {
