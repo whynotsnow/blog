@@ -23,7 +23,14 @@
 		"type-check": "tsc --noEmit",
 		"type-check:declarations": "tsc --noEmit --isolatedDeclarations",
 		"pretest:smoke": "node scripts/check-env.mjs",
-		"test:smoke": "playwright test",
+		"test:smoke": "playwright test tests/e2e/smoke",
+		"test:unit": "vitest run tests/unit",
+		"test:integration": "vitest run tests/integration",
+		"test:fast": "vitest run tests/unit tests/integration",
+		"test:e2e:smoke": "playwright test tests/e2e/smoke",
+		"test:e2e:shell": "playwright test tests/e2e/shell",
+		"test:e2e:full": "playwright test",
+		"type-check:tests": "tsc -p tsconfig.tests.json --noEmit",
 		"test:smoke:install": "playwright install chromium",
 		"new-post": "node scripts/new-post.js",
 		"generate-posts": "node scripts/generate-posts.js",
@@ -119,7 +126,8 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-astro": "^0.14.1",
 		"prettier-plugin-svelte": "^3.5.0",
-		"typescript-eslint": "^8.62.1"
+		"typescript-eslint": "^8.62.1",
+		"vitest": "^4.1.10"
 	},
 	"packageManager": "pnpm@10.22.0"
 }
