@@ -454,14 +454,14 @@ test("banner theme and motion styles follow site state and user preference", asy
 	const lightBackground = await overlay.evaluate(
 		(node) => getComputedStyle(node).backgroundImage,
 	);
-	expect(lightBackground).not.toBe("none");
+	expect(lightBackground).toBe("none");
 
 	await page.locator("html").evaluate((node) => node.classList.add("dark"));
 	expect(
 		await overlay.evaluate(
 			(node) => getComputedStyle(node).backgroundImage,
 		),
-	).not.toBe("none");
+	).toBe("none");
 
 	const navbarAnimationDelay = await page
 		.locator("#navbar")

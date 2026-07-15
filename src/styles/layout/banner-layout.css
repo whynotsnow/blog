@@ -20,7 +20,6 @@
   align-items: center;
   justify-content: center;
   padding: var(--banner-text-padding);
-  background: linear-gradient(to top, rgb(0 0 0 / 55%) 0%, rgb(0 0 0 / 18%) 50%, transparent 78%);
   text-align: center;
 }
 
