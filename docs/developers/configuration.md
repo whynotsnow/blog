@@ -61,7 +61,7 @@
 - `autoRotate`：多条通知时是否自动轮播；用户 Hover 或将焦点移入通知区域时暂停。
 - `rotationIntervalMs`：自动轮播间隔，运行时最低为 3000ms；系统启用 `prefers-reduced-motion` 时不自动轮播。
 - `notices`：通知条目数组，按配置顺序显示并支持手动上下切换。
-- `notices[].id`：通知的稳定版本 ID；用户关闭状态以 `site-notice:dismissed:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
+- `notices[].id`：通知的稳定版本 ID；用户已读状态以 `site-notice:read:<id>` 保存，关闭状态以 `site-notice:dismissed:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
 - `title`、`content`、`icon`：通知标题、纯文本正文和可选图标。
 - `status`：支持 `info`、`success`、`warning`、`danger`，视觉由 Design Semantic status token 提供。
 - `dismissible`：是否允许用户关闭。
@@ -70,6 +70,8 @@
 - `visibility.include`、`visibility.exclude`：可进一步按路径控制。路径默认精确匹配，以 `*` 结尾时匹配该路径及其子路径，例如 `/posts/*`。
 
 网站通知内容保持纯文本。较长信息应通过 `action` 链接到详情页，不在 Notice Bar 内嵌 Markdown 或 HTML。
+
+Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读网站通知，文章页上的外圈只显示当前阅读进度；打开 Panel 后可查看通知历史以及文章进度、当前章节、剩余阅读时间和本地续读位置。`info` / `success` 通知在右上角短暂预览后退场，仍保留在 Activity Center；`warning` / `danger` 预览不会自动消失。Activity Center 不承载 Theme、Settings 等操作型工具。
 
 ## SettingsPanel 相关配置
 

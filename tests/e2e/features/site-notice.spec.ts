@@ -13,6 +13,20 @@ test("site notice renders as a shell-level status bar", async ({ page }) => {
 	await expect(notice.locator("xpath=ancestor::panel-card")).toHaveCount(0);
 });
 
+test("informational preview retires without clearing unread state", async ({
+	page,
+}) => {
+	await gotoPage(page, "/");
+
+	const region = page.locator("[data-site-notice-region]");
+	await expect(region).toBeVisible();
+	await page.waitForTimeout(8300);
+	await expect(region).toBeHidden();
+	await expect(
+		page.locator("#activity-center-switch [data-activity-unread]"),
+	).toHaveText("2");
+});
+
 test("site notice floats outside page flow and switches between notices", async ({
 	page,
 }) => {
@@ -86,11 +100,15 @@ test("site notice keeps safe mobile edges", async ({ page }) => {
 
 	const geometry = await page
 		.locator("[data-site-notice-region]")
-		.evaluate((element) => ({
-			left: element.getBoundingClientRect().left,
-			right: window.innerWidth - element.getBoundingClientRect().right,
-			width: element.getBoundingClientRect().width,
-		}));
+		.evaluate((element) => {
+			if (element instanceof HTMLElement) element.hidden = false;
+			return {
+				left: element.getBoundingClientRect().left,
+				right:
+					window.innerWidth - element.getBoundingClientRect().right,
+				width: element.getBoundingClientRect().width,
+			};
+		});
 	expect(geometry.left).toBeGreaterThanOrEqual(12);
 	expect(geometry.right).toBeGreaterThanOrEqual(12);
 	expect(geometry.width).toBeLessThanOrEqual(362);

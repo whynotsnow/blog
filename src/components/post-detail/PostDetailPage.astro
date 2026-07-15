@@ -55,7 +55,9 @@ const store = await getContentStore();
 			<div
 				id="post-container"
 				class="post-detail__article post-detail__surface ds-surface-content z-10"
-		>
+				data-reading-title={entry.data.title}
+				data-reading-minutes={entry.meta.minutes}
+			>
 			<PostHeader {entry} />
 
 			<!-- always show cover as long as it has one -->

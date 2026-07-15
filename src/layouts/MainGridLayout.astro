@@ -89,6 +89,7 @@ const hasSupportContent = Astro.slots.has("support");
 			class="pointer-events-auto sticky top-0 transition-all"
 		>
 			<Navbar
+				notice={siteNotice}
 				containerContent={viewModel.pageLayout.shellStrategy === "container-content"}
 				class={viewModel.pageLayout.shellStrategy === "container-content"
 					? "navbar__inner--container-content"

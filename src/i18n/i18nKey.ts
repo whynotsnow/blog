@@ -27,6 +27,15 @@ enum I18nKey {
 	siteNoticeDismiss = "siteNoticeDismiss",
 	siteNoticePrevious = "siteNoticePrevious",
 	siteNoticeNext = "siteNoticeNext",
+	activityCenter = "activityCenter",
+	notifications = "notifications",
+	markAllRead = "markAllRead",
+	noNotifications = "noNotifications",
+	readingStatus = "readingStatus",
+	readingProgress = "readingProgress",
+	remainingReading = "remainingReading",
+	currentSection = "currentSection",
+	resumeReading = "resumeReading",
 
 	comments = "comments",
 

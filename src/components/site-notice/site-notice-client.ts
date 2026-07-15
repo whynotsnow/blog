@@ -1,13 +1,32 @@
 import { onPageLifecycle } from "@/utils/page-lifecycle";
+import {
+	dismissSiteNotice,
+	isSiteNoticeDismissed,
+	isSiteNoticeRead,
+	SITE_NOTICE_STATE_EVENT,
+} from "@/features/activity-center/notice-state";
 
-const STORAGE_PREFIX = "site-notice:dismissed:";
 const TRANSITION_DURATION_MS = 250;
+const PREVIEW_DURATION_MS = 8000;
+const PREVIEWED_PREFIX = "site-notice:previewed:";
 
 let rotationTimer: number | undefined;
 let transitionTimer: number | undefined;
+let previewTimer: number | undefined;
 
-function getStorageKey(notice: HTMLElement) {
-	return `${STORAGE_PREFIX}${notice.dataset.noticeId}`;
+function getNoticeId(notice: HTMLElement) {
+	return notice.dataset.noticeId || "";
+}
+
+function getPreviewKey(notice: HTMLElement) {
+	return `${PREVIEWED_PREFIX}${getNoticeId(notice)}`;
+}
+
+function isPersistentNotice(notice: HTMLElement) {
+	return (
+		notice.dataset.status === "warning" ||
+		notice.dataset.status === "danger"
+	);
 }
 
 function getAvailableNotices(region: HTMLElement) {
@@ -76,6 +95,38 @@ function stopRotation() {
 	rotationTimer = undefined;
 }
 
+function stopPreview() {
+	if (previewTimer) window.clearTimeout(previewTimer);
+	previewTimer = undefined;
+}
+
+function completePreview(region: HTMLElement) {
+	getAvailableNotices(region).forEach((notice) => {
+		if (isPersistentNotice(notice)) return;
+		sessionStorage.setItem(getPreviewKey(notice), "true");
+		notice.hidden = true;
+		notice.dataset.state = "inactive";
+		setInteractiveState(notice, false);
+	});
+	showNotice(region, 0, 1);
+	startRotation(region);
+}
+
+function startPreview(region: HTMLElement) {
+	stopPreview();
+	if (
+		!getAvailableNotices(region).some(
+			(notice) => !isPersistentNotice(notice),
+		)
+	) {
+		return;
+	}
+	previewTimer = window.setTimeout(
+		() => completePreview(region),
+		PREVIEW_DURATION_MS,
+	);
+}
+
 function startRotation(region: HTMLElement) {
 	stopRotation();
 	const notices = getAvailableNotices(region);
@@ -99,6 +150,7 @@ function startRotation(region: HTMLElement) {
 
 function initSiteNotice() {
 	stopRotation();
+	stopPreview();
 	const region = document.querySelector<HTMLElement>(
 		"[data-site-notice-region]",
 	);
@@ -108,8 +160,14 @@ function initSiteNotice() {
 	region
 		.querySelectorAll<HTMLElement>("[data-site-notice-item]")
 		.forEach((notice) => {
+			const id = getNoticeId(notice);
+			const wasPreviewed =
+				!isPersistentNotice(notice) &&
+				sessionStorage.getItem(getPreviewKey(notice)) === "true";
 			notice.hidden =
-				localStorage.getItem(getStorageKey(notice)) === "true";
+				isSiteNoticeDismissed(id) ||
+				isSiteNoticeRead(id) ||
+				wasPreviewed;
 			notice.dataset.state = "inactive";
 			setInteractiveState(notice, false);
 		});
@@ -123,6 +181,7 @@ function initSiteNotice() {
 	firstNotice.dataset.state = "active";
 	setInteractiveState(firstNotice, true);
 	startRotation(region);
+	startPreview(region);
 }
 
 document.addEventListener("click", (event) => {
@@ -152,7 +211,7 @@ document.addEventListener("click", (event) => {
 	);
 	if (!noticeItem) return;
 
-	localStorage.setItem(getStorageKey(noticeItem), "true");
+	dismissSiteNotice(getNoticeId(noticeItem));
 	noticeItem.hidden = true;
 	noticeItem.dataset.state = "inactive";
 	showNotice(region, 0, 1);
@@ -164,6 +223,7 @@ document.addEventListener("pointerover", (event) => {
 		(event.target as Element | null)?.closest("[data-site-notice-region]")
 	) {
 		stopRotation();
+		stopPreview();
 	}
 });
 
@@ -173,6 +233,7 @@ document.addEventListener("pointerout", (event) => {
 	);
 	if (region && !region.contains(event.relatedTarget as Node | null)) {
 		startRotation(region);
+		startPreview(region);
 	}
 });
 
@@ -181,6 +242,7 @@ document.addEventListener("focusin", (event) => {
 		(event.target as Element | null)?.closest("[data-site-notice-region]")
 	) {
 		stopRotation();
+		stopPreview();
 	}
 });
 
@@ -190,8 +252,11 @@ document.addEventListener("focusout", (event) => {
 	);
 	if (region && !region.contains(event.relatedTarget as Node | null)) {
 		startRotation(region);
+		startPreview(region);
 	}
 });
+
+window.addEventListener(SITE_NOTICE_STATE_EVENT, initSiteNotice);
 
 onPageLifecycle("first-load", initSiteNotice);
 onPageLifecycle("content-replace", initSiteNotice);

@@ -51,6 +51,13 @@
 			"test",
 			"tests/e2e/features/site-notice.spec.ts"
 		],
+		"activity-center": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/activity-center.spec.ts"
+		],
 		"design-contract": [
 			"pnpm",
 			"exec",
@@ -137,9 +144,17 @@
 			"patterns": [
 				"src/components/site-notice/**",
 				"src/services/site-notice.ts",
-				"src/config/site-notice.ts"
+				"src/config/site-notice.ts",
+				"src/features/activity-center/**"
 			],
-			"groups": ["lint", "type", "astro", "integration", "site-notice"]
+			"groups": [
+				"lint",
+				"type",
+				"astro",
+				"integration",
+				"site-notice",
+				"activity-center"
+			]
 		},
 		{
 			"patterns": [
@@ -197,6 +212,10 @@
 		{
 			"patterns": ["tests/e2e/features/site-notice.spec.ts"],
 			"groups": ["test-type", "site-notice"]
+		},
+		{
+			"patterns": ["tests/e2e/features/activity-center.spec.ts"],
+			"groups": ["test-type", "activity-center"]
 		},
 		{
 			"patterns": ["tests/e2e/contracts/**"],

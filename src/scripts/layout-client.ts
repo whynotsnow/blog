@@ -677,7 +677,11 @@ function scrollFunction() {
 			}
 		}
 
-		if (bannerEnabled && navbar) {
+		if (
+			bannerEnabled &&
+			navbar &&
+			!document.body.classList.contains("navbar-fixed-visible")
+		) {
 			const currentBannerHeight = BANNER_HEIGHT_HOME;
 
 			const threshold =
@@ -687,6 +691,8 @@ function scrollFunction() {
 			} else {
 				navbar.classList.remove("navbar-hidden");
 			}
+		} else if (navbar) {
+			navbar.classList.remove("navbar-hidden");
 		}
 	});
 }
