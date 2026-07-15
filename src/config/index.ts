@@ -12,5 +12,4 @@ export { profileConfig } from "./profile";
 export { shareConfig } from "./share";
 export { siteNoticeConfig } from "./site-notice";
 export { SITE_LANG, SITE_TIMEZONE, siteConfig } from "./site";
-export { widgetConfigs } from "./widget-configs";
 export { fullscreenWallpaperConfig } from "./wallpaper";
