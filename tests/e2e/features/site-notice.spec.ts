@@ -1,9 +1,22 @@
 import { expect, test } from "@playwright/test";
+import { gotoPage } from "../../support/navigation";
+
+test("site notice renders as a shell-level status bar", async ({ page }) => {
+	await gotoPage(page, "/");
+
+	const notice = page.locator("[data-site-notice]");
+	await expect(notice).toBeVisible();
+	await expect(notice).toHaveAttribute("data-status", /^(info|success)$/);
+	await expect(notice).toContainText(
+		/网站建设中，更多功能敬请期待！|本站内容持续更新，感谢你的关注。/,
+	);
+	await expect(notice.locator("xpath=ancestor::panel-card")).toHaveCount(0);
+});
 
 test("site notice floats outside page flow and switches between notices", async ({
 	page,
 }) => {
-	await page.goto("/");
+	await gotoPage(page, "/");
 
 	const region = page.locator("[data-site-notice-region]");
 	const notices = region.locator("[data-site-notice-item]");
@@ -63,7 +76,7 @@ test("site notice floats outside page flow and switches between notices", async 
 
 test("site notice keeps safe mobile edges", async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
-	await page.goto("/");
+	await gotoPage(page, "/");
 
 	const geometry = await page
 		.locator("[data-site-notice-region]")
@@ -80,7 +93,7 @@ test("site notice keeps safe mobile edges", async ({ page }) => {
 test("site notice keeps its viewport position during Swup navigation", async ({
 	page,
 }) => {
-	await page.goto("/");
+	await gotoPage(page, "/");
 	const region = page.locator("[data-site-notice-region]");
 	await expect(region).toBeVisible();
 	await expect(
