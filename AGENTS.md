@@ -43,9 +43,10 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 5. Read `docs/agents/workflow.md` before non-trivial agent work.
 6. Read `docs/agents/project-map.md` before changing architecture, data flow, routing, or services.
 7. Read `docs/agents/memory.json`, `docs/agents/failure-index.md`, and `docs/agents/runtime-playbook.md` before running commands or changing areas with known failures.
-8. Read `docs/agents/runtime-requirements.md` before browser validation or when execution may need to leave the Codex sandbox.
-9. Read `docs/agents/disclosure-policy.md` before persisting runtime observations or adding Agent Workspace Spec files.
-10. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
+8. Read `docs/agents/testing-strategy.md` before changing tests, validation tooling, CI gates, or code whose verification scope is not obvious.
+9. Read `docs/agents/runtime-requirements.md` before browser validation or when execution may need to leave the Codex sandbox.
+10. Read `docs/agents/disclosure-policy.md` before persisting runtime observations or adding Agent Workspace Spec files.
+11. Use ordinary repository inspection commands such as `git status --short`, `rg --files`, and `sed -n` when you need local context.
 
 ## Commands
 
@@ -136,11 +137,17 @@ When a change affects multiple areas, read the relevant documents for each area.
 
 ## Validation Expectations
 
-For code changes, run the narrowest useful checks:
+Validation is impact-based. Agents must run the smallest sufficient set that covers the changed behavior and its shared contracts; full validation is an escalation path, not the default.
 
-- Type or schema changes: `pnpm check` and `pnpm type-check`.
-- Route, content, or asset pipeline changes: `pnpm build`.
-- Documentation-only changes: no build is required unless examples or commands changed.
+Before running checks:
+
+1. List the changed files and classify them as documentation, pure logic, content/schema, feature UI, shared shell/design, or tooling/dependencies.
+2. Select the directly owned checks plus checks for any shared contract the change consumes.
+3. Record why the selected set is sufficient and report skipped higher-level checks in the handoff.
+
+Escalate to full regression when a change affects shared content/core contracts, global layout/navigation/design infrastructure, build or test configuration, dependencies, three or more unrelated features, or a path that the impact rules cannot classify. A selected test exposing cross-module behavior also requires escalation.
+
+Use `docs/agents/testing-strategy.md` as the normative selection matrix. Never skip a relevant check merely because it is expensive; choose a narrower layer that proves the same behavior when one exists.
 
 If a command cannot run because of missing local secrets, unavailable network access, or external service limits, state that clearly in the final handoff.
 

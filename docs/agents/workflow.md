@@ -265,23 +265,20 @@ Do not read unrelated documents just to appear thorough. If multiple areas are a
 - Do not bypass `getContentStore()` for normal post collection data.
 - Do not hardcode private IDs, API keys, tokens, or cookies.
 
-## Validation Matrix
+## Impact-Based Validation
 
-| Change type | Suggested validation |
-| --- | --- |
-| Docs only | Read affected links and headings; run `pnpm lint:md` for Markdown structure changes. |
-| Type or schema | `pnpm check`, `pnpm type-check` |
-| Content pipeline | `pnpm check`, then `pnpm build` when feasible |
-| Styles or UI components | `pnpm dev` visual check, plus `pnpm check` and `pnpm lint` |
-| Build scripts | Run the touched script with a safe input or dry-run equivalent when available |
+Validation scope follows the changed behavior, not a blanket full-suite rule. Before executing checks, list changed files, classify the change, identify directly owned tests and shared contracts, and then run the smallest sufficient set. Read [Testing Strategy](./testing-strategy.md) for the normative matrix and escalation rules.
+
+Full regression is required for unclassified paths, cross-cutting infrastructure, dependency or test-runner changes, and changes spanning three or more unrelated features. It remains a main-branch and scheduled backstop even when a pull request uses affected tests.
 
 ## Handoff Format
 
 When an agent finishes a task, it should include:
 
 - Files changed.
+- Classified impact area and why the selected validation is sufficient.
 - Commands run and whether they passed.
-- Any known skipped validation.
+- Any skipped higher-level validation, including full regression.
 - Follow-up risks only when they affect the requested outcome.
 
 Never state that a command passed unless it was actually run in this workspace.

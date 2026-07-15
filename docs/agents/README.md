@@ -8,6 +8,7 @@ This directory is for AI coding agents. All documents in this directory must be 
 | --- | --- |
 | [Agent Workspace Spec](../../spec/agent-workspace/SPEC.md) | Normative format, conformance levels, context resolution, and versioning. |
 | [Workflow](./workflow.md) | How agents should inspect, modify, validate, and hand off work. |
+| [Testing Strategy](./testing-strategy.md) | Impact-based test selection, validation layers, escalation rules, and reporting requirements. |
 | [Project Map](./project-map.md) | Repository shape, data flow, route map, service boundaries, and extension points. |
 | [Runtime Playbook](./runtime-playbook.md) | Known command, framework, Markdown, and package-manager pitfalls with reusable responses. |
 | [Runtime Requirements](./runtime-requirements.md) | Public execution capability contract and local profile resolution order. |
