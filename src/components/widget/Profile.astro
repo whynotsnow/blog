@@ -4,8 +4,6 @@ import { profileConfig } from "../../config";
 import { url } from "../../utils/url-utils";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
-import I18nKey from "../../i18n/i18nKey";
-import { i18n } from "../../i18n/translation";
 
 export interface Props {
 	class?: string;
@@ -96,20 +94,6 @@ const { class: className, style } = Astro.props;
 			}
 		</div>
 
-		<div id="umami-stats-container">
-			<hr
-				class="my-2 border-t border-dashed border-gray-300 dark:border-gray-700"
-			/>
-			<div class="text-sm text-gray-500 mt-2 text-center">
-				<Icon
-					name="fa7-solid:eye"
-					class="inline-block mr-1 text-gray-400 text-sm align-middle"
-				/>
-				<span class="site-stats-display"
-					>{i18n(I18nKey.profileStatsLoading)}</span
-				>
-			</div>
-		</div>
 	</div>
 </div>
 
@@ -145,45 +129,3 @@ const { class: className, style } = Astro.props;
 		}
 	}
 </style>
-
-<script
-	is:inline
-	define:vars={{
-		profileStatsPageViews: i18n(I18nKey.profileStatsPageViews),
-		profileStatsVisits: i18n(I18nKey.profileStatsVisits),
-	}}
->
-	function generateStatsText(pageViews, visits) {
-		return `${profileStatsPageViews} ${pageViews} · ${profileStatsVisits} ${visits}`;
-	}
-
-	async function fetchSiteStats() {
-		const container = document.getElementById("umami-stats-container");
-
-		// oddmisc 未加载则隐藏
-		if (!window.oddmisc) {
-			container?.classList.add("hidden");
-			return;
-		}
-
-		try {
-			const stats = await window.oddmisc.getSiteStats();
-			const pageViews = stats.pageviews || 0;
-			const visits = stats.visits || 0;
-
-			container?.classList.remove("hidden");
-			document.querySelectorAll(".site-stats-display").forEach((el) => {
-				el.textContent = generateStatsText(pageViews, visits);
-			});
-		} catch (error) {
-			console.error("Error fetching site stats:", error);
-			container?.classList.add("hidden");
-		}
-	}
-
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", () => fetchSiteStats());
-	} else {
-		fetchSiteStats();
-	}
-</script>

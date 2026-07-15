@@ -1,7 +1,6 @@
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import type { MarkdownHeading } from "astro";
 import type { BaseSlug, ContentStore } from "../core/types";
-import type { Props as SiteStatsProps } from "@components/widget/SiteStats.astro";
 import type { Props as CategoriesProps } from "@components/widget/Categories.astro";
 import type { Props as TagsProps } from "@components/widget/Tags.astro";
 import type { Props as TocProps } from "@components/widget/TOC.astro";
@@ -10,7 +9,6 @@ import type { Props as CalendarProps } from "@components/widget/Calendar.astro";
 import { buildCalendarPosts } from "@/services/calendar";
 import { widgetComponentRegistry } from "./registry";
 import { buildCalendarWidgetData } from "./data/calendar";
-import { buildSiteStatsWidgetData } from "./data/site-stats";
 import { widgetPlacementPresets } from "./presets";
 import { resolveWidgetClass, resolveWidgetStyle } from "./presentation";
 import type {
@@ -83,7 +81,6 @@ export interface ResolvedWidgetDefinition<TProps> {
 }
 
 export type WidgetComponentMap = {
-	"site-stats": ResolvedWidgetDefinition<SiteStatsProps>;
 	categories: ResolvedWidgetDefinition<CategoriesProps>;
 	tags: ResolvedWidgetDefinition<TagsProps>;
 	toc: ResolvedWidgetDefinition<TocProps>;
@@ -96,15 +93,6 @@ export function getWidgetComponentMap(ctx: SidebarContext): WidgetComponentMap {
 	const tags: BaseSlug[] = categories.flatMap((category) => category.tags);
 
 	return {
-		"site-stats": {
-			component: widgetComponentRegistry["site-stats"],
-			props: buildSiteStatsWidgetData({
-				posts,
-				categories,
-				tags,
-			}),
-		},
-
 		categories: {
 			component: widgetComponentRegistry.categories,
 			props: {

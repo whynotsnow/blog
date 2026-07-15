@@ -9,6 +9,7 @@ import { fullscreenWallpaperConfig, siteConfig, siteNoticeConfig } from "@/confi
 import type { ContentStore } from "@/services/core/types";
 import { buildMainGridLayoutViewModel } from "@/services/layout/main-grid";
 import { buildSiteNoticeViewModel } from "@/services/site-notice";
+import { buildFooterViewModel } from "@/services/footer";
 import type { PageLayoutPolicyName } from "@/services/layout/types";
 import { resolveWidgetPlacement } from "@/services/widget/resolver";
 import type { WidgetPlacementName } from "@/services/widget/types";
@@ -47,6 +48,7 @@ const viewModel = await buildMainGridLayoutViewModel({
 });
 const widgets = resolveWidgetPlacement(widgetPlacement, { store, headings });
 const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname);
+const footer = buildFooterViewModel(store);
 ---
 
 <Layout
@@ -111,6 +113,7 @@ const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname
 		widgets={widgets}
 		viewModel={viewModel}
 		siteNotice={siteNotice}
+		footer={footer}
 	>
 		<slot />
 	</MainGridContent>

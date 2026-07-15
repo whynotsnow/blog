@@ -25,6 +25,11 @@
   grid-column: 1;
 }
 
+.site-footer-region {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .sidebar-widget-slot {
   container-name: widget-card;
   container-type: inline-size;

@@ -8,6 +8,7 @@ import type { ResolvedWidgetPlacement } from "@/services/widget/types";
 import BannerCredit from "./BannerCredit.astro";
 import SiteNoticeBar from "@components/site-notice/SiteNoticeBar.astro";
 import type { SiteNoticeViewModel } from "@/services/site-notice";
+import type { FooterViewModel } from "@/services/footer";
 import WidgetRegion from "./WidgetRegion.astro";
 import SidebarTocRegion from "./SidebarTocRegion.astro";
 
@@ -16,9 +17,10 @@ interface Props {
 	widgets: ResolvedWidgetPlacement;
 	viewModel: MainGridLayoutViewModel;
 	siteNotice?: SiteNoticeViewModel;
+	footer: FooterViewModel;
 }
 
-const { headings, widgets, viewModel, siteNotice } = Astro.props;
+const { headings, widgets, viewModel, siteNotice, footer } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
 const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-content";
 ---
@@ -69,15 +71,12 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 			<main class="page-main-content overflow-hidden w-full">
 				<div id="content-wrapper">
 					<slot />
-					<div class="footer col-span-full hidden lg:block">
-						<Footer />
-					</div>
 				</div>
 			</main>
 			<div class={`mobile-after-region ${transparentClass}`} data-has-widgets={widgets.mobile.afterContent.length > 0}><WidgetRegion region="mobile-after-content" widgets={widgets.mobile.afterContent} /></div>
 
-			<div class="footer col-span-full block lg:hidden">
-				<Footer />
+			<div class="site-footer-region">
+				<Footer model={footer} />
 			</div>
 		</div>
 		<SidebarTocRegion headings={headings} viewModel={viewModel} />

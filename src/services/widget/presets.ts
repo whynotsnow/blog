@@ -32,12 +32,7 @@ export const widgetPlacementPresets = {
 					animationDelay: 250,
 				}),
 			],
-			right: [
-				widget("desktop-profile", "profile", "sticky"),
-				widget("desktop-site-stats", "site-stats", "flow", {
-					animationDelay: 200,
-				}),
-			],
+			right: [widget("desktop-profile", "profile", "sticky")],
 		},
 		supporting: {
 			beforeContent: [
@@ -56,17 +51,11 @@ export const widgetPlacementPresets = {
 	},
 	home: {
 		desktop: {
-			sidebar: [
-				widget("home-desktop-profile", "profile", "flow"),
-				widget("home-desktop-site-stats", "site-stats", "flow", {
-					animationDelay: 200,
-				}),
-			],
+			sidebar: [widget("home-desktop-profile", "profile", "flow")],
 		},
 		supporting: {
 			beforeContent: [
 				widget("home-supporting-profile", "profile", "flow"),
-				widget("home-supporting-site-stats", "site-stats", "flow"),
 			],
 		},
 		mobile: {
@@ -75,17 +64,11 @@ export const widgetPlacementPresets = {
 	},
 	category: {
 		desktop: {
-			sidebar: [
-				widget("category-desktop-profile", "profile", "flow"),
-				widget("category-desktop-site-stats", "site-stats", "flow", {
-					animationDelay: 200,
-				}),
-			],
+			sidebar: [widget("category-desktop-profile", "profile", "flow")],
 		},
 		supporting: {
 			beforeContent: [
 				widget("category-supporting-profile", "profile", "flow"),
-				widget("category-supporting-site-stats", "site-stats", "flow"),
 			],
 		},
 	},
