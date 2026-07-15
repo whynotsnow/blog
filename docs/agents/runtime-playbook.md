@@ -162,23 +162,6 @@ Response:
 - Bind lifecycle callbacks to the current `window.swup` instance. A permanent boolean can silently leave callbacks attached to an obsolete instance after route scripts refresh the global instance.
 - Keep fixed Shell overlays such as the Site Notice outside the transformed `#swup-container`. A transformed ancestor becomes the fixed element's containing block during route animation, making the overlay jump between content-relative and viewport-relative coordinates.
 
-### sidebar-sticky-containing-block
-
-Pattern:
-
-- A widget configured with `position: "sticky"` renders inside a sticky container but still scrolls out of the viewport.
-- Runtime styles show `position: sticky` and a valid `top`, while the sticky container sits at the bottom of a shorter sidebar root.
-- The outer grid column stretches to the main-content height, but the direct sidebar root only uses its content height.
-
-Use:
-
-- Keep the left and right sidebar roots at `h-full` so their sticky descendants use the full grid-row height as the containing block.
-- Keep desktop sticky containers at `top: 1rem` so widgets preserve the sidebar gap after crossing the page top.
-- On the banner-enabled home page, compensate both sticky columns with `calc(1rem - var(--banner-height-extend))`; this override must win over the responsive `top` utility.
-- Do not apply the banner-extension compensation in fullscreen banner mode because the fullscreen main grid does not use that translated offset; keep fullscreen sticky columns at `top: 1rem`.
-- Enable sticky positioning from the sidebar breakpoint (`md`, `768px`): Desktop and Supporting regions can both render configured sticky widgets, while Mobile remains normal flow.
-- Verify on a page tall enough for the sticky element to cross its configured top offset; a short page may never reach the sticky threshold.
-
 ## Browser Verification
 
 ### playwright-chromium-mac-sandbox

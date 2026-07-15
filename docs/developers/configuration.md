@@ -27,13 +27,11 @@
 | `src/config/site-notice.ts` | 网站级通知 `siteNoticeConfig`。 |
 | `src/config/wallpaper.ts` | 全屏壁纸 `fullscreenWallpaperConfig`。 |
 | `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
-| `src/services/widget/presets.ts` | 各端点、各区域的 Widget placement。 |
 | `src/config/music.ts` | 音乐播放器 `musicPlayerConfig`。 |
 | `src/config/effects.ts` | 站点特效 `sakuraConfig`。 |
 | `src/config/comments.ts` | 评论系统 `commentConfig`。 |
 | `src/config/analytics.ts` | 统计脚本、GTM、Clarity、Umami 配置。 |
 | `src/config/category-slugs.ts` | 分类 slug 映射。 |
-| `src/config/widget-configs.ts` | 运行时 widget 配置聚合对象。 |
 
 ## 重要配置组
 
@@ -42,33 +40,22 @@
 | `siteConfig` | 站点信息、语言、特色页面、横幅、主题、文章列表、字体等。 |
 | `fullscreenWallpaperConfig` | 叠加全屏壁纸资源与效果行为。 |
 | `navBarConfig` | 顶部导航链接。 |
-| `profileConfig` | 个人资料组件内容。 |
+| `profileConfig` | 首页作者资料模块内容。 |
 | `licenseConfig` | 默认内容协议展示。 |
 | `commentConfig` | 评论系统配置。 |
-| `pageLayoutPolicies` | 页面基础布局、Supporting Region 排列与允许的桌面布局集合。 |
-| `widgetPlacementPresets` | Desktop、Tablet、Mobile 各区域的 Widget 实例。 |
+| `pageLayoutPolicies` | 页面 Shell Strategy 与允许的桌面布局集合；当前仅允许 `content-right`。 |
 | `siteNoticeConfig` | 主内容 Shell 顶部的网站级通知、状态、操作与可见范围。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
-## 侧边栏 Widget 布局
+## 页面模块与布局
 
-页面布局和 Widget placement 是两个独立配置边界：`pageLayoutPolicies` 决定各端点有哪些区域以及如何排列，`widgetPlacementPresets` 只决定区域中渲染哪些 Widget。Widget 数量、空区域或某端点的配置不得改变页面布局，也不会触发跨端点自动迁移。
+项目不再提供通用 Widget registry、placement preset 或跨端点 resolver。业务模块由页面显式拥有：首页通过 `MainGridLayout` 的 `support` slot 传入一份 Profile；归档页在主内容流中组合 Calendar、Categories 与 Tags；站点统计由 Footer service 和 Footer component 持有；文章 TOC 属于 post detail feature。
 
-`pageLayoutPolicies.*.supporting.flowLayout` 控制 Sidebar 隐藏后 Main 前方 Supporting Region 的 Flow Widget 排列：`stack` 表示每行一张并填满区域，`two-column` 表示固定两列，`auto-grid` 表示根据 Card 最小宽度自动分列。首页、分类页与文章页使用 `stack`；Widget 获得整行宽度后，Profile 与 Site Stats 继续通过各自的 `widget-card` Container Query 切换左右或多列内部布局。
-
-`shellStrategy` 选择页面级响应式几何：`container-content` 使用 Page Shell Container Query，`viewport-legacy` 保留尚未迁移页面的 viewport Grid。Policy 只声明有效的 Shell Strategy、Supporting Region 排列和允许的 Desktop Page Layout Preference；不再保留未被渲染层消费的 Tablet/Mobile 名义字段。
-
-- `desktop.left`、`desktop.right`、`desktop.sidebar`：显式定义 Desktop 各布局区域中的 Widget。
-- `supporting.beforeContent`：显式定义响应式 Supporting Region 中、Main 前方的 Widget，不会继承 Desktop 配置。
-- `mobile.beforeContent`、`mobile.afterContent`：显式定义 Mobile 内容前后的 Widget，不再使用历史 `drawer` 命名。
-- `position: "flow"`：Widget 按普通文档流排列。
-- `position: "sticky"`：Widget 放入吸顶区域；默认页面沿用 viewport 规则，`container-content` 页面只在右侧 Sidebar 区域启用，前置 Supporting Row 保持普通流。
-
-Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`，否则 Sticky 容器会被自身内容高度限制并随页面滚出视口。
+`shellStrategy` 选择页面级响应式几何：`container-content` 使用 Page Shell Container Query，`viewport-legacy` 保留尚未迁移页面的 viewport Grid。`pageLayoutPolicies` 只声明 Shell Strategy 和允许的 Desktop Page Layout Preference，不再描述业务模块 inventory。新增模块时应在所属页面或 layout 中显式组合，不要向配置层添加通用 placement 描述。
 
 ## 网站通知
 
-`siteNoticeConfig` 独立于 Widget placement。`SiteNoticeBar` 以站点级浮层固定在 Navbar 下方，限制为阅读宽度，不参与页面流布局，也不会占用 Desktop、Tablet 或 Mobile 的 Widget 区域。
+`SiteNoticeBar` 以站点级浮层固定在 Navbar 下方，限制为阅读宽度，不参与页面流布局。
 
 - `enable`：启用或关闭网站通知。
 - `autoRotate`：多条通知时是否自动轮播；用户 Hover 或将焦点移入通知区域时暂停。
@@ -90,10 +77,9 @@ Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。它只控制 Post List View，不再隐式改写页面级 Desktop Layout Preference。
-- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar、Main Shell 与三列 Main Grid 共享 `1352px` 外部最大宽度；Shell 的安全留白由外部 margin 提供，不占用内部布局预算。Shell 在 `1200px` 以上使用三列 Feed + Sidebar，在 `880px–1199px` 使用双列 Feed + Sidebar，在 `608px–879px` 把 Sidebar Widget 移到 Main 前方并保持双列，更窄时退为单列。三列、双列和单列 Feed 的最大宽度分别为 `1064px`、`704px`、`400px`，Sidebar 在 `248px–272px` 内变化。断点针对实际容器，不直接对应 viewport 宽度。
-- 首页与分类页分别使用 `home`、`category` Widget placement。首页和分类页在前置 Supporting Row 与右侧 Sidebar 都提供 Profile + Site Stats；文章页在前置 Supporting Row 与 Mobile 区显示 Profile，在右侧 Sidebar 显示 Sticky Profile。具体显示区域由 `page-shell` 的压缩预算状态决定。
+- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 共享 `1352px` 外部最大宽度。首页在 `1200px` 以上使用三列 Feed + Profile support，在 `880px–1199px` 使用双列 Feed + Profile support，低于 `880px` 时把同一个 Profile DOM 放到 Main 前方；Feed 低于 `608px` 后退为单列。分类页与文章页不提供 support slot，内容区在 `1200px` 以下最大 `704px`、达到 `1200px` 后最大 `1064px`。断点针对实际容器，不直接对应 viewport 宽度。
 - `siteConfig.pageScaling` 仅保留给尚未迁移的 `viewport-legacy` 页面；首页、分类页和文章详情页会主动清除根字号缩放，不能依赖该配置改变 Card、Sidebar 或 Typography 尺寸。
-- `desktopLayoutPreference`：独立保存用户的 Desktop Page Layout Preference。页面 policy 拥有最终约束权；文章详情页只允许 `content-right`，不会清除用户在其他页面使用的 `three-column` 偏好，也不会从 `postListLayout` 推导该值。
+- `desktopLayoutPreference`：保留旧存储兼容，但当前全部页面 policy 只允许 `content-right`，设置面板不会显示无效的 `three-column` 选择；该值仍不会从 `postListLayout` 推导。
 - `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。`fullscreen` 表示全屏高度的 banner 模式；`overlay` 才会显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果。
 - Banner、Navbar 与尚未迁移页面仍使用 viewport 断点：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。首页、分类页和文章详情页的内容布局不使用这些断点，而以 `page-shell` 与 `post-feed` Container Query 为准。
 - 普通 Banner 使用 `--banner-block-size` 同步控制横幅高度与正文起始位置；低高度横屏约为 `60vh` 以优先正文。首页 Fullscreen Banner 始终为 `100dvh`，非首页移动端隐藏 Banner。

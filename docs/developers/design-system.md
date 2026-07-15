@@ -43,7 +43,7 @@ Primitive → Semantic → Theme/Pattern → Component
 | Class | 用途 |
 | --- | --- |
 | `.ds-surface-content` | 与页面背景融合的主要内容 |
-| `.ds-surface-card` | 文章卡片、Widget 等普通承载面 |
+| `.ds-surface-card` | 文章卡片、功能面板等普通承载面 |
 | `.ds-surface-raised` | 搜索、设置和浮层 |
 | `.ds-page-shell` | 全局 Shell 宽度与页面边距 |
 | `.ds-reading-flow` | `48rem` 正文阅读流 |
@@ -55,7 +55,7 @@ Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Sv
 
 首页与分类页的文章 Grid 使用 `post-feed` Container Query：容器小于 `608px` 为单列，达到 `608px` 为双列，达到 `932px` 为三列。单列 Grid 最大 `400px`，双列组合最大 `704px`，三列组合最大 `1064px`。双列与三列 Card 的目标范围约为 `296px–344px`，列间距使用更紧凑的 `--space-grid-gap`，避免 Card 达到最大宽度后在两列到三列之间形成过长的闲置区；单列保留稍宽的阅读宽度。Grid Card 固定高度继续为 `29rem`，封面高度根据 Card 容器宽度在 `10rem–14rem` 内流式变化；无图片时使用 Semantic token 生成占位封面。List 模式继续使用 `--width-listing` 阅读宽度，Astro 与 Svelte renderer 必须保持同一 Card 结构和 Semantic token 契约。
 
-首页、分类页与文章详情页的 Main Grid 使用 `page-shell` Container Query，并共享一套按压缩预算退让的 Shell 契约。Banner 始终铺满 viewport；Navbar、Main Shell 与三列 Main Grid 共享 `1352px` 外部最大宽度。Shell 不再用内部 padding 消耗这项宽度预算，窄于最大宽度时由 `--space-shell-wide-x` 收缩外宽并形成安全 margin。Shell 达到 `1200px` 时显示三列 Feed + Sidebar；低于该端点后切换为双列 Feed + Sidebar，组合最大 `992px`。Shell 低于 `880px` 时隐藏右侧 Sidebar，将同一批 Widget 放到 Main 前方并占满布局宽度；Feed 保持双列，低于 `608px` 后再退为单列。Sidebar 在 `248px–272px` 内压缩。Sidebar 端点与双列 Feed 最小宽度由同一预算推导，因此禁止出现单列 Card + 右侧 Sidebar，也禁止 Supporting Row 与右侧 Sidebar 同时显示。Supporting Row 的 Slot 排列由 Page Layout Policy 选择 `stack`、`two-column` 或 `auto-grid`；当前内容页使用单列填充。Widget Slot 再使用 `widget-card` Container Query 控制 Profile 与 Site Stats 的左右或多列内部排列。
+首页、分类页与文章详情页的 Main Grid 使用 `page-shell` Container Query。Banner 始终铺满 viewport；Navbar 与 Main Shell 共享 `1352px` 外部最大宽度。首页是唯一提供 support slot 的内容页：Shell 达到 `1200px` 时显示三列 Feed + `248px–272px` Profile support，`880px–1199px` 显示双列 Feed + Profile support，低于 `880px` 时同一个 Profile DOM 进入 Main 前方。分类页与文章详情页不提供 support slot，内容区在 `1200px` 以下最大 `704px`、达到 `1200px` 后最大 `1064px`。`PanelCard` 仅组合 `.ds-surface-card` 与局部间距，不拥有页面 placement 规则；Footer Stats 也在 Footer 内消费 Semantic token，而不模拟侧栏 Card。
 
 `container-content` 页面不消费旧 `pageScaling` 根字号缩放；字体与间距应通过 Design token 自身的 `clamp()` 流式变化，避免 Shell 的 px 宽度预算与 rem 尺度在 viewport 端点发生跳变。文章 Sidebar TOC 使用 `--width-shell-wide` 推导 Shell 外侧 Rail，并只在 viewport 能同时容纳完整 Shell、间距和 TOC 时出现；旧 `--page-width` 公式仅保留给尚未迁移的 legacy 页面。
 

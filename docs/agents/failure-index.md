@@ -48,11 +48,6 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: category or post entry scrolling differs between link and browser-history navigation, or history leaves the grid covering the Banner carousel.
 - Playbook: [banner-entry-geometry-feedback](./runtime-playbook.md#banner-entry-geometry-feedback)
 
-### sidebar-sticky-containing-block
-
-- Symptom: a configured sticky sidebar widget has `position: sticky` but scrolls out of view because its direct sidebar root does not fill the grid row.
-- Playbook: [sidebar-sticky-containing-block](./runtime-playbook.md#sidebar-sticky-containing-block)
-
 ## Browser Verification
 
 ### playwright-chromium-mac-sandbox

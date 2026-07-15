@@ -76,7 +76,7 @@ src/features/music-player/
 
 首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块，每组 6 篇；分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro 输出 SSG 快照，带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果；查询参数、history、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
-首页、分类页与文章详情页使用 `container-content` 布局策略，不再根据 viewport 猜测主内容剩余宽度。Banner 始终铺满 viewport，Navbar、Main Shell 与三列 Main Grid 使用统一的 `1352px` 外部最大宽度；Shell 通过收缩自身外宽保留响应式安全 margin，内部不再追加左右 padding。Page Shell 通过四个稳定状态退让：`1200px` 以上为三列 Feed + `248px–272px` Sidebar；`880px–1199px` 为双列 Feed + 同一 Sidebar；`608px–879px` 隐藏 Sidebar 并把其 Widget 放到 Main 前方，Feed 维持双列；更窄时 Feed 退为单列。双列与无 Sidebar Main Grid 最大宽度分别为 `992px` 和 `704px`，双列与三列 Card 使用约 `296px–344px` 的稳定宽度区间，单列最大 `400px`。Sidebar 显示端点与双列 Feed 最小预算绑定，任何带右侧 Sidebar 的状态都至少保留两列文章，且 Supporting Row 与 Desktop Sidebar 必须互斥。首页、分类页和文章详情页都为前置 Supporting Row 提供与 Sidebar 对应的 Widget；Page Layout Policy 决定 Supporting Row 使用单列填充、固定双列或自动 Grid，Widget 自身再根据 Slot 宽度决定内部排列。进入 Mobile 后继续使用各页面已有的 Mobile placement。旧 viewport Grid 已隔离到 `page-grid-legacy.css`，不得重新覆盖 `container-content` 状态。
+首页、分类页与文章详情页使用 `container-content` 布局策略。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用统一的 `1352px` 外部最大宽度。首页显式提供一份 Profile support 内容：`1200px` 以上为三列 Feed + `248px–272px` support column，`880px–1199px` 为双列 Feed + support column，低于 `880px` 时同一个 Profile DOM 移到 Main 前方；Feed 在 `608px` 以下退为单列。分类页与文章详情页不提供 support slot，内容区在 `1200px` 以下最大 `704px`，达到 `1200px` 后最大 `1064px`；文章正文内部仍使用阅读宽度。站点统计由 `src/services/footer.ts` 生成 View Model，并由 `src/components/footer` 在 Footer 中渲染一次。归档页在主内容流中拥有 Calendar、Categories 与 Tags。`PanelCard.astro` 只负责通用卡片 Surface，不负责注册、解析或放置业务组件。旧 viewport Grid 已隔离到 `page-grid-legacy.css`，不得重新覆盖 `container-content` 状态。
 
 `container-content` 页面会停用旧 `pageScaling` 根字号缩放，避免在 1280px 附近同时存在 px Shell 预算和 rem 全局缩放。文章 Sidebar TOC 也从 `--width-shell-wide` 推导外侧 Rail；只有 viewport 能容纳完整 Shell 与 TOC 时才显示，否则使用已有的窄屏 TOC 入口。
 
@@ -92,7 +92,7 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 
 `src/components/misc/Markdown.astro` 是普通文章与加密文章共用的唯一内容样式入口，统一加载 Markdown、扩展内容和 Expressive Code 样式；加密组件只负责保护与解密状态。代码复制交互位于 `src/features/post-content/post-content-client.ts`，不再混入展示容器。
 
-路由切换动画由 `#swup-container` 的 `.transition-swup-layout` 单点负责。Navbar、Widget 卡片可以保留各自有意义的入场效果，文章列表项保留序列动画；文章详情内部区块不再叠加通用入场动画，避免嵌套位移和重复延迟。
+路由切换动画由 `#swup-container` 的 `.transition-swup-layout` 单点负责。Navbar 与页面模块可以保留各自有意义的入场效果，文章列表项保留序列动画；文章详情内部区块不再叠加通用入场动画，避免嵌套位移和重复延迟。
 
 ## 内容管线
 
@@ -128,9 +128,8 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 
 - `siteConfig`：站点信息、语言、特色页面、横幅、主题、字体、文章列表行为。
 - `navbarConfig`：顶部导航。
-- `profileConfig`：个人资料组件。
-- `pageLayoutPolicies`：页面 Shell Strategy、Supporting Region 排列，以及允许的 Desktop Page Layout Preference。
-- `widgetPlacementPresets`：各端点、各区域中显式渲染的 Widget；端点之间不继承、不迁移。
+- `profileConfig`：首页作者资料模块内容。
+- `pageLayoutPolicies`：页面 Shell Strategy 与允许的 Desktop Page Layout Preference；当前 policy 仅允许 `content-right`。
 - `commentConfig`：评论系统。
 
 配置结构变化需要同步更新 [配置说明](./configuration.md)。
@@ -139,8 +138,8 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 
 - 新增文章字段：先改 `src/content.config.ts`，再改 `src/services/core` 的派生逻辑。
 - 新增非文章数据：优先放到 `src/data`。
-- 新增 Widget：放入 `src/components/widget`，在 `src/services/widget/registry.ts` 注册，并在 `src/services/widget/presets.ts` 中按端点和区域显式配置。
-- 网站级通知不属于 Widget。`src/config/site-notice.ts` 拥有配置，`src/services/site-notice.ts` 生成 View Model，`src/components/site-notice` 拥有呈现与关闭状态交互，并通过独立的 `#site-notice-container` 在主内容 Shell 中更新。通知不得放进带 `transform` 的 `#swup-container`，否则固定定位会在过渡期间改用内容容器作为 containing block。Desktop/Tablet 通知使用贴近 viewport 右上角的单行状态卡，层级低于 Navbar 与交互浮层；Mobile 则限制在页面安全边距内并允许两行正文。通知 viewport 高度按断点固定，轮播不得在客户端按单条内容重新测量高度，因此通知切换不会改变文档 `scrollHeight` 或滚动条比例。
+- 新增页面模块：放入所属领域目录，通过路由或 layout 显式组合；只有被多个无关功能复用的视觉外壳才提升为 `src/components/ui` 组件。不要恢复通用 placement registry。
+- 网站级通知由 `src/config/site-notice.ts` 配置，`src/services/site-notice.ts` 生成 View Model，`src/components/site-notice` 拥有呈现与关闭状态交互，并通过独立的 `#site-notice-container` 在主内容 Shell 中更新。通知不得放进带 `transform` 的 `#swup-container`，否则固定定位会在过渡期间改用内容容器作为 containing block。Desktop/Tablet 通知使用贴近 viewport 右上角的单行状态卡，层级低于 Navbar 与交互浮层；Mobile 则限制在页面安全边距内并允许两行正文。通知 viewport 高度按断点固定，轮播不得在客户端按单条内容重新测量高度，因此通知切换不会改变文档 `scrollHeight` 或滚动条比例。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。
 
