@@ -21,6 +21,7 @@ interface Props {
 	pageWidth: string;
 	pageTitle: string;
 	setOGTypeArticle?: boolean;
+	allowPageScaling: boolean;
 }
 
 const {
@@ -35,6 +36,7 @@ const {
 	pageWidth,
 	pageTitle,
 	setOGTypeArticle,
+	allowPageScaling,
 } = Astro.props;
 ---
 
@@ -150,6 +152,7 @@ const {
 		configHue,
 		pageWidth,
 		pageScaling: siteConfig.pageScaling,
+		allowPageScaling,
 	}}
 >
 	// Load the theme from local storage
@@ -192,10 +195,25 @@ const {
 		`${offset}px`,
 	);
 
-	// 自动缩放逻辑 (Moved from MainGridLayout to here for earlier execution)
-	(function () {
-		if (pageScaling && pageScaling.enable) {
-			function adjustPageScale() {
+		// 自动缩放逻辑 (Moved from MainGridLayout to here for earlier execution)
+		(function () {
+			const usesContainerContent = () =>
+				document.querySelector(
+					'.main-grid-shell[data-responsive-strategy="container-content"]',
+				) !== null;
+
+			if (!allowPageScaling) {
+				document.documentElement.style.fontSize = "";
+				return;
+			}
+
+			if (allowPageScaling && pageScaling && pageScaling.enable) {
+				function adjustPageScale() {
+					if (usesContainerContent()) {
+						document.documentElement.style.fontSize = "";
+						return;
+					}
+
 				const isTouch =
 					(window.matchMedia &&
 						(window.matchMedia("(pointer:coarse)").matches ||

@@ -76,7 +76,9 @@ src/features/music-player/
 
 首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块，每组 6 篇；分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro 输出 SSG 快照，带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果；查询参数、history、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
-首页、分类页与文章详情页使用 `container-content` 布局策略，不再根据 viewport 猜测主内容剩余宽度。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用 `1480px` 最大宽度。Page Shell 通过四个稳定状态退让：`1200px` 以上为三列 Feed + `248px–272px` Sidebar；`880px–1199px` 为双列 Feed + 同一 Sidebar；`608px–879px` 隐藏 Sidebar 并把其 Widget 放到 Main 前方，Feed 维持双列；更窄时 Feed 退为单列。Main Grid 最大宽度分别为 `1400px`、`1024px` 和 `736px`，Card 使用约 `296px–360px` 的稳定宽度区间。Sidebar 显示端点与双列 Feed 最小预算绑定，任何带右侧 Sidebar 的状态都至少保留两列文章。首页、分类页和文章详情页都为前置 Supporting Row 提供与 Sidebar 对应的 Widget；进入 Mobile 后继续使用各页面已有的 Mobile placement。
+首页、分类页与文章详情页使用 `container-content` 布局策略，不再根据 viewport 猜测主内容剩余宽度。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用 `1400px` 最大宽度。Page Shell 通过四个稳定状态退让：`1200px` 以上为三列 Feed + `248px–272px` Sidebar；`880px–1199px` 为双列 Feed + 同一 Sidebar；`608px–879px` 隐藏 Sidebar 并把其 Widget 放到 Main 前方，Feed 维持双列；更窄时 Feed 退为单列。Main Grid 最大宽度分别为 `1352px`、`992px` 和 `704px`，双列与三列 Card 使用约 `296px–344px` 的稳定宽度区间，单列最大 `400px`。Sidebar 显示端点与双列 Feed 最小预算绑定，任何带右侧 Sidebar 的状态都至少保留两列文章，且 Supporting Row 与 Desktop Sidebar 必须互斥。首页、分类页和文章详情页都为前置 Supporting Row 提供与 Sidebar 对应的 Widget；进入 Mobile 后继续使用各页面已有的 Mobile placement。旧 viewport Grid 已隔离到 `page-grid-legacy.css`，不得重新覆盖 `container-content` 状态。
+
+`container-content` 页面会停用旧 `pageScaling` 根字号缩放，避免在 1280px 附近同时存在 px Shell 预算和 rem 全局缩放。文章 Sidebar TOC 也从 `--width-shell-wide` 推导外侧 Rail；只有 viewport 能容纳完整 Shell 与 TOC 时才显示，否则使用已有的窄屏 TOC 入口。
 
 分类页与文章详情页在 Banner 与 Fullscreen 模式下保留横幅几何，但 Navbar 行为与首页解耦：只有首页使用 `banner-aware` 的透明度/滚动状态，分类页与文章详情页使用始终可见的 `fixed-visible` 状态。这两种模式的普通导航以及浏览器前进/后退都直接定位实际的 `.page-main-content` 区域，以其文档坐标减去 CSS `scroll-margin` clearance 得出统一位置，不再维护额外的零高度锚点；Overlay、None 和 Hash 导航不执行该定位。页面身份取自新容器的 interaction policy，不依赖内容替换阶段的瞬时 URL。
 

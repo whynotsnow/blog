@@ -20,6 +20,7 @@ interface Props {
 
 const { headings, widgets, viewModel, siteNotice } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
+const usesContainerContent = viewModel.pageLayout.responsiveStrategy === "container-content";
 ---
 
 	<div
@@ -27,7 +28,10 @@ const { transparentClass } = viewModel.mainPanel;
 	>
 		<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
 		<div
-			class="main-grid-shell relative max-w-(--page-width) mx-auto pointer-events-auto"
+			class:list={[
+				"main-grid-shell relative mx-auto pointer-events-auto",
+				{ "max-w-(--page-width)": !usesContainerContent },
+			]}
 			data-responsive-strategy={viewModel.pageLayout.responsiveStrategy}
 		>
 			<div id="site-notice-container">
@@ -41,7 +45,10 @@ const { transparentClass } = viewModel.mainPanel;
 			>
 			<div
 				id="main-grid"
-			class="page-layout-grid transition duration-700 w-full left-0 right-0 grid grid-rows-none mx-auto gap-4 px-2 md:px-4"
+				class:list={[
+					"page-layout-grid transition duration-700 w-full left-0 right-0 grid grid-rows-none mx-auto",
+					{ "gap-4 px-2 md:px-4": !usesContainerContent },
+				]}
 			data-base-desktop-layout={viewModel.pageLayout.desktop.base}
 			data-allowed-desktop-layouts={viewModel.pageLayout.allowedDesktopLayouts}
 			data-effective-desktop-layout={viewModel.pageLayout.desktop.base}

@@ -480,7 +480,7 @@ test("responsive width budgets preserve Card and Sidebar stability", async ({
 		.locator(".desktop-sidebar-region")
 		.evaluate((node) => node.getBoundingClientRect().width);
 	expect(compressedLargeCardWidth).toBeGreaterThanOrEqual(295);
-	expect(compressedLargeCardWidth).toBeLessThanOrEqual(362);
+	expect(compressedLargeCardWidth).toBeLessThanOrEqual(346);
 	expect(
 		Math.abs(compressedLargeCardWidth - mediumCardWidth) / mediumCardWidth,
 	).toBeLessThan(0.12);
@@ -534,11 +534,11 @@ test("responsive width budgets preserve Card and Sidebar stability", async ({
 		),
 	).toBe(2);
 	expect(maximumCardWidth).toBeGreaterThan(compressedLargeCardWidth);
-	expect(maximumCardWidth).toBeLessThanOrEqual(362);
+	expect(maximumCardWidth).toBeLessThanOrEqual(346);
 	expect(maximumSidebarWidth).toBeCloseTo(272, 0);
-	expect(shellGeometry.shellWidth).toBeLessThanOrEqual(1480);
+	expect(shellGeometry.shellWidth).toBeLessThanOrEqual(1400);
 	expect(shellGeometry.bannerWidth).toBeCloseTo(1920, 0);
-	expect(shellGeometry.gridWidth).toBeLessThanOrEqual(1400 + 1);
+	expect(shellGeometry.gridWidth).toBeLessThanOrEqual(1352 + 1);
 	expect(
 		Math.abs(shellGeometry.navbarWidth - shellGeometry.shellContentWidth),
 	).toBeLessThan(1);
@@ -601,6 +601,62 @@ test("container-content pages share the same Wide shell contract", async ({
 	}
 });
 
+test("container-content pages do not inherit legacy root scaling", async ({
+	page,
+}) => {
+	for (const width of [1280, 1281, 1920]) {
+		await page.setViewportSize({ width, height: 900 });
+		await page.goto("/");
+		expect(
+			await page.evaluate(() =>
+				Number.parseFloat(
+					getComputedStyle(document.documentElement).fontSize,
+				),
+			),
+		).toBe(16);
+	}
+});
+
+test("category filter and post TOC follow their owning width budgets", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 375, height: 812 });
+	await page.goto("/category/tech/");
+	const mobileFilter = page.locator(".category-filter__mobile");
+	const filterOptions = page.locator(".category-filter__options");
+	await expect(mobileFilter).toBeVisible();
+	await expect(filterOptions).toBeHidden();
+	await mobileFilter.locator("summary").click();
+	await expect(filterOptions).toBeVisible();
+
+	await page.setViewportSize({ width: 900, height: 900 });
+	await expect(mobileFilter).toBeHidden();
+	await expect(filterOptions).toBeVisible();
+
+	await page.setViewportSize({ width: 1819, height: 900 });
+	await page.goto("/posts/markdown-tutorial/");
+	const tocRegion = page.locator(".sidebar-toc-region--container");
+	await expect(tocRegion).toHaveCSS("display", "none");
+
+	await page.setViewportSize({ width: 1820, height: 900 });
+	await expect(tocRegion).toHaveCSS("display", "block");
+	const tocGeometry = await page.evaluate(() => {
+		const shell = document.querySelector<HTMLElement>(".main-grid-shell")!;
+		const rail = document.querySelector<HTMLElement>(
+			".sidebar-toc-region__rail",
+		)!;
+		const shellRect = shell.getBoundingClientRect();
+		const railRect = rail.getBoundingClientRect();
+		return {
+			shellRight: shellRect.right,
+			railLeft: railRect.left,
+			railRight: railRect.right,
+		};
+	});
+	expect(tocGeometry.railLeft).toBeGreaterThan(tocGeometry.shellRight);
+	expect(tocGeometry.railRight).toBeLessThanOrEqual(1820 + 1);
+});
+
 test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	await page.addInitScript(() => {
 		localStorage.setItem("wallpaperMode", "banner");
@@ -646,6 +702,7 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	await expect(
 		page.locator('[data-widget-id="home-desktop-profile"]'),
 	).toBeVisible();
+	await expect(page.locator(".tablet-sidebar-region")).toBeHidden();
 	expect(
 		await mainGrid.evaluate(
 			(node) =>
@@ -824,6 +881,9 @@ test("container-content widget placements follow page intent", async ({
 	await expect(
 		page.locator('[data-widget-id="category-desktop-profile"]'),
 	).toBeVisible();
+	await expect(
+		page.locator('[data-widget-id="category-tablet-profile"]'),
+	).toBeHidden();
 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.goto("/posts/markdown-tutorial/");
@@ -842,6 +902,9 @@ test("container-content widget placements follow page intent", async ({
 	await expect(
 		page.locator('[data-widget-id="post-desktop-profile"]'),
 	).toBeVisible();
+	await expect(
+		page.locator('[data-widget-id="post-tablet-profile"]'),
+	).toBeHidden();
 });
 
 test("banner home text stays centered across normal and fullscreen modes", async ({

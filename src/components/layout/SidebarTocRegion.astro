@@ -9,17 +9,32 @@ interface Props {
 }
 
 const { headings, viewModel } = Astro.props;
+const usesContainerContent = viewModel.pageLayout.responsiveStrategy === "container-content";
 ---
 
 {
 	viewModel.toc.enable && viewModel.toc.isSidebar && (
-		<div class="absolute w-full z-0 hidden 2xl:block">
-			<div class="relative max-w-(--page-width) mx-auto">
+		<div
+			class:list={[
+				"sidebar-toc-region absolute w-full z-0",
+				usesContainerContent
+					? "sidebar-toc-region--container"
+					: "hidden 2xl:block",
+			]}
+		>
+			<div
+				class:list={[
+					"relative",
+					{ "max-w-(--page-width) mx-auto": !usesContainerContent },
+				]}
+			>
 				<div
 					id="toc-wrapper"
 					class:list={[
-						"hidden lg:block transition absolute top-0 w-(--toc-width) items-center",
-						"-right-(--toc-width)",
+						"transition absolute top-0 items-center",
+						usesContainerContent
+							? "sidebar-toc-region__rail"
+							: "hidden lg:block w-(--toc-width) -right-(--toc-width)",
 						{
 							"toc-hide": viewModel.toc.hideSidebarOnLoad,
 						},
@@ -27,7 +42,12 @@ const { headings, viewModel } = Astro.props;
 				>
 					<div
 						id="toc-inner-wrapper"
-						class="fixed top-14 w-(--toc-width) max-h-[calc(100vh-10rem)] overflow-hidden"
+						class:list={[
+							"fixed top-14 max-h-[calc(100vh-10rem)] overflow-hidden",
+							usesContainerContent
+								? "sidebar-toc-region__inner"
+								: "w-(--toc-width)",
+						]}
 					>
 						<div id="toc-container" class="w-full transition-swup-fade">
 							<TOC headings={headings} />

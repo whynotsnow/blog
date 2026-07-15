@@ -2,6 +2,27 @@
   --sidebar-sticky-offset: 1rem;
 }
 
+.sidebar-toc-region--container {
+  --toc-rail-width: min(18rem, calc((100vw - var(--width-shell-wide)) / 2 - var(--space-grid-gap)));
+
+  display: none;
+}
+
+@media (min-width: 1820px) {
+  .sidebar-toc-region--container {
+    display: block;
+  }
+
+  .sidebar-toc-region--container .sidebar-toc-region__rail {
+    left: calc(50% + var(--width-shell-wide) / 2 + var(--space-grid-gap) - var(--space-shell-wide-x));
+    width: var(--toc-rail-width);
+  }
+
+  .sidebar-toc-region--container .sidebar-toc-region__inner {
+    width: var(--toc-rail-width);
+  }
+}
+
 @media (min-width: 768px) {
   .widget-region__sticky {
     position: sticky;

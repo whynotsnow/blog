@@ -13,7 +13,7 @@ const { categories, categorySlug, currentTag, resultCount } = Astro.props;
 const activeCategory = categories.find((category) => category.slug === categorySlug);
 ---
 
-<section class="category-filter ds-surface-card p-4 md:p-5" aria-labelledby="category-filter-title">
+<section class="category-filter ds-surface-card" aria-labelledby="category-filter-title">
 	<div class="ds-cluster justify-between" style="--cluster-space: var(--space-cluster);">
 		<div>
 			<h1 id="category-filter-title" class="text-xl font-bold text-(--text-primary)">
@@ -23,7 +23,7 @@ const activeCategory = categories.find((category) => category.slug === categoryS
 				{currentTag ? `# ${currentTag} · ` : ""}{resultCount} 篇文章
 			</p>
 		</div>
-		<details class="category-filter__mobile md:hidden">
+		<details class="category-filter__mobile">
 			<summary class="cursor-pointer rounded-(--radius-md) border border-(--border-default) px-3 py-2 text-sm font-semibold text-(--text-primary)">筛选</summary>
 		</details>
 	</div>
@@ -67,9 +67,13 @@ const activeCategory = categories.find((category) => category.slug === categoryS
 	</div>
 </section>
 
-<style>
-	@media (max-width: 767px) {
-		.category-filter__options { display: none; }
-		.category-filter:has(details[open]) .category-filter__options { display: block; }
-	}
-</style>
+	<style>
+		.category-filter { padding: clamp(1rem, 2cqi, 1.25rem); }
+		.category-filter__mobile { display: none; }
+
+		@container post-feed (max-width: 607px) {
+			.category-filter__mobile { display: block; }
+			.category-filter__options { display: none; }
+			.category-filter:has(details[open]) .category-filter__options { display: block; }
+		}
+	</style>

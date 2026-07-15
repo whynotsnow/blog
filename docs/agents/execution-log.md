@@ -121,6 +121,15 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Kept Banner viewport-wide while reducing Navbar and Main Shell to `1480px`.
 - Rebased the state machine on smaller Cards and gaps: `1400px` for three Cards + Sidebar, `1024px` for two Cards + Sidebar, and `736px` for the no-Sidebar composition.
 - Bound Sidebar visibility to the same `608px` minimum used by the two-column Feed, eliminating the one-Card + Sidebar boundary state.
+
+### Removed responsive compatibility overlap from content pages
+
+- Fixed a selector-specificity leak that left Tablet Supporting Row Widgets visible below the Desktop Sidebar after the Shell crossed `880px`.
+- Aligned the Supporting Row transition with the Feed's `608px` minimum and added negative visibility assertions for inactive Widget regions.
+- Disabled legacy root-font `pageScaling` on `container-content` pages, including cleanup when navigating from a legacy page, so the 1280/1281 viewport boundary cannot resize rem-based UI independently from px Shell budgets.
+- Isolated viewport Grid rules in `page-grid-legacy.css`, scoped them away from `container-content`, and removed unused mobile layout selectors, a redundant Feed query, a no-op post-detail media block, and the unreferenced legacy `PostPage.astro`.
+- Rebased the post Sidebar TOC rail on `--width-shell-wide` and moved category/post-detail internal responsive behavior to their owning containers.
+- Tightened the legacy page width from `90rem` to `86rem`, reduced the Container Shell to `1400px`, and rebased multi-column Feed maxima so article Cards top out near `344px` without changing the established state boundaries.
 - Moved the three-column transition to a `1200px` Shell so surplus width is reused earlier instead of accumulating as large centered margin.
 
 ### Split home and category listing compositions

@@ -140,7 +140,7 @@ body.is-home .home-post-card__summary {
   transform: scale(0.98);
 }
 
-@media (max-width: 767px) {
+@container post-feed (max-width: 607px) {
   .post-list {
     min-height: auto;
     padding: 0;
@@ -173,12 +173,6 @@ body.is-home .home-post-card__summary {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .listing-page .post-list.grid-mode {
-    max-width: var(--width-feed-three-max);
-  }
-}
-
-@container post-feed (min-width: 1112px) {
   .listing-page .post-list.grid-mode {
     max-width: var(--width-feed-three-max);
   }

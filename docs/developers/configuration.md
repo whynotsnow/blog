@@ -86,11 +86,12 @@ Sticky 区域由 `WidgetRegion.astro` 渲染，其根容器必须保持 `h-full`
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。
-- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 最大 `1480px`；Shell 在 `1200px` 以上使用三列 Feed + Sidebar，在 `880px–1199px` 使用双列 Feed + Sidebar，在 `608px–879px` 把 Sidebar Widget 移到 Main 前方并保持双列，更窄时退为单列。三列、双列和单列 Feed 的最大宽度分别为 `1112px`、`736px`、`440px`，Sidebar 在 `248px–272px` 内变化。断点针对实际容器，不直接对应 viewport 宽度。
+- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 最大 `1400px`；Shell 在 `1200px` 以上使用三列 Feed + Sidebar，在 `880px–1199px` 使用双列 Feed + Sidebar，在 `608px–879px` 把 Sidebar Widget 移到 Main 前方并保持双列，更窄时退为单列。三列、双列和单列 Feed 的最大宽度分别为 `1064px`、`704px`、`400px`，Sidebar 在 `248px–272px` 内变化。断点针对实际容器，不直接对应 viewport 宽度。
 - 首页与分类页分别使用 `home`、`category` Widget placement。首页和分类页在前置 Supporting Row 与右侧 Sidebar 都提供 Profile + Site Stats；文章页在前置 Supporting Row 与 Mobile 区显示 Profile，在右侧 Sidebar 显示 Sticky Profile。具体显示区域由 `page-shell` 的压缩预算状态决定。
+- `siteConfig.pageScaling` 仅保留给尚未迁移的 `viewport-legacy` 页面；首页、分类页和文章详情页会主动清除根字号缩放，不能依赖该配置改变 Card、Sidebar 或 Typography 尺寸。
 - `desktopLayoutPreference`：保存用户的 Desktop 页面布局偏好。页面 policy 拥有最终约束权；文章详情页只允许 `content-right`，不会清除用户在其他页面使用的 `three-column` 偏好。
 - `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。`fullscreen` 表示全屏高度的 banner 模式；`overlay` 才会显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果。
-- 共享布局断点固定为：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。Tailwind 同时显式使用 `sm: 640px`、`md: 768px`、`lg: 1280px`、`xl: 1920px`。
+- Banner、Navbar 与尚未迁移页面仍使用 viewport 断点：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。首页、分类页和文章详情页的内容布局不使用这些断点，而以 `page-shell` 与 `post-feed` Container Query 为准。
 - 普通 Banner 使用 `--banner-block-size` 同步控制横幅高度与正文起始位置；低高度横屏约为 `60vh` 以优先正文。首页 Fullscreen Banner 始终为 `100dvh`，非首页移动端隐藏 Banner。
 - `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。当前入口只保留 UI 状态预览，不会写入运行时配置。
 - `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 waves。
