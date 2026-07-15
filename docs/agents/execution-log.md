@@ -191,3 +191,14 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Added a versioned impact map with conservative full-regression fallback for unknown runtime paths.
 - Made pre-commit select staged static gates and made pull request CI select Quality, Fast, Browser, and Build jobs while retaining full main regression.
 - Preserved an explicit two-worker Playwright budget after learning that spec-file splits otherwise increase effective concurrency.
+
+## 2026-07-16
+
+### Refined Banner and Navbar responsive interaction
+
+- Kept the existing Page Shell and entry-scroll policies while moving carousel runtime ownership beside the Banner component.
+- Added restrained Ken Burns and Crossfade motion with hover, touch, visibility, viewport-change, and reduced-motion handling.
+- Replaced duplicate Navbar appearance styles with one Semantic-token-driven state sheet and responsive blur budgets.
+- Added stable mobile viewport sizing, low-height landscape wave bounds, Safe Area padding, and a text-owned Banner contrast gradient.
+- Reduced initial carousel requests by keeping later frames inert until needed and using one responsive `picture` per materialized slide.
+- Learned that a non-interactive visual overlay must not intercept pointer events when the underlying Banner owns hover interaction; the Shell E2E contract now covers that boundary.
