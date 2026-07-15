@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
+	import { fade, fly } from "svelte/transition";
 
 	import { musicPlayerConfig } from "@/config";
 	import Key from "@i18n/i18nKey";
@@ -52,6 +53,12 @@
 		pause: i18n(Key.musicPlayerPause),
 		play: i18n(Key.musicPlayerPlay),
 		playlist: i18n(Key.musicPlayerPlaylist),
+		previous: i18n(Key.musicPlayerPrevious),
+		next: i18n(Key.musicPlayerNext),
+		repeat: i18n(Key.musicPlayerRepeat),
+		repeatOne: i18n(Key.musicPlayerRepeatOne),
+		sequential: i18n(Key.musicPlayerSequential),
+		shuffle: i18n(Key.musicPlayerShuffle),
 		cover: i18n(Key.musicPlayerCover),
 		progress: i18n(Key.musicPlayerProgress),
 		volume: i18n(Key.musicPlayerVolume),
@@ -71,13 +78,14 @@
 	let isPlaying = false;
 	let hasStarted = false;
 	let isExpanded = false;
-	let isHidden = false;
+	let isHidden = true;
 	let showPlaylist = false;
 	let currentTime = 0;
 	let duration = 0;
 	let volume = 0.7;
 	let isMuted = false;
 	let isLoading = false;
+	let isPlaylistLoading = mode === "meting";
 	let isShuffled = false;
 	let isRepeating: RepeatMode = 0;
 	let errorMessage = "";
@@ -95,12 +103,24 @@
 	let volumeBarRect: DOMRect | null = null;
 	let rafId: number | null = null;
 	let layoutRafId: number | null = null;
+	let playerRoot: HTMLElement;
+	let layoutResizeObserver: ResizeObserver | null = null;
+	let prefersReducedMotion = false;
+	let motionMediaQuery: MediaQueryList | null = null;
+	let syncMotionPreference: (() => void) | null = null;
 
 	const interactionEvents = ["click", "keydown", "touchstart"];
+	$: showHiddenState = isHidden || (!isExpanded && !hasStarted);
+	$: stateEnterDuration = prefersReducedMotion ? 0 : 220;
+	$: stateExitDuration = prefersReducedMotion ? 0 : 120;
 
 	async function fetchMetingPlaylist() {
-		if (!metingApi || !metingId) return;
+		if (!metingApi || !metingId) {
+			isPlaylistLoading = false;
+			return;
+		}
 
+		isPlaylistLoading = true;
 		isLoading = true;
 		publishUiState();
 		const apiUrl = buildMetingApiUrl({
@@ -119,10 +139,12 @@
 			if (playlist.length > 0) {
 				loadSong(playlist[0]);
 			}
+			isPlaylistLoading = false;
 			isLoading = false;
 			publishUiState();
 		} catch {
 			showErrorMessage(i18n(Key.musicPlayerErrorPlaylist));
+			isPlaylistLoading = false;
 			isLoading = false;
 			publishUiState();
 		}
@@ -137,22 +159,35 @@
 		}
 	}
 
-	function toggleExpanded() {
-		isExpanded = !isExpanded;
-		if (isExpanded) {
-			showPlaylist = false;
-			isHidden = false;
-		}
+	function expandPlayer() {
+		isExpanded = true;
+		isHidden = false;
+		showPlaylist = false;
 		publishLayoutState();
 		publishUiState();
 	}
 
+	function collapseToDefault() {
+		isExpanded = false;
+		isHidden = !hasStarted;
+		showPlaylist = false;
+		publishLayoutState();
+		publishUiState();
+	}
+
+	function toggleExpanded() {
+		if (isExpanded) collapseToDefault();
+		else expandPlayer();
+	}
+
 	function toggleHidden() {
-		isHidden = !isHidden;
-		if (isHidden) {
-			isExpanded = false;
-			showPlaylist = false;
+		if (showHiddenState) {
+			expandPlayer();
+			return;
 		}
+		isHidden = true;
+		isExpanded = false;
+		showPlaylist = false;
 		publishLayoutState();
 		publishUiState();
 	}
@@ -162,39 +197,40 @@
 		publishLayoutState();
 	}
 
+	function dispatchLayoutState() {
+		if (typeof window === "undefined") return;
+		const panels = playerRoot
+			? Array.from(
+					playerRoot.querySelectorAll<HTMLElement>(
+						".expanded-player, .playlist-panel",
+					),
+				).filter(
+					(panel) => getComputedStyle(panel).pointerEvents !== "none",
+				)
+			: [];
+		const top = panels.length
+			? Math.min(
+					...panels.map((panel) => panel.getBoundingClientRect().top),
+				)
+			: window.innerHeight;
+		window.dispatchEvent(
+			new CustomEvent("music-player-layout-change", {
+				detail: {
+					expanded: isExpanded,
+					occupiedHeight: isExpanded
+						? Math.max(0, window.innerHeight - top)
+						: 0,
+				},
+			}),
+		);
+	}
+
 	function publishLayoutState() {
 		if (typeof window === "undefined") return;
 		if (layoutRafId) cancelAnimationFrame(layoutRafId);
 		layoutRafId = requestAnimationFrame(() => {
 			layoutRafId = null;
-			const player = document.querySelector<HTMLElement>(".music-player");
-			const panels = player
-				? Array.from(
-						player.querySelectorAll<HTMLElement>(
-							".expanded-player, .playlist-panel",
-						),
-					).filter(
-						(panel) =>
-							getComputedStyle(panel).pointerEvents !== "none",
-					)
-				: [];
-			const top = panels.length
-				? Math.min(
-						...panels.map(
-							(panel) => panel.getBoundingClientRect().top,
-						),
-					)
-				: window.innerHeight;
-			window.dispatchEvent(
-				new CustomEvent("music-player-layout-change", {
-					detail: {
-						expanded: isExpanded,
-						occupiedHeight: isExpanded
-							? Math.max(0, window.innerHeight - top)
-							: 0,
-					},
-				}),
-			);
+			dispatchLayoutState();
 		});
 	}
 
@@ -215,13 +251,20 @@
 		const { type } =
 			(event as CustomEvent<MusicPlayerCommand>).detail ?? {};
 		if (type !== "toggle-panel") return;
-		isExpanded = !isExpanded;
-		if (isExpanded) {
-			isHidden = false;
-			showPlaylist = false;
+		if (isExpanded) collapseToDefault();
+		else expandPlayer();
+	}
+
+	function handleOutsidePointerDown(event: PointerEvent) {
+		if (!isExpanded || !(event.target instanceof Node)) return;
+		const floatingTools = document.getElementById("floating-tools");
+		if (
+			playerRoot?.contains(event.target) ||
+			floatingTools?.contains(event.target)
+		) {
+			return;
 		}
-		publishLayoutState();
-		publishUiState();
+		collapseToDefault();
 	}
 
 	function toggleShuffle() {
@@ -433,11 +476,22 @@
 
 	onMount(() => {
 		volume = loadStoredVolume();
+		motionMediaQuery = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		);
+		syncMotionPreference = () => {
+			prefersReducedMotion = motionMediaQuery?.matches ?? false;
+		};
+		syncMotionPreference();
+		motionMediaQuery.addEventListener("change", syncMotionPreference);
+		layoutResizeObserver = new ResizeObserver(dispatchLayoutState);
+		if (playerRoot) layoutResizeObserver.observe(playerRoot);
 		window.addEventListener("resize", publishLayoutState);
 		window.addEventListener(
 			MUSIC_PLAYER_COMMAND_EVENT,
 			handlePlayerCommand,
 		);
+		document.addEventListener("pointerdown", handleOutsidePointerDown);
 		publishLayoutState();
 		publishUiState();
 		interactionEvents.forEach((event) => {
@@ -474,6 +528,17 @@
 				MUSIC_PLAYER_COMMAND_EVENT,
 				handlePlayerCommand,
 			);
+			document.removeEventListener(
+				"pointerdown",
+				handleOutsidePointerDown,
+			);
+			if (syncMotionPreference) {
+				motionMediaQuery?.removeEventListener(
+					"change",
+					syncMotionPreference,
+				);
+			}
+			layoutResizeObserver?.disconnect();
 			if (layoutRafId) cancelAnimationFrame(layoutRafId);
 		}
 	});
@@ -505,79 +570,104 @@
 	{/if}
 
 	<div
-		class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
+		bind:this={playerRoot}
+		class="music-player z-50 transition-all duration-300 ease-in-out"
 		class:expanded={isExpanded}
 		class:has-started={hasStarted}
-		class:hidden-mode={isHidden}
+		class:hidden-mode={showHiddenState}
 	>
-		{#if hasStarted}
-			<HiddenOrb
-				{isHidden}
-				{isLoading}
-				{isPlaying}
-				{labels}
-				onToggleHidden={toggleHidden}
-			/>
-		{/if}
+		{#if showHiddenState}
+			<div
+				class="music-player__state music-player__state--hidden"
+				in:fly={{ y: 8, duration: stateEnterDuration }}
+				out:fade={{ duration: stateExitDuration }}
+			>
+				<HiddenOrb
+					cover={playlist[0]?.cover ?? ""}
+					isHidden={true}
+					{isLoading}
+					{isPlaylistLoading}
+					{isPlaying}
+					{labels}
+					{getAssetPath}
+					onToggleHidden={toggleHidden}
+				/>
+			</div>
+		{:else if isExpanded}
+			<div
+				class="music-player__state music-player__state--expanded"
+				in:fly={{ y: 10, duration: stateEnterDuration }}
+				out:fade={{ duration: stateExitDuration }}
+			>
+				<div
+					class="music-player__panel-stack"
+					class:music-player__panel-stack--playlist={showPlaylist}
+				>
+					{#if showPlaylist}
+						<PlaylistPanel
+							{playlist}
+							{currentIndex}
+							{isPlaying}
+							{labels}
+							{getAssetPath}
+							onTogglePlaylist={togglePlaylist}
+							onPlaySong={playSong}
+						/>
+					{/if}
 
-		{#if hasStarted}
-			<MiniPlayer
-				{currentSong}
-				{isExpanded}
-				{isHidden}
-				{isLoading}
-				{isPlaying}
-				{labels}
-				{getAssetPath}
-				onTogglePlay={togglePlay}
-				onToggleExpanded={toggleExpanded}
-				onToggleHidden={toggleHidden}
-			/>
-		{/if}
-
-		<ExpandedPlayer
-			{currentSong}
-			{currentTime}
-			{duration}
-			{isExpanded}
-			{isLoading}
-			{isPlaying}
-			{isShuffled}
-			{isRepeating}
-			{isMuted}
-			{isVolumeDragging}
-			playlistLength={playlist.length}
-			{showPlaylist}
-			{volume}
-			bind:progressBar
-			bind:volumeBar
-			{labels}
-			{getAssetPath}
-			{formatTime}
-			onToggleHidden={toggleHidden}
-			onTogglePlaylist={togglePlaylist}
-			onSetProgress={setProgress}
-			onToggleShuffle={toggleShuffle}
-			onPreviousSong={previousSong}
-			onTogglePlay={togglePlay}
-			onNextSong={() => nextSong()}
-			onToggleRepeat={toggleRepeat}
-			onToggleMute={toggleMute}
-			onStartVolumeDrag={startVolumeDrag}
-			onToggleExpanded={toggleExpanded}
-			onProgressKeyboardSeek={setProgressToMiddle}
-		/>
-
-		{#if showPlaylist}
-			<PlaylistPanel
-				{playlist}
-				{currentIndex}
-				{isPlaying}
-				{labels}
-				{getAssetPath}
-				onTogglePlaylist={togglePlaylist}
-				onPlaySong={playSong}
-			/>
+					<ExpandedPlayer
+						{currentSong}
+						{currentTime}
+						{duration}
+						{isExpanded}
+						{isLoading}
+						{isPlaying}
+						{isShuffled}
+						{isRepeating}
+						{isMuted}
+						{isVolumeDragging}
+						playlistLength={playlist.length}
+						{showPlaylist}
+						{volume}
+						bind:progressBar
+						bind:volumeBar
+						{labels}
+						{getAssetPath}
+						{formatTime}
+						onToggleHidden={toggleHidden}
+						onTogglePlaylist={togglePlaylist}
+						onSetProgress={setProgress}
+						onToggleShuffle={toggleShuffle}
+						onPreviousSong={previousSong}
+						onTogglePlay={togglePlay}
+						onNextSong={() => nextSong()}
+						onToggleRepeat={toggleRepeat}
+						onToggleMute={toggleMute}
+						onStartVolumeDrag={startVolumeDrag}
+						onToggleExpanded={toggleExpanded}
+						onProgressKeyboardSeek={setProgressToMiddle}
+					/>
+				</div>
+			</div>
+		{:else if hasStarted}
+			<div
+				class="music-player__state music-player__state--mini"
+				in:fly={{ y: 8, duration: stateEnterDuration }}
+				out:fade={{ duration: stateExitDuration }}
+			>
+				<MiniPlayer
+					{currentSong}
+					isExpanded={false}
+					isHidden={false}
+					{isLoading}
+					{isPlaying}
+					{labels}
+					{getAssetPath}
+					onTogglePlay={togglePlay}
+					onToggleExpanded={toggleExpanded}
+					onToggleHidden={toggleHidden}
+				/>
+			</div>
 		{/if}
 	</div>
 {/if}

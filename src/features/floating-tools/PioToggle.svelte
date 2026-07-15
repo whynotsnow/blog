@@ -58,8 +58,8 @@
 	>
 		<LocalIcon
 			name={visible
-				? "material-symbols:smart-toy-outline-rounded"
-				: "material-symbols:hide-source-rounded"}
+				? "material-symbols:person-rounded"
+				: "material-symbols:person-off-rounded"}
 		/>
 	</button>
 {/if}

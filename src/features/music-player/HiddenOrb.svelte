@@ -2,15 +2,29 @@
 	import Icon from "@iconify/svelte";
 	import type { MusicPlayerLabels } from "./types";
 
+	export let cover = "";
 	export let isHidden = false;
 	export let isLoading = false;
+	export let isPlaylistLoading = false;
 	export let isPlaying = false;
 	export let labels: MusicPlayerLabels;
+	export let getAssetPath: (path: string) => string;
 	export let onToggleHidden: () => void;
+
+	let coverFailed = false;
+	let previousCover = "";
+
+	$: if (cover !== previousCover) {
+		previousCover = cover;
+		coverFailed = false;
+	}
+	$: coverSrc = cover ? getAssetPath(cover) : "";
+	$: hasCover = !isPlaylistLoading && Boolean(coverSrc) && !coverFailed;
 </script>
 
 <div
-	class="orb-player w-12 h-12 bg-(--accent) rounded-full shadow-lg cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
+	class="orb-player w-12 h-12 rounded-full shadow-lg cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
+	class:orb-player--fallback={!hasCover}
 	class:opacity-0={!isHidden}
 	class:scale-0={!isHidden}
 	class:pointer-events-none={!isHidden}
@@ -25,21 +39,33 @@
 	tabindex="0"
 	aria-label={labels.show}
 >
-	{#if isLoading}
-		<Icon icon="eos-icons:loading" class="text-white text-lg" />
-	{:else if isPlaying}
-		<div class="flex space-x-0.5">
-			<div class="w-0.5 h-3 bg-white rounded-full animate-pulse"></div>
-			<div
-				class="w-0.5 h-4 bg-white rounded-full animate-pulse"
-				style="animation-delay: 150ms;"
-			></div>
-			<div
-				class="w-0.5 h-2 bg-white rounded-full animate-pulse"
-				style="animation-delay: 300ms;"
-			></div>
-		</div>
+	{#if hasCover}
+		<img
+			src={coverSrc}
+			alt={labels.cover}
+			class="orb-player__cover"
+			class:spinning={isPlaying && !isLoading}
+			on:error={() => (coverFailed = true)}
+		/>
+		{#if isLoading}
+			<span class="orb-player__status" aria-hidden="true">
+				<Icon icon="eos-icons:loading" />
+			</span>
+		{:else if isPlaying}
+			<span
+				class="orb-player__status orb-player__status--playing"
+				aria-hidden="true"
+			>
+				<span></span><span></span><span></span>
+			</span>
+		{/if}
 	{:else}
-		<Icon icon="material-symbols:music-note" class="text-white text-lg" />
+		<span
+			class="orb-player__fallback-icon"
+			class:orb-player__fallback-icon--loading={isPlaylistLoading}
+			aria-hidden="true"
+		>
+			<Icon icon="material-symbols:music-note-rounded" />
+		</span>
 	{/if}
 </div>

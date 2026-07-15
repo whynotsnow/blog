@@ -12,12 +12,13 @@ import PioToggle from "./PioToggle.svelte";
 import "./floating-tools.css";
 ---
 
-<div
-	id="floating-tools"
-	class="floating-tools"
-	data-open="false"
-	data-music-expanded="false"
->
+<div class="floating-tools-layer">
+	<div
+		id="floating-tools"
+		class="floating-tools"
+		data-open="false"
+		data-music-expanded="false"
+	>
 	<div class="floating-tools__rail" role="toolbar" aria-label={i18n(I18nKey.floatingTools)}>
 		<div class="floating-tools__item floating-tools__item--expandable floating-tools__item--toc">
 			<FloatingTOC />
@@ -59,7 +60,7 @@ import "./floating-tools.css";
 				aria-expanded="false"
 				title={i18n(I18nKey.displaySettings)}
 			>
-				<LocalIcon name="material-symbols:tune-rounded" />
+				<LocalIcon name="material-symbols:display-settings-rounded" />
 			</button>
 		</div>
 
@@ -78,20 +79,21 @@ import "./floating-tools.css";
 				title={i18n(I18nKey.floatingTools)}
 			>
 				<LocalIcon
-					name="material-symbols:construction-rounded"
+					name="material-symbols:widgets-rounded"
 					class="floating-tools__switch-icon"
 				/>
 			</button>
 		</div>
 	</div>
 
-	<SettingsPanel
-		client:only="svelte"
-		className="floating-tools__settings-panel"
-	/>
-</div>
+		<SettingsPanel
+			client:only="svelte"
+			className="floating-tools__settings-panel"
+		/>
+	</div>
 
-{musicPlayerConfig.enable && <MusicPlayer client:idle />}
+	{musicPlayerConfig.enable && <MusicPlayer client:idle />}
+</div>
 
 <script>
 	import {
@@ -226,10 +228,6 @@ import "./floating-tools.css";
 				}>
 			).detail;
 			root.dataset.musicExpanded = String(detail.expanded);
-			root.style.setProperty(
-				"--music-player-occupied-height",
-				`${detail.occupiedHeight}px`,
-			);
 			if (detail.expanded) setFloatingToolsOpen(false);
 		});
 		window.addEventListener(MUSIC_PLAYER_STATE_EVENT, (event) => {
@@ -237,6 +235,7 @@ import "./floating-tools.css";
 			const detail = (event as CustomEvent<MusicPlayerUiState>).detail;
 			root.dataset.musicPlaying = String(detail.isPlaying);
 			root.dataset.musicStarted = String(detail.hasStarted);
+			root.dataset.musicLoading = String(detail.isLoading);
 			musicToggle.dataset.loading = String(detail.isLoading);
 			musicToggle.classList.toggle("is-active", detail.isExpanded);
 			musicToggle.setAttribute(

@@ -47,6 +47,13 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 	await expect(page.locator("#display-setting")).not.toHaveClass(
 		/float-panel-closed/,
 	);
+	const settingsTransitionProperties = await page
+		.locator("#display-setting")
+		.evaluate((element) => getComputedStyle(element).transitionProperty);
+	expect(settingsTransitionProperties).not.toContain("all");
+	expect(settingsTransitionProperties).not.toContain("left");
+	expect(settingsTransitionProperties).not.toContain("right");
+	expect(settingsTransitionProperties).not.toContain("top");
 	const settingsGeometry = await page
 		.locator("#display-setting")
 		.evaluate((element) => {
@@ -89,6 +96,13 @@ test("music starts from floating tools and then keeps its mini player visible", 
 					pic: "/assets/music/cover/xryx.jpg",
 					url: "/assets/music/url/xryx.mp3",
 				},
+				{
+					artist: "Second Artist",
+					id: 2,
+					name: "Second Song",
+					pic: "/assets/music/cover/hitori.jpg",
+					url: "/assets/music/url/hitori.mp3",
+				},
 			],
 		});
 	});
@@ -116,6 +130,27 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	const panel = page.locator("#music-player-panel");
 	await expect(panel).toBeVisible();
 	await expect(panel.locator(".song-title")).toHaveText("Test Song");
+	await page.locator("main").click({ position: { x: 16, y: 16 } });
+	await expect(panel).not.toBeVisible();
+	await expect(page.locator(".orb-player")).toBeVisible();
+	await expect(page.locator(".music-player__state")).toHaveCount(1);
+
+	await page.locator("#floating-tools-switch").click();
+	await musicSwitch.click();
+	await expect(panel).toBeVisible();
+	const playOrderButton = panel.locator("[data-play-order]");
+	await expect(playOrderButton).toHaveAttribute(
+		"data-play-order",
+		"sequential",
+	);
+	await playOrderButton.click();
+	await expect(playOrderButton).toHaveAttribute("data-play-order", "shuffle");
+	await expect(playOrderButton).toHaveAttribute("aria-pressed", "true");
+	await playOrderButton.click();
+	await expect(playOrderButton).toHaveAttribute(
+		"data-play-order",
+		"sequential",
+	);
 	const playButton = panel.getByRole("button", {
 		name: "播放",
 		exact: true,
@@ -124,6 +159,19 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	await playButton.click();
 	await expect(tools).toHaveAttribute("data-music-started", "true");
 	await expect(tools).toHaveAttribute("data-music-playing", "true");
+	await expect(tools).toHaveAttribute("data-music-loading", "false");
+	await expect(musicSwitch.locator(".local-icon")).toHaveCSS(
+		"animation-name",
+		"floating-music-note-beat",
+	);
+	await page.locator("#floating-tools-switch").click();
+	await musicSwitch.click();
+	await expect(panel).not.toBeVisible();
+	await expect(miniPlayer).toBeVisible();
+	await expect(page.locator(".music-player__state")).toHaveCount(1);
+
+	await musicSwitch.click();
+	await expect(panel).toBeVisible();
 
 	await panel.getByTitle("收起播放器").click();
 	await expect(panel).not.toBeVisible();
@@ -131,6 +179,93 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	await miniPlayer.getByRole("button", { name: "暂停" }).click();
 	await expect(tools).toHaveAttribute("data-music-playing", "false");
 	await expect(miniPlayer).toBeVisible();
+	await miniPlayer.getByTitle("隐藏播放器").click();
+	const hiddenOrb = page.locator(".orb-player");
+	await expect(hiddenOrb).not.toHaveClass(/opacity-0/);
+	await expect(hiddenOrb.locator(".orb-player__cover")).toHaveAttribute(
+		"src",
+		"/assets/music/cover/xryx.jpg",
+	);
+});
+
+test("hidden music control moves from playlist loading fallback to the first cover", async ({
+	page,
+}) => {
+	let releasePlaylistRequest = () => {};
+	const playlistRequestGate = new Promise<void>((resolve) => {
+		releasePlaylistRequest = resolve;
+	});
+	await page.route("https://meting.whynotsnow.com/**", async (route) => {
+		await playlistRequestGate;
+		await route.fulfill({
+			contentType: "application/json",
+			json: [
+				{
+					artist: "Loading Artist",
+					id: 1,
+					name: "Loaded Song",
+					pic: "/assets/music/cover/xryx.jpg",
+					url: "/assets/music/url/xryx.mp3",
+				},
+			],
+		});
+	});
+	await gotoPage(page, "/");
+
+	const hiddenOrb = page.locator(".orb-player");
+	const fallback = hiddenOrb.locator(".orb-player__fallback-icon");
+	await expect(hiddenOrb).toBeVisible();
+	await expect(hiddenOrb).toHaveClass(/orb-player--fallback/);
+	await expect(fallback).toHaveClass(/orb-player__fallback-icon--loading/);
+	await expect(fallback).toHaveCSS(
+		"animation-name",
+		"fallback-music-loading",
+	);
+
+	releasePlaylistRequest();
+	await expect(hiddenOrb.locator(".orb-player__cover")).toHaveAttribute(
+		"src",
+		"/assets/music/cover/xryx.jpg",
+	);
+	await expect(fallback).toHaveCount(0);
+});
+
+test("hidden music control falls back to the themed icon when cover loading fails", async ({
+	page,
+}) => {
+	await page.route("https://meting.whynotsnow.com/**", async (route) => {
+		await route.fulfill({
+			contentType: "application/json",
+			json: [
+				{
+					artist: "Fallback Artist",
+					id: 1,
+					name: "Fallback Song",
+					pic: "/assets/music/cover/missing-cover.jpg",
+					url: "/assets/music/url/xryx.mp3",
+				},
+			],
+		});
+	});
+	await page.addInitScript(() => {
+		HTMLMediaElement.prototype.play = function () {
+			this.dispatchEvent(new Event("play"));
+			return Promise.resolve();
+		};
+	});
+	await gotoPage(page, "/");
+
+	await page.locator("#floating-tools-switch").click();
+	await page.locator("#music-player-switch").click();
+	const panel = page.locator("#music-player-panel");
+	await expect(panel.locator(".song-title")).toHaveText("Fallback Song");
+	await panel.getByRole("button", { name: "播放", exact: true }).click();
+	await panel.getByTitle("隐藏播放器").click();
+
+	const hiddenOrb = page.locator(".orb-player");
+	await expect(hiddenOrb).toHaveClass(/orb-player--fallback/);
+	await expect(hiddenOrb.locator(".orb-player__cover")).toHaveCount(0);
+	await expect(hiddenOrb.locator(".orb-player__fallback-icon")).toBeVisible();
 });
 
 test("floating tools keeps a safe mobile touch target", async ({ page }) => {
@@ -204,30 +339,109 @@ test("floating tools controls the user Pio preference", async ({ page }) => {
 	);
 });
 
-test("floating tools moves above the music panel", async ({ page }) => {
+test("playlist attaches above the player and floating tools clears the full surface", async ({
+	page,
+}) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await gotoPage(page, "/");
 
 	await page.locator("#floating-tools-switch").click();
 	await page.locator("#music-player-switch").click();
 	await expect(page.locator(".expanded-player")).toBeVisible();
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				const tools = document
+					.getElementById("floating-tools-switch")
+					?.getBoundingClientRect();
+				const player = document
+					.querySelector<HTMLElement>(".expanded-player")
+					?.getBoundingClientRect();
+				return (
+					(player?.top ?? 0) -
+					(tools?.bottom ?? Number.POSITIVE_INFINITY)
+				);
+			}),
+		)
+		.toBeGreaterThanOrEqual(16);
+	await page
+		.locator("#music-player-panel")
+		.getByRole("button", { name: "播放列表" })
+		.click();
+	const trackingSamples = await page.evaluate(async () => {
+		const samples: number[] = [];
+		const startedAt = performance.now();
+		while (performance.now() - startedAt < 280) {
+			await new Promise<void>((resolve) =>
+				requestAnimationFrame(() => resolve()),
+			);
+			const tools = document
+				.getElementById("floating-tools-switch")
+				?.getBoundingClientRect();
+			const playlist = document
+				.querySelector<HTMLElement>(".playlist-panel")
+				?.getBoundingClientRect();
+			if (tools && playlist && playlist.height > 1) {
+				samples.push(playlist.top - tools.bottom);
+			}
+		}
+		return {
+			minimumGap: Math.min(...samples),
+			sampleCount: samples.length,
+			transitionProperty: getComputedStyle(
+				document.getElementById("floating-tools")!,
+			).transitionProperty,
+		};
+	});
+	expect(trackingSamples.sampleCount).toBeGreaterThan(4);
+	expect(trackingSamples.minimumGap).toBeGreaterThanOrEqual(0);
+	expect(trackingSamples.transitionProperty).not.toContain("inset-block-end");
+	const playlist = page.locator(".playlist-panel");
+	await expect(playlist).toBeVisible();
+	await expect(
+		page.locator(".music-player__panel-stack > .playlist-panel"),
+	).toHaveCount(1);
 	await expect(page.locator("#floating-tools")).toHaveAttribute(
 		"data-music-expanded",
 		"true",
 	);
 
 	const geometry = await page.evaluate(() => {
-		const tools = document
-			.getElementById("floating-tools-switch")
-			?.getBoundingClientRect();
 		const player = document
 			.querySelector<HTMLElement>(".expanded-player")
 			?.getBoundingClientRect();
+		const playlist = document
+			.querySelector<HTMLElement>(".playlist-panel")
+			?.getBoundingClientRect();
+		const playlistPosition = playlist
+			? getComputedStyle(document.querySelector(".playlist-panel")!)
+					.position
+			: "";
 		return {
-			toolsBottom: tools?.bottom ?? Number.POSITIVE_INFINITY,
 			playerTop: player?.top ?? 0,
+			playlistBottom: playlist?.bottom ?? Number.NEGATIVE_INFINITY,
+			playlistPosition,
 		};
 	});
 
-	expect(geometry.toolsBottom).toBeLessThanOrEqual(geometry.playerTop - 8);
+	expect(
+		Math.abs(geometry.playlistBottom - geometry.playerTop),
+	).toBeLessThanOrEqual(1);
+	expect(geometry.playlistPosition).not.toBe("fixed");
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				const tools = document
+					.getElementById("floating-tools-switch")
+					?.getBoundingClientRect();
+				const playlist = document
+					.querySelector<HTMLElement>(".playlist-panel")
+					?.getBoundingClientRect();
+				return (
+					(tools?.bottom ?? Number.POSITIVE_INFINITY) -
+					(playlist?.top ?? 0)
+				);
+			}),
+		)
+		.toBeLessThanOrEqual(-8);
 });

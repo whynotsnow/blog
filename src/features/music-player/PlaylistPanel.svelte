@@ -12,81 +12,237 @@
 	export let onPlaySong: (index: number) => void;
 </script>
 
-<div
-	class="playlist-panel float-panel fixed bottom-20 right-4 w-80 max-h-96 overflow-hidden z-50"
-	transition:slide={{ duration: 300, axis: "y" }}
+<section
+	class="playlist-panel"
+	aria-label={labels.playlist}
+	transition:slide={{ duration: 240, axis: "y" }}
 >
-	<div
-		class="playlist-header flex items-center justify-between p-4 border-b border-(--border-subtle)"
-	>
-		<h3 class="text-lg font-semibold text-90">{labels.playlist}</h3>
+	<header class="playlist-header">
+		<div>
+			<h3>{labels.playlist}</h3>
+			<span>{playlist.length}</span>
+		</div>
 		<button
-			class="btn-plain w-8 h-8 rounded-lg"
+			type="button"
+			class="playlist-close"
 			on:click={onTogglePlaylist}
+			aria-label={`${labels.collapse} ${labels.playlist}`}
+			title={`${labels.collapse} ${labels.playlist}`}
 		>
-			<Icon icon="material-symbols:close" class="text-lg" />
+			<Icon icon="material-symbols:close-rounded" />
 		</button>
-	</div>
-	<div class="playlist-content overflow-y-auto max-h-80 hide-scrollbar">
+	</header>
+
+	<div class="playlist-content">
 		{#each playlist as song, index (song.id)}
-			<div
-				class="playlist-item flex items-center gap-3 p-3 hover:bg-(--btn-plain-bg-hover) cursor-pointer transition-colors"
-				class:bg-[var(--btn-plain-bg)]={index === currentIndex}
-				class:text-[var(--accent)]={index === currentIndex}
+			<button
+				type="button"
+				class="playlist-item"
+				class:is-current={index === currentIndex}
 				on:click={() => onPlaySong(index)}
-				on:keydown={(event) => {
-					if (event.key === "Enter" || event.key === " ") {
-						event.preventDefault();
-						onPlaySong(index);
-					}
-				}}
-				role="button"
-				tabindex="0"
-				aria-label="播放 {song.title} - {song.artist}"
+				aria-current={index === currentIndex ? "true" : undefined}
+				aria-label={`${labels.play} ${song.title} - ${song.artist}`}
 			>
-				<div class="w-6 h-6 flex items-center justify-center">
-					{#if index === currentIndex && isPlaying}
-						<Icon
-							icon="material-symbols:graphic-eq"
-							class="text-(--accent) animate-pulse"
-						/>
-					{:else if index === currentIndex}
-						<Icon
-							icon="material-symbols:pause"
-							class="text-(--accent)"
-						/>
-					{:else}
-						<span class="text-sm text-(--text-muted)"
-							>{index + 1}</span
-						>
-					{/if}
-				</div>
-				<div
-					class="w-10 h-10 rounded-lg overflow-hidden bg-(--btn-regular-bg) shrink-0"
-				>
+				<span class="playlist-cover">
 					<img
 						src={getAssetPath(song.cover)}
-						alt={song.title}
-						loading="lazy"
-						class="w-full h-full object-cover"
+						alt=""
+						loading={index === 0 ? "eager" : "lazy"}
+						decoding="async"
 					/>
-				</div>
-				<div class="flex-1 min-w-0">
-					<div
-						class="font-medium truncate"
-						class:text-[var(--accent)]={index === currentIndex}
-						class:text-90={index !== currentIndex}
+				</span>
+				<span class="playlist-copy">
+					<strong>{song.title}</strong>
+					<small>{song.artist}</small>
+				</span>
+				{#if index === currentIndex}
+					<span
+						class="playlist-status"
+						class:is-playing={isPlaying}
+						aria-hidden="true"
 					>
-						{song.title}
-					</div>
-					<div
-						class="text-sm text-(--text-muted) truncate"
-						class:text-[var(--accent)]={index === currentIndex}
-					>
-						{song.artist}
-					</div>
-				</div>
-			</div>
+						{#if isPlaying}
+							<Icon icon="material-symbols:graphic-eq-rounded" />
+						{:else}
+							<span></span>
+						{/if}
+					</span>
+				{/if}
+			</button>
 		{/each}
 	</div>
-</div>
+</section>
+
+<style>
+	.playlist-panel {
+		padding: 0.7rem 0.7rem 0.5rem;
+		background: color-mix(in oklch, var(--accent) 3%, transparent);
+		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	.playlist-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 0.25rem 0.45rem;
+	}
+
+	.playlist-header > div {
+		display: flex;
+		align-items: baseline;
+		gap: 0.4rem;
+	}
+
+	.playlist-header h3 {
+		margin: 0;
+		color: var(--text-primary);
+		font-size: 0.78rem;
+		font-weight: 650;
+	}
+
+	.playlist-header span {
+		color: var(--text-muted);
+		font-size: 0.65rem;
+	}
+
+	.playlist-close {
+		display: inline-flex;
+		width: 1.75rem;
+		height: 1.75rem;
+		align-items: center;
+		justify-content: center;
+		color: var(--text-muted);
+		border-radius: var(--radius-sm);
+		transition:
+			color var(--motion-fast) var(--motion-ease-standard),
+			background-color var(--motion-fast) var(--motion-ease-standard),
+			transform var(--motion-fast) var(--motion-ease-standard);
+	}
+
+	.playlist-close:hover {
+		color: var(--accent);
+		background: var(--surface-raised);
+	}
+
+	.playlist-close:active {
+		transform: scale(0.94);
+	}
+
+	.playlist-content {
+		display: flex;
+		max-height: min(12rem, 34dvh);
+		flex-direction: column;
+		gap: 0.2rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: none;
+	}
+
+	.playlist-content::-webkit-scrollbar {
+		display: none;
+	}
+
+	.playlist-item {
+		display: flex;
+		width: 100%;
+		min-height: 2.75rem;
+		align-items: center;
+		gap: 0.65rem;
+		padding: 0.35rem 0.45rem;
+		color: var(--text-primary);
+		text-align: left;
+		border: 1px solid transparent;
+		border-radius: var(--radius-md);
+		transition:
+			color var(--motion-fast) var(--motion-ease-standard),
+			background-color var(--motion-fast) var(--motion-ease-standard),
+			border-color var(--motion-fast) var(--motion-ease-standard),
+			transform var(--motion-fast) var(--motion-ease-standard);
+	}
+
+	.playlist-item:hover {
+		background: color-mix(in oklch, var(--surface-raised) 82%, transparent);
+		transform: translateX(0.125rem);
+	}
+
+	.playlist-item.is-current {
+		color: var(--accent);
+		background: color-mix(in oklch, var(--accent) 9%, transparent);
+		border-color: color-mix(in oklch, var(--accent) 18%, transparent);
+	}
+
+	.playlist-cover {
+		width: 2rem;
+		height: 2rem;
+		flex: 0 0 2rem;
+		overflow: hidden;
+		background: var(--surface-raised);
+		border-radius: var(--radius-sm);
+	}
+
+	.playlist-cover img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.playlist-copy {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+		line-height: 1.25;
+	}
+
+	.playlist-copy strong,
+	.playlist-copy small {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.playlist-copy strong {
+		font-size: 0.75rem;
+		font-weight: 650;
+	}
+
+	.playlist-copy small {
+		color: var(--text-muted);
+		font-size: 0.625rem;
+	}
+
+	.playlist-status {
+		display: inline-flex;
+		width: 1.5rem;
+		height: 1.5rem;
+		flex: 0 0 1.5rem;
+		align-items: center;
+		justify-content: center;
+		color: var(--accent);
+	}
+
+	.playlist-status span {
+		width: 0.35rem;
+		height: 0.35rem;
+		background: currentColor;
+		border-radius: 999px;
+	}
+
+	.playlist-status.is-playing {
+		animation: playlist-status-pulse 1.4s ease-in-out infinite;
+	}
+
+	@keyframes playlist-status-pulse {
+		50% {
+			transform: scale(1.14);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.playlist-item,
+		.playlist-status.is-playing {
+			animation: none;
+			transition-duration: 0ms;
+		}
+	}
+</style>

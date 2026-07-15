@@ -124,6 +124,7 @@ export const en: Translation = {
 	[Key.musicPlayerPlay]: "Play",
 	[Key.musicPlayerPrevious]: "Previous",
 	[Key.musicPlayerNext]: "Next",
+	[Key.musicPlayerSequential]: "Sequential Play",
 	[Key.musicPlayerShuffle]: "Shuffle",
 	[Key.musicPlayerRepeat]: "Repeat All",
 	[Key.musicPlayerRepeatOne]: "Repeat One",

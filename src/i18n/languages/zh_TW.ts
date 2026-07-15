@@ -125,6 +125,7 @@ export const zh_TW: Translation = {
 	[Key.musicPlayerPlay]: "播放",
 	[Key.musicPlayerPrevious]: "上一首",
 	[Key.musicPlayerNext]: "下一首",
+	[Key.musicPlayerSequential]: "順序播放",
 	[Key.musicPlayerShuffle]: "隨機播放",
 	[Key.musicPlayerRepeat]: "列表循環",
 	[Key.musicPlayerRepeatOne]: "單曲循環",

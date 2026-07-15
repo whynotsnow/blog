@@ -124,6 +124,7 @@ export const ja: Translation = {
 	[Key.musicPlayerPlay]: "再生",
 	[Key.musicPlayerPrevious]: "前へ",
 	[Key.musicPlayerNext]: "次へ",
+	[Key.musicPlayerSequential]: "順番に再生",
 	[Key.musicPlayerShuffle]: "シャッフル",
 	[Key.musicPlayerRepeat]: "リピート",
 	[Key.musicPlayerRepeatOne]: "1曲のみリピート",

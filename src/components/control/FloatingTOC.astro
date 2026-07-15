@@ -1,5 +1,5 @@
 ---
-import { Icon } from "astro-icon/components";
+import LocalIcon from "@/components/ui/LocalIcon.astro";
 import { siteConfig } from "../../config";
 
 const tocDepth = siteConfig.toc.depth;
@@ -30,10 +30,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 				fill="transparent"></circle>
 		</svg>
 		<div class="btn-icon">
-			<Icon
-				name="material-symbols:format-list-bulleted-rounded"
-				class="text-2xl"
-			/>
+			<LocalIcon name="material-symbols:toc-rounded" class="text-2xl" />
 		</div>
 	</button>
 	<div id="floating-toc-panel" class="floating-toc-panel">

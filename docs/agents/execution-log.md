@@ -210,3 +210,20 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Moved the Floating Tools shell outside the animated Main Content Layer so fixed overlays use the viewport as their containing block.
 - Replaced the invalid Astro-style `class:list` usage in the Svelte Settings Panel with a real feature class binding; this restored the viewport-bounded desktop popover and mobile bottom sheet styles.
 - Added browser contracts for initial music visibility, first playback, persistent paused controls, viewport-safe Settings geometry, panel avoidance, and local Shell icons.
+
+### Refined hidden Music Player feedback
+
+- Made the hidden control use the first loaded playlist cover and reserve its Theme-aware gradient icon treatment for missing playlists or failed cover requests.
+- Changed the ambiguous left mode control into an explicit Sequential/Shuffle toggle with distinct icons, pressed state, and feedback even for a one-song playlist.
+- Added browser coverage for cover-backed hidden controls, fallback rendering, and the playback-order state transition.
+
+### Unified the expanded Music Player surface
+
+- Rebuilt the expanded controls as a compact Semantic-token surface while preserving the existing Floating Tools command and playback-state model.
+- Attached Playlist above the controls inside the same Surface so layout avoidance covers the complete player instead of two independent overlays.
+- Added coordinated Floating Tools position, loading, playing, and persistent-state transitions with a reduced-motion fallback.
+- Placed Floating Tools and Music Player in one fixed Flex layout so browser layout preserves their gap during panel and Playlist transitions without timing-sensitive position interpolation or observation.
+- Made the hidden fallback the initial Music Player state, with a rotating note for Playlist loading, first-cover promotion on success, and a static fallback on failure.
+- Increased the no-Playlist panel clearance and replaced generic Floating Tools glyphs with local icons that represent Widgets, Display Settings, TOC, and Pio visibility.
+- Consolidated Music visibility into Hidden, Expanded, and Mini states with one Fly/Fade transition contract and outside-click/default-state recovery, eliminating empty bottom-right UI states.
+- Restricted the first Display Settings entrance to opacity and subtle vertical transform so runtime positioning variables never animate across the viewport.

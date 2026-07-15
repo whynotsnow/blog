@@ -116,6 +116,7 @@ enum I18nKey {
 	musicPlayerPlay = "musicPlayerPlay",
 	musicPlayerPrevious = "musicPlayerPrevious",
 	musicPlayerNext = "musicPlayerNext",
+	musicPlayerSequential = "musicPlayerSequential",
 	musicPlayerShuffle = "musicPlayerShuffle",
 	musicPlayerRepeat = "musicPlayerRepeat",
 	musicPlayerRepeatOne = "musicPlayerRepeatOne",

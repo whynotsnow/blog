@@ -31,6 +31,12 @@ export type MusicPlayerLabels = {
 	pause: string;
 	play: string;
 	playlist: string;
+	previous: string;
+	next: string;
+	repeat: string;
+	repeatOne: string;
+	sequential: string;
+	shuffle: string;
 	cover: string;
 	progress: string;
 	volume: string;

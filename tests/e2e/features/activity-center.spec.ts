@@ -11,13 +11,17 @@ test("new shell icons resolve from repository assets without Iconify", async ({
 	await gotoPage(page, "/");
 	await page.locator("#floating-tools-switch").click();
 
-	const icons = page.locator(
-		"[data-local-icon='material-symbols:notifications-outline-rounded'], " +
-			"[data-local-icon='material-symbols:construction-rounded'], " +
-			"[data-local-icon='material-symbols:music-note-rounded'], " +
-			"[data-local-icon='material-symbols:smart-toy-outline-rounded']",
-	);
-	await expect(icons).toHaveCount(5);
+	for (const name of [
+		"material-symbols:widgets-rounded",
+		"material-symbols:music-note-rounded",
+		"material-symbols:display-settings-rounded",
+		"material-symbols:person-rounded",
+	]) {
+		await expect(page.locator(`[data-local-icon='${name}']`)).toHaveCount(
+			1,
+		);
+	}
+	const icons = page.locator("[data-local-icon]");
 	const sources = await icons.evaluateAll((elements) =>
 		elements.map((element) => getComputedStyle(element).maskImage),
 	);
