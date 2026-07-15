@@ -1,33 +1,20 @@
-/* Page layout and widget placement are independent. Empty regions stay valid. */
 .page-layout-grid {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.desktop-left-region,
-.desktop-right-region,
-.desktop-sidebar-region,
-.supporting-region {
-  display: none;
-}
-
-.mobile-before-region,
-.mobile-after-region {
-  display: none;
-  grid-column: 1;
-}
-
-.mobile-before-region[data-has-widgets="true"],
-.mobile-after-region[data-has-widgets="true"] {
-  display: block;
-}
-
+.page-support-region,
 .page-main-content {
   grid-column: 1;
 }
 
-.sidebar-widget-slot {
-  container-name: widget-card;
+.support-module-slot {
+  container-name: support-module;
   container-type: inline-size;
+}
+
+.site-footer-region {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 /* Home, category, and post pages respond to the actual shell width. */
@@ -59,69 +46,34 @@
   padding-inline: 0;
 }
 
-#main-grid[data-shell-strategy="container-content"] :is(.desktop-left-region, .desktop-right-region, .desktop-sidebar-region, .supporting-region) {
-  display: none;
-}
-
-@container page-shell (min-width: 608px) {
-  #main-grid[data-shell-strategy="container-content"] :is(.mobile-before-region, .mobile-after-region) {
-    display: none;
-  }
-
-  #main-grid[data-shell-strategy="container-content"] .supporting-region[data-has-widgets="true"] {
-    display: block;
-    grid-column: 1;
-  }
-
-  #main-grid[data-shell-strategy="container-content"] .supporting-region .widget-region__flow {
-    display: grid;
-    margin-bottom: 0;
-  }
-
-  #main-grid[data-shell-strategy="container-content"][data-supporting-flow="stack"] .supporting-region .widget-region__flow {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  #main-grid[data-shell-strategy="container-content"][data-supporting-flow="two-column"] .supporting-region .widget-region__flow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  #main-grid[data-shell-strategy="container-content"][data-supporting-flow="auto-grid"] .supporting-region .widget-region__flow {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-  }
-}
-
-/* Medium composition: consume reserved margin, then Card width, then Sidebar width. */
 @container page-shell (min-width: 880px) {
-  #main-grid[data-shell-strategy="container-content"] {
+  #main-grid[data-shell-strategy="container-content"][data-has-support="true"] {
     grid-template-columns:
       minmax(0, var(--width-feed-two-max))
       clamp(var(--width-sidebar-wide-min), calc(100cqi - var(--width-feed-two-min) - var(--space-grid-gap)), var(--width-sidebar-wide-max));
     max-width: var(--width-layout-two-sidebar-max);
   }
 
-  #main-grid[data-shell-strategy="container-content"] .supporting-region[data-has-widgets] {
-    display: none;
-  }
-
-  #main-grid[data-shell-strategy="container-content"] .page-main-content {
+  #main-grid[data-shell-strategy="container-content"][data-has-support="true"] .page-main-content {
     grid-column: 1;
     grid-row: 1;
   }
 
-  #main-grid[data-shell-strategy="container-content"] .desktop-sidebar-region[data-has-widgets="true"] {
-    display: block;
+  #main-grid[data-shell-strategy="container-content"][data-has-support="true"] .page-support-region {
     grid-column: 2;
     grid-row: 1;
   }
 }
 
-/* Large composition: three stable Cards plus the same bounded Sidebar. */
 @container page-shell (min-width: 1200px) {
-  #main-grid[data-shell-strategy="container-content"] {
+  #main-grid[data-shell-strategy="container-content"][data-has-support="true"] {
     grid-template-columns:
       minmax(0, var(--width-feed-three-max))
       clamp(var(--width-sidebar-wide-min), calc(100cqi - var(--width-feed-three-min) - var(--space-grid-gap)), var(--width-sidebar-wide-max));
     max-width: var(--width-layout-three-sidebar-max);
+  }
+
+  #main-grid[data-shell-strategy="container-content"][data-has-support="false"] {
+    max-width: var(--width-feed-three-max);
   }
 }

@@ -1,0 +1,79 @@
+---
+import type { FooterViewModel } from "@/services/footer";
+
+interface Props {
+	model: FooterViewModel;
+}
+
+const { model } = Astro.props;
+---
+
+<section
+	class="footer-stats"
+	aria-label={model.statsLabel}
+	data-site-start-date={model.siteStartDate}
+	data-last-activity-date={model.lastActivityDate ?? ""}
+>
+	<div class="footer-stats__content" role="list">
+		{
+			model.stats.map((stat) => (
+				<span class="footer-stats__item" role="listitem">
+					<span class="footer-stats__label">{stat.label}</span>
+					<strong data-footer-stat={stat.id}>
+						{stat.formatted ? stat.value.toLocaleString() : stat.value}
+					</strong>
+					{stat.suffix && <span>{stat.suffix}</span>}
+				</span>
+			))
+		}
+	</div>
+	<div
+		class="footer-stats__traffic"
+		data-footer-traffic
+		data-page-views-label={model.traffic.pageViewsLabel}
+		data-visits-label={model.traffic.visitsLabel}
+		hidden
+	></div>
+</section>
+
+<script>
+	import "./footer-stats-client";
+</script>
+
+<style>
+	.footer-stats {
+		display: grid;
+		justify-items: center;
+		gap: var(--size-2);
+		width: 100%;
+		color: var(--text-secondary);
+		font-size: 0.8125rem;
+	}
+
+	.footer-stats__content {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		column-gap: var(--space-content);
+		row-gap: var(--size-2);
+	}
+
+	.footer-stats__item {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.25rem;
+	}
+
+	.footer-stats__item strong {
+		color: var(--text-primary);
+		font-weight: 600;
+	}
+
+	.footer-stats__label {
+		color: var(--text-muted);
+	}
+
+	.footer-stats__traffic {
+		color: var(--text-muted);
+	}
+</style>

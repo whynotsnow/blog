@@ -82,6 +82,18 @@ declare global {
 			isLoaded: boolean;
 		};
 		panelManager?: typeof panelManager;
+		oddmisc?: {
+			getSiteStats: () => Promise<{
+				pageviews?: number;
+				visits?: number;
+				visitors?: number;
+			}>;
+			getStats: (path: string) => Promise<{
+				pageviews?: number;
+				visits?: number;
+				visitors?: number;
+			}>;
+		};
 		siteConfig: SiteConfig;
 	}
 }

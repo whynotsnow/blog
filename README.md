@@ -22,7 +22,7 @@
 #### 🎨 个性化改动
 
 - 对 **文档、配置、样式和布局** 进行了整体调整与优化
-- 在 `list` 模式下，隐藏原有 **右侧 Sidebar**，改为隐藏 **左侧 Sidebar**
+- 首页保留作者资料支持栏；分类页与文章详情页使用无侧栏的内容布局
 
 #### 📰 首页文章推荐机制
 
@@ -84,16 +84,12 @@
 content-store/buildContentStore
 ```
 
-#### 🔧 Widget 系统优化
+#### 🔧 页面模块架构优化
 
-- Widget 组件统一使用：
-
-```
-widget/registry
-```
-
-- 通过 registry 实现 **组件注册与 props 注入**
-- 提升组件扩展能力
+- 移除通用 Widget registry 与跨端点 placement 体系
+- 站点统计迁移到 Footer，归档导航迁移到 Archive 主内容
+- 首页只保留一份 Profile DOM，并随容器宽度在内容前方与右侧支持栏之间重排
+- 页面模块按 Profile、Taxonomy、Archive、Post TOC 等领域目录维护
 
 #### 🔗 分类与标签跳转逻辑
 
@@ -122,8 +118,8 @@ widget/registry
 
 #### 🧭 布局结构调整
 
-- **profile模块** 将显示有右侧而不是左侧
-- **站点信息模块** 移动至原 `profile` 区域下方
+- **Profile 模块** 仅由首页拥有，宽屏显示在右侧支持栏，窄屏进入主内容前方
+- **站点统计模块** 移入 Footer，全站只渲染一份
 - 页面结构更加清晰
 
 ---
@@ -156,7 +152,6 @@ widget/registry
 ### 🛠️ 未来支持 / 优化点 (Planned Features / Improvements)
 
 - [ ] 文章首页推荐列表推荐算法将使用Umami等第三方数据参与逻辑
-- [ ] 而文章详情 不在展示站点信息相关的widget TOC改为左边展示
 - [ ] 友链支持在线申请  
 - [ ] 更多功能，敬请期待
 

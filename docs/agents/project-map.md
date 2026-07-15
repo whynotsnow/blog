@@ -26,10 +26,10 @@ flowchart TD
 | `src/components` | Astro and Svelte UI components. |
 | `src/design` | Sole owner of cross-feature visual tokens, themes, foundations, patterns, and legacy aliases. |
 | `src/services/core` | Content loading, sorting, derived metadata, taxonomy, and cached content store. |
-| `src/services` | Feature-level data access for home, archive, categories, feeds, calendar data, widgets, and post detail pages. |
+| `src/services` | Feature-level data access for home, archive, categories, feeds, footer statistics, calendar data, and post detail pages. |
 | `src/content` | Astro content collections for posts and special pages. |
 | `src/data` | Typed data for non-post pages such as timeline, diary, friends, projects, devices, and skills. |
-| `src/utils` | Shared utility functions for URLs, dates, content, widgets, panels, and client behavior. |
+| `src/utils` | Shared utility functions for URLs, dates, content, panels, and client behavior. |
 | `public` | Static files copied directly to the built site. |
 | `scripts` | Local automation for content sync, post creation, anime data, fonts, and search indexing support. |
 | `docs` | Maintained project documentation. |
@@ -72,11 +72,13 @@ src/features/music-player/
 
 Use feature-local helpers and types first. Promote code to `src/utils` or shared services only after multiple unrelated features reuse it.
 
-The site notice is a shell-level feature rather than a Widget. `src/config/site-notice.ts` owns its configuration, `src/services/site-notice.ts` normalizes route visibility and builds the view model, and `src/components/site-notice` owns presentation and dismissal state. `MainGridContent.astro` renders it before the page Grid so it spans the shell without entering Desktop, Tablet, or Mobile Widget placement.
+The site notice is an independent shell feature. `src/config/site-notice.ts` owns its configuration, `src/services/site-notice.ts` normalizes route visibility and builds the view model, and `src/components/site-notice` owns presentation and dismissal state. `MainGridContent.astro` renders it before the page Grid.
+
+Page modules own their placement. Home passes one `ProfileCard` through `MainGridLayout`'s named `support` slot; the same DOM node appears before content below `880px` and in the right column from `880px`. Category and post-detail pages are content-only. Archive owns Calendar, Categories, and Tags in its main flow. Site statistics are a Footer feature: `src/services/footer.ts` builds the view model from content-store metadata and `src/components/footer` renders it once. `PanelCard.astro` is only a visual container and must not become a placement registry.
 
 The home and category pages own separate page compositions while sharing Post Card and Grid contracts. Home renders six-post Recently Updated, Recommended, and Technology sections from `src/services/home.ts`; category pages render twelve-post pages with their taxonomy filter in the main content area. Astro produces SSG snapshots, while Svelte renders category tag-query pagination in the browser. Both renderers share the semantic class contract and styles in `src/features/post-list/post-list.css`; category runtime URL, history, filtering, and pagination behavior lives beside the category components in `src/components/category/category-page-client.ts`.
 
-Home, category, and post-detail pages use the `container-content` strategy. Banner always remains viewport-wide, while Navbar, Main Shell, and the three-column Main Grid share a `1352px` outer maximum width. The Shell preserves its responsive safe margin by shrinking its outer width instead of consuming layout space with internal padding. The Page Shell state machine uses three Feed columns plus a `248px–272px` Sidebar from `1200px`, two Feed columns plus the same Sidebar from `880px`, full-width pre-content Widgets plus two Feed columns from `608px`, and one Feed column below that. Sidebar visibility and the two-column Feed minimum share the same width budget, so a one-column Feed can never coexist with the right Sidebar; the Supporting Row and Desktop Sidebar are also mutually exclusive. Page Layout Policy owns whether Supporting Row Flow Widgets stack, use two fixed columns, or auto-fill; Widget Card container queries own the internal horizontal or multi-column presentation after each Slot receives its width. The narrower Main Grid maxima are `992px` and `704px`; Feed maxima are `1064px`, `704px`, and `400px`. Multi-column Cards remain within roughly `296px–344px`, with the compact `--space-grid-gap` shared by the Shell and Feed. These pages clear the legacy root-font `pageScaling`; viewport Grid rules live in `page-grid-legacy.css` and must remain scoped away from `container-content`. The post Sidebar TOC derives its external rail from `--width-shell-wide` rather than the legacy `--page-width` formula.
+Home, category, and post-detail pages use the `container-content` strategy. Banner always remains viewport-wide, while Navbar and Main Shell share a `1352px` outer maximum width. Home uses three Feed columns plus a `248px–272px` support column from `1200px`, two Feed columns plus support from `880px`, full-width Profile before two Feed columns from `608px`, and one Feed column below that. Category and post-detail pages have no support column: their content maximum is `704px` below `1200px` and `1064px` from `1200px`; post content keeps its narrower reading measure internally. Legacy pages without support center at `--width-listing`. These pages clear the legacy root-font `pageScaling`; viewport Grid rules live in `page-grid-legacy.css` and must remain scoped away from `container-content`. The post TOC derives its external rail from `--width-shell-wide` rather than the legacy `--page-width` formula.
 
 Page Layout Policy, Desktop Page Layout Preference, and Post List View Mode are separate contracts. Policy selects the responsive Shell Strategy and constrains allowed page compositions; Desktop preference chooses only within that allowed set; Post List View Mode changes only list-versus-grid presentation and must not write the page preference.
 
@@ -86,7 +88,7 @@ Post detail routes remain thin: `src/pages/posts/[...slug].astro` owns static pa
 
 `src/components/misc/Markdown.astro` is the single style entry for normal and encrypted post content. Shared Markdown, extended-content, and Expressive Code styles load there; encryption components own only protection and decrypted-state behavior. Code-copy interaction lives in `src/features/post-content/post-content-client.ts` rather than the presentation wrapper.
 
-Route motion has one owner: `#swup-container` uses `.transition-swup-layout` for page changes. Navbar and Widget cards may keep their feature-specific entrance, and post-list items keep their intentional sequence; post-detail sections must not add nested generic entrance animations. A persistent Shell progress element consumes Swup lifecycle events and guarantees brief feedback even for cached navigation. `src/utils/page-lifecycle.ts` tracks the actual global Swup instance rather than a one-time boolean so replacement instances are rebound before later history visits.
+Route motion has one owner: `#swup-container` uses `.transition-swup-layout` for page changes. Navbar and page modules may keep meaningful feature-specific entrance effects, and post-list items keep their intentional sequence; post-detail sections must not add nested generic entrance animations. A persistent Shell progress element consumes Swup lifecycle events and guarantees brief feedback even for cached navigation. `src/utils/page-lifecycle.ts` tracks the actual global Swup instance rather than a one-time boolean so replacement instances are rebound before later history visits.
 
 ## Design Layer Boundary
 
@@ -132,9 +134,8 @@ High-impact configuration groups:
 
 - `siteConfig`: site identity, language, feature pages, banners, typography, post list mode, feature switches.
 - `navBarConfig`: top navigation.
-- `profileConfig`: profile widget content.
-- `pageLayoutPolicies`: responsive page regions and the desktop layouts each page permits.
-- `widgetPlacementPresets`: explicit widgets for each viewport and region; no cross-viewport migration is inferred.
+- `profileConfig`: homepage author profile content.
+- `pageLayoutPolicies`: responsive shell strategy and the desktop layouts each page permits. Current policies allow only `content-right`.
 - `commentConfig`: comment provider settings.
 
 When adding or changing configuration values, edit the nearest module under `src/config/` instead of expanding `src/config.ts`. Document user-facing config changes in `docs/developers/configuration.md`.
@@ -143,7 +144,7 @@ When adding or changing configuration values, edit the nearest module under `src
 
 - Add content fields by editing `src/content.config.ts`, then update consumers in `src/services/core`.
 - Add feature data through `src/data` when data is not post-like markdown content.
-- Add widget components through `src/components/widget` and register them in `src/services/widget/registry.ts`.
+- Add page modules to the owning domain directory and compose them explicitly in the route or layout. Do not recreate a generic placement registry for page-specific content.
 - Add route-level behavior through `src/services` before wiring it into `src/pages`.
 
 ## Agent-Safe Change Strategy

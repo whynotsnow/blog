@@ -20,6 +20,6 @@ const { posts, allPosts, page, categorySlug, categories, store } =
 if (!slug) return Astro.redirect("/404");
 ---
 
-<MainGridLayout store={store} layoutPolicy="listing" widgetPlacement="category">
+<MainGridLayout store={store} layoutPolicy="listing">
 	<CategoryPage {posts} {allPosts} {page} {categories} {categorySlug} {store} />
 </MainGridLayout>

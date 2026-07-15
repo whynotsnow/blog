@@ -5,8 +5,7 @@ const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
 const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
-import { siteConfig } from "../config";
-import { widgetConfigs } from "../config";
+import { sakuraConfig, siteConfig } from "../config";
 import { initSakura } from "../utils/sakura-manager";
 import type { PanelId } from "../utils/panel-manager";
 import { onPageLifecycle } from "../utils/page-lifecycle";
@@ -297,7 +296,6 @@ function initCarousel() {
 }
 
 function setupSakura() {
-	const sakuraConfig = widgetConfigs.sakura;
 	if (!sakuraConfig || !sakuraConfig.enable) return;
 	if (window.sakuraInitialized) return;
 	initSakura(sakuraConfig);

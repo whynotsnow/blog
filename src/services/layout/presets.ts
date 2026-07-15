@@ -3,15 +3,13 @@ import type { PageLayoutPolicy, PageLayoutPolicyName } from "./types";
 export const pageLayoutPolicies = {
 	default: {
 		shellStrategy: "viewport-legacy",
-		supporting: { flowLayout: "stack" },
 		desktop: {
-			base: "three-column",
-			allowed: ["three-column", "content-right"],
+			base: "content-right",
+			allowed: ["content-right"],
 		},
 	},
 	listing: {
 		shellStrategy: "container-content",
-		supporting: { flowLayout: "stack" },
 		desktop: {
 			base: "content-right",
 			allowed: ["content-right"],
@@ -19,7 +17,6 @@ export const pageLayoutPolicies = {
 	},
 	post: {
 		shellStrategy: "container-content",
-		supporting: { flowLayout: "stack" },
 		desktop: {
 			base: "content-right",
 			allowed: ["content-right"],

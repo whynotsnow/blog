@@ -171,3 +171,14 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Moved the fixed Site Notice into its own non-animated Swup replacement container so route transforms cannot change its containing block or loading position.
 - Repositioned the Site Notice as a viewport-right, single-line status card below interactive overlay layers, with safe full-width margins on Mobile.
 - Restored fullscreen Banner flow geometry by starting Main Content at `100dvh` and removing the transient `top` interpolation that exposed content over the Banner.
+
+## 2026-07-15
+
+### Replaced the generic Widget system with page-owned modules
+
+- Moved site statistics into the Footer and derived totals from content-store metadata instead of rescanning post bodies.
+- Grouped Calendar, taxonomy, Profile, navigation, music, Pio, and post TOC components under their owning domains; retained `PanelCard` only as a visual container.
+- Removed the Widget registry, placement presets, region resolver, duplicate responsive instances, and obsolete configuration aggregation.
+- Made Archive own Calendar and taxonomy panels in its main flow, and made Home the only page that supplies one Profile support node.
+- Changed category and post-detail layouts to content-only compositions while preserving Container Query feed widths and Swup replacement behavior.
+- Verified the final code architecture with Astro diagnostics, type checks, production build, Design boundary checks, and the complete home smoke suite.

@@ -1,0 +1,149 @@
+---
+import { siteConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import PanelCard from "@components/ui/PanelCard.astro";
+import { Icon } from "astro-icon/components";
+import type { ArchiveCalendarData } from "@/services/archive-calendar";
+
+export interface Props {
+	class?: string;
+	style?: string;
+	calendarData: ArchiveCalendarData;
+}
+
+const { class: className, style, calendarData } = Astro.props;
+
+const { posts, stats, postDateMap, postsByMonth } = calendarData;
+const monthNames = [
+	i18n(I18nKey.calendarJanuary),
+	i18n(I18nKey.calendarFebruary),
+	i18n(I18nKey.calendarMarch),
+	i18n(I18nKey.calendarApril),
+	i18n(I18nKey.calendarMay),
+	i18n(I18nKey.calendarJune),
+	i18n(I18nKey.calendarJuly),
+	i18n(I18nKey.calendarAugust),
+	i18n(I18nKey.calendarSeptember),
+	i18n(I18nKey.calendarOctober),
+	i18n(I18nKey.calendarNovember),
+	i18n(I18nKey.calendarDecember),
+];
+
+const weekDays = [
+	i18n(I18nKey.calendarMonday),
+	i18n(I18nKey.calendarTuesday),
+	i18n(I18nKey.calendarWednesday),
+	i18n(I18nKey.calendarThursday),
+	i18n(I18nKey.calendarFriday),
+	i18n(I18nKey.calendarSaturday),
+	i18n(I18nKey.calendarSunday),
+];
+
+const isChinese = siteConfig.lang.startsWith("zh");
+const yearSuffix = isChinese ? "年" : " ";
+const calendarClientData = JSON.stringify({
+	monthNames,
+	yearSuffix,
+	posts,
+	stats,
+	postDateMap,
+	postsByMonth,
+}).replace(/</g, "\\u003c");
+---
+
+<PanelCard
+	id="calendar-widget"
+	class={className}
+	style={style}
+	name={i18n(I18nKey.updateCalendar)}
+>
+	<div class="flex justify-between items-center">
+		<div
+			class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative flex items-center"
+		>
+			<div
+				id="calendar-title-container"
+				class="flex justify-center items-center cursor-pointer hover:bg-(--btn-plain-bg-hover) px-2 py-2 -ml-2 rounded-lg transition-colors"
+			>
+				<span
+					id="calendar-title"
+					class="text-lg font-bold text-90 select-none"></span>
+			</div>
+		</div>
+
+		<div class="flex items-center gap-1 shrink-0 ml-2">
+			<button
+				id="back-to-today-btn"
+				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-(--accent) transition-all invisible"
+				aria-label="Back to today"
+			>
+				<Icon
+					name="material-symbols:restart-alt-rounded"
+					class="text-xl"
+				/>
+			</button>
+			<button
+				id="prev-month-btn"
+				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors text-xl font-extrabold"
+				aria-label="Previous month"
+			>
+				＜
+			</button>
+			<button
+				id="next-month-btn"
+				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors text-xl font-extrabold"
+				aria-label="Next month"
+			>
+				＞
+			</button>
+		</div>
+	</div>
+	<div class="relative w-full overflow-hidden" style="min-height: 15.625rem;">
+		<div id="calendar-view" class="w-full opacity-100">
+			<div class="grid grid-cols-7 gap-1 mb-2">
+				{
+					weekDays.map((day) => (
+						<div class="text-center text-xs text-50 font-medium py-1">
+							{day}
+						</div>
+					))
+				}
+			</div>
+			<div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+			<div id="calendar-posts" class="mt-4">
+				<div
+					class="h-px w-full bg-(--border-subtle) mb-2 hidden"
+					id="calendar-posts-divider"
+				>
+				</div>
+				<div
+					class="flex flex-col gap-1 max-h-37.5 overflow-y-auto scrollbar-thin"
+					id="calendar-posts-list"
+				>
+				</div>
+			</div>
+		</div>
+		<div
+			id="selection-panel"
+			class="absolute inset-0 bg-(--surface-card) z-10 flex flex-col hidden opacity-0 transition-opacity duration-200"
+		>
+			<div
+				id="selection-content"
+			class="w-full h-full overflow-y-auto scrollbar-thin p-2 grid gap-2 content-start"
+			>
+			</div>
+		</div>
+	</div>
+</PanelCard>
+
+<script
+	is:inline
+	id="calendar-widget-data"
+	type="application/json"
+	set:html={calendarClientData}
+></script>
+
+<script>
+	import "./archive-calendar-client";
+</script>

@@ -1,6 +1,16 @@
-import type { ListPost } from "./core/types";
+import type {
+	BaseSlug,
+	ContentStore,
+	ListPost,
+	PostNavigatorCategory,
+} from "./core/types";
 
 import { generateCategorySlug, generateTagSlug } from "@utils/url-utils";
+import { buildCalendarPosts } from "./calendar";
+import {
+	buildArchiveCalendarData,
+	type ArchiveCalendarData,
+} from "./archive-calendar";
 
 export interface SlugItem {
 	name: string;
@@ -28,6 +38,9 @@ export interface ArchiveGroup {
 export type ArchivePageData = {
 	// 默认 archive
 	groups: ArchiveGroup[];
+	calendar: ArchiveCalendarData;
+	categories: PostNavigatorCategory[];
+	tags: BaseSlug[];
 };
 
 function toArchivePost(post: ListPost): ArchivePost {
@@ -81,12 +94,23 @@ function buildArchiveGroups(posts: ArchivePost[]): ArchiveGroup[] {
 }
 
 export async function buildArchivePageData(
-	posts: ListPost[],
+	store: ContentStore,
 ): Promise<ArchivePageData> {
+	const { posts, categories } = store;
 	const archivePosts = posts.map(toArchivePost);
 	const groups = buildArchiveGroups(archivePosts);
+	const tags = Array.from(
+		new Map(
+			categories
+				.flatMap((category) => category.tags)
+				.map((tag) => [tag.slug, tag]),
+		).values(),
+	);
 
 	return {
 		groups,
+		calendar: buildArchiveCalendarData(buildCalendarPosts(posts)),
+		categories,
+		tags,
 	};
 }

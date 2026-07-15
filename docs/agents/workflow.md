@@ -252,7 +252,7 @@ Do not read unrelated documents just to appear thorough. If multiple areas are a
 | Change homepage post selection | `src/pages/index.astro`, `src/services/home.ts`, `src/services/core/sort.ts` |
 | Change categories or tags | `src/services/core/content-store.ts`, `src/services/category-page.ts`, `src/utils/url-utils.ts`, category route files |
 | Change post detail rendering | `src/services/post-detail/index.ts`, `src/components/post-detail/PostDetailPage.astro`, `src/pages/posts/[...slug].astro` |
-| Change widgets | `src/components/widget`, `src/services/widget/registry.ts` |
+| Change home support, archive panels, footer statistics, or post TOC | Owning domain under `src/components`, its feature service, and the composing route/layout |
 | Change navigation or feature pages | `src/config.ts`, `src/constants/link-presets.ts`, related page file |
 | Change deployment behavior | `vercel.json`, `scripts/*`, `docs/developers/deployment.md` |
 

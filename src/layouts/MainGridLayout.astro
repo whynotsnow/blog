@@ -9,9 +9,8 @@ import { fullscreenWallpaperConfig, siteConfig, siteNoticeConfig } from "@/confi
 import type { ContentStore } from "@/services/core/types";
 import { buildMainGridLayoutViewModel } from "@/services/layout/main-grid";
 import { buildSiteNoticeViewModel } from "@/services/site-notice";
+import { buildFooterViewModel } from "@/services/footer";
 import type { PageLayoutPolicyName } from "@/services/layout/types";
-import { resolveWidgetPlacement } from "@/services/widget/resolver";
-import type { WidgetPlacementName } from "@/services/widget/types";
 import Layout from "./Layout.astro";
 import "@/styles/main-grid-layout.css";
 
@@ -25,7 +24,6 @@ interface Props {
 	headings?: MarkdownHeading[];
 	store: ContentStore;
 	layoutPolicy?: PageLayoutPolicyName;
-	widgetPlacement?: WidgetPlacementName;
 }
 
 const {
@@ -38,15 +36,15 @@ const {
 	headings = [],
 	store,
 	layoutPolicy = "default",
-	widgetPlacement = "default",
 } = Astro.props;
 const viewModel = await buildMainGridLayoutViewModel({
 	config: siteConfig,
 	layoutPolicy,
 	pathname: Astro.url.pathname,
 });
-const widgets = resolveWidgetPlacement(widgetPlacement, { store, headings });
 const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname);
+const footer = buildFooterViewModel(store);
+const hasSupportContent = Astro.slots.has("support");
 ---
 
 <Layout
@@ -108,10 +106,12 @@ const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname
 
 	<MainGridContent
 		headings={headings}
-		widgets={widgets}
 		viewModel={viewModel}
 		siteNotice={siteNotice}
+		footer={footer}
+		hasSupportContent={hasSupportContent}
 	>
+		<slot name="support" slot="support" />
 		<slot />
 	</MainGridContent>
 
