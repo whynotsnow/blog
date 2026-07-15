@@ -26,8 +26,7 @@
 			"src/styles/layout/sidebar-toc.css",
 			"src/styles/main.css",
 			"src/styles/markdown-extend.styl",
-			"src/styles/markdown.css",
-			"src/styles/mobile-navbar.css"
+			"src/styles/markdown.css"
 		],
 		"--card-bg-transparent": [
 			"src/components/post-detail/post-detail.css",
@@ -157,7 +156,6 @@
 			"src/styles/main.css",
 			"src/styles/markdown-extend.styl",
 			"src/styles/markdown.css",
-			"src/styles/mobile-navbar.css",
 			"src/styles/transition.css"
 		]
 	},

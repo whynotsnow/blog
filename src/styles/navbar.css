@@ -1,0 +1,114 @@
+#navbar {
+  --navbar-bg: var(--surface-card);
+  --navbar-border: var(--border-subtle);
+  --navbar-blur: blur(0);
+  --navbar-blur-strength: 16px;
+  --navbar-radius-resting: var(--radius-md);
+  --navbar-radius: var(--navbar-radius-resting);
+  --navbar-shadow: var(--shadow-raised);
+  --navbar-panel-bg: color-mix(in srgb, var(--surface-overlay) 90%, transparent);
+  --navbar-panel-blur: blur(var(--navbar-blur-strength));
+}
+
+#navbar > div {
+  width: 100%;
+  padding-inline-start: max(1rem, env(safe-area-inset-left));
+  padding-inline-end: max(1rem, env(safe-area-inset-right));
+  overflow: visible;
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: var(--navbar-radius);
+  box-shadow: var(--navbar-shadow);
+  backdrop-filter: var(--navbar-blur);
+  -webkit-backdrop-filter: var(--navbar-blur);
+  transition:
+    background-color 220ms var(--motion-ease-standard),
+    border-color var(--motion-normal) var(--motion-ease-standard),
+    border-radius 260ms var(--motion-ease-standard),
+    box-shadow 300ms var(--motion-ease-standard),
+    backdrop-filter var(--motion-normal) var(--motion-ease-standard);
+}
+
+/* Semi and scrolled Semi-Full states use one responsive frosted surface. */
+#navbar[data-dynamic-transparent="semi"],
+body.enable-banner #navbar[data-transparent-mode="semi"],
+body.enable-banner #navbar[data-transparent-mode="semifull"].scrolled {
+  --navbar-bg: color-mix(in srgb, var(--surface-card) 78%, transparent);
+  --navbar-border: color-mix(in srgb, var(--border-subtle) 70%, transparent);
+  --navbar-blur: blur(var(--navbar-blur-strength));
+  --navbar-radius: var(--navbar-radius-resting);
+  --navbar-shadow: var(--shadow-raised);
+}
+
+/* Full and the initial Semi-Full state remain immersed in the Banner. */
+body.enable-banner #navbar[data-transparent-mode="full"],
+body.enable-banner #navbar[data-transparent-mode="semifull"]:not(.scrolled) {
+  --navbar-bg: transparent;
+  --navbar-border: transparent;
+  --navbar-blur: blur(0);
+  --navbar-radius: 0;
+  --navbar-shadow: none;
+}
+
+/* None mode is intentionally solid and does not spend work on blur. */
+#navbar[data-dynamic-transparent="none"] {
+  --navbar-bg: var(--surface-card);
+  --navbar-border: var(--border-subtle);
+  --navbar-blur: blur(0);
+  --navbar-radius: var(--navbar-radius-resting);
+  --navbar-shadow: var(--shadow-raised);
+  --navbar-panel-bg: var(--surface-overlay);
+  --navbar-panel-blur: blur(0);
+}
+
+:is(#navbar .dropdown-content, #navbar .float-panel, #nav-menu-panel, #mobile-toc-panel, #search-panel) {
+  background: var(--navbar-panel-bg);
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-overlay);
+  backdrop-filter: var(--navbar-panel-blur);
+  -webkit-backdrop-filter: var(--navbar-panel-blur);
+  transition:
+    background-color var(--motion-normal) var(--motion-ease-standard),
+    border-color var(--motion-normal) var(--motion-ease-standard),
+    backdrop-filter var(--motion-normal) var(--motion-ease-standard);
+}
+
+@media (max-width: 1279px) {
+  #navbar {
+    --navbar-blur-strength: 12px;
+    --navbar-radius-resting: var(--radius-lg);
+  }
+
+  #navbar:not([data-is-home="true"]) {
+    --navbar-panel-bg: var(--surface-overlay);
+    --navbar-panel-blur: blur(0);
+  }
+
+  /* A fully transparent bar is reserved for the mobile home Banner. */
+  body.enable-banner #navbar[data-transparent-mode="full"]:not([data-is-home="true"]) {
+    --navbar-bg: var(--surface-card);
+    --navbar-border: var(--border-subtle);
+    --navbar-blur: blur(0);
+    --navbar-radius: var(--navbar-radius-resting);
+    --navbar-shadow: var(--shadow-raised);
+  }
+}
+
+@media (max-width: 767px) {
+  #navbar {
+    --navbar-blur-strength: 8px;
+    --navbar-radius-resting: var(--radius-sm);
+  }
+
+  #navbar > div {
+    max-width: none;
+    margin-inline: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #navbar > div,
+  :is(#navbar .dropdown-content, #navbar .float-panel, #nav-menu-panel, #mobile-toc-panel, #search-panel) {
+    transition-duration: 0ms;
+  }
+}

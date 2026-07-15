@@ -81,11 +81,6 @@
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
 
-  .wallpaper-transparent #navbar > div,
-  .wallpaper-overlay #navbar > div {
-    @apply bg-(--card-bg-transparent) backdrop-blur-sm;
-  }
-
   .wallpaper-transparent .btn-card,
   .wallpaper-overlay .btn-card {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
