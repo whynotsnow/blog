@@ -1,8 +1,7 @@
 ---
 import type { MarkdownHeading } from "astro";
-import BackToTop from "@components/control/BackToTop.astro";
-import FloatingTOC from "@components/control/FloatingTOC.astro";
 import Footer from "@components/Footer.astro";
+import FloatingTools from "@/features/floating-tools/FloatingTools.astro";
 import type { MainGridLayoutViewModel } from "@/services/layout/main-grid";
 import BannerCredit from "./BannerCredit.astro";
 import SiteNoticeBar from "@components/site-notice/SiteNoticeBar.astro";
@@ -78,9 +77,8 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 			</div>
 		</div>
 		<SidebarTocRegion headings={headings} viewModel={viewModel} />
-		{viewModel.toc.enable && viewModel.toc.isFloat && <FloatingTOC />}
 		</div>
 
-		<BackToTop />
+		<FloatingTools />
 	</div>
 </div>

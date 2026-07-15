@@ -1,0 +1,117 @@
+---
+import { Icon } from "astro-icon/components";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import LightDarkSwitch from "@components/LightDarkSwitch.svelte";
+import SettingsPanel from "@components/features/settings/SettingsPanel.svelte";
+import BackToTop from "@components/control/BackToTop.astro";
+import FloatingTOC from "@components/control/FloatingTOC.astro";
+import "./floating-tools.css";
+---
+
+<div
+	id="floating-tools"
+	class="floating-tools"
+	data-open="false"
+	data-music-expanded="false"
+>
+	<div class="floating-tools__rail" role="toolbar" aria-label={i18n(I18nKey.floatingTools)}>
+		<div class="floating-tools__item floating-tools__item--expandable floating-tools__item--toc">
+			<FloatingTOC />
+		</div>
+
+		<div class="floating-tools__item floating-tools__item--expandable">
+			<LightDarkSwitch client:only="svelte" />
+		</div>
+
+		<div class="floating-tools__item floating-tools__item--expandable">
+			<button
+				type="button"
+				id="display-settings-switch"
+				class="floating-tool-button"
+				aria-label={i18n(I18nKey.displaySettings)}
+				title={i18n(I18nKey.displaySettings)}
+			>
+				<Icon name="material-symbols:tune-rounded" aria-hidden="true" />
+			</button>
+		</div>
+
+		<div class="floating-tools__item floating-tools__item--back-to-top">
+			<BackToTop />
+		</div>
+
+		<div class="floating-tools__item">
+			<button
+				type="button"
+				id="floating-tools-switch"
+				class="floating-tool-button floating-tools__switch"
+				aria-label={i18n(I18nKey.floatingTools)}
+				aria-controls="floating-tools"
+				aria-expanded="false"
+				title={i18n(I18nKey.floatingTools)}
+			>
+				<Icon
+					name="material-symbols:construction-rounded"
+					class="floating-tools__switch-icon"
+					aria-hidden="true"
+				/>
+			</button>
+		</div>
+	</div>
+
+	<SettingsPanel
+		client:only="svelte"
+		className="floating-tools__settings-panel"
+	/>
+</div>
+
+<script>
+	const ROOT_ID = "floating-tools";
+	const SWITCH_ID = "floating-tools-switch";
+
+	function setFloatingToolsOpen(open: boolean) {
+		const root = document.getElementById(ROOT_ID);
+		const toggle = document.getElementById(SWITCH_ID);
+		if (!root || !(toggle instanceof HTMLButtonElement)) return;
+
+		root.dataset.open = String(open);
+		toggle.setAttribute("aria-expanded", String(open));
+	}
+
+	function initFloatingTools() {
+		const root = document.getElementById(ROOT_ID);
+		const toggle = document.getElementById(SWITCH_ID);
+		if (!root || !(toggle instanceof HTMLButtonElement)) return;
+		if (root.dataset.initialized === "true") return;
+
+		root.dataset.initialized = "true";
+		toggle.addEventListener("click", () => {
+			setFloatingToolsOpen(root.dataset.open !== "true");
+		});
+
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape" && root.dataset.open === "true") {
+				setFloatingToolsOpen(false);
+				toggle.focus();
+			}
+		});
+
+		document.addEventListener("pointerdown", (event) => {
+			if (
+				root.dataset.open === "true" &&
+				event.target instanceof Node &&
+				!root.contains(event.target)
+			) {
+				setFloatingToolsOpen(false);
+			}
+		});
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", initFloatingTools, {
+			once: true,
+		});
+	} else {
+		initFloatingTools();
+	}
+</script>

@@ -17,6 +17,8 @@ enum I18nKey {
 	postList = "postList",
 	tableOfContents = "tableOfContents",
 	tocEmpty = "tocEmpty",
+	floatingTools = "floatingTools",
+	displaySettings = "displaySettings",
 
 	// 网站通知
 	siteNotice = "siteNotice",
