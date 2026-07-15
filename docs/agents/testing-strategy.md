@@ -13,6 +13,8 @@ This document is the normative test-selection contract for agents. Validation mu
 
 Path mapping is a conservative aid, not a substitute for reasoning. A change to a shared API can affect consumers outside the directory containing the edited file.
 
+Use `pnpm test:plan` to inspect the current working-tree plan and `pnpm test:affected` to execute it. In CI, pass the pull request base SHA to `scripts/test-impact.mjs --base <sha>`. The versioned rules live in `tests/impact-map.json`; unclassified paths select `full`.
+
 ## Validation Layers
 
 | Layer | Purpose | Typical scope |
@@ -71,6 +73,19 @@ tests/
 ```
 
 Do not place unrelated behavior in a convenient existing spec. Avoid duplicating the same contract across smoke and feature suites; smoke should assert availability while the owning feature suite asserts detail.
+
+## Command Contract
+
+| Command | Scope |
+| --- | --- |
+| `pnpm test:fast` | All Unit and Integration tests |
+| `pnpm test:smoke` | Critical-route Playwright smoke only |
+| `pnpm test:e2e:shell` | Navigation and responsive Shell contracts |
+| `pnpm test:e2e:full` | All Playwright regression specs |
+| `pnpm build:astro` | Astro build stage without Pagefind or font compression |
+| `pnpm verify:full` | Static checks, fast tests, full E2E, and complete production build |
+
+Pre-commit uses staged-file categories for local static gates and never runs browser tests. Pull request CI consumes the impact plan. Pushes to `main` and manual full runs keep L6 as the mapping safety net.
 
 ## Handoff Evidence
 

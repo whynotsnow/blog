@@ -164,6 +164,21 @@ Response:
 
 ## Browser Verification
 
+### playwright-spec-split-concurrency-drift
+
+Pattern:
+
+- Playwright schedules files in parallel. Splitting one large spec into several owner-based files can increase the effective worker count without changing a single assertion.
+- The new concurrency can overload the Astro dev server or expose implicit readiness dependencies, producing navigation timeouts, missing globals, or transient missing elements.
+
+Use:
+
+- Compare `playwright test --list` before and after the split so scenario count remains stable.
+- Set an explicit `workers` budget that preserves known-safe full-suite concurrency; targeted affected specs still benefit from running fewer files.
+- Centralize navigation and preference setup in `tests/support` and wait for the actual contract a test consumes.
+- Re-run failing owner specs independently to distinguish a behavior regression from concurrency pressure.
+- Do not add retries merely to hide an implicit worker-count change.
+
 ### playwright-chromium-mac-sandbox
 
 Pattern:

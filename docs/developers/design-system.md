@@ -98,4 +98,4 @@ pnpm check
 pnpm type-check
 ```
 
-影响页面布局、主题或 Surface 时继续运行 `pnpm build` 和 `pnpm test:smoke`。`design:check` 当前在 CI 中阻塞新增违规，但尚未接入 precommit。
+影响页面布局、主题或 Surface 时先运行 `pnpm test:plan`，并至少覆盖 `pnpm build:astro` 与 Design Contract E2E；跨功能变更再升级到 `pnpm verify:full`。`design:check` 会在 Design 文件进入 staged 状态时由 pre-commit 运行，也属于 CI 影响门禁。

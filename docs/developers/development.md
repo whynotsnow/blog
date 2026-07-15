@@ -57,21 +57,27 @@ pnpm build
 ```bash
 pnpm check
 pnpm type-check
+pnpm type-check:tests
 pnpm type-check:declarations
+pnpm test:fast
 pnpm test:smoke
+pnpm test:e2e:full
+pnpm test:plan
+pnpm test:affected
 pnpm format:check
 pnpm lint
 pnpm lint:md
 ```
 
-常规代码变更优先运行 `pnpm check`。`pnpm type-check` 使用 `tsc --noEmit` 检查纯 TypeScript 代码；Astro 组件的模板和精确 Props 类型仍由 `pnpm check` 负责。只有维护可发布声明文件时才运行更严格的 `pnpm type-check:declarations`，它不属于常规提交门禁。
-需要浏览器冒烟测试或 Codex 调试页面时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。`test:smoke` 会通过 Playwright 自动启动 Astro dev server，不需要手动运行 `pnpm dev`。
+先运行 `pnpm test:plan` 查看改动影响范围；需要自动执行选择结果时运行 `pnpm test:affected`。`pnpm type-check` 检查 `src`，`pnpm type-check:tests` 检查 Unit、Integration、Playwright 和测试配置。`pnpm test:fast` 运行 Vitest 快速层。
+
+需要浏览器冒烟测试时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。该命令只运行关键路由；完整浏览器回归使用 `pnpm test:e2e:full`。Playwright 会自动启动 Astro dev server，不需要手动运行 `pnpm dev`。
 
 如果 Codex 沙箱中的 Chromium 在启动阶段出现 `MachPortRendezvousServer Permission denied (1100)`，这表示浏览器进程被 macOS sandbox 拦截，页面断言尚未执行。不要在同一受限进程中反复重试，也不要把它记成页面测试失败。应在普通宿主 Terminal 中运行：
 
 ```bash
 source .codex/env-setup.sh
-pnpm test:smoke
+pnpm test:e2e:full
 ```
 
 当当前 Codex 会话提供宿主 Terminal 控制能力时，Agent 可以通过该通道执行上述命令；否则由本机 Terminal 或 CI 执行。仅把 Playwright 指向系统 Chrome executable 不一定能绕过进程级 sandbox，因此不能作为默认修复。
@@ -91,16 +97,16 @@ Markdown 规范检查由 `markdownlint-cli2` 单独处理，不会自动重写�
 
 依赖安装后会通过 `prepare` 自动执行 `scripts/install-git-hooks.mjs`，将本仓库的 Git hooks 路径设置为 `.githooks`。
 
-提交前会运行 `.githooks/pre-commit`：
+提交前会运行 `.githooks/pre-commit`，并按照 staged 文件选择静态门禁：
 
 1. 自动格式化已暂存的 JavaScript、TypeScript、Svelte、CSS、JSON、YAML 等代码文件，并重新暂存格式化结果。
 2. 如果已暂存文件同时存在未暂存改动，hook 会停止提交，避免自动格式化时把未准备提交的内容一起加入 commit。
 3. 运行 `git diff --cached --check` 检查暂存内容的空白错误。
-4. 运行 ESLint 检查 `src`、`scripts` 和根目录配置文件；任何 error 或 warning 都会阻止提交，并提示运行 `pnpm lint:fix` 或 `pnpm lint`。
-5. 运行 `astro check` 检查 Astro、Svelte 和 TypeScript 诊断；存在错误时提交会被阻止。
-6. 运行 `tsc --noEmit` 检查纯 TypeScript 代码；存在错误时提交会被阻止并提示运行 `pnpm type-check`。
+4. Markdown 文件运行 markdownlint；代码文件只对 staged 目标运行 ESLint。
+5. Design、Astro/Svelte/内容和 source TypeScript 门禁仅在对应范围变化时运行。
+6. 测试和测试配置变化时运行独立的 `tsconfig.tests.json` 检查。
 
-GitHub CI 会重复运行 `pnpm lint`、`pnpm check` 和 `pnpm type-check`，全部通过后才执行 `pnpm build`。因此即使本地使用 `git commit --no-verify` 跳过 hook，合并前仍应由分支保护要求 `Quality Checks` 与 `Astro Build` 成功。
+GitHub Pull Request CI 使用 `tests/impact-map.json` 选择 Quality、Fast Tests、Browser Tests 和 Astro Build。push 到 `main` 与手动完整验证会运行全部门禁，作为影响映射遗漏的兜底。
 
 也可以手动运行：
 

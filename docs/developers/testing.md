@@ -41,4 +41,25 @@ Pull Request 可以运行受影响测试，但 main 和定时任务仍需保留�
 
 Playwright 测试按行为所有者拆分为 `smoke`、`shell`、`features` 和 `contracts`。共享 route、viewport 和 fixture 数据放在 `tests/fixtures`，无 Feature 断言的浏览器 helper 放在 `tests/support`。同一行为不应同时在 smoke 和 Feature 套件中重复做详细断言。
 
+## 常用命令
+
+```bash
+pnpm test:plan
+pnpm test:affected
+pnpm test:fast
+pnpm test:smoke
+pnpm test:e2e:shell
+pnpm test:e2e:full
+pnpm build:astro
+pnpm verify:full
+```
+
+- `test:plan` 只输出当前工作区改动对应的验证组和原因。
+- `test:affected` 根据 `tests/impact-map.json` 执行受影响验证；无法分类的路径会升级到 `verify:full`。
+- `test:smoke` 只负责关键路由可用性，不等于完整浏览器回归。
+- `build:astro` 不运行 Pagefind、字体压缩和完整 Build 编排。
+- `verify:full` 用于依赖、工具链、CI、未知影响、main 和发布场景。
+
+Pre-commit 只对 staged 文件运行相关静态门禁，不执行浏览器测试。Pull Request CI 使用同一影响映射选择 Fast、Browser 和 Build job；push 到 `main` 与手动完整验证仍运行 L6。
+
 每次交付应说明改动分类、实际运行的命令、未运行的更高测试层，以及是否命中完整回归升级条件。只运行 test discovery 或部分文件时，不能声称完整套件已经通过。

@@ -1,6 +1,6 @@
 {
 	"version": 2,
-	"updated": "2026-07-14",
+	"updated": "2026-07-15",
 	"principle": "This project is not debugged repeatedly. It is learned once and reused forever.",
 	"architecture_constraints": [
 		{
@@ -30,6 +30,15 @@
 		}
 	],
 	"known_failures": [
+		{
+			"id": "playwright-spec-split-concurrency-drift",
+			"cluster": "test-architecture",
+			"symptoms": [
+				"splitting a large Playwright spec increases effective worker concurrency",
+				"unchanged assertions begin timing out or observing app globals before readiness"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#playwright-spec-split-concurrency-drift"
+		},
 		{
 			"id": "zsh-glob-expansion",
 			"cluster": "cli",
@@ -130,9 +139,9 @@
 				"browser automation"
 			],
 			"solutions": [
-				"run pnpm test:smoke in host Terminal through Computer Use when available",
+				"run the selected Playwright command in host Terminal through Computer Use when available",
 				"run automated browser validation in CI",
-				"ask the user to run pnpm test:smoke in a normal host Terminal when no external tool is available",
+				"ask the user to run the exact selected Playwright command in a normal host Terminal when no external tool is available",
 				"do not use in-app Browser solely because Playwright failed to launch",
 				"do not fall back to agent-controlled Chrome"
 			],

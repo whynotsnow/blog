@@ -17,7 +17,7 @@ Resolve actual capability state from the active local profiles under `.agent-wor
 ## Project Browser Contract
 
 - Playwright is installed as `@playwright/test`.
-- The deterministic browser command is `pnpm test:smoke`.
+- `pnpm test:smoke` is the critical-route browser check; `pnpm test:e2e:full` is the deterministic full browser regression command.
 - `playwright.config.ts` starts the Astro development server; a separate `pnpm dev` process is not required.
 - Agents must not control Chrome. A budgeted in-app Browser visual result, a developer-reported manual Chrome result, and an agent- or developer-run Playwright result are distinct and must be reported separately.
 - In-app Browser availability and local URL support are session capabilities, not guaranteed project capabilities. Do not retry or switch to Computer Use when local access is unavailable.

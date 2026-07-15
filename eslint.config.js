@@ -38,6 +38,7 @@ const nodeGlobals = {
  */
 const nodeToolingFiles = [
 	"scripts/**/*.{js,mjs,cjs,ts}",
+	"tests/**/*.{js,mjs,cjs,ts}",
 	".agent-workspace/tools/**/*.{js,mjs,cjs,ts}",
 	"astro.config.*",
 	"*.config.{js,mjs,cjs,ts}",

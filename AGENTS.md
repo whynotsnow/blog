@@ -54,9 +54,16 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm check`: run Astro checks.
 - `pnpm type-check`: run TypeScript declaration-oriented checks.
 - `pnpm build`: production build, Pagefind indexing, and font compression.
+- `pnpm build:astro`: run only the Astro production build stage.
 - `pnpm format:check`: check formatting.
 - `pnpm format`: format the repository according to the local Prettier config.
 - `pnpm precommit`: run the same pre-commit gate as the Git hook.
+- `pnpm test:plan`: print the validation selected for current changes without executing it.
+- `pnpm test:affected`: execute the validation selected by `tests/impact-map.json`.
+- `pnpm test:fast`: run Unit and Integration tests.
+- `pnpm test:smoke`: run the critical-route Playwright smoke suite.
+- `pnpm test:e2e:full`: run the complete Playwright regression suite.
+- `pnpm verify:full`: run all static, fast, browser, and production-build gates.
 - `node .agent-workspace/tools/agent-workspace.mjs validate`: validate Agent Workspace Spec conformance and disclosure boundaries.
 - `pnpm new-post -- <filename>`: create a post template.
 

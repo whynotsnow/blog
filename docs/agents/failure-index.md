@@ -50,6 +50,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 
 ## Browser Verification
 
+### playwright-spec-split-concurrency-drift
+
+- Symptom: splitting a large spec into multiple files unexpectedly increases worker concurrency, dev-server load, timeouts, or readiness flakes even though assertions did not change.
+- Playbook: [playwright-spec-split-concurrency-drift](./runtime-playbook.md#playwright-spec-split-concurrency-drift)
+
 ### playwright-chromium-mac-sandbox
 
 - Symptom: Playwright Chromium launch fails with `MachPortRendezvousServer` and `Permission denied (1100)` before localhost navigation.
