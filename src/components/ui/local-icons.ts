@@ -6,6 +6,7 @@ import hideSourceRounded from "@/assets/icons/material-symbols/hide-source-round
 import historyRounded from "@/assets/icons/material-symbols/history-rounded.svg?url";
 import infoOutlineRounded from "@/assets/icons/material-symbols/info-outline-rounded.svg?url";
 import keyboardArrowUpRounded from "@/assets/icons/material-symbols/keyboard-arrow-up-rounded.svg?url";
+import musicNoteRounded from "@/assets/icons/material-symbols/music-note-rounded.svg?url";
 import notificationsOutlineRounded from "@/assets/icons/material-symbols/notifications-outline-rounded.svg?url";
 import smartToyOutlineRounded from "@/assets/icons/material-symbols/smart-toy-outline-rounded.svg?url";
 import tuneRounded from "@/assets/icons/material-symbols/tune-rounded.svg?url";
@@ -20,6 +21,7 @@ export const localIconSources = {
 	"material-symbols:history-rounded": historyRounded,
 	"material-symbols:info-outline-rounded": infoOutlineRounded,
 	"material-symbols:keyboard-arrow-up-rounded": keyboardArrowUpRounded,
+	"material-symbols:music-note-rounded": musicNoteRounded,
 	"material-symbols:notifications-outline-rounded":
 		notificationsOutlineRounded,
 	"material-symbols:smart-toy-outline-rounded": smartToyOutlineRounded,

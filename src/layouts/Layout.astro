@@ -1,8 +1,7 @@
 ---
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import MusicPlayer from "@/features/music-player/MusicPlayer.svelte";
 import Pio from "@/features/pio/Pio.svelte";
-import { musicPlayerConfig, pioConfig } from "@/config";
+import { pioConfig } from "@/config";
 import LayoutBannerStyles from "./page-shell/LayoutBannerStyles.astro";
 import LayoutHead from "./page-shell/LayoutHead.astro";
 import {
@@ -98,9 +97,6 @@ const pageShell = buildLayoutPageShellModel({
 
 		<ConfigCarrier />
 		<slot />
-
-		<!-- Music Player - 仅在启用时加载 -->
-		{musicPlayerConfig.enable && <MusicPlayer client:idle />}
 
 		<!-- Pio 看板娘组件 - 仅在启用时加载 -->
 		{pioConfig.enable && <Pio client:idle />}

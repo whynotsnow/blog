@@ -50,6 +50,7 @@
 
 .music-player {
   max-width: 20rem;
+  pointer-events: auto;
   user-select: none;
 }
 

@@ -5,6 +5,12 @@
 	import Key from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
 	import ExpandedPlayer from "./ExpandedPlayer.svelte";
+	import {
+		MUSIC_PLAYER_COMMAND_EVENT,
+		MUSIC_PLAYER_STATE_EVENT,
+		type MusicPlayerCommand,
+		type MusicPlayerUiState,
+	} from "./events";
 	import HiddenOrb from "./HiddenOrb.svelte";
 	import MiniPlayer from "./MiniPlayer.svelte";
 	import PlayerErrorToast from "./PlayerErrorToast.svelte";
@@ -63,6 +69,7 @@
 	};
 
 	let isPlaying = false;
+	let hasStarted = false;
 	let isExpanded = false;
 	let isHidden = false;
 	let showPlaylist = false;
@@ -95,6 +102,7 @@
 		if (!metingApi || !metingId) return;
 
 		isLoading = true;
+		publishUiState();
 		const apiUrl = buildMetingApiUrl({
 			api: metingApi,
 			server: metingServer,
@@ -112,9 +120,11 @@
 				loadSong(playlist[0]);
 			}
 			isLoading = false;
+			publishUiState();
 		} catch {
 			showErrorMessage(i18n(Key.musicPlayerErrorPlaylist));
 			isLoading = false;
+			publishUiState();
 		}
 	}
 
@@ -134,6 +144,7 @@
 			isHidden = false;
 		}
 		publishLayoutState();
+		publishUiState();
 	}
 
 	function toggleHidden() {
@@ -143,6 +154,7 @@
 			showPlaylist = false;
 		}
 		publishLayoutState();
+		publishUiState();
 	}
 
 	function togglePlaylist() {
@@ -184,6 +196,32 @@
 				}),
 			);
 		});
+	}
+
+	function publishUiState() {
+		if (typeof window === "undefined") return;
+		const detail: MusicPlayerUiState = {
+			hasStarted,
+			isExpanded,
+			isLoading,
+			isPlaying,
+		};
+		window.dispatchEvent(
+			new CustomEvent(MUSIC_PLAYER_STATE_EVENT, { detail }),
+		);
+	}
+
+	function handlePlayerCommand(event: Event) {
+		const { type } =
+			(event as CustomEvent<MusicPlayerCommand>).detail ?? {};
+		if (type !== "toggle-panel") return;
+		isExpanded = !isExpanded;
+		if (isExpanded) {
+			isHidden = false;
+			showPlaylist = false;
+		}
+		publishLayoutState();
+		publishUiState();
 	}
 
 	function toggleShuffle() {
@@ -231,6 +269,7 @@
 		if (song.url !== currentSong.url) {
 			currentSong = { ...song };
 			isLoading = Boolean(song.url);
+			publishUiState();
 		}
 	}
 
@@ -253,6 +292,7 @@
 				});
 			}
 		}
+		publishUiState();
 	}
 
 	function handleUserInteraction() {
@@ -279,9 +319,25 @@
 		} else {
 			showErrorMessage(i18n(Key.musicPlayerErrorEmpty));
 		}
+		publishUiState();
 	}
 
-	function handleLoadStart() {}
+	function handleLoadStart() {
+		isLoading = true;
+		publishUiState();
+	}
+
+	function handleAudioPlay() {
+		isPlaying = true;
+		hasStarted = true;
+		isHidden = false;
+		publishUiState();
+	}
+
+	function handleAudioPause() {
+		isPlaying = false;
+		publishUiState();
+	}
 
 	function handleAudioEnded() {
 		if (isRepeating === 1) {
@@ -291,6 +347,7 @@
 			nextSong(true);
 		} else {
 			isPlaying = false;
+			publishUiState();
 		}
 	}
 
@@ -377,7 +434,12 @@
 	onMount(() => {
 		volume = loadStoredVolume();
 		window.addEventListener("resize", publishLayoutState);
+		window.addEventListener(
+			MUSIC_PLAYER_COMMAND_EVENT,
+			handlePlayerCommand,
+		);
 		publishLayoutState();
+		publishUiState();
 		interactionEvents.forEach((event) => {
 			document.addEventListener(event, handleUserInteraction, {
 				capture: true,
@@ -408,6 +470,10 @@
 				});
 			});
 			window.removeEventListener("resize", publishLayoutState);
+			window.removeEventListener(
+				MUSIC_PLAYER_COMMAND_EVENT,
+				handlePlayerCommand,
+			);
 			if (layoutRafId) cancelAnimationFrame(layoutRafId);
 		}
 	});
@@ -418,8 +484,8 @@
 	src={getAssetPath(currentSong.url)}
 	bind:volume
 	bind:muted={isMuted}
-	on:play={() => (isPlaying = true)}
-	on:pause={() => (isPlaying = false)}
+	on:play={handleAudioPlay}
+	on:pause={handleAudioPause}
 	on:timeupdate={() => (currentTime = audio.currentTime)}
 	on:ended={handleAudioEnded}
 	on:error={handleLoadError}
@@ -441,28 +507,33 @@
 	<div
 		class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
 		class:expanded={isExpanded}
+		class:has-started={hasStarted}
 		class:hidden-mode={isHidden}
 	>
-		<HiddenOrb
-			{isHidden}
-			{isLoading}
-			{isPlaying}
-			{labels}
-			onToggleHidden={toggleHidden}
-		/>
+		{#if hasStarted}
+			<HiddenOrb
+				{isHidden}
+				{isLoading}
+				{isPlaying}
+				{labels}
+				onToggleHidden={toggleHidden}
+			/>
+		{/if}
 
-		<MiniPlayer
-			{currentSong}
-			{isExpanded}
-			{isHidden}
-			{isLoading}
-			{isPlaying}
-			{labels}
-			{getAssetPath}
-			onTogglePlay={togglePlay}
-			onToggleExpanded={toggleExpanded}
-			onToggleHidden={toggleHidden}
-		/>
+		{#if hasStarted}
+			<MiniPlayer
+				{currentSong}
+				{isExpanded}
+				{isHidden}
+				{isLoading}
+				{isPlaying}
+				{labels}
+				{getAssetPath}
+				onTogglePlay={togglePlay}
+				onToggleExpanded={toggleExpanded}
+				onToggleHidden={toggleHidden}
+			/>
+		{/if}
 
 		<ExpandedPlayer
 			{currentSong}

@@ -6,6 +6,8 @@ import LightDarkSwitch from "@components/LightDarkSwitch.svelte";
 import SettingsPanel from "@components/features/settings/SettingsPanel.svelte";
 import BackToTop from "@components/control/BackToTop.astro";
 import FloatingTOC from "@components/control/FloatingTOC.astro";
+import MusicPlayer from "@/features/music-player/MusicPlayer.svelte";
+import { musicPlayerConfig } from "@/config";
 import PioToggle from "./PioToggle.svelte";
 import "./floating-tools.css";
 ---
@@ -29,12 +31,32 @@ import "./floating-tools.css";
 			<PioToggle client:idle />
 		</div>
 
+		{
+			musicPlayerConfig.enable && (
+				<div class="floating-tools__item floating-tools__item--expandable">
+					<button
+						type="button"
+						id="music-player-switch"
+						class="floating-tool-button floating-tools__music-switch"
+						aria-label={i18n(I18nKey.musicPlayerExpand)}
+						aria-controls="music-player-panel"
+						aria-expanded="false"
+						title={i18n(I18nKey.musicPlayerExpand)}
+					>
+						<LocalIcon name="material-symbols:music-note-rounded" />
+						<span class="floating-tools__music-indicator" aria-hidden="true" />
+					</button>
+				</div>
+			)
+		}
+
 		<div class="floating-tools__item floating-tools__item--expandable">
 			<button
 				type="button"
 				id="display-settings-switch"
 				class="floating-tool-button"
 				aria-label={i18n(I18nKey.displaySettings)}
+				aria-expanded="false"
 				title={i18n(I18nKey.displaySettings)}
 			>
 				<LocalIcon name="material-symbols:tune-rounded" />
@@ -69,9 +91,21 @@ import "./floating-tools.css";
 	/>
 </div>
 
+{musicPlayerConfig.enable && <MusicPlayer client:idle />}
+
 <script>
+	import {
+		MUSIC_PLAYER_COMMAND_EVENT,
+		MUSIC_PLAYER_STATE_EVENT,
+		type MusicPlayerCommand,
+		type MusicPlayerUiState,
+	} from "@/features/music-player/events";
+
 	const ROOT_ID = "floating-tools";
 	const SWITCH_ID = "floating-tools-switch";
+	const MUSIC_SWITCH_ID = "music-player-switch";
+	const SETTINGS_SWITCH_ID = "display-settings-switch";
+	const SETTINGS_PANEL_ID = "display-setting";
 
 	function setFloatingToolsOpen(open: boolean) {
 		const root = document.getElementById(ROOT_ID);
@@ -85,10 +119,105 @@ import "./floating-tools.css";
 	function initFloatingTools() {
 		const root = document.getElementById(ROOT_ID);
 		const toggle = document.getElementById(SWITCH_ID);
+		const musicToggle = document.getElementById(MUSIC_SWITCH_ID);
+		const settingsToggle = document.getElementById(SETTINGS_SWITCH_ID);
 		if (!root || !(toggle instanceof HTMLButtonElement)) return;
 		if (root.dataset.initialized === "true") return;
 
 		root.dataset.initialized = "true";
+		let observedSettingsPanel: HTMLElement | null = null;
+
+		function positionSettingsPanel() {
+			const settingsPanel = document.getElementById(SETTINGS_PANEL_ID);
+			if (
+				!(settingsToggle instanceof HTMLButtonElement) ||
+				!(settingsPanel instanceof HTMLElement)
+			) {
+				return;
+			}
+
+			if (window.innerWidth <= 767) {
+				settingsPanel.style.removeProperty("--settings-panel-left");
+				settingsPanel.style.removeProperty("--settings-panel-top");
+				settingsPanel.style.removeProperty("--settings-panel-width");
+				settingsPanel.dataset.anchorSide = "bottom";
+				return;
+			}
+
+			const gutter = 16;
+			const gap = 12;
+			const buttonRect = settingsToggle.getBoundingClientRect();
+			const panelWidth = Math.min(320, window.innerWidth - gutter * 2);
+			const availableHeight = window.innerHeight - gutter * 2;
+			const panelHeight = Math.min(
+				settingsPanel.scrollHeight || availableHeight,
+				availableHeight,
+				672,
+			);
+			const opensFromLeft =
+				buttonRect.left + buttonRect.width / 2 < window.innerWidth / 2;
+			const preferredLeft = opensFromLeft
+				? buttonRect.left
+				: buttonRect.right - panelWidth;
+			const left = Math.min(
+				Math.max(preferredLeft, gutter),
+				window.innerWidth - gutter - panelWidth,
+			);
+			const preferredTop = buttonRect.top - gap - panelHeight;
+			const top = Math.min(
+				Math.max(preferredTop, gutter),
+				window.innerHeight - gutter - panelHeight,
+			);
+
+			settingsPanel.style.setProperty(
+				"--settings-panel-left",
+				`${left}px`,
+			);
+			settingsPanel.style.setProperty(
+				"--settings-panel-top",
+				`${top}px`,
+			);
+			settingsPanel.style.setProperty(
+				"--settings-panel-width",
+				`${panelWidth}px`,
+			);
+			settingsPanel.dataset.anchorSide = opensFromLeft ? "left" : "right";
+		}
+
+		function syncSettingsState() {
+			const settingsPanel = document.getElementById(SETTINGS_PANEL_ID);
+			if (
+				!(settingsToggle instanceof HTMLButtonElement) ||
+				!(settingsPanel instanceof HTMLElement)
+			) {
+				return;
+			}
+			const isOpen = !settingsPanel.classList.contains("float-panel-closed");
+			settingsToggle.setAttribute("aria-expanded", String(isOpen));
+			if (isOpen) positionSettingsPanel();
+		}
+
+		function observeSettingsPanel() {
+			const settingsPanel = document.getElementById(SETTINGS_PANEL_ID);
+			if (
+				!(settingsPanel instanceof HTMLElement) ||
+				settingsPanel === observedSettingsPanel
+			) {
+				return;
+			}
+			observedSettingsPanel = settingsPanel;
+			new MutationObserver(syncSettingsState).observe(settingsPanel, {
+				attributeFilter: ["class"],
+				attributes: true,
+			});
+			new ResizeObserver(() => {
+				if (!settingsPanel.classList.contains("float-panel-closed")) {
+					positionSettingsPanel();
+				}
+			}).observe(settingsPanel);
+			syncSettingsState();
+		}
+
 		window.addEventListener("music-player-layout-change", (event) => {
 			const detail = (
 				event as CustomEvent<{
@@ -103,14 +232,60 @@ import "./floating-tools.css";
 			);
 			if (detail.expanded) setFloatingToolsOpen(false);
 		});
+		window.addEventListener(MUSIC_PLAYER_STATE_EVENT, (event) => {
+			if (!(musicToggle instanceof HTMLButtonElement)) return;
+			const detail = (event as CustomEvent<MusicPlayerUiState>).detail;
+			root.dataset.musicPlaying = String(detail.isPlaying);
+			root.dataset.musicStarted = String(detail.hasStarted);
+			musicToggle.dataset.loading = String(detail.isLoading);
+			musicToggle.classList.toggle("is-active", detail.isExpanded);
+			musicToggle.setAttribute(
+				"aria-expanded",
+				String(detail.isExpanded),
+			);
+		});
 		toggle.addEventListener("click", () => {
 			setFloatingToolsOpen(root.dataset.open !== "true");
 		});
+		musicToggle?.addEventListener("click", () => {
+			window.dispatchEvent(
+				new CustomEvent<MusicPlayerCommand>(MUSIC_PLAYER_COMMAND_EVENT, {
+					detail: { type: "toggle-panel" },
+				}),
+			);
+		});
+		settingsToggle?.addEventListener("click", () => {
+			observeSettingsPanel();
+			positionSettingsPanel();
+			setFloatingToolsOpen(false);
+			requestAnimationFrame(() => {
+				observeSettingsPanel();
+				positionSettingsPanel();
+			});
+		});
 
-		document.addEventListener("keydown", (event) => {
+		new MutationObserver(observeSettingsPanel).observe(root, {
+			childList: true,
+			subtree: true,
+		});
+		observeSettingsPanel();
+		window.addEventListener("resize", positionSettingsPanel);
+
+		document.addEventListener("keydown", async (event) => {
+			const settingsPanel = document.getElementById(SETTINGS_PANEL_ID);
 			if (event.key === "Escape" && root.dataset.open === "true") {
 				setFloatingToolsOpen(false);
 				toggle.focus();
+				return;
+			}
+			if (
+				event.key === "Escape" &&
+				settingsPanel &&
+				!settingsPanel.classList.contains("float-panel-closed")
+			) {
+				const { panelManager } = await import("@/utils/panel-manager");
+				await panelManager.closePanel("display-setting");
+				settingsToggle?.focus();
 			}
 		});
 

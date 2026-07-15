@@ -139,19 +139,67 @@
   transform: rotate(45deg);
 }
 
+.floating-tools__music-switch {
+  overflow: visible;
+}
+
+.floating-tools__music-indicator {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--accent);
+  border: 2px solid var(--surface-raised);
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-standard);
+}
+
+.floating-tools[data-music-started="true"] .floating-tools__music-indicator {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.floating-tools[data-music-playing="true"] .floating-tools__music-switch::after {
+  position: absolute;
+  inset: -0.2rem;
+  content: "";
+  border: 1px solid color-mix(in oklch, var(--accent) 45%, transparent);
+  border-radius: inherit;
+  animation: floating-music-pulse 1.8s ease-out infinite;
+}
+
+.floating-tools__music-switch[data-loading="true"] > .local-icon {
+  animation: floating-music-spin 1s linear infinite;
+}
+
 .floating-tool-button.is-active {
   color: var(--accent);
   background: color-mix(in oklch, var(--accent) 12%, var(--surface-raised));
 }
 
 #display-setting.floating-tools__settings-panel {
-  position: absolute;
-  right: calc(100% + var(--size-3));
-  bottom: 0;
+  position: fixed;
+  top: var(--settings-panel-top, 1rem);
+  right: auto;
+  bottom: auto;
+  left: var(--settings-panel-left, 1rem);
   z-index: 65;
-  max-height: min(72vh, 42rem);
+  width: var(--settings-panel-width, 20rem);
+  max-width: calc(100vw - 2rem);
+  max-height: min(42rem, calc(100dvh - 2rem)) !important;
   overflow-y: auto;
   pointer-events: auto;
+  overscroll-behavior: contain;
+  transform-origin: bottom right;
+}
+
+#display-setting.floating-tools__settings-panel[data-anchor-side="left"] {
+  transform-origin: bottom left;
 }
 
 @media (max-width: 767px) {
@@ -164,6 +212,7 @@
 
   #display-setting.floating-tools__settings-panel {
     position: fixed;
+    top: auto;
     right: var(--space-page-x);
     bottom: calc(var(--size-3) + env(safe-area-inset-bottom));
     left: var(--space-page-x);
@@ -176,7 +225,28 @@
 
 @media (prefers-reduced-motion: reduce) {
   .floating-tools__item,
-  .floating-tools__switch-icon {
+  .floating-tools__switch-icon,
+  .floating-tools__music-switch::after,
+  .floating-tools__music-switch[data-loading="true"] > .local-icon {
     transition-duration: 0.01ms;
+    animation: none;
+  }
+}
+
+@keyframes floating-music-pulse {
+  from {
+    opacity: 0.75;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes floating-music-spin {
+  to {
+    transform: rotate(1turn);
   }
 }

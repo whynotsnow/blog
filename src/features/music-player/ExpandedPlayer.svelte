@@ -35,6 +35,8 @@
 </script>
 
 <div
+	id="music-player-panel"
+	hidden={!isExpanded}
 	class="expanded-player card-base bg-(--surface-overlay) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
 	class:opacity-0={!isExpanded}
 	class:scale-95={!isExpanded}
@@ -129,6 +131,7 @@
 		<button
 			class="btn-regular w-12 h-12 rounded-full"
 			class:opacity-50={isLoading}
+			aria-label={isPlaying ? labels.pause : labels.play}
 			disabled={isLoading}
 			on:click={onTogglePlay}
 		>
