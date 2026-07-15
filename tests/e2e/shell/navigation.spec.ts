@@ -75,6 +75,9 @@ test("fullscreen category and post pages align the main region", async ({
 	await expect
 		.poll(() => page.evaluate(() => window.scrollY))
 		.toBeGreaterThan(0);
+	await expect
+		.poll(() => page.evaluate(() => Boolean(window.swup)))
+		.toBe(true);
 
 	await page.evaluate(() => {
 		window.swup.navigate("/posts/markdown-tutorial/");
