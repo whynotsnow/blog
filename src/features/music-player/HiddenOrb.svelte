@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="orb-player w-12 h-12 bg-(--primary) rounded-full shadow-lg cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
+	class="orb-player w-12 h-12 bg-(--accent) rounded-full shadow-lg cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
 	class:opacity-0={!isHidden}
 	class:scale-0={!isHidden}
 	class:pointer-events-none={!isHidden}

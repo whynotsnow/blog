@@ -1,8 +1,8 @@
 <script lang="ts">
-	import I18nKey from "../i18n/i18nKey";
-	import { i18n } from "../i18n/translation";
+	import I18nKey from "@i18n/i18nKey";
+	import { i18n } from "@i18n/translation";
 	import type { ArchiveGroup, SlugItem } from "@/services/archive";
-	import { useArchiveGroups } from "@/services/hooks/useArchiveGroups";
+	import { filterArchiveGroups } from "./archive-filter";
 
 	export let groups: ArchiveGroup[];
 
@@ -12,7 +12,7 @@
 	const category = url.searchParams.get("category");
 	const uncategorized = url.searchParams.get("uncategorized");
 
-	const displayGroups = useArchiveGroups(groups, {
+	const displayGroups = filterArchiveGroups(groups, {
 		tag,
 		category,
 		uncategorized: !!uncategorized,
@@ -42,7 +42,7 @@
 				</div>
 				<div class="w-[15%] md:w-[10%]">
 					<div
-						class="h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto
+						class="h-3 w-3 bg-none rounded-full outline outline-[var(--accent)] mx-auto
                   -outline-offset-[2px] z-50 outline-3"
 					></div>
 				</div>
@@ -78,9 +78,9 @@
 						>
 							<div
 								class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-                       bg-[oklch(0.5_0.05_var(--hue))] group-hover:bg-[var(--primary)]
+                       bg-[oklch(0.5_0.05_var(--hue))] group-hover:bg-[var(--accent)]
                        outline outline-4 z-50
-                       outline-[var(--card-bg)]
+                       outline-[var(--surface-card)]
                        group-hover:outline-[var(--btn-plain-bg-hover)]
                        group-active:outline-[var(--btn-plain-bg-active)]"
 							></div>
@@ -89,7 +89,7 @@
 						<!-- post title -->
 						<div
 							class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-[var(--primary)]
+                     group-hover:translate-x-1 transition-all group-hover:text-[var(--accent)]
                      text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden"
 						>
 							{post.data.title}

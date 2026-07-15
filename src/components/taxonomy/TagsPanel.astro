@@ -4,7 +4,7 @@ import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import { getTagUrl } from "../../utils/url-utils";
 import ButtonTag from "../control/ButtonTag.astro";
-import WidgetLayout from "./WidgetLayout.astro";
+import PanelCard from "@components/ui/PanelCard.astro";
 export interface Props {
 	class?: string;
 	style?: string;
@@ -21,7 +21,7 @@ const isCollapsed =
 	collapseThreshold !== undefined && tags.length >= collapseThreshold;
 ---
 
-<WidgetLayout
+<PanelCard
 	name={i18n(I18nKey.tags)}
 	id="tags"
 	isCollapsed={isCollapsed}
@@ -41,4 +41,4 @@ const isCollapsed =
 			))
 		}
 	</div>
-</WidgetLayout>
+</PanelCard>

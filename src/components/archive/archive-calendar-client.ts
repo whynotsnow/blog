@@ -1,7 +1,7 @@
-import type { CalendarWidgetData } from "@/services/widget/data/calendar";
+import type { ArchiveCalendarData } from "@/services/archive-calendar";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 
-interface CalendarWidgetConfig extends CalendarWidgetData {
+interface ArchiveCalendarConfig extends ArchiveCalendarData {
 	monthNames: string[];
 	yearSuffix: string;
 }
@@ -14,19 +14,19 @@ function normalizePath(path: string): string {
 	return decodeURIComponent(path).replace(/\/$/, "");
 }
 
-function readCalendarConfig(): CalendarWidgetConfig | null {
+function readCalendarConfig(): ArchiveCalendarConfig | null {
 	const dataElement = document.getElementById(DATA_ID);
 	if (!dataElement?.textContent) return null;
 
 	try {
-		return JSON.parse(dataElement.textContent) as CalendarWidgetConfig;
+		return JSON.parse(dataElement.textContent) as ArchiveCalendarConfig;
 	} catch (error) {
 		console.error("Failed to parse calendar widget data:", error);
 		return null;
 	}
 }
 
-export function initCalendarWidget() {
+export function initArchiveCalendar() {
 	const widget = document.getElementById("calendar-widget");
 	if (!widget || widget.dataset.calendarInitialized === "true") return;
 
@@ -120,13 +120,13 @@ export function initCalendarWidget() {
 
 				if (isCurrentPost) {
 					containerClass +=
-						" bg-(--primary)/10 text-(--primary) border-(--primary)/10";
-					dateClass += " text-(--primary)/80";
+						" bg-(--accent)/10 text-(--accent) border-(--accent)/10";
+					dateClass += " text-(--accent)/80";
 				} else {
 					containerClass +=
-						" text-neutral-700 dark:text-neutral-300 hover:text-(--primary) dark:hover:text-(--primary) hover:bg-(--btn-plain-bg-hover)";
+						" text-neutral-700 dark:text-neutral-300 hover:text-(--accent) dark:hover:text-(--accent) hover:bg-(--btn-plain-bg-hover)";
 					dateClass +=
-						" text-neutral-400 group-hover:text-(--primary)/70";
+						" text-neutral-400 group-hover:text-(--accent)/70";
 				}
 
 				return `
@@ -178,10 +178,10 @@ export function initCalendarWidget() {
 
 			if (isSelected) {
 				bgClass =
-					"bg-(--primary) text-white shadow-md border border-transparent";
+					"bg-(--accent) text-white shadow-md border border-transparent";
 			} else if (isToday) {
 				bgClass =
-					"text-(--primary) font-bold bg-(--primary)/10 border border-(--primary)";
+					"text-(--accent) font-bold bg-(--accent)/10 border border-(--accent)";
 			} else if (hasPost) {
 				bgClass =
 					"font-bold text-90 hover:bg-(--btn-plain-bg-hover) border border-transparent";
@@ -191,7 +191,7 @@ export function initCalendarWidget() {
 				<div class="calendar-day aspect-square flex items-center justify-center rounded-md cursor-pointer relative transition-all duration-200 ${bgClass}"
 					data-date="${dateKey}">
 					${day}
-					${hasPost && !isSelected ? `<span class="absolute bottom-1 w-1 h-1 rounded-full bg-(--primary)"></span>` : ""}
+					${hasPost && !isSelected ? `<span class="absolute bottom-1 w-1 h-1 rounded-full bg-(--accent)"></span>` : ""}
 					${hasPost && count > 1 ? `<span class="absolute top-0.5 right-0.5 text-[9px] opacity-70 scale-75">${count}</span>` : ""}
 				</div>
 			`;
@@ -232,13 +232,13 @@ export function initCalendarWidget() {
 			let cls =
 				"month-item cursor-pointer rounded-lg flex flex-col items-center justify-center p-2 transition-all hover:bg-(--btn-plain-bg-hover) relative border border-transparent";
 			if (isCurrentMonth)
-				cls += " border-(--primary) text-(--primary) bg-(--primary)/5";
+				cls += " border-(--accent) text-(--accent) bg-(--accent)/5";
 			else cls += " text-neutral-700 dark:text-neutral-300";
 
 			html += `
 				<div class="${cls}" data-month="${index}">
 					<span class="text-sm font-bold">${name}</span>
-					${hasPost ? `<span class="w-1 h-1 rounded-full bg-(--primary) mt-1"></span>` : `<span class="w-1 h-1 mt-1"></span>`}
+					${hasPost ? `<span class="w-1 h-1 rounded-full bg-(--accent) mt-1"></span>` : `<span class="w-1 h-1 mt-1"></span>`}
 				</div>
 			`;
 		});
@@ -258,13 +258,13 @@ export function initCalendarWidget() {
 			let cls =
 				"year-item cursor-pointer rounded-lg flex flex-col items-center justify-center py-3 transition-all hover:bg-(--btn-plain-bg-hover) relative border border-transparent";
 			if (isCurrent)
-				cls += " border-(--primary) text-(--primary) bg-(--primary)/5";
+				cls += " border-(--accent) text-(--accent) bg-(--accent)/5";
 			else cls += " text-neutral-700 dark:text-neutral-300";
 
 			html += `
 				<div class="${cls}" data-year="${y}" id="year-${y}">
 					<span class="text-sm font-bold">${y}</span>
-					${hasPost ? `<span class="w-1.5 h-1.5 rounded-full bg-(--primary) mt-1"></span>` : `<span class="w-1.5 h-1.5 mt-1"></span>`}
+					${hasPost ? `<span class="w-1.5 h-1.5 rounded-full bg-(--accent) mt-1"></span>` : `<span class="w-1.5 h-1.5 mt-1"></span>`}
 				</div>
 			`;
 		}
@@ -367,5 +367,5 @@ export function initCalendarWidget() {
 	setupEventListeners();
 }
 
-onPageLifecycle("first-load", initCalendarWidget);
-onPageLifecycle("page-view", initCalendarWidget);
+onPageLifecycle("first-load", initArchiveCalendar);
+onPageLifecycle("page-view", initArchiveCalendar);

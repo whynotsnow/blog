@@ -19,31 +19,11 @@ function typedWidget(
 export const widgetPlacementPresets = {
 	default: {
 		desktop: {
-			left: [
-				widget("desktop-categories", "categories", "flow", {
-					animationDelay: 150,
-					collapseThreshold: 5,
-				}),
-				widget("desktop-tags", "tags", "sticky", {
-					animationDelay: 250,
-					collapseThreshold: 20,
-				}),
-				widget("desktop-calendar", "calendar", "flow", {
-					animationDelay: 250,
-				}),
-			],
+			left: [],
 			right: [widget("desktop-profile", "profile", "sticky")],
 		},
 		supporting: {
-			beforeContent: [
-				widget("supporting-categories", "categories", "flow", {
-					collapseThreshold: 5,
-				}),
-				widget("supporting-tags", "tags", "sticky", {
-					collapseThreshold: 20,
-				}),
-				widget("supporting-calendar", "calendar", "flow"),
-			],
+			beforeContent: [],
 		},
 		mobile: {
 			beforeContent: [widget("mobile-profile", "profile", "flow")],

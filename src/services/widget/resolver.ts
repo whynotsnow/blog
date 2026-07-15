@@ -1,14 +1,9 @@
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
-import type { MarkdownHeading } from "astro";
 import type { BaseSlug, ContentStore } from "../core/types";
-import type { Props as CategoriesProps } from "@components/widget/Categories.astro";
-import type { Props as TagsProps } from "@components/widget/Tags.astro";
-import type { Props as TocProps } from "@components/widget/TOC.astro";
-import type { Props as ProfileProps } from "@components/widget/Profile.astro";
-import type { Props as CalendarProps } from "@components/widget/Calendar.astro";
-import { buildCalendarPosts } from "@/services/calendar";
+import type { Props as CategoriesProps } from "@components/taxonomy/CategoriesPanel.astro";
+import type { Props as TagsProps } from "@components/taxonomy/TagsPanel.astro";
+import type { Props as ProfileProps } from "@components/profile/ProfileCard.astro";
 import { widgetComponentRegistry } from "./registry";
-import { buildCalendarWidgetData } from "./data/calendar";
 import { widgetPlacementPresets } from "./presets";
 import { resolveWidgetClass, resolveWidgetStyle } from "./presentation";
 import type {
@@ -20,7 +15,6 @@ import type {
 
 export interface SidebarContext {
 	store: ContentStore;
-	headings?: MarkdownHeading[];
 }
 
 function resolveWidget(
@@ -83,13 +77,11 @@ export interface ResolvedWidgetDefinition<TProps> {
 export type WidgetComponentMap = {
 	categories: ResolvedWidgetDefinition<CategoriesProps>;
 	tags: ResolvedWidgetDefinition<TagsProps>;
-	toc: ResolvedWidgetDefinition<TocProps>;
 	profile: ResolvedWidgetDefinition<ProfileProps>;
-	calendar: ResolvedWidgetDefinition<CalendarProps>;
 };
 
 export function getWidgetComponentMap(ctx: SidebarContext): WidgetComponentMap {
-	const { categories, posts } = ctx.store;
+	const { categories } = ctx.store;
 	const tags: BaseSlug[] = categories.flatMap((category) => category.tags);
 
 	return {
@@ -103,22 +95,6 @@ export function getWidgetComponentMap(ctx: SidebarContext): WidgetComponentMap {
 			component: widgetComponentRegistry.tags,
 			props: {
 				tags,
-			},
-		},
-
-		toc: {
-			component: widgetComponentRegistry.toc,
-			props: {
-				headings: ctx.headings ?? [],
-			},
-		},
-
-		calendar: {
-			component: widgetComponentRegistry.calendar,
-			props: {
-				calendarData: buildCalendarWidgetData(
-					buildCalendarPosts(posts),
-				),
 			},
 		},
 

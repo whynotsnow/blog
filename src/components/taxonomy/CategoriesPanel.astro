@@ -2,7 +2,7 @@
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import ButtonLink from "../control/ButtonLink.astro";
-import WidgetLayout from "./WidgetLayout.astro";
+import PanelCard from "@components/ui/PanelCard.astro";
 import type { PostNavigatorCategory } from "@/services/core/types";
 
 export interface Props {
@@ -19,7 +19,7 @@ const isCollapsed =
 	collapseThreshold !== undefined && categories.length >= collapseThreshold;
 ---
 
-<WidgetLayout
+<PanelCard
 	name={i18n(I18nKey.categories)}
 	id="categories"
 	isCollapsed={isCollapsed}
@@ -38,4 +38,4 @@ const isCollapsed =
 			</ButtonLink>
 		))
 	}
-</WidgetLayout>
+</PanelCard>

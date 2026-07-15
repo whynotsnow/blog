@@ -46,7 +46,7 @@ const viewModel = await buildMainGridLayoutViewModel({
 	layoutPolicy,
 	pathname: Astro.url.pathname,
 });
-const widgets = resolveWidgetPlacement(widgetPlacement, { store, headings });
+const widgets = resolveWidgetPlacement(widgetPlacement, { store });
 const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname);
 const footer = buildFooterViewModel(store);
 ---

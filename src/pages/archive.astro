@@ -1,16 +1,26 @@
 ---
-import ArchivePanel from "@components/ArchivePanel.svelte";
+import ArchiveTimeline from "@components/archive/ArchiveTimeline.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { buildArchivePageData } from "@/services/archive";
 import { getContentStore } from "@/services/core/content-store";
+import ArchiveCalendar from "@components/archive/ArchiveCalendar.astro";
+import CategoriesPanel from "@components/taxonomy/CategoriesPanel.astro";
+import TagsPanel from "@components/taxonomy/TagsPanel.astro";
 
 const store = await getContentStore();
 
-const { groups } = await buildArchivePageData(store.posts);
+const { groups, calendar, categories, tags } = await buildArchivePageData(store);
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)} store={store}>
-	<ArchivePanel groups={groups} client:only="svelte" />
+	<div class="ds-stack">
+		<ArchiveCalendar calendarData={calendar} />
+		<div class="grid gap-4 md:grid-cols-2">
+			<CategoriesPanel {categories} collapseThreshold={8} />
+			<TagsPanel {tags} collapseThreshold={24} />
+		</div>
+		<ArchiveTimeline groups={groups} client:only="svelte" />
+	</div>
 </MainGridLayout>

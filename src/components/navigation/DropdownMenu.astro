@@ -61,7 +61,7 @@ const hasChildren = children.length > 0;
 				</button>
 
 				<div class="dropdown-menu" data-dropdown-menu>
-					<div class="dropdown-content bg-(--float-panel-bg) rounded-(--radius-large) shadow-xl dark:shadow-none border border-black/5 dark:border-white/10 p-2 min-w-48">
+					<div class="dropdown-content bg-(--surface-overlay) rounded-(--radius-lg) shadow-xl dark:shadow-none border border-black/5 dark:border-white/10 p-2 min-w-48">
 						{children.map((child) => (
 							<a
 								href={
@@ -73,7 +73,7 @@ const hasChildren = children.length > 0;
 										? "noopener noreferrer"
 										: null
 								}
-								class="dropdown-item flex items-center justify-between px-4 py-2.5 hover:text-(--primary) hover:bg-(--btn-plain-bg-hover) transition-colors duration-150 font-medium rounded-lg"
+								class="dropdown-item flex items-center justify-between px-4 py-2.5 hover:text-(--accent) hover:bg-(--btn-plain-bg-hover) transition-colors duration-150 font-medium rounded-lg"
 								aria-label={child.name}
 							>
 								<div class="flex items-center">

@@ -2,14 +2,14 @@
 import { siteConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
-import WidgetLayout from "./WidgetLayout.astro";
+import PanelCard from "@components/ui/PanelCard.astro";
 import { Icon } from "astro-icon/components";
-import type { CalendarWidgetData } from "@/services/widget/data/calendar";
+import type { ArchiveCalendarData } from "@/services/archive-calendar";
 
 export interface Props {
 	class?: string;
 	style?: string;
-	calendarData: CalendarWidgetData;
+	calendarData: ArchiveCalendarData;
 }
 
 const { class: className, style, calendarData } = Astro.props;
@@ -52,9 +52,9 @@ const calendarClientData = JSON.stringify({
 }).replace(/</g, "\\u003c");
 ---
 
-<WidgetLayout
+<PanelCard
 	id="calendar-widget"
-	class={`hidden md:block ${className}`}
+	class={className}
 	style={style}
 	name={i18n(I18nKey.updateCalendar)}
 >
@@ -75,7 +75,7 @@ const calendarClientData = JSON.stringify({
 		<div class="flex items-center gap-1 shrink-0 ml-2">
 			<button
 				id="back-to-today-btn"
-				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-(--primary) transition-all invisible"
+				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-(--accent) transition-all invisible"
 				aria-label="Back to today"
 			>
 				<Icon
@@ -85,14 +85,14 @@ const calendarClientData = JSON.stringify({
 			</button>
 			<button
 				id="prev-month-btn"
-				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--primary) transition-colors text-xl font-extrabold"
+				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors text-xl font-extrabold"
 				aria-label="Previous month"
 			>
 				＜
 			</button>
 			<button
 				id="next-month-btn"
-				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--primary) transition-colors text-xl font-extrabold"
+				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors text-xl font-extrabold"
 				aria-label="Next month"
 			>
 				＞
@@ -113,7 +113,7 @@ const calendarClientData = JSON.stringify({
 			<div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
 			<div id="calendar-posts" class="mt-4">
 				<div
-					class="h-px w-full bg-(--line-divider) mb-2 hidden"
+					class="h-px w-full bg-(--border-subtle) mb-2 hidden"
 					id="calendar-posts-divider"
 				>
 				</div>
@@ -126,7 +126,7 @@ const calendarClientData = JSON.stringify({
 		</div>
 		<div
 			id="selection-panel"
-			class="absolute inset-0 bg-(--card-bg) z-10 flex flex-col hidden opacity-0 transition-opacity duration-200"
+			class="absolute inset-0 bg-(--surface-card) z-10 flex flex-col hidden opacity-0 transition-opacity duration-200"
 		>
 			<div
 				id="selection-content"
@@ -135,7 +135,7 @@ const calendarClientData = JSON.stringify({
 			</div>
 		</div>
 	</div>
-</WidgetLayout>
+</PanelCard>
 
 <script
 	is:inline
@@ -145,5 +145,5 @@ const calendarClientData = JSON.stringify({
 ></script>
 
 <script>
-	import "./calendar-client";
+	import "./archive-calendar-client";
 </script>

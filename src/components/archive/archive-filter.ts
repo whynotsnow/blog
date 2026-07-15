@@ -6,7 +6,7 @@ export interface ArchiveFilter {
 	uncategorized?: boolean;
 }
 
-export function useArchiveGroups(
+export function filterArchiveGroups(
 	groups: ArchiveGroup[],
 	filter: ArchiveFilter,
 ): ArchiveGroup[] {

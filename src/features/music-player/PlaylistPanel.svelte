@@ -17,7 +17,7 @@
 	transition:slide={{ duration: 300, axis: "y" }}
 >
 	<div
-		class="playlist-header flex items-center justify-between p-4 border-b border-(--line-divider)"
+		class="playlist-header flex items-center justify-between p-4 border-b border-(--border-subtle)"
 	>
 		<h3 class="text-lg font-semibold text-90">{labels.playlist}</h3>
 		<button
@@ -32,7 +32,7 @@
 			<div
 				class="playlist-item flex items-center gap-3 p-3 hover:bg-(--btn-plain-bg-hover) cursor-pointer transition-colors"
 				class:bg-[var(--btn-plain-bg)]={index === currentIndex}
-				class:text-[var(--primary)]={index === currentIndex}
+				class:text-[var(--accent)]={index === currentIndex}
 				on:click={() => onPlaySong(index)}
 				on:keydown={(event) => {
 					if (event.key === "Enter" || event.key === " ") {
@@ -48,15 +48,15 @@
 					{#if index === currentIndex && isPlaying}
 						<Icon
 							icon="material-symbols:graphic-eq"
-							class="text-(--primary) animate-pulse"
+							class="text-(--accent) animate-pulse"
 						/>
 					{:else if index === currentIndex}
 						<Icon
 							icon="material-symbols:pause"
-							class="text-(--primary)"
+							class="text-(--accent)"
 						/>
 					{:else}
-						<span class="text-sm text-(--content-meta)"
+						<span class="text-sm text-(--text-muted)"
 							>{index + 1}</span
 						>
 					{/if}
@@ -74,14 +74,14 @@
 				<div class="flex-1 min-w-0">
 					<div
 						class="font-medium truncate"
-						class:text-[var(--primary)]={index === currentIndex}
+						class:text-[var(--accent)]={index === currentIndex}
 						class:text-90={index !== currentIndex}
 					>
 						{song.title}
 					</div>
 					<div
-						class="text-sm text-(--content-meta) truncate"
-						class:text-[var(--primary)]={index === currentIndex}
+						class="text-sm text-(--text-muted) truncate"
+						class:text-[var(--accent)]={index === currentIndex}
 					>
 						{song.artist}
 					</div>

@@ -1,6 +1,6 @@
 import type { CalendarPostData } from "@/services/calendar";
 
-export interface CalendarWidgetData {
+export interface ArchiveCalendarData {
 	posts: CalendarPostData[];
 	postDateMap: Record<string, CalendarPostData[]>;
 	postsByMonth: Record<string, CalendarPostData[]>;
@@ -12,9 +12,9 @@ export interface CalendarWidgetData {
 	};
 }
 
-export function buildCalendarWidgetData(
+export function buildArchiveCalendarData(
 	posts: CalendarPostData[],
-): CalendarWidgetData {
+): ArchiveCalendarData {
 	const postDateMap: Record<string, CalendarPostData[]> = {};
 	const postsByMonth: Record<string, CalendarPostData[]> = {};
 

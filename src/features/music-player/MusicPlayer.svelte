@@ -1,34 +1,34 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
 
-	import { musicPlayerConfig } from "../../config";
-	import Key from "../../i18n/i18nKey";
-	import { i18n } from "../../i18n/translation";
-	import ExpandedPlayer from "./music-player/ExpandedPlayer.svelte";
-	import HiddenOrb from "./music-player/HiddenOrb.svelte";
-	import MiniPlayer from "./music-player/MiniPlayer.svelte";
-	import PlayerErrorToast from "./music-player/PlayerErrorToast.svelte";
-	import PlaylistPanel from "./music-player/PlaylistPanel.svelte";
+	import { musicPlayerConfig } from "@/config";
+	import Key from "@i18n/i18nKey";
+	import { i18n } from "@i18n/translation";
+	import ExpandedPlayer from "./ExpandedPlayer.svelte";
+	import HiddenOrb from "./HiddenOrb.svelte";
+	import MiniPlayer from "./MiniPlayer.svelte";
+	import PlayerErrorToast from "./PlayerErrorToast.svelte";
+	import PlaylistPanel from "./PlaylistPanel.svelte";
 	import {
 		calculateVolumeFromPointer,
 		formatTime,
 		getNextIndex,
 		getPreviousIndex,
-	} from "./music-player/playback";
+	} from "./playback";
 	import {
 		buildMetingApiUrl,
 		getAssetPath,
 		localPlaylist,
 		normalizeMetingPlaylist,
-	} from "./music-player/playlist";
-	import { loadStoredVolume, saveStoredVolume } from "./music-player/storage";
+	} from "./playlist";
+	import { loadStoredVolume, saveStoredVolume } from "./storage";
 	import type {
 		MetingSong,
 		MusicPlayerLabels,
 		RepeatMode,
 		Song,
-	} from "./music-player/types";
-	import "./music-player/styles.css";
+	} from "./types";
+	import "./styles.css";
 
 	const mode = musicPlayerConfig.mode ?? "meting";
 	const metingApi =

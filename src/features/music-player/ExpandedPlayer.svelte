@@ -35,7 +35,7 @@
 </script>
 
 <div
-	class="expanded-player card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
+	class="expanded-player card-base bg-(--surface-overlay) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
 	class:opacity-0={!isExpanded}
 	class:scale-95={!isExpanded}
 	class:pointer-events-none={!isExpanded}
@@ -73,7 +73,7 @@
 			</button>
 			<button
 				class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
-				class:text-[var(--primary)]={showPlaylist}
+				class:text-[var(--accent)]={showPlaylist}
 				on:click={onTogglePlaylist}
 				title={labels.playlist}
 			>
@@ -101,7 +101,7 @@
 			aria-valuenow={duration > 0 ? (currentTime / duration) * 100 : 0}
 		>
 			<div
-				class="h-full bg-(--primary) rounded-full transition-all duration-100"
+				class="h-full bg-(--accent) rounded-full transition-all duration-100"
 				style="width: {duration > 0
 					? (currentTime / duration) * 100
 					: 0}%"
@@ -194,7 +194,7 @@
 			aria-valuenow={volume * 100}
 		>
 			<div
-				class="h-full bg-(--primary) rounded-full transition-all"
+				class="h-full bg-(--accent) rounded-full transition-all"
 				class:duration-100={!isVolumeDragging}
 				class:duration-0={isVolumeDragging}
 				style="width: {volume * 100}%"
