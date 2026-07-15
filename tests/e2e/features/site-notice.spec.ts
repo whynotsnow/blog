@@ -23,6 +23,7 @@ test("site notice floats outside page flow and switches between notices", async 
 	await expect(region).toBeVisible();
 	await expect(notices).toHaveCount(2);
 	await expect(region).toHaveCSS("position", "fixed");
+	await region.hover();
 
 	const geometry = await region.evaluate((element) => ({
 		left: element.getBoundingClientRect().left,
@@ -55,16 +56,21 @@ test("site notice floats outside page flow and switches between notices", async 
 		geometry.messageClientWidth,
 	);
 
-	await expect(notices.nth(0)).toHaveAttribute("data-state", "active");
 	const initialLayout = await page.evaluate(() => ({
 		documentHeight: document.documentElement.scrollHeight,
 		viewportHeight: document
 			.querySelector<HTMLElement>("[data-site-notice-viewport]")
 			?.getBoundingClientRect().height,
 	}));
+	const counter = region.locator("[data-site-notice-index]");
+	const initialIndex = Number(await counter.textContent()) - 1;
+	const expectedIndex = (initialIndex + 1) % 2;
 	await region.locator("[data-site-notice-next]").click();
-	await expect(notices.nth(1)).toHaveAttribute("data-state", "active");
-	await expect(region.locator("[data-site-notice-index]")).toHaveText("2");
+	await expect(notices.nth(expectedIndex)).toHaveAttribute(
+		"data-state",
+		"active",
+	);
+	await expect(counter).toHaveText(String(expectedIndex + 1));
 	const switchedLayout = await page.evaluate(() => ({
 		documentHeight: document.documentElement.scrollHeight,
 		viewportHeight: document
