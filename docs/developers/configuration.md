@@ -75,7 +75,7 @@ Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读�
 
 ## SettingsPanel 相关配置
 
-统一设置面板从 Navbar 迁入右下角 Floating Tools。Tools 收起时保留主入口与按滚动状态出现的 Back to Top，展开后提供 Theme、Floating TOC（当前页面存在标题时）和 Settings 入口。设置面板继续使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应配置项。
+统一设置面板从 Navbar 迁入右下角 Floating Tools。Tools 收起时保留主入口与按滚动状态出现的 Back to Top，展开后提供 Theme、Music、Floating TOC（当前页面存在标题时）和 Settings 入口。Settings 打开后 Tools Rail 自动收起；桌面端面板根据入口所在的 viewport 侧动态对齐，并把完整高度限制在 Safe Area 内，移动端使用底部 Sheet。设置面板继续使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应配置项。
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。它只控制 Post List View，不再隐式改写页面级 Desktop Layout Preference。
@@ -93,7 +93,7 @@ Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读�
 - `fullscreenWallpaperConfig.fullscreen.switchable`：预留全屏横幅相关设置入口；当前全屏横幅不显示 `[data-fullscreen-wallpaper]` 图层。
 - `sakuraConfig.switchable`：控制樱花特效设置入口。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
 - `pioConfig.enable`：决定是否提供看板娘功能；`hiddenOnMobile` 继续作为设备限制。允许显示时，Floating Tools 提供访客级开关，偏好复用 Pio 的 `localStorage.posterGirl`，因此 Tools 与 Pio 自带关闭/恢复入口保持同步。隐藏只改变运行时可见性，不重复加载 Live2D 脚本。
-- Music Player 仍拥有播放与展开状态；展开面板会发布占用高度，让 Floating Tools 自动收起并避让。Floating Tools 不读取或改写播放状态。
+- Music Player 仍拥有播放与展开状态。未开始播放时不显示 Mini Player，Floating Tools 的 Music 入口负责呼出控制面板；首次播放后 Mini Player 在右下角持续可用，即使暂停也不会消失。播放器通过 Feature-local Event Contract 发布必要的 UI 状态与占用高度，Floating Tools 只更新入口提示、自动收起并避让，不直接操作 Audio。
 
 ## 特色页面
 

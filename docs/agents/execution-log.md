@@ -202,3 +202,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Added stable mobile viewport sizing, low-height landscape wave bounds, Safe Area padding, and a text-owned Banner contrast gradient.
 - Reduced initial carousel requests by keeping later frames inert until needed and using one responsive `picture` per materialized slide.
 - Learned that a non-interactive visual overlay must not intercept pointer events when the underlying Banner owns hover interaction; the Shell E2E contract now covers that boundary.
+
+### Integrated Music Player with Floating Tools
+
+- Kept Audio and playlist ownership inside the existing Music Player while adding a narrow command/state event contract for the Floating Tools entry.
+- Hid the Mini Player until first playback, then kept it available after pause while the Music entry continued to open the full control panel.
+- Moved the Floating Tools shell outside the animated Main Content Layer so fixed overlays use the viewport as their containing block.
+- Replaced the invalid Astro-style `class:list` usage in the Svelte Settings Panel with a real feature class binding; this restored the viewport-bounded desktop popover and mobile bottom sheet styles.
+- Added browser contracts for initial music visibility, first playback, persistent paused controls, viewport-safe Settings geometry, panel avoidance, and local Shell icons.
