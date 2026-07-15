@@ -38,3 +38,16 @@ body.fullscreen-banner.enable-banner #header-waves {
   bottom: -1px;
   left: 0;
 }
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .waves {
+    min-height: 1.875rem;
+    max-height: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waves > .parallax use {
+    animation: none;
+  }
+}

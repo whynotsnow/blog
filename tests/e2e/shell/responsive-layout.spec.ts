@@ -454,7 +454,7 @@ test("banner theme and motion styles follow site state and user preference", asy
 	const lightBackground = await overlay.evaluate(
 		(node) => getComputedStyle(node).backgroundImage,
 	);
-	expect(lightBackground).toBe("none");
+	expect(lightBackground).not.toBe("none");
 
 	await page.locator("html").evaluate((node) => node.classList.add("dark"));
 	expect(
@@ -470,6 +470,25 @@ test("banner theme and motion styles follow site state and user preference", asy
 	await expect(page.locator(".banner-enter-animation").first()).toHaveCount(
 		1,
 	);
+	const activeSlide = page.locator(
+		'#banner-carousel [data-banner-slide][data-active="true"]',
+	);
+	await expect(activeSlide).toHaveCount(1);
+	expect(
+		await activeSlide.evaluate(
+			(node) => getComputedStyle(node).animationName,
+		),
+	).toBe("none");
+
+	const carousel = page.locator("#banner-carousel");
+	await expect(carousel.locator("[data-banner-slide] img")).toHaveCount(2);
+	await expect(
+		carousel.locator("template[data-banner-slide-content]"),
+	).toHaveCount(4);
+	await carousel.hover();
+	await expect(carousel).toHaveAttribute("data-paused", "true");
+	await page.mouse.move(10, 700);
+	await expect(carousel).not.toHaveAttribute("data-paused");
 });
 
 test("global motion and scrollbar utilities stay active", async ({ page }) => {

@@ -1,14 +1,16 @@
 ---
-import ImageWrapper from "@components/misc/ImageWrapper.astro";
 import type { BannerImages } from "@/services/banner";
 import type { SiteConfig } from "@/types/config";
+import BannerImage from "./BannerImage.astro";
 
 interface Props {
 	bannerImages: BannerImages;
+	intervalSeconds?: number;
 	position: SiteConfig["banner"]["position"];
 }
 
-const { bannerImages, position } = Astro.props;
+const { bannerImages, intervalSeconds = 8, position } = Astro.props;
+const intervalMs = Math.max(intervalSeconds * 1000, 1500);
 const itemCount = Math.max(
 	Array.isArray(bannerImages.desktop) ? bannerImages.desktop.length : 0,
 	Array.isArray(bannerImages.mobile) ? bannerImages.mobile.length : 0,
@@ -32,33 +34,46 @@ const items = Array.from({ length: itemCount })
 	.filter(Boolean);
 ---
 
-<div id="banner-carousel" class="banner-enter-animation relative h-full w-full">
+<div
+	id="banner-carousel"
+	class="banner-enter-animation relative h-full w-full"
+	data-carousel-interval={intervalMs}
+>
 	<ul class="carousel-list h-full w-full">
 		{
 			items.map((item, index) => (
 				<li
-					class={`carousel-item absolute inset-0 transition-all duration-500 ${index === 0 ? "opacity-100 scale-100" : "opacity-0 scale-110"}`}
+					class="carousel-item absolute inset-0"
+					data-active={index === 0 ? "true" : "false"}
+					data-banner-slide
+					data-has-desktop={Boolean(item?.desktopSrc)}
+					data-has-mobile={Boolean(item?.mobileSrc)}
 				>
-					{item?.mobileSrc && (
-						<ImageWrapper
-							alt={`Mobile banner image ${index + 1}`}
-							class="block h-full w-full transition-transform duration-500 ease-out md:hidden"
-							src={item.mobileSrc}
+					{index === 0 ? (
+						<BannerImage
+							desktopSrc={item?.desktopSrc}
+							fetchpriority="high"
+							loading="eager"
+							mobileSrc={item?.mobileSrc}
 							position={position}
-							loading={index === 0 ? "eager" : "lazy"}
 						/>
-					)}
-					{item?.desktopSrc && (
-						<ImageWrapper
-							alt={`Desktop banner image ${index + 1}`}
-							class="hidden h-full w-full transition-transform duration-500 ease-out md:block"
-							src={item.desktopSrc}
-							position={position}
-							loading={index === 0 ? "eager" : "lazy"}
-						/>
+					) : (
+						<template data-banner-slide-content>
+							<BannerImage
+								desktopSrc={item?.desktopSrc}
+								mobileSrc={item?.mobileSrc}
+								position={position}
+							/>
+						</template>
 					)}
 				</li>
 			))
 		}
 	</ul>
 </div>
+
+<script>
+	import { initBannerCarouselFromDocument } from "./banner-carousel-client";
+
+	initBannerCarouselFromDocument();
+</script>

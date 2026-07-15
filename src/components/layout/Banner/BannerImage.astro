@@ -1,0 +1,54 @@
+---
+import { url } from "@/utils/url-utils";
+
+interface Props {
+	desktopSrc?: string;
+	fetchpriority?: "high" | "low" | "auto";
+	loading?: "eager" | "lazy";
+	mobileSrc?: string;
+	position?: string;
+}
+
+const {
+	desktopSrc = "",
+	fetchpriority = "auto",
+	loading = "lazy",
+	mobileSrc = "",
+	position = "center",
+} = Astro.props;
+
+function resolveSource(src: string): string {
+	if (!src) return "";
+	return src.startsWith("/") ? url(src) : src;
+}
+
+const resolvedDesktop = resolveSource(desktopSrc || mobileSrc);
+const resolvedMobile = resolveSource(mobileSrc || desktopSrc);
+const isBilibiliImage = [resolvedDesktop, resolvedMobile].some((src) =>
+	src.includes("hdslb.com"),
+);
+---
+
+<div class="banner-image-frame h-full w-full overflow-hidden relative">
+	<div
+		class="absolute inset-0 z-10 bg-black/10 pointer-events-none"
+		aria-hidden="true"
+	></div>
+	<picture class="block h-full w-full">
+		{
+			resolvedMobile && (
+				<source media="(max-width: 767px)" srcset={resolvedMobile} />
+			)
+		}
+		<img
+			alt=""
+			class="block h-full w-full object-cover"
+			decoding="async"
+			fetchpriority={fetchpriority}
+			loading={loading}
+			referrerpolicy={isBilibiliImage ? "no-referrer" : undefined}
+			src={resolvedDesktop}
+			style={`object-position: ${position}`}
+		/>
+	</picture>
+</div>

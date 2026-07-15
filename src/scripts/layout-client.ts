@@ -5,7 +5,7 @@ const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
 const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
-import { sakuraConfig, siteConfig } from "../config";
+import { sakuraConfig } from "../config";
 import { initSakura } from "../utils/sakura-manager";
 import type { PanelId } from "../utils/panel-manager";
 import { onPageLifecycle } from "../utils/page-lifecycle";
@@ -105,194 +105,6 @@ function initKatexScrollbar() {
 
 		element.setAttribute("data-scrollbar-initialized", "true");
 	});
-}
-
-function showBanner() {
-	// 使用requestAnimationFrame优化DOM操作
-	requestAnimationFrame(() => {
-		// Handle single image banner (desktop)
-		const banner = document.getElementById("banner");
-		if (banner) {
-			banner.classList.remove("opacity-0", "scale-105");
-		}
-
-		// Handle mobile single image banner - 使用与电脑端相同的逻辑
-		const mobileBanner = document.querySelector(
-			'.block.md\\:hidden[alt="Mobile banner image of the blog"]',
-		);
-		if (mobileBanner && !document.getElementById("banner-carousel")) {
-			// 移动端使用与电脑端相同的初始化逻辑
-			mobileBanner.classList.remove("opacity-0", "scale-105");
-			mobileBanner.classList.add("opacity-100");
-		}
-
-		// Handle carousel banner - 立即初始化，移除延迟
-		const carousel = document.getElementById("banner-carousel");
-		if (carousel) {
-			// 立即初始化轮播，移除延迟以改善流畅性
-			initCarousel();
-		}
-	});
-}
-
-function initCarousel() {
-	const carouselItems = document.querySelectorAll(".carousel-item");
-	// 根据屏幕尺寸过滤有效的轮播项
-	const isMobile = window.innerWidth < 768; // md breakpoint
-	const validItems = Array.from(carouselItems).filter((item) => {
-		if (isMobile) {
-			// 移动端：只显示有mobile图片的项目
-			return item.querySelector(".block.md\\:hidden");
-		} else {
-			// 桌面端/平板端：只显示有desktop图片的项目
-			return item.querySelector(".hidden.md\\:block");
-		}
-	});
-
-	if (validItems.length > 1 && siteConfig.banner.carousel?.enable) {
-		let currentIndex = 0;
-		const interval = siteConfig.banner.carousel?.interval || 6;
-		let carouselInterval: ReturnType<typeof setInterval> | undefined;
-		let isPaused = false;
-
-		// 移动端触摸手势支持
-		let startX = 0;
-		let startY = 0;
-		let isSwiping = false;
-
-		const carousel = document.getElementById("banner-carousel");
-		let animationCleanup: number | undefined;
-
-		// 切换图片的函数 - 基于有效项目
-		function switchToSlide(index: number) {
-			if (animationCleanup) window.clearTimeout(animationCleanup);
-			carousel?.classList.add("is-animating");
-			animationCleanup = window.setTimeout(() => {
-				carousel?.classList.remove("is-animating");
-			}, 550);
-
-			// 隐藏当前图片
-			const currentItem = validItems[currentIndex];
-			currentItem.classList.remove("opacity-100", "scale-100");
-			currentItem.classList.add("opacity-0", "scale-110");
-
-			// 更新索引
-			currentIndex = index;
-
-			// 显示新图片
-			const nextItem = validItems[currentIndex];
-			nextItem.classList.add("opacity-100", "scale-100");
-			nextItem.classList.remove("opacity-0", "scale-110");
-		}
-
-		// 初始化：隐藏所有图片，只显示第一张有效图片
-		carouselItems.forEach((item) => {
-			item.classList.add("opacity-0", "scale-110");
-			item.classList.remove("opacity-100", "scale-100");
-		});
-
-		// 显示第一张有效图片
-		if (validItems.length > 0) {
-			validItems[0].classList.add("opacity-100", "scale-100");
-			validItems[0].classList.remove("opacity-0", "scale-110");
-		}
-
-		// 移动端触摸事件
-		if (carousel && "ontouchstart" in window) {
-			carousel.addEventListener(
-				"touchstart",
-				(e) => {
-					startX = e.touches[0].clientX;
-					startY = e.touches[0].clientY;
-					isSwiping = false;
-					isPaused = true;
-					clearInterval(carouselInterval);
-				},
-				{ passive: true },
-			);
-
-			carousel.addEventListener(
-				"touchmove",
-				(e) => {
-					if (!startX || !startY) return;
-
-					const diffX = Math.abs(e.touches[0].clientX - startX);
-					const diffY = Math.abs(e.touches[0].clientY - startY);
-
-					// 判断是否为水平滑动
-					if (diffX > diffY && diffX > 30) {
-						isSwiping = true;
-						e.preventDefault();
-					}
-				},
-				{ passive: false },
-			);
-
-			carousel.addEventListener(
-				"touchend",
-				(e) => {
-					if (!startX || !startY || !isSwiping) {
-						isPaused = false;
-						startCarousel();
-						return;
-					}
-
-					const endX = e.changedTouches[0].clientX;
-					const diffX = startX - endX;
-
-					// 滑动距离超过50px才切换
-					if (Math.abs(diffX) > 50) {
-						if (diffX > 0) {
-							// 向左滑动，显示下一张
-							const nextIndex =
-								(currentIndex + 1) % validItems.length;
-							switchToSlide(nextIndex);
-						} else {
-							// 向右滑动，显示上一张
-							const prevIndex =
-								(currentIndex - 1 + validItems.length) %
-								validItems.length;
-							switchToSlide(prevIndex);
-						}
-					}
-
-					startX = 0;
-					startY = 0;
-					isSwiping = false;
-					isPaused = false;
-					// 重新开始自动轮播
-					startCarousel();
-				},
-				{ passive: true },
-			);
-		}
-
-		// 开始轮播的函数
-		function startCarousel() {
-			clearInterval(carouselInterval);
-			carouselInterval = setInterval(() => {
-				if (!isPaused) {
-					const nextIndex = (currentIndex + 1) % validItems.length;
-					switchToSlide(nextIndex);
-				}
-			}, interval * 1000);
-		}
-
-		// 鼠标悬停暂停（桌面端）
-		if (carousel) {
-			carousel.addEventListener("mouseenter", () => {
-				isPaused = true;
-				clearInterval(carouselInterval);
-			});
-			carousel.addEventListener("mouseleave", () => {
-				isPaused = false;
-				startCarousel();
-			});
-		}
-
-		// 开始自动轮播
-		startCarousel();
-	}
 }
 
 function setupSakura() {
@@ -710,10 +522,9 @@ window.onresize = () => {
 	);
 };
 
-// 页面加载完成后初始化banner和轮播图
+// 页面加载完成后初始化面板管理器
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", async () => {
-		showBanner();
 		// 初始化面板管理器
 		try {
 			await import("../utils/panel-manager.js");
@@ -723,7 +534,6 @@ if (document.readyState === "loading") {
 		}
 	});
 } else {
-	showBanner();
 	// 页面已经加载完成，立即初始化面板管理器
 	(async () => {
 		try {

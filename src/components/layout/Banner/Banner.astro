@@ -27,6 +27,7 @@ const hasCarousel =
 		hasCarousel ? (
 			<BannerCarousel
 				bannerImages={bannerImages}
+				intervalSeconds={config.carousel?.interval}
 				position={config.position}
 			/>
 		) : (

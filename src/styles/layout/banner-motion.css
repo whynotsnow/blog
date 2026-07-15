@@ -1,9 +1,27 @@
 .carousel-item {
+  opacity: 0;
   transform-origin: center;
-  transition:
-    opacity 500ms ease-out,
-    transform 500ms ease-out;
+  transition: opacity var(--banner-crossfade-duration, 900ms) ease-in-out;
   will-change: auto;
+}
+
+.carousel-item[data-active="true"] {
+  opacity: 1;
+  animation: banner-ken-burns var(--banner-frame-duration, 8900ms) ease-out both;
+}
+
+.carousel-item[data-leaving="true"] {
+  opacity: 0;
+}
+
+@keyframes banner-ken-burns {
+  from {
+    transform: scale(1.02);
+  }
+
+  to {
+    transform: scale(1.07);
+  }
 }
 
 .banner-enter-animation {
@@ -13,17 +31,30 @@
 @keyframes banner-image-enter {
   from {
     opacity: 0;
-    transform: scale(1.05);
   }
 
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
 /* Compositing hints are enabled only while a carousel or banner state changes. */
-#banner-carousel.is-animating,
-#banner-carousel.is-animating .carousel-item {
+#banner-carousel[data-animating="true"],
+#banner-carousel[data-animating="true"] .carousel-item {
   will-change: transform, opacity;
+}
+
+#banner-carousel[data-paused="true"] .carousel-item {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-item {
+    transition-duration: 180ms;
+  }
+
+  .carousel-item[data-active="true"] {
+    animation: none;
+    transform: none;
+  }
 }
