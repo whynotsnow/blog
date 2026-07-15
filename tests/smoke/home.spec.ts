@@ -342,9 +342,7 @@ test("site notice renders as a shell-level status bar", async ({ page }) => {
 	await expect(notice).toContainText(
 		/网站建设中，更多功能敬请期待！|本站内容持续更新，感谢你的关注。/,
 	);
-	await expect(notice.locator("xpath=ancestor::widget-layout")).toHaveCount(
-		0,
-	);
+	await expect(notice.locator("xpath=ancestor::panel-card")).toHaveCount(0);
 });
 
 test("saved Grid preference follows the post Feed container width", async ({
@@ -433,7 +431,7 @@ test("fluid two-column post Grid fills the Feed and keeps the semantic gap", asy
 	expect(coverHeight).toBeLessThanOrEqual(224);
 });
 
-test("responsive width budgets preserve Card and Sidebar stability", async ({
+test("responsive width budgets preserve Card and support module stability", async ({
 	page,
 }) => {
 	await page.addInitScript(() => {
@@ -464,7 +462,7 @@ test("responsive width budgets preserve Card and Sidebar stability", async ({
 
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await expect(
-		page.locator('[data-widget-id="home-desktop-profile"]'),
+		page.locator(".page-support-region .profile-card"),
 	).toBeVisible();
 	await expect
 		.poll(() =>
@@ -477,7 +475,7 @@ test("responsive width budgets preserve Card and Sidebar stability", async ({
 		.toBe(3);
 	const compressedLargeCardWidth = await readFirstTrackWidth();
 	const compressedSidebarWidth = await page
-		.locator(".desktop-sidebar-region")
+		.locator(".page-support-region")
 		.evaluate((node) => node.getBoundingClientRect().width);
 	expect(compressedLargeCardWidth).toBeGreaterThanOrEqual(295);
 	expect(compressedLargeCardWidth).toBeLessThanOrEqual(346);
@@ -499,7 +497,7 @@ test("responsive width budgets preserve Card and Sidebar stability", async ({
 		.toBe(3);
 	const maximumCardWidth = await readFirstTrackWidth();
 	const maximumSidebarWidth = await page
-		.locator(".desktop-sidebar-region")
+		.locator(".page-support-region")
 		.evaluate((node) => node.getBoundingClientRect().width);
 	const shellGeometry = await page.evaluate(() => {
 		const shell = document.querySelector<HTMLElement>(".main-grid-shell")!;
@@ -550,18 +548,12 @@ test("responsive width budgets preserve Card and Sidebar stability", async ({
 	).toBeLessThan(1);
 	expect(
 		await page
-			.locator(".desktop-sidebar-region")
-			.evaluate((node) =>
-				Array.from(
-					node.querySelectorAll<HTMLElement>(".sidebar-widget-slot"),
-				).every(
-					(widget) => widget.scrollWidth <= widget.clientWidth + 1,
-				),
-			),
+			.locator(".support-module-slot")
+			.evaluate((node) => node.scrollWidth <= node.clientWidth + 1),
 	).toBe(true);
 });
 
-test("container-content pages share the same Wide shell contract", async ({
+test("container-content pages distinguish supported and content-only widths", async ({
 	page,
 }) => {
 	await page.setViewportSize({ width: 1536, height: 900 });
@@ -569,38 +561,30 @@ test("container-content pages share the same Wide shell contract", async ({
 	const readGeometry = async () =>
 		page.evaluate(() => {
 			const grid = document.querySelector<HTMLElement>("#main-grid")!;
-			const sidebar = document.querySelector<HTMLElement>(
-				".desktop-sidebar-region",
-			)!;
+			const support = document.querySelector<HTMLElement>(
+				".page-support-region",
+			);
 			const navbar = document.querySelector<HTMLElement>(
 				"#navbar > .navbar__inner--container-content",
 			)!;
 			return {
 				gridWidth: grid.getBoundingClientRect().width,
-				sidebarWidth: sidebar.getBoundingClientRect().width,
+				supportWidth: support?.getBoundingClientRect().width ?? 0,
 				navbarWidth: navbar.getBoundingClientRect().width,
 			};
 		});
 
-	const geometries = [];
-	for (const pathname of [
-		"/",
-		"/category/tech/",
-		"/posts/markdown-tutorial/",
-	]) {
-		await page.goto(pathname);
-		await expect(page.locator(".desktop-sidebar-region")).toBeVisible();
-		geometries.push(await readGeometry());
-	}
+	await page.goto("/");
+	const home = await readGeometry();
+	expect(home.supportWidth).toBeGreaterThanOrEqual(248 - 1);
+	expect(home.supportWidth).toBeLessThanOrEqual(272 + 1);
 
-	for (const geometry of geometries) {
-		expect(geometry.navbarWidth).toBeGreaterThanOrEqual(geometry.gridWidth);
-		expect(
-			Math.abs(geometry.gridWidth - geometries[0].gridWidth),
-		).toBeLessThan(1);
-		expect(
-			Math.abs(geometry.sidebarWidth - geometries[0].sidebarWidth),
-		).toBeLessThan(1);
+	for (const pathname of ["/category/tech/", "/posts/markdown-tutorial/"]) {
+		await page.goto(pathname);
+		const geometry = await readGeometry();
+		expect(geometry.supportWidth).toBe(0);
+		expect(geometry.gridWidth).toBeLessThanOrEqual(1064 + 1);
+		expect(geometry.navbarWidth).toBeCloseTo(home.navbarWidth, 0);
 	}
 });
 
@@ -688,36 +672,18 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	const mainGrid = page.locator("#main-grid");
 	const postList = page.locator('[data-post-list-renderer="astro"]').first();
 	await page.setViewportSize({ width: 900, height: 812 });
-	const supportingFlow = page.locator(
-		".supporting-region .widget-region__flow",
-	);
-	await expect(supportingFlow).toBeVisible();
-	expect(
-		await supportingFlow.evaluate(
-			(node) =>
-				getComputedStyle(node).gridTemplateColumns.split(" ").length,
-		),
-	).toBe(1);
+	const supportRegion = page.locator(".page-support-region");
+	await expect(supportRegion).toBeVisible();
 	expect(
 		await page
-			.locator('[data-widget-id="home-supporting-profile"] .profile-card')
+			.locator(".page-support-region .profile-card")
 			.evaluate(
 				(node) =>
 					getComputedStyle(node).gridTemplateColumns.split(" ")
 						.length,
 			),
 	).toBe(2);
-	expect(
-		await page
-			.locator(
-				'[data-widget-id="home-supporting-site-stats"] .site-stats-grid',
-			)
-			.evaluate(
-				(node) =>
-					getComputedStyle(node).gridTemplateColumns.split(" ")
-						.length,
-			),
-	).toBe(2);
+	await expect(page.locator(".footer-stats")).toHaveCount(1);
 	expect(
 		await mainGrid.evaluate(
 			(node) =>
@@ -732,10 +698,7 @@ test("layout breakpoint boundaries do not overlap", async ({ page }) => {
 	).toBe(2);
 
 	await page.setViewportSize({ width: 920, height: 812 });
-	await expect(
-		page.locator('[data-widget-id="home-desktop-profile"]'),
-	).toBeVisible();
-	await expect(page.locator(".supporting-region")).toBeHidden();
+	await expect(supportRegion).toBeVisible();
 	expect(
 		await mainGrid.evaluate(
 			(node) =>
@@ -864,80 +827,49 @@ test("navbar stays sticky while the desktop banner scrolls", async ({
 		.toBe(0);
 });
 
-test("container-content widget placements follow page intent", async ({
+test("page support modules follow page intent without widget placement", async ({
 	page,
 }) => {
 	test.setTimeout(60_000);
 	await page.setViewportSize({ width: 1536, height: 900 });
 	await page.goto("/");
+	await expect(page.locator("#main-grid")).toHaveAttribute(
+		"data-has-support",
+		"true",
+	);
 	await expect(
-		page.locator('[data-widget-id="home-desktop-profile"]'),
+		page.locator(".page-support-region .profile-card"),
 	).toBeVisible();
-	await expect(
-		page.locator('[data-widget-id="home-desktop-site-stats"]'),
-	).toBeVisible();
-	await expect(
-		page.locator('[data-widget-region="desktop-left"]'),
-	).toBeHidden();
+	await expect(page.locator(".profile-card")).toHaveCount(1);
+	await expect(page.locator(".footer-stats")).toHaveCount(1);
 
 	await page.setViewportSize({ width: 900, height: 900 });
 	await page.goto("/");
 	await expect(
-		page.locator('[data-widget-id="home-supporting-profile"]'),
+		page.locator(".page-support-region .profile-card"),
 	).toBeVisible();
-	await expect(
-		page.locator('[data-widget-id="home-supporting-site-stats"]'),
-	).toBeVisible();
-	await expect(
-		page.locator('[data-widget-id="home-desktop-profile"]'),
-	).toBeHidden();
+	await expect(page.locator(".profile-card")).toHaveCount(1);
 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.goto("/");
 	await expect(
-		page.locator('[data-widget-id="home-mobile-profile"]'),
+		page.locator(".page-support-region .profile-card"),
 	).toBeVisible();
+	await expect(page.locator(".profile-card")).toHaveCount(1);
 	await page.goto("/category/tech/");
-	await expect(page.locator(".widget-region:visible")).toHaveCount(0);
-
-	await page.setViewportSize({ width: 900, height: 900 });
-	await page.goto("/category/tech/");
-	await expect(
-		page.locator('[data-widget-id="category-supporting-profile"]'),
-	).toBeVisible();
-	await expect(
-		page.locator('[data-widget-id="category-supporting-site-stats"]'),
-	).toBeVisible();
+	await expect(page.locator("#main-grid")).toHaveAttribute(
+		"data-has-support",
+		"false",
+	);
+	await expect(page.locator(".profile-card")).toHaveCount(0);
 
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await page.goto("/category/tech/");
-	await expect(
-		page.locator('[data-widget-id="category-desktop-profile"]'),
-	).toBeVisible();
-	await expect(
-		page.locator('[data-widget-id="category-supporting-profile"]'),
-	).toBeHidden();
+	await expect(page.locator(".profile-card")).toHaveCount(0);
 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.goto("/posts/markdown-tutorial/");
-	await expect(
-		page.locator('[data-widget-id="post-mobile-profile"]'),
-	).toBeVisible();
-
-	await page.setViewportSize({ width: 900, height: 900 });
-	await page.goto("/posts/markdown-tutorial/");
-	await expect(
-		page.locator('[data-widget-id="post-supporting-profile"]'),
-	).toBeVisible();
-
-	await page.setViewportSize({ width: 1280, height: 900 });
-	await page.goto("/posts/markdown-tutorial/");
-	await expect(
-		page.locator('[data-widget-id="post-desktop-profile"]'),
-	).toBeVisible();
-	await expect(
-		page.locator('[data-widget-id="post-supporting-profile"]'),
-	).toBeHidden();
+	await expect(page.locator(".profile-card")).toHaveCount(0);
 });
 
 test("banner home text stays centered across normal and fullscreen modes", async ({
@@ -1113,7 +1045,7 @@ test("post list view does not imply desktop page layout preference", async ({
 	await expect(grid).toHaveAttribute("data-post-list-view", "grid");
 	await expect(grid).toHaveAttribute(
 		"data-effective-desktop-layout",
-		"three-column",
+		"content-right",
 	);
 });
 
@@ -1199,7 +1131,8 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 	expect(lightTokens.surface).not.toBe("");
 	expect(lightTokens.text).not.toBe("");
 
-	await expect(page.locator("widget-layout").first()).toHaveClass(
+	await page.goto("/archive/");
+	await expect(page.locator("panel-card").first()).toHaveClass(
 		/ds-surface-card/,
 	);
 	await expect(page.locator("#search-panel")).toHaveClass(

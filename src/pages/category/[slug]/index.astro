@@ -12,6 +12,6 @@ const { posts, allPosts, page, categories, categorySlug, store } =
 	Astro.props as CategoryPageProps;
 ---
 
-<MainGridLayout store={store} layoutPolicy="listing" widgetPlacement="category">
+<MainGridLayout store={store} layoutPolicy="listing">
 	<CategoryPage {posts} {allPosts} {page} {categories} {categorySlug} {store} />
 </MainGridLayout>

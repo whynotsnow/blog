@@ -2,10 +2,12 @@
 import HomePage from "@components/home/HomePage.astro";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getHomePageViewModel } from "@/services/home";
+import ProfileCard from "@components/profile/ProfileCard.astro";
 
 const model = await getHomePageViewModel();
 ---
 
-<MainGridLayout store={model.store} layoutPolicy="listing" widgetPlacement="home">
+<MainGridLayout store={model.store} layoutPolicy="listing">
+	<ProfileCard slot="support" class="onload-animation" />
 	<HomePage {model} />
 </MainGridLayout>

@@ -98,7 +98,7 @@ const { class: className, style } = Astro.props;
 </div>
 
 <style>
-	@container widget-card (min-width: 256px) and (max-width: 447px) {
+	@container support-module (min-width: 256px) and (max-width: 447px) {
 		.profile-card {
 			padding: var(--space-card);
 		}
@@ -109,7 +109,7 @@ const { class: className, style } = Astro.props;
 		}
 	}
 
-	@container widget-card (min-width: 448px) {
+	@container support-module (min-width: 448px) {
 		.profile-card {
 			display: grid;
 			grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);

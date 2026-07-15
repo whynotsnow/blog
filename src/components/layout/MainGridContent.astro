@@ -4,23 +4,21 @@ import BackToTop from "@components/control/BackToTop.astro";
 import FloatingTOC from "@components/control/FloatingTOC.astro";
 import Footer from "@components/Footer.astro";
 import type { MainGridLayoutViewModel } from "@/services/layout/main-grid";
-import type { ResolvedWidgetPlacement } from "@/services/widget/types";
 import BannerCredit from "./BannerCredit.astro";
 import SiteNoticeBar from "@components/site-notice/SiteNoticeBar.astro";
 import type { SiteNoticeViewModel } from "@/services/site-notice";
 import type { FooterViewModel } from "@/services/footer";
-import WidgetRegion from "./WidgetRegion.astro";
 import SidebarTocRegion from "./SidebarTocRegion.astro";
 
 interface Props {
 	headings: MarkdownHeading[];
-	widgets: ResolvedWidgetPlacement;
 	viewModel: MainGridLayoutViewModel;
 	siteNotice?: SiteNoticeViewModel;
 	footer: FooterViewModel;
+	hasSupportContent: boolean;
 }
 
-const { headings, widgets, viewModel, siteNotice, footer } = Astro.props;
+const { headings, viewModel, siteNotice, footer, hasSupportContent } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
 const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-content";
 ---
@@ -55,26 +53,26 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 			data-allowed-desktop-layouts={viewModel.pageLayout.allowedDesktopLayouts}
 			data-effective-desktop-layout={viewModel.pageLayout.desktop.base}
 			data-shell-strategy={viewModel.pageLayout.shellStrategy}
-			data-supporting-flow={viewModel.pageLayout.supporting.flowLayout}
+			data-has-support={String(hasSupportContent)}
 		>
 			<BannerCredit
 				credit={viewModel.banner.credit}
 				hasCreditLink={viewModel.banner.hasCreditLink}
 			/>
 
-			<div class={`desktop-left-region ${transparentClass}`} data-has-widgets={widgets.desktop.left.length > 0}><WidgetRegion region="desktop-left" widgets={widgets.desktop.left} /></div>
-			<div class={`desktop-right-region ${transparentClass}`} data-has-widgets={widgets.desktop.right.length > 0}><WidgetRegion region="desktop-right" widgets={widgets.desktop.right} /></div>
-			<div class={`desktop-sidebar-region ${transparentClass}`} data-has-widgets={widgets.desktop.sidebar.length > 0}><WidgetRegion region="desktop-sidebar" widgets={widgets.desktop.sidebar} /></div>
-			<div class={`supporting-region ${transparentClass}`} data-has-widgets={widgets.supporting.beforeContent.length > 0}><WidgetRegion region="supporting-before-content" widgets={widgets.supporting.beforeContent} /></div>
-			<div class={`mobile-before-region ${transparentClass}`} data-has-widgets={widgets.mobile.beforeContent.length > 0}><WidgetRegion region="mobile-before-content" widgets={widgets.mobile.beforeContent} /></div>
+			{hasSupportContent && (
+				<aside class={`page-support-region ${transparentClass}`}>
+					<div class="support-module-slot w-full">
+						<slot name="support" />
+					</div>
+				</aside>
+			)}
 
 			<main class="page-main-content overflow-hidden w-full">
 				<div id="content-wrapper">
 					<slot />
 				</div>
 			</main>
-			<div class={`mobile-after-region ${transparentClass}`} data-has-widgets={widgets.mobile.afterContent.length > 0}><WidgetRegion region="mobile-after-content" widgets={widgets.mobile.afterContent} /></div>
-
 			<div class="site-footer-region">
 				<Footer model={footer} />
 			</div>
