@@ -160,7 +160,7 @@ test("container-content pages distinguish supported and content-only widths", as
 test("container-content pages do not inherit legacy root scaling", async ({
 	page,
 }) => {
-	for (const width of [1280, 1281, 1920]) {
+	for (const width of [375, 767, 768, 769, 1280, 1281, 1920]) {
 		await page.setViewportSize({ width, height: 900 });
 		await gotoPage(page, "/");
 		expect(

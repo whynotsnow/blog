@@ -151,10 +151,10 @@ test("container-content compensates post Card vertical geometry without changing
 	expect(compensatedAstro.height).toBeCloseTo(417.6, 1);
 	expect(compensatedAstro.cardHeight).toBeCloseTo(417.6, 1);
 	expect(compensatedAstro.contentPaddingBlockStart).toBeCloseTo(18, 1);
-	expect(compensatedAstro.titleSize).toBeCloseTo(20.7, 1);
-	expect(compensatedAstro.summarySize).toBeCloseTo(14.4, 1);
-	expect(compensatedAstro.tagSize).toBeCloseTo(10.8, 1);
-	expect(compensatedAstro.metaSize).toBeCloseTo(12.6, 1);
+	expect(compensatedAstro.titleSize).toBeCloseTo(20, 1);
+	expect(compensatedAstro.summarySize).toBeCloseTo(14, 1);
+	expect(compensatedAstro.tagSize).toBeCloseTo(12, 1);
+	expect(compensatedAstro.metaSize).toBeCloseTo(12, 1);
 	expect(compensatedAstro.intrinsicSize).toContain("417.6px");
 	expect(compensatedAstro.contentOverflows).toBe(false);
 
@@ -190,14 +190,136 @@ test("container-content compensates post Card vertical geometry without changing
 	expect(restored.height).toBeCloseTo(464, 1);
 	expect(restored.cardHeight).toBeCloseTo(464, 1);
 	expect(restored.contentPaddingBlockStart).toBeCloseTo(20, 1);
-	expect(restored.titleSize).toBeCloseTo(23.9, 1);
-	expect(restored.summarySize).toBeCloseTo(16, 1);
+	expect(restored.titleSize).toBeCloseTo(20, 1);
+	expect(restored.summarySize).toBeCloseTo(14, 1);
 	expect(restored.tagSize).toBeCloseTo(12, 1);
-	expect(restored.metaSize).toBeCloseTo(14, 1);
+	expect(restored.metaSize).toBeCloseTo(12, 1);
 	expect(restored.intrinsicSize).toContain("464px");
 	expect(
 		Math.abs(restored.coverHeight - compensatedAstro.coverHeight),
 	).toBeLessThan(1);
+});
+
+test("Grid Card typography stays fixed across the former root breakpoint", async ({
+	page,
+}) => {
+	await useStoredPreference(page, "postListLayout", "grid");
+
+	for (const width of [767, 768, 769]) {
+		await page.setViewportSize({ width, height: 900 });
+		await gotoPage(page, "/");
+
+		const card = page.locator(".home-post-card").first();
+		const typography = await card.evaluate((node) => {
+			const readSize = (selector: string) =>
+				Number.parseFloat(
+					getComputedStyle(node.querySelector<HTMLElement>(selector)!)
+						.fontSize,
+				);
+			return {
+				root: Number.parseFloat(
+					getComputedStyle(document.documentElement).fontSize,
+				),
+				title: readSize(".home-post-card__title"),
+				summary: readSize(".home-post-card__summary"),
+				meta: readSize(".home-post-card__meta"),
+				tag: readSize(".home-post-card__tag"),
+			};
+		});
+
+		expect(typography).toEqual({
+			root: 16,
+			title: 20,
+			summary: 14,
+			meta: 12,
+			tag: 12,
+		});
+	}
+});
+
+test("Grid Card reserves stable content slots and exposes full clipped text", async ({
+	page,
+}) => {
+	await useStoredPreference(page, "postListLayout", "grid");
+	await page.setViewportSize({ width: 1536, height: 900 });
+	await gotoPage(page, "/");
+
+	const card = page.locator(".home-post-card").first();
+	const contract = await card.evaluate((node) => {
+		const title = node.querySelector<HTMLElement>(
+			".home-post-card__title",
+		)!;
+		const summary = node.querySelector<HTMLElement>(
+			".home-post-card__summary",
+		)!;
+		const meta = node.querySelector<HTMLElement>(".home-post-card__meta")!;
+		const categoryMeta = meta.querySelector<HTMLElement>(
+			".home-post-card__meta-item--category",
+		)!;
+		const wordsMeta = meta.querySelector<HTMLElement>(
+			".home-post-card__meta-item--words",
+		)!;
+		const categoryLink = categoryMeta.querySelector<HTMLElement>(
+			".home-post-card__meta-link",
+		)!;
+		categoryLink.textContent = "这是一个用于验证收缩规则的超长文章分类";
+		const tags = node.querySelector<HTMLElement>(".home-post-card__tags")!;
+		const visibleTags = Array.from(
+			tags.querySelectorAll<HTMLElement>(
+				".home-post-card__tag:not([hidden])",
+			),
+		);
+		return {
+			titleText: title.textContent?.trim(),
+			titleTooltip: title.title,
+			titleHeight: title.getBoundingClientRect().height,
+			titleLineHeight: Number.parseFloat(
+				getComputedStyle(title).lineHeight,
+			),
+			summaryText: summary.textContent?.trim(),
+			summaryTooltip: summary.title,
+			summaryHeight: summary.getBoundingClientRect().height,
+			summaryLineHeight: Number.parseFloat(
+				getComputedStyle(summary).lineHeight,
+			),
+			metaDisplay: getComputedStyle(meta).display,
+			metaWraps: meta.scrollHeight > meta.clientHeight + 1,
+			categoryToWordsGap:
+				wordsMeta.getBoundingClientRect().left -
+				categoryMeta.getBoundingClientRect().right,
+			categoryIsClipped:
+				categoryLink.scrollWidth > categoryLink.clientWidth,
+			wordsStayInsideMeta:
+				wordsMeta.getBoundingClientRect().right <=
+				meta.getBoundingClientRect().right + 1,
+			tagRows: new Set(visibleTags.map((tag) => tag.offsetTop)).size,
+			tagsOverflow: tags.scrollHeight > tags.clientHeight + 1,
+		};
+	});
+
+	expect(contract.titleTooltip).toBe(contract.titleText);
+	expect(contract.titleHeight).toBeCloseTo(contract.titleLineHeight, 1);
+	expect(contract.summaryTooltip).toBe(contract.summaryText);
+	expect(contract.summaryHeight).toBeCloseTo(
+		contract.summaryLineHeight * 2,
+		1,
+	);
+	expect(contract.metaDisplay).toBe("flex");
+	expect(contract.metaWraps).toBe(false);
+	expect(contract.categoryToWordsGap).toBeGreaterThan(0);
+	expect(contract.categoryToWordsGap).toBeLessThanOrEqual(10);
+	expect(contract.categoryIsClipped).toBe(true);
+	expect(contract.wordsStayInsideMeta).toBe(true);
+	expect(contract.tagRows).toBeLessThanOrEqual(2);
+	expect(contract.tagsOverflow).toBe(false);
+
+	const pinnedCard = page
+		.locator('.home-post-card[data-pinned="true"]')
+		.first();
+	await expect(
+		pinnedCard.locator(".home-post-card__pinned-badge"),
+	).toHaveText("置顶");
+	await expect(pinnedCard.locator(".home-post-card__pin")).toHaveCount(0);
 });
 
 test("post list view does not imply desktop page layout preference", async ({
