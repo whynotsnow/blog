@@ -1,11 +1,11 @@
 ---
 import { Icon } from "astro-icon/components";
-import { getFileDirFromPath, getTagUrl } from "@/utils/url-utils";
+import { getFileDirFromPath } from "@/utils/url-utils";
 import { siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import ImageWrapper from "./misc/ImageWrapper.astro";
-import PostMetadata from "./PostMeta.astro";
+import PostCardMeta from "./post/PostCardMeta.astro";
 import { UIPost } from "@/services/core/types";
 
 interface Props {
@@ -20,109 +20,79 @@ const className = Astro.props.class;
 
 const {
 	title,
-	published,
 	url,
-	updated,
 	tags,
-	category,
 	image,
 	description,
 	pinned,
-	meta,
 } = entry;
 
 const hasCover = entry.hasCoverImage && image?.src;
 const coverWidth = "28%";
+const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 ---
 
 <div
 	class:list={[
-		"post-card post-item home-post-card ds-surface-card flex flex-col-reverse md:flex-col w-full overflow-hidden relative",
+		"post-card post-item home-post-card ds-surface-card",
 		className,
 	]}
 	style={style}
 	data-tags={tags.map((t) => t.name).join(",")}
 	data-card-variant={variant}
+	data-has-cover={Boolean(hasCover)}
+	data-has-description={Boolean(description)}
+	data-tag-style={useNewTagStyle ? "new" : "legacy"}
 >
-	<div
-		class:list={[
-			"home-post-card__content pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative",
-			{
-				"w-full md:w-[calc(100%-3.25rem-0.75rem)]": !hasCover,
-				"w-full md:w-[calc(100%-var(--coverWidth)-0.75rem)]": hasCover,
-			},
-		]}
-	>
+	<div class="home-post-card__content">
 		<a
 			href={url}
-		class="home-post-card__title transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-(--primary) dark:hover:text-(--primary)
-        active:text-(--title-active) dark:active:text-(--title-active)
-        before:w-1 before:h-5 before:rounded-md before:bg-(--primary)
-        before:absolute
-        before:top-8.75 before:left-4.5 before:hidden md:before:block"
+			class="home-post-card__title transition"
 		>
 			{
 				pinned && (
 					<Icon
 						name="mdi:pin"
-						class="inline text-(--primary) text-2xl mr-2 -translate-y-0.5"
+						class="home-post-card__pin"
 					/>
 				)
 			}
 			{title}
 			<Icon
-				class="home-post-card__title-chevron inline text-[2rem] text-(--accent) md:hidden translate-y-0.5 absolute"
+				class="home-post-card__title-chevron home-post-card__title-chevron--mobile"
 				name="material-symbols:chevron-right-rounded"
 			/>
 			<Icon
-				class="home-post-card__title-chevron text-(--accent) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0"
+				class="home-post-card__title-chevron home-post-card__title-chevron--desktop transition"
 				name="material-symbols:chevron-right-rounded"
 			/>
 		</a>
 
-		<PostMetadata
-			published={published}
-			updated={updated}
-			tags={tags}
-			category={category}
-			hideTagsForMobile={true}
-			hideUpdateDate={true}
-			className="home-post-card__meta mb-4"
-			showOnlyBasicMeta={true}
-			words={meta.words}
-			showWordCount={true}
-		/>
+		<PostCardMeta post={entry} />
 
-		<div
-			class:list={[
-				"home-post-card__summary transition text-75 mb-3.5 pr-4",
-				{ "line-clamp-2 md:line-clamp-1": !description },
-			]}
-		>
-			{description || meta.excerpt}
+		<div class="home-post-card__summary transition text-75">
+			{description || entry.meta.excerpt}
 		</div>
 
-		<div class="home-post-card__tags flex flex-wrap gap-2 mt-2">
+		<div class="home-post-card__tags">
 			{
 				tags && tags.length > 0 ? (
 					tags.slice(0, 2).map((tag) => (
 						<a
-							href={getTagUrl(tag.slug)}
+							href={tag.url}
 							class:list={[
-								siteConfig.tagStyle?.useNewStyle
-									? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-(--primary) dark:hover:text-(--primary) active:text-(--primary) dark:active:text-(--primary) group/tag whitespace-nowrap"
-									: "btn-regular h-6 text-xs px-2 rounded-lg",
+								"home-post-card__tag transition",
+								useNewTagStyle ? "link-lg" : "btn-regular",
 							]}
-							aria-label={`View all posts tagged with ${tag.slug}`}
+							aria-label={`View all posts tagged with ${tag.name}`}
 						>
-							<span class="transition-transform group-hover/tag:translate-x-0.5">
+							<span class="home-post-card__tag-label transition-transform">
 							# {tag.name}
 							</span>
 						</a>
 					))
 				) : (
-					<span class="text-xs text-50">{i18n(I18nKey.noTags)}</span>
+					<span class="home-post-card__tag-empty">{i18n(I18nKey.noTags)}</span>
 				)
 			}
 		</div>
@@ -131,11 +101,11 @@ const coverWidth = "28%";
 	<a
 		href={url}
 		aria-label={title}
-		class="home-post-card__cover group max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0 md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
+		class="home-post-card__cover"
 	>
-		<div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
-		<div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center">
-			<Icon name="material-symbols:chevron-right-rounded" class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl" />
+		<div class="home-post-card__cover-overlay transition" />
+		<div class="home-post-card__cover-enter">
+			<Icon name="material-symbols:chevron-right-rounded" class="home-post-card__cover-enter-icon transition" />
 		</div>
 		{
 			hasCover ? (
@@ -143,11 +113,11 @@ const coverWidth = "28%";
 					src={image?.src}
 					basePath={getFileDirFromPath(entry.filePath || "")}
 					alt="Cover Image of the Post"
-					class="w-full h-full"
+					class="home-post-card__image"
 				/>
 			) : (
-				<div class="home-post-card__cover-placeholder flex h-full w-full items-center justify-center" aria-hidden="true">
-					<Icon name="material-symbols:article-outline-rounded" class="text-5xl text-(--accent)" />
+				<div class="home-post-card__cover-placeholder" aria-hidden="true">
+					<Icon name="material-symbols:article-outline-rounded" class="home-post-card__cover-placeholder-icon" />
 				</div>
 			)
 		}

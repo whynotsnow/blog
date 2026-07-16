@@ -177,6 +177,10 @@ test("container-content compensates post Card vertical geometry without changing
 		1,
 	);
 	expect(compensatedSvelte.tagSize).toBeCloseTo(compensatedAstro.tagSize, 1);
+	expect(compensatedSvelte.metaSize).toBeCloseTo(
+		compensatedAstro.metaSize!,
+		1,
+	);
 	expect(compensatedSvelte.contentOverflows).toBe(false);
 
 	await page.setViewportSize({ width: 2000, height: 900 });
@@ -221,6 +225,31 @@ test("post list view does not imply desktop page layout preference", async ({
 test("post list keeps Astro snapshots and switches to Svelte for tag pagination", async ({
 	page,
 }) => {
+	const expectSharedCardStructure = async (renderer: "astro" | "svelte") => {
+		const card = page
+			.locator(`[data-post-list-renderer="${renderer}"]`)
+			.first()
+			.locator(":scope > .post-list__item")
+			.first();
+
+		await expect(card).toHaveAttribute("data-has-cover", /true|false/);
+		await expect(card).toHaveAttribute(
+			"data-has-description",
+			/true|false/,
+		);
+		await expect(
+			card.locator(":scope > .home-post-card__content"),
+		).toHaveCount(1);
+		await expect(
+			card.locator(":scope > .home-post-card__cover"),
+		).toHaveCount(1);
+		await expect(card.locator(".home-post-card__title")).toHaveCount(1);
+		await expect(card.locator(".home-post-card__meta")).toHaveCount(1);
+		await expect(card.locator(".home-post-card__meta-item")).toHaveCount(3);
+		await expect(card.locator(".home-post-card__summary")).toHaveCount(1);
+		await expect(card.locator(".home-post-card__tags")).toHaveCount(1);
+	};
+
 	await gotoPage(page, "/");
 
 	const astroList = page.locator('[data-post-list-renderer="astro"]').first();
@@ -228,6 +257,7 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 	await expect(
 		astroList.locator(":scope > .post-list__item").first(),
 	).toHaveClass(/ds-surface-card/);
+	await expectSharedCardStructure("astro");
 
 	await gotoPage(page, "/category/tech/");
 	await expect(
@@ -244,4 +274,5 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 	await expect(
 		svelteList.locator(":scope > .post-list__item").first(),
 	).toHaveClass(/ds-surface-card/);
+	await expectSharedCardStructure("svelte");
 });

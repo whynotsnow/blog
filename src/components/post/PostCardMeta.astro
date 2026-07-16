@@ -1,0 +1,54 @@
+---
+import { Icon } from "astro-icon/components";
+import type { UIPost } from "@/services/core/types";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+
+interface Props {
+	post: Pick<UIPost, "published" | "category" | "meta">;
+}
+
+const { post } = Astro.props;
+const words = post.meta.words;
+---
+
+<div class="home-post-card__meta ds-cluster">
+	<div class="home-post-card__meta-item">
+		<Icon
+			name="material-symbols:calendar-today-outline-rounded"
+			class="home-post-card__meta-icon"
+		/>
+		<time datetime={post.published.toISOString()}>
+			{formatDateToYYYYMMDD(post.published)}
+		</time>
+	</div>
+
+	<div class="home-post-card__meta-item">
+		<Icon
+			name="material-symbols:book-2-outline-rounded"
+			class="home-post-card__meta-icon"
+		/>
+		<a
+			href={post.category.url}
+			class="home-post-card__meta-link link-lg transition"
+			aria-label={`View all posts in the ${post.category.name} category`}
+		>
+			{post.category.name || i18n(I18nKey.uncategorized)}
+		</a>
+	</div>
+
+	{
+		words > 0 && (
+			<div class="home-post-card__meta-item">
+				<Icon
+					name="material-symbols:article-outline-rounded"
+					class="home-post-card__meta-icon"
+				/>
+				<span>
+					{words} {i18n(words > 1 ? I18nKey.wordsCount : I18nKey.wordCount)}
+				</span>
+			</div>
+		)
+	}
+</div>

@@ -254,3 +254,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Restored the Desktop Landscape density of shared Astro and Svelte Grid Cards through Post List-local height, cover-boundary, typography, and spacing tokens.
 - Kept Feed widths, Container Query breakpoints, and the `56.25cqi` cover ratio unchanged while binding intrinsic placeholders to the compensated Card height.
 - Made browser geometry assertions consume computed layout sizes so Card entrance transforms cannot masquerade as width or height contract changes.
+
+### Unified Post Card renderer structure
+
+- Aligned Astro and Svelte Cards on the core `UIPost` contract and the same Title, Card Meta, Summary, Tags, and Cover regions without changing Feed or Shell width budgets.
+- Isolated listing Metadata from the post-detail renderer and moved shared Grid/List Card geometry out of renderer utility classes into the Post List feature stylesheet.
+- Added cross-renderer browser assertions for the shared semantic structure and Metadata geometry.

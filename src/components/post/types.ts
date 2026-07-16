@@ -1,4 +1,7 @@
 import type { Writable, Readable } from "svelte/store";
+import type { UIPost } from "@/services/core/types";
+
+export type { UIPost } from "@/services/core/types";
 
 export interface UIPagination<T> {
 	data: T[];
@@ -25,51 +28,6 @@ export interface BaseSlug {
 export type CategoryItem = BaseSlug;
 
 export type TagItem = BaseSlug;
-
-export interface UIPost {
-	// 基础标识
-	id: string;
-	slug: string; // 分类的slug
-	url: string;
-
-	// 文本内容
-	title: string;
-	description?: string;
-
-	// 时间
-	published: Date; // ISO string（Client 友好）
-	updated?: Date;
-
-	// 分类 & 标签
-	category: CategoryItem;
-
-	tags: TagItem[];
-	pinned?: boolean;
-	// 统计信息（PostMetadataView）
-	meta: UIPostMeta;
-
-	// UI 控制
-	hasCoverImage?: boolean; // 给 PostCard / ImageWrapper 用
-	image?: ImageMetadata;
-
-	filePath?: string;
-	source?: "ssg" | "client";
-}
-
-export interface UIPostMeta {
-	published: Date; // ISO
-	updated?: Date;
-
-	category: CategoryItem;
-
-	tags: TagItem[];
-
-	words?: number;
-	excerpt?: string;
-
-	/** 用于 PostMetadataView 的控制 */
-	id?: string;
-}
 
 export interface CategoryPaginationOptions {
 	posts: UIPost[];

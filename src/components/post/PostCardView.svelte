@@ -1,8 +1,11 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import type { UIPost } from "./types";
+	import type { UIPost } from "@/services/core/types";
 	import { siteConfig } from "@/config";
+	import I18nKey from "@/i18n/i18nKey";
+	import { i18n } from "@/i18n/translation";
 	import ImageWrapper from "./ImageWrapper.svelte";
+	import PostCardMeta from "./PostCardMeta.svelte";
 
 	// ========= props =========
 	export let post: UIPost;
@@ -10,8 +13,9 @@
 	export let style: string | undefined = undefined;
 
 	// ========= 派生数据 =========
-	const hasCover = !!post.image?.src;
+	const hasCover = !!(post.hasCoverImage && post.image?.src);
 	const coverWidth = "28%";
+	const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 
 	const url = post.url;
 
@@ -20,37 +24,20 @@
 </script>
 
 <div
-	class={`post-card post-item home-post-card ds-surface-card flex flex-col-reverse md:flex-col w-full
-    rounded-(--radius-large) overflow-hidden relative ${className}`}
+	class={`post-card post-item home-post-card ds-surface-card ${className}`}
 	style={`--coverWidth:${coverWidth}; ${style ?? ""}`}
 	data-tags={dataTags}
 	data-card-variant="adaptive"
+	data-has-cover={hasCover}
+	data-has-description={Boolean(post.description)}
+	data-tag-style={useNewTagStyle ? "new" : "legacy"}
 >
 	<!-- ================= 内容区域 ================= -->
-	<div
-		class={`home-post-card__content pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative
-      ${
-			!hasCover
-				? "w-full md:w-[calc(100%-3.25rem-0.75rem)]"
-				: "w-full md:w-[calc(100%-var(--coverWidth)-0.75rem)]"
-		}`}
-	>
+	<div class="home-post-card__content">
 		<!-- ================= 标题 ================= -->
-		<a
-			href={url}
-			class="home-post-card__title transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-(--primary)
-        active:text-(--title-active)
-        before:w-1 before:h-5 before:rounded-md before:bg-(--primary)
-        before:absolute
-        before:top-8.75 before:left-4.5
-        before:hidden md:before:block"
-		>
+		<a href={url} class="home-post-card__title transition">
 			{#if post.pinned}
-				<Icon
-					icon="mdi:pin"
-					class="inline text-(--primary) text-2xl mr-2 -translate-y-0.5"
-				/>
+				<Icon icon="mdi:pin" class="home-post-card__pin" />
 			{/if}
 
 			{post.title}
@@ -58,79 +45,58 @@
 			<!-- 移动端箭头 -->
 			<Icon
 				icon="material-symbols:chevron-right-rounded"
-				class="inline text-[2rem] text-(--primary) md:hidden
-          translate-y-0.5 absolute"
+				class="home-post-card__title-chevron home-post-card__title-chevron--mobile"
 			/>
 
 			<!-- 桌面 hover 箭头 -->
 			<Icon
 				icon="material-symbols:chevron-right-rounded"
-				class="text-(--primary) text-[2rem] transition hidden md:inline absolute
-          translate-y-0.5 opacity-0 group-hover:opacity-100
-          -translate-x-1 group-hover:translate-x-0"
+				class="home-post-card__title-chevron home-post-card__title-chevron--desktop transition"
 			/>
 		</a>
 
 		<!-- ================= Meta ================= -->
+		<PostCardMeta {post} />
 
 		<!-- ================= 描述 ================= -->
-		<div
-			class={`home-post-card__summary transition text-75 mb-3.5 pr-4
-        ${!post.description ? "line-clamp-2 md:line-clamp-1" : ""}`}
-		>
+		<div class="home-post-card__summary transition text-75">
 			{post.description ?? post.meta?.excerpt ?? ""}
 		</div>
 
 		<!-- ================= 标签 ================= -->
-		<div class="home-post-card__tags flex flex-wrap gap-2 mt-2">
+		<div class="home-post-card__tags">
 			{#if post.tags && post.tags.length > 0}
 				{#each post.tags.slice(0, 2) as tag (tag.slug)}
 					<a
 						href={tag.url}
-						class={siteConfig.tagStyle?.useNewStyle
-							? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-(--primary) active:text-(--primary) whitespace-nowrap"
-							: "btn-regular h-6 text-xs px-2 rounded-lg"}
+						class={`home-post-card__tag transition ${useNewTagStyle ? "link-lg" : "btn-regular"}`}
 						aria-label={`View all posts tagged with ${tag.name}`}
 					>
 						<span
-							class="transition-transform group-hover/tag:translate-x-0.5"
+							class="home-post-card__tag-label transition-transform"
 						>
 							# {tag.name}
 						</span>
 					</a>
 				{/each}
 			{:else}
-				<span class="text-xs text-50">No tags</span>
+				<span class="home-post-card__tag-empty"
+					>{i18n(I18nKey.noTags)}</span
+				>
 			{/if}
 		</div>
 	</div>
 
 	<!-- ================= 封面区域 ================= -->
-	<a
-		href={url}
-		aria-label={post.title}
-		class="home-post-card__cover group
-        max-h-[20vh] md:max-h-none
-        mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0
-        md:w-(--coverWidth)
-        relative md:absolute md:top-3 md:bottom-3 md:right-3
-        rounded-xl overflow-hidden active:scale-95"
-	>
+	<a href={url} aria-label={post.title} class="home-post-card__cover">
 		<!-- hover 蒙层 -->
-		<div
-			class="absolute pointer-events-none z-10 w-full h-full
-        group-hover:bg-black/30 group-active:bg-black/50 transition"
-		></div>
+		<div class="home-post-card__cover-overlay transition"></div>
 
 		<!-- 中心箭头 -->
-		<div
-			class="absolute pointer-events-none z-20 w-full h-full
-        flex items-center justify-center"
-		>
+		<div class="home-post-card__cover-enter">
 			<Icon
 				icon="material-symbols:chevron-right-rounded"
-				class="transition opacity-0 group-hover:opacity-100
-            scale-50 group-hover:scale-100 text-white text-5xl"
+				class="home-post-card__cover-enter-icon transition"
 			/>
 		</div>
 
@@ -138,26 +104,16 @@
 			<ImageWrapper
 				src={post.image}
 				alt="Cover Image of the Post"
-				className="w-full h-full"
+				className="home-post-card__image"
 				loading="lazy"
 			/>
 		{:else}
-			<div
-				class="home-post-card__cover-placeholder flex h-full w-full items-center justify-center"
-				aria-hidden="true"
-			>
+			<div class="home-post-card__cover-placeholder" aria-hidden="true">
 				<Icon
 					icon="material-symbols:article-outline-rounded"
-					class="text-5xl text-(--accent)"
+					class="home-post-card__cover-placeholder-icon"
 				/>
 			</div>
 		{/if}
 	</a>
 </div>
-
-<!-- 移动端分割线 -->
-<div
-	class="transition border-t border-dashed mx-6
-    border-black/10 dark:border-white/15
-    last:border-t-0 md:hidden"
-></div>
