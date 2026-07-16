@@ -188,11 +188,13 @@ test("music starts from floating tools and then keeps its mini player visible", 
 			const initialRect = player.getBoundingClientRect();
 			const frames: Array<{
 				height: number;
+				miniClipPath: string | null;
 				miniWidth: number | null;
 				width: number;
 			}> = [
 				{
 					height: initialRect.height,
+					miniClipPath: null,
 					miniWidth: initialRect.width,
 					width: initialRect.width,
 				},
@@ -206,8 +208,12 @@ test("music starts from floating tools and then keeps its mini player visible", 
 					const miniState = player.querySelector<HTMLElement>(
 						".music-player__state--mini",
 					);
+					const miniStyle = miniState
+						? getComputedStyle(miniState)
+						: null;
 					frames.push({
 						height: rect.height,
+						miniClipPath: miniStyle?.clipPath ?? null,
 						miniWidth:
 							miniState?.getBoundingClientRect().width ?? null,
 						width: rect.width,
@@ -243,12 +249,75 @@ test("music starts from floating tools and then keeps its mini player visible", 
 			.filter((width): width is number => width !== null)
 			.every((width) => width >= 279),
 	).toBe(true);
+	const miniClipPathFrames = compactTransition.frames
+		.map(({ miniClipPath }) => miniClipPath)
+		.filter((clipPath): clipPath is string => clipPath !== null);
+	expect(
+		miniClipPathFrames.some((clipPath) => clipPath.includes("inset(")),
+	).toBe(true);
+	expect(new Set(miniClipPathFrames).size).toBeGreaterThan(3);
 	const hiddenOrb = page.locator(".orb-player");
 	await expect(hiddenOrb).not.toHaveClass(/opacity-0/);
 	await expect(hiddenOrb.locator(".orb-player__cover")).toHaveAttribute(
 		"src",
 		"/assets/music/cover/xryx.jpg",
 	);
+	const revealTransition = await hiddenOrb.evaluate(async (orb) => {
+		const frames: Array<{
+			coverOpacity: number | null;
+			miniClipPath: string | null;
+			orbTransform: string | null;
+		}> = [];
+		const startedAt = performance.now();
+		(orb as HTMLElement).click();
+
+		await new Promise<void>((resolve) => {
+			const sample = (now: number) => {
+				const hiddenState = document.querySelector<HTMLElement>(
+					".music-player__state--hidden",
+				);
+				const miniState = document.querySelector<HTMLElement>(
+					".music-player__state--mini",
+				);
+				const miniCover = document.querySelector<HTMLElement>(
+					".mini-player__cover",
+				);
+				frames.push({
+					coverOpacity: miniCover
+						? Number(getComputedStyle(miniCover).opacity)
+						: null,
+					miniClipPath: miniState
+						? getComputedStyle(miniState).clipPath
+						: null,
+					orbTransform: hiddenState
+						? getComputedStyle(hiddenState).transform
+						: null,
+				});
+				if (now - startedAt >= 480) {
+					resolve();
+					return;
+				}
+				requestAnimationFrame(sample);
+			};
+			requestAnimationFrame(sample);
+		});
+
+		return frames;
+	});
+	const orbTransforms = revealTransition
+		.map(({ orbTransform }) => orbTransform)
+		.filter((transform): transform is string => transform !== null);
+	const revealClipPaths = revealTransition
+		.map(({ miniClipPath }) => miniClipPath)
+		.filter((clipPath): clipPath is string => clipPath !== null);
+	const coverOpacities = revealTransition
+		.map(({ coverOpacity }) => coverOpacity)
+		.filter((opacity): opacity is number => opacity !== null);
+	expect(new Set(orbTransforms).size).toBeGreaterThan(3);
+	expect(new Set(revealClipPaths).size).toBeGreaterThan(3);
+	expect(Math.min(...coverOpacities)).toBeLessThan(0.25);
+	expect(Math.max(...coverOpacities)).toBeGreaterThan(0.9);
+	await expect(miniPlayer).toBeVisible();
 });
 
 test("hidden music control moves from playlist loading fallback to the first cover", async ({

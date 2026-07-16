@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
+	import { cubicIn, cubicInOut, cubicOut } from "svelte/easing";
 	import { fade, fly } from "svelte/transition";
 
 	import { musicPlayerConfig } from "@/config";
@@ -113,6 +114,97 @@
 	$: showHiddenState = isHidden || (!isExpanded && !hasStarted);
 	$: stateEnterDuration = prefersReducedMotion ? 0 : 250;
 	$: stateExitDuration = prefersReducedMotion ? 0 : 180;
+	$: compactEnterDuration = prefersReducedMotion ? 0 : 420;
+	$: compactExitDuration = prefersReducedMotion ? 0 : 300;
+	$: compactHandoffDuration = prefersReducedMotion ? 0 : 520;
+
+	function morphMiniPlayer(
+		_node: Element,
+		{ duration, entering }: { duration: number; entering: boolean },
+	) {
+		return {
+			duration,
+			css: (t: number) => {
+				const surfaceProgress = entering ? cubicInOut(t) : cubicOut(t);
+				const actionsProgress = Math.min(
+					1,
+					Math.max(0, (t - 0.12) / 0.88),
+				);
+				const metaProgress = Math.min(
+					1,
+					Math.max(0, (t - 0.28) / 0.72),
+				);
+				const coverProgress = Math.min(
+					1,
+					Math.max(0, (t - 0.42) / 0.58),
+				);
+				const horizontalInset = (1 - surfaceProgress) * 82;
+				const verticalInset = (1 - surfaceProgress) * 12;
+				const translateX = (1 - surfaceProgress) * 10;
+
+				return `
+					--mini-player-actions-opacity: ${actionsProgress};
+					--mini-player-actions-translate: ${(1 - actionsProgress) * 6}px;
+					--mini-player-meta-opacity: ${metaProgress};
+					--mini-player-meta-translate: ${(1 - metaProgress) * 11}px;
+					--mini-player-cover-opacity: ${coverProgress};
+					--mini-player-cover-rotation: ${(1 - coverProgress) * -14}deg;
+					--mini-player-cover-scale: ${0.78 + coverProgress * 0.22};
+					opacity: ${Math.min(1, t * 2.5)};
+					clip-path: inset(${verticalInset}px 0 ${verticalInset}px ${horizontalInset}% round ${16 + (1 - surfaceProgress) * 8}px);
+					transform: translate3d(${translateX}px, 0, 0);
+				`;
+			},
+		};
+	}
+
+	function handoffHiddenOrb(
+		_node: Element,
+		{ duration }: { duration: number },
+	) {
+		if (!hasStarted || isExpanded) {
+			return morphHiddenOrb(_node, { duration: compactExitDuration });
+		}
+
+		const targetWidth = window.innerWidth <= 480 ? 260 : 280;
+		const travelDistance = targetWidth - 60;
+
+		return {
+			duration,
+			css: (_t: number, u: number) => {
+				const travelProgress = cubicInOut(Math.min(1, u / 0.72));
+				const opacity =
+					u <= 0.58 ? 1 : Math.max(0, 1 - (u - 0.58) / 0.3);
+				const scale = 1 - travelProgress * 0.08;
+
+				return `
+					opacity: ${opacity};
+					transform: translate3d(${-travelDistance * travelProgress}px, 0, 0) scale(${scale});
+				`;
+			},
+		};
+	}
+
+	function morphHiddenOrb(
+		_node: Element,
+		{ duration }: { duration: number },
+	) {
+		return {
+			duration,
+			css: (t: number) => {
+				const visibility = Math.max(0, (t - 0.28) / 0.72);
+				const motionProgress = cubicIn(visibility);
+				const scale = 0.68 + motionProgress * 0.32;
+				const rotation = (1 - motionProgress) * 10;
+
+				return `
+					opacity: ${visibility};
+					filter: blur(${(1 - motionProgress) * 4}px);
+					transform: scale(${scale}) rotate(${rotation}deg);
+				`;
+			},
+		};
+	}
 
 	async function fetchMetingPlaylist() {
 		if (!metingApi || !metingId) {
@@ -182,7 +274,15 @@
 
 	function toggleHidden() {
 		if (showHiddenState) {
-			expandPlayer();
+			if (!hasStarted) {
+				expandPlayer();
+				return;
+			}
+			isHidden = false;
+			isExpanded = false;
+			showPlaylist = false;
+			publishLayoutState();
+			publishUiState();
 			return;
 		}
 		isHidden = true;
@@ -579,8 +679,8 @@
 		{#if showHiddenState}
 			<div
 				class="music-player__state music-player__state--hidden"
-				in:fade={{ duration: stateEnterDuration }}
-				out:fade={{ duration: stateExitDuration }}
+				in:morphHiddenOrb={{ duration: compactEnterDuration }}
+				out:handoffHiddenOrb={{ duration: compactHandoffDuration }}
 			>
 				<HiddenOrb
 					cover={playlist[0]?.cover ?? ""}
@@ -652,8 +752,14 @@
 		{:else if hasStarted}
 			<div
 				class="music-player__state music-player__state--mini"
-				in:fade={{ duration: stateEnterDuration }}
-				out:fade={{ duration: stateExitDuration }}
+				in:morphMiniPlayer={{
+					duration: compactEnterDuration,
+					entering: true,
+				}}
+				out:morphMiniPlayer={{
+					duration: compactExitDuration,
+					entering: false,
+				}}
 			>
 				<MiniPlayer
 					{currentSong}

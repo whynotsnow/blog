@@ -22,7 +22,7 @@
 >
 	<div class="flex items-center gap-3">
 		<div
-			class="cover-container relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
+			class="mini-player__cover cover-container relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
 			on:click={onTogglePlay}
 			on:keydown={(event) => {
 				if (event.key === "Enter" || event.key === " ") {
@@ -61,7 +61,7 @@
 		</div>
 
 		<div
-			class="flex-1 min-w-0 cursor-pointer"
+			class="mini-player__meta flex-1 min-w-0 cursor-pointer"
 			on:click={onToggleExpanded}
 			on:keydown={(event) => {
 				if (event.key === "Enter" || event.key === " ") {
@@ -79,7 +79,7 @@
 			<div class="text-xs text-50 truncate">{currentSong.artist}</div>
 		</div>
 
-		<div class="flex items-center gap-1">
+		<div class="mini-player__actions flex items-center gap-1">
 			<button
 				class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
 				on:click|stopPropagation={onToggleHidden}

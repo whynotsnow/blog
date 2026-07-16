@@ -228,3 +228,10 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Consolidated Music visibility into Hidden, Expanded, and Mini states with one Fly/Fade transition contract and outside-click/default-state recovery, eliminating empty bottom-right UI states.
 - Restricted the first Display Settings entrance to opacity and subtle vertical transform so runtime positioning variables never animate across the viewport.
 - Gave the Hidden and Mini Music states stable outer dimensions and one bottom-right shared-container anchor; fixed-size content is clipped through synchronized width, height, and radius interpolation so it never reflows into a staged reveal.
+
+### Refined Hidden and Mini Music transitions
+
+- Replaced the subtle Hidden/Mini crossfade with a bottom-right capsule morph and staged Mini controls, metadata, and cover entrance.
+- Made an activated Hidden fallback restore the Mini Player directly while preserving the pre-playback path to the Expanded Player and the Floating Tools command path.
+- Added a shared-element handoff in which the Hidden orb travels to the Mini cover position before the real cover takes over, with reduced-motion and intermediate-frame browser coverage.
+- Isolated browser validation on a fresh Playwright port when an existing developer preview server exposed stale client-island state; the fresh server passed the complete Floating Tools feature suite.
