@@ -31,15 +31,16 @@
 	data-has-cover={hasCover}
 	data-has-description={Boolean(post.description)}
 	data-tag-style={useNewTagStyle ? "new" : "legacy"}
+	data-pinned={post.pinned}
 >
 	<!-- ================= 内容区域 ================= -->
 	<div class="home-post-card__content">
 		<!-- ================= 标题 ================= -->
-		<a href={url} class="home-post-card__title transition">
-			{#if post.pinned}
-				<Icon icon="mdi:pin" class="home-post-card__pin" />
-			{/if}
-
+		<a
+			href={url}
+			class="home-post-card__title transition"
+			title={post.title}
+		>
 			{post.title}
 
 			<!-- 移动端箭头 -->
@@ -59,18 +60,22 @@
 		<PostCardMeta {post} />
 
 		<!-- ================= 描述 ================= -->
-		<div class="home-post-card__summary transition text-75">
+		<div
+			class="home-post-card__summary transition text-75"
+			title={post.description ?? post.meta?.excerpt ?? ""}
+		>
 			{post.description ?? post.meta?.excerpt ?? ""}
 		</div>
 
 		<!-- ================= 标签 ================= -->
 		<div class="home-post-card__tags">
 			{#if post.tags && post.tags.length > 0}
-				{#each post.tags.slice(0, 2) as tag (tag.slug)}
+				{#each post.tags.slice(0, 6) as tag (tag.slug)}
 					<a
 						href={tag.url}
 						class={`home-post-card__tag transition ${useNewTagStyle ? "link-lg" : "btn-regular"}`}
 						aria-label={`View all posts tagged with ${tag.name}`}
+						title={tag.name}
 					>
 						<span
 							class="home-post-card__tag-label transition-transform"
@@ -89,6 +94,12 @@
 
 	<!-- ================= 封面区域 ================= -->
 	<a href={url} aria-label={post.title} class="home-post-card__cover">
+		{#if post.pinned}
+			<span class="home-post-card__pinned-badge">
+				{i18n(I18nKey.pinned)}
+			</span>
+		{/if}
+
 		<!-- hover 蒙层 -->
 		<div class="home-post-card__cover-overlay transition"></div>
 
@@ -103,7 +114,7 @@
 		{#if hasCover}
 			<ImageWrapper
 				src={post.image}
-				alt="Cover Image of the Post"
+				alt={post.title}
 				className="home-post-card__image"
 				loading="lazy"
 			/>

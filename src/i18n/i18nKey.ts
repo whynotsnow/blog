@@ -42,6 +42,7 @@ enum I18nKey {
 	untitled = "untitled",
 	uncategorized = "uncategorized",
 	noTags = "noTags",
+	pinned = "pinned",
 
 	wordCount = "wordCount",
 	wordsCount = "wordsCount",

@@ -53,6 +53,7 @@ export const ja: Translation = {
 	[Key.untitled]: "無題",
 	[Key.uncategorized]: "未分類",
 	[Key.noTags]: "タグはありません",
+	[Key.pinned]: "固定",
 
 	[Key.wordCount]: "文字",
 	[Key.wordsCount]: "文字",

@@ -53,6 +53,7 @@ export const en: Translation = {
 	[Key.untitled]: "Untitled",
 	[Key.uncategorized]: "Uncategorized",
 	[Key.noTags]: "No Tags",
+	[Key.pinned]: "Pinned",
 
 	[Key.wordCount]: "word",
 	[Key.wordsCount]: "words",

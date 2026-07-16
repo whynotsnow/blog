@@ -4,6 +4,8 @@ import type { UIPost } from "@/services/core/types";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { siteConfig } from "@/config";
+import { formatPostCardWordCount } from "@/features/post-list/word-count";
 
 interface Props {
 	post: Pick<UIPost, "published" | "category" | "meta">;
@@ -11,10 +13,18 @@ interface Props {
 
 const { post } = Astro.props;
 const words = post.meta.words;
+const wordCount =
+	words > 0
+		? formatPostCardWordCount(
+				words,
+				siteConfig.lang,
+				i18n(words > 1 ? I18nKey.wordsCount : I18nKey.wordCount),
+			)
+		: null;
 ---
 
 <div class="home-post-card__meta ds-cluster">
-	<div class="home-post-card__meta-item">
+	<div class="home-post-card__meta-item home-post-card__meta-item--date">
 		<Icon
 			name="material-symbols:calendar-today-outline-rounded"
 			class="home-post-card__meta-icon"
@@ -24,7 +34,7 @@ const words = post.meta.words;
 		</time>
 	</div>
 
-	<div class="home-post-card__meta-item">
+	<div class="home-post-card__meta-item home-post-card__meta-item--category">
 		<Icon
 			name="material-symbols:book-2-outline-rounded"
 			class="home-post-card__meta-icon"
@@ -33,21 +43,20 @@ const words = post.meta.words;
 			href={post.category.url}
 			class="home-post-card__meta-link link-lg transition"
 			aria-label={`View all posts in the ${post.category.name} category`}
+			title={post.category.name || i18n(I18nKey.uncategorized)}
 		>
 			{post.category.name || i18n(I18nKey.uncategorized)}
 		</a>
 	</div>
 
 	{
-		words > 0 && (
-			<div class="home-post-card__meta-item">
+		wordCount && (
+			<div class="home-post-card__meta-item home-post-card__meta-item--words">
 				<Icon
 					name="material-symbols:article-outline-rounded"
 					class="home-post-card__meta-icon"
 				/>
-				<span>
-					{words} {i18n(words > 1 ? I18nKey.wordsCount : I18nKey.wordCount)}
-				</span>
+				<span title={wordCount.exact}>{wordCount.display}</span>
 			</div>
 		)
 	}

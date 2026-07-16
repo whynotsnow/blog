@@ -8,6 +8,7 @@ import {
 	bindPostListViewModeEvents,
 } from "@/utils/post-list-view-mode";
 import { bindDesktopLayoutPreference } from "@/features/layout-preference/controller";
+import { initializePostCardTagFitting } from "@/features/post-list/controller";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
 import { applyWallpaperVisualSettings } from "@/utils/setting-utils";
@@ -319,7 +320,10 @@ function syncPageShell() {
 	bindDesktopLayoutPreference();
 	window.applyWallpaperMode?.();
 	applyWallpaperVisualSettings();
-	requestAnimationFrame(() => applyPostListViewMode());
+	requestAnimationFrame(() => {
+		applyPostListViewMode();
+		initializePostCardTagFitting();
+	});
 	applyWavesSetting();
 	applyBannerTitleSetting();
 	applySakuraSetting();

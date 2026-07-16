@@ -43,20 +43,14 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 	data-has-cover={Boolean(hasCover)}
 	data-has-description={Boolean(description)}
 	data-tag-style={useNewTagStyle ? "new" : "legacy"}
+	data-pinned={pinned}
 >
 	<div class="home-post-card__content">
 		<a
 			href={url}
 			class="home-post-card__title transition"
+			title={title}
 		>
-			{
-				pinned && (
-					<Icon
-						name="mdi:pin"
-						class="home-post-card__pin"
-					/>
-				)
-			}
 			{title}
 			<Icon
 				class="home-post-card__title-chevron home-post-card__title-chevron--mobile"
@@ -70,14 +64,17 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 
 		<PostCardMeta post={entry} />
 
-		<div class="home-post-card__summary transition text-75">
+		<div
+			class="home-post-card__summary transition text-75"
+			title={description || entry.meta.excerpt}
+		>
 			{description || entry.meta.excerpt}
 		</div>
 
 		<div class="home-post-card__tags">
 			{
 				tags && tags.length > 0 ? (
-					tags.slice(0, 2).map((tag) => (
+					tags.slice(0, 6).map((tag) => (
 						<a
 							href={tag.url}
 							class:list={[
@@ -85,6 +82,7 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 								useNewTagStyle ? "link-lg" : "btn-regular",
 							]}
 							aria-label={`View all posts tagged with ${tag.name}`}
+							title={tag.name}
 						>
 							<span class="home-post-card__tag-label transition-transform">
 							# {tag.name}
@@ -103,6 +101,7 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 		aria-label={title}
 		class="home-post-card__cover"
 	>
+		{pinned && <span class="home-post-card__pinned-badge">{i18n(I18nKey.pinned)}</span>}
 		<div class="home-post-card__cover-overlay transition" />
 		<div class="home-post-card__cover-enter">
 			<Icon name="material-symbols:chevron-right-rounded" class="home-post-card__cover-enter-icon transition" />
@@ -112,7 +111,7 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 				<ImageWrapper
 					src={image?.src}
 					basePath={getFileDirFromPath(entry.filePath || "")}
-					alt="Cover Image of the Post"
+					alt={title}
 					class="home-post-card__image"
 				/>
 			) : (
