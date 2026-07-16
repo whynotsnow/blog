@@ -8,12 +8,17 @@
   --navbar-shadow: var(--shadow-raised);
   --navbar-panel-bg: color-mix(in srgb, var(--surface-overlay) 90%, transparent);
   --navbar-panel-blur: blur(var(--navbar-blur-strength));
+  --navbar-font-size: 1rem;
+  --navbar-inline-padding: 1rem;
+  --navbar-brand-padding-inline: 1.25rem;
+  --navbar-link-padding-inline: 1.25rem;
+  --navbar-item-gap: 0.25rem;
 }
 
 #navbar > div {
   width: 100%;
-  padding-inline-start: max(1rem, env(safe-area-inset-left));
-  padding-inline-end: max(1rem, env(safe-area-inset-right));
+  padding-inline-start: max(var(--navbar-inline-padding), env(safe-area-inset-left));
+  padding-inline-end: max(var(--navbar-inline-padding), env(safe-area-inset-right));
   overflow: visible;
   background: var(--navbar-bg);
   border: 1px solid var(--navbar-border);
@@ -27,6 +32,36 @@
     border-radius 260ms var(--motion-ease-standard),
     box-shadow 300ms var(--motion-ease-standard),
     backdrop-filter var(--motion-normal) var(--motion-ease-standard);
+}
+
+#navbar .navbar__brand {
+  padding-inline: var(--navbar-brand-padding-inline);
+}
+
+#navbar :is(.navbar__brand-content, .navbar__link, .dropdown-content) {
+  font-size: var(--navbar-font-size);
+}
+
+#navbar :is(.navbar__links, .navbar__actions) {
+  gap: var(--navbar-item-gap);
+}
+
+@media (min-width: 1024px) {
+  #navbar .navbar__link {
+    padding-inline: var(--navbar-link-padding-inline);
+  }
+}
+
+/* Keep the container width and control heights stable while replacing the
+ * removed root scaling with container-content-owned type and spacing. */
+@media (min-width: 1281px) and (orientation: landscape) {
+  #top-row[data-shell-strategy="container-content"] #navbar {
+    --navbar-font-size: clamp(0.9rem, 0.8vw, 1rem);
+    --navbar-inline-padding: clamp(0.9rem, 0.8vw, 1rem);
+    --navbar-brand-padding-inline: clamp(1.125rem, 1vw, 1.25rem);
+    --navbar-link-padding-inline: clamp(1.125rem, 1vw, 1.25rem);
+    --navbar-item-gap: clamp(0.225rem, 0.2vw, 0.25rem);
+  }
 }
 
 /* Semi and scrolled Semi-Full states use one responsive frosted surface. */

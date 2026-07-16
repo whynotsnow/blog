@@ -59,6 +59,8 @@ Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Sv
 
 `container-content` 页面不消费旧 `pageScaling` 根字号缩放；字体与间距应通过 Design token 自身的 `clamp()` 流式变化，避免 Shell 的 px 宽度预算与 rem 尺度在 viewport 端点发生跳变。文章 Sidebar TOC 使用 `--width-shell-wide` 推导 Shell 外侧 Rail，并只在 viewport 能同时容纳完整 Shell、间距和 TOC 时出现；旧 `--page-width` 公式仅保留给尚未迁移的 legacy 页面。
 
+`container-content` 的共享 Shell 补偿由布局策略自动启用，不按具体 route 建立白名单。Banner、Navbar 与 Footer 先在宽于 `1280px` 的 Desktop Landscape 环境中补偿 Typography 和组件内部 Spacing，并在 `2000px` 恢复默认尺寸；补偿继续使用 Feature-local `rem` token，不修改根字号。Banner 的 `vh`/`svh`/`dvh` 几何、Navbar 与 Footer 容器宽度、Main Grid 宽度、Card 尺寸和 Container Query 端点不属于这一阶段，必须等 Main Grid 容器方案确定后一起调整。
+
 顶部 Navigation Progress 是 Shell-local Pattern：颜色消费 `--accent`，过渡消费 `--motion-*`，固定覆盖在页面顶部且不占文档流高度。它消费 Swup 生命周期并保证快速导航仍有短暂的可见反馈，但不作为内容、图片或 Svelte hydration 的完成状态。
 
 ## Theme 与 Wallpaper

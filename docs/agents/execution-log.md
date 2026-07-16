@@ -194,6 +194,13 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 ## 2026-07-16
 
+### Scoped shared Shell compensation to container-content
+
+- Kept `rem` as the type and spacing unit while replacing removed root scaling with Feature-owned Banner, Navbar, and Footer tokens.
+- Made the `container-content` layout strategy the automatic compensation boundary so future consumers inherit the same shared Shell behavior without route-specific handling.
+- Limited the first compensation pass to Typography and internal Spacing above `1280px` in Desktop Landscape, returning to default values at `2000px` without depending on input-device media reporting.
+- Preserved viewport-based Banner geometry, Main Grid and shared component widths, Card dimensions, Container Query thresholds, Navbar control heights, and post TOC behavior for later layout-specific work.
+
 ### Refined Banner and Navbar responsive interaction
 
 - Kept the existing Page Shell and entry-scroll policies while moving carousel runtime ownership beside the Banner component.

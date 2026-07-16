@@ -3,14 +3,19 @@
   --banner-block-size: 65svh;
   --banner-text-width: min(90%, var(--width-reading-wide));
   --banner-text-padding: clamp(1rem, 3vw, 2rem);
-  --banner-title-size: clamp(2.8rem, 1.25rem + 6vw, 6rem);
-  --banner-title-size: clamp(2.8rem, min(calc(1.25rem + 6vw), 10svh), 6rem);
+  --banner-title-min-size: 2.8rem;
+  --banner-title-fluid-offset: 1.25rem;
+  --banner-title-max-size: 6rem;
   --banner-title-margin-block-end: 1rem;
-  --banner-subtitle-size: clamp(1rem, 0.75rem + 1.4vw, 1.875rem);
+  --banner-subtitle-min-size: 1rem;
+  --banner-subtitle-fluid-offset: 0.75rem;
+  --banner-subtitle-max-size: 1.875rem;
   --banner-wave-size: 15vh;
 }
 
 #banner-wrapper {
+  --banner-title-size: clamp(var(--banner-title-min-size), min(calc(var(--banner-title-fluid-offset) + 6vw), 10svh), var(--banner-title-max-size));
+  --banner-subtitle-size: clamp(var(--banner-subtitle-min-size), calc(var(--banner-subtitle-fluid-offset) + 1.4vw), var(--banner-subtitle-max-size));
   top: 0;
   height: var(--banner-block-size);
   overflow: hidden;
@@ -95,6 +100,21 @@
   body.enable-banner #top-row {
     height: calc(var(--banner-block-size) - var(--main-content-offset));
     transition: height var(--motion-normal) var(--motion-ease-standard);
+  }
+}
+
+/* container-content replaces global root scaling with feature-owned type and
+ * spacing compensation. Viewport-based Banner geometry remains unchanged. */
+@media (min-width: 1281px) and (orientation: landscape) {
+  #banner-wrapper[data-shell-strategy="container-content"] {
+    --banner-text-padding: clamp(1.8rem, 1.6vw, 2rem);
+    --banner-title-min-size: clamp(2.52rem, 2.24vw, 2.8rem);
+    --banner-title-fluid-offset: clamp(1.125rem, 1vw, 1.25rem);
+    --banner-title-max-size: clamp(5.4rem, 4.8vw, 6rem);
+    --banner-title-margin-block-end: clamp(0.9rem, 0.8vw, 1rem);
+    --banner-subtitle-min-size: clamp(0.9rem, 0.8vw, 1rem);
+    --banner-subtitle-fluid-offset: clamp(0.675rem, 0.6vw, 0.75rem);
+    --banner-subtitle-max-size: clamp(1.6875rem, 1.5vw, 1.875rem);
   }
 }
 

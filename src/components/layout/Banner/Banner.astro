@@ -1,5 +1,6 @@
 ---
 import type { BannerImages } from "@/services/banner";
+import type { ResponsiveShellStrategy } from "@/services/layout/types";
 import type { SiteConfig } from "@/types/config";
 import BannerCarousel from "./BannerCarousel.astro";
 import BannerHomeText from "./BannerHomeText.astro";
@@ -9,10 +10,17 @@ interface Props {
 	bannerImages: BannerImages;
 	config: SiteConfig["banner"];
 	mobileNonHomeClass: string;
+	shellStrategy: ResponsiveShellStrategy;
 	showHomeText: boolean | undefined;
 }
 
-const { bannerImages, config, mobileNonHomeClass, showHomeText } = Astro.props;
+const {
+	bannerImages,
+	config,
+	mobileNonHomeClass,
+	shellStrategy,
+	showHomeText,
+} = Astro.props;
 const hasCarousel =
 	config.carousel?.enable &&
 	((Array.isArray(bannerImages.desktop) && bannerImages.desktop.length > 1) ||
@@ -22,6 +30,7 @@ const hasCarousel =
 <div
 	id="banner-wrapper"
 	class={`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeClass}`}
+	data-shell-strategy={shellStrategy}
 >
 	{
 		hasCarousel ? (

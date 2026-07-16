@@ -44,10 +44,10 @@ const { model } = Astro.props;
 	.footer-stats {
 		display: grid;
 		justify-items: center;
-		gap: var(--size-2);
+		gap: var(--footer-stats-row-gap, var(--size-2));
 		width: 100%;
 		color: var(--text-secondary);
-		font-size: 0.8125rem;
+		font-size: var(--footer-stats-size, 0.8125rem);
 	}
 
 	.footer-stats__content {
@@ -61,7 +61,7 @@ const { model } = Astro.props;
 	.footer-stats__item {
 		display: inline-flex;
 		align-items: baseline;
-		gap: 0.25rem;
+		gap: var(--footer-stats-item-gap, 0.25rem);
 	}
 
 	.footer-stats__item strong {

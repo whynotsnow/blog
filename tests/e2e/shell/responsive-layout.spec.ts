@@ -173,6 +173,103 @@ test("container-content pages do not inherit legacy root scaling", async ({
 	}
 });
 
+test("container-content compensates shared Shell type without resizing its containers", async ({
+	page,
+}) => {
+	const readSharedShell = () =>
+		page.evaluate(() => {
+			const banner =
+				document.querySelector<HTMLElement>("#banner-wrapper")!;
+			const bannerTitle =
+				document.querySelector<HTMLElement>(".banner-title")!;
+			const bannerSubtitle =
+				document.querySelector<HTMLElement>(".banner-subtitle")!;
+			const navbarInner = document.querySelector<HTMLElement>(
+				"#navbar > .navbar__inner",
+			)!;
+			const navbarLink = document.querySelector<HTMLElement>(
+				"#navbar .navbar__link",
+			)!;
+			const footerMeta =
+				document.querySelector<HTMLElement>(".site-footer__meta")!;
+			const footerStats =
+				document.querySelector<HTMLElement>(".footer-stats")!;
+
+			return {
+				bannerStrategy: banner.dataset.shellStrategy,
+				bannerTitleSize: Number.parseFloat(
+					getComputedStyle(bannerTitle).fontSize,
+				),
+				bannerSubtitleSize: Number.parseFloat(
+					getComputedStyle(bannerSubtitle).fontSize,
+				),
+				navbarHeight: navbarInner.getBoundingClientRect().height,
+				navbarWidth: navbarInner.getBoundingClientRect().width,
+				navbarFontSize: Number.parseFloat(
+					getComputedStyle(navbarLink).fontSize,
+				),
+				footerWidth: footerMeta
+					.closest(".site-footer")!
+					.getBoundingClientRect().width,
+				footerMetaSize: Number.parseFloat(
+					getComputedStyle(footerMeta).fontSize,
+				),
+				footerStatsSize: Number.parseFloat(
+					getComputedStyle(footerStats).fontSize,
+				),
+			};
+		});
+
+	await page.setViewportSize({ width: 1536, height: 900 });
+	await gotoPage(page, "/");
+	const compensated = await readSharedShell();
+	expect(compensated.bannerStrategy).toBe("container-content");
+	expect(compensated.bannerTitleSize).toBeCloseTo(86.4, 1);
+	expect(compensated.bannerSubtitleSize).toBeCloseTo(27, 1);
+	expect(compensated.navbarFontSize).toBeCloseTo(14.4, 1);
+	expect(compensated.footerMetaSize).toBeCloseTo(12.6, 1);
+	expect(compensated.footerStatsSize).toBeCloseTo(11.7, 1);
+	expect(compensated.navbarHeight).toBeCloseTo(72, 0);
+
+	for (const pathname of ["/category/tech/", "/posts/markdown-tutorial/"]) {
+		await gotoPage(page, pathname);
+		const contentPage = await readSharedShell();
+		expect(contentPage.bannerStrategy).toBe("container-content");
+		expect(contentPage.navbarFontSize).toBeCloseTo(
+			compensated.navbarFontSize,
+			1,
+		);
+		expect(contentPage.footerMetaSize).toBeCloseTo(
+			compensated.footerMetaSize,
+			1,
+		);
+		expect(contentPage.footerStatsSize).toBeCloseTo(
+			compensated.footerStatsSize,
+			1,
+		);
+		expect(contentPage.navbarHeight).toBeCloseTo(
+			compensated.navbarHeight,
+			0,
+		);
+	}
+
+	await page.setViewportSize({ width: 2000, height: 900 });
+	await gotoPage(page, "/");
+	const restored = await readSharedShell();
+	expect(restored.bannerTitleSize).toBeCloseTo(90, 1);
+	expect(restored.bannerSubtitleSize).toBeCloseTo(30, 1);
+	expect(restored.navbarFontSize).toBeCloseTo(16, 1);
+	expect(restored.footerMetaSize).toBeCloseTo(14, 1);
+	expect(restored.footerStatsSize).toBeCloseTo(13, 1);
+	expect(restored.navbarHeight).toBeCloseTo(compensated.navbarHeight, 0);
+	expect(restored.navbarWidth).toBeGreaterThanOrEqual(
+		compensated.navbarWidth,
+	);
+	expect(
+		Math.abs(restored.footerWidth - compensated.footerWidth),
+	).toBeLessThan(1);
+});
+
 test("category filter and post TOC follow their owning width budgets", async ({
 	page,
 }) => {

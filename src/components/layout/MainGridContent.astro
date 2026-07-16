@@ -73,7 +73,10 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 				</div>
 			</main>
 			<div class="site-footer-region">
-				<Footer model={footer} />
+				<Footer
+					model={footer}
+					shellStrategy={viewModel.pageLayout.shellStrategy}
+				/>
 			</div>
 		</div>
 		<SidebarTocRegion headings={headings} viewModel={viewModel} />
