@@ -322,6 +322,59 @@ test("Grid Card reserves stable content slots and exposes full clipped text", as
 	await expect(pinnedCard.locator(".home-post-card__pin")).toHaveCount(0);
 });
 
+test("Grid Card hides Meta icons only at the confirmed compact threshold", async ({
+	page,
+}) => {
+	await useStoredPreference(page, "postListLayout", "grid");
+	await page.setViewportSize({ width: 1536, height: 900 });
+	await gotoPage(page, "/");
+
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
+	const card = postList.locator(":scope > .post-list__item").first();
+	await card.evaluate((node) => {
+		const list = node.parentElement as HTMLElement;
+		list.style.display = "block";
+		list.style.width = "304px";
+		node.style.width = "304px";
+		const category = node.querySelector<HTMLElement>(
+			".home-post-card__meta-link",
+		);
+		const words = node.querySelector<HTMLElement>(
+			".home-post-card__meta-item--words span",
+		);
+		if (category) category.textContent = "前端工程实践指南";
+		if (words) words.textContent = "9.9万字";
+	});
+
+	const icons = card.locator(".home-post-card__meta-icon");
+	await expect(icons.first()).toHaveCSS("display", "none");
+	const compact = await card.evaluate((node) => ({
+		categoryWidth:
+			node
+				.querySelector<HTMLElement>(".home-post-card__meta-link")
+				?.getBoundingClientRect().width ?? 0,
+		wordsVisible:
+			getComputedStyle(
+				node.querySelector<HTMLElement>(
+					".home-post-card__meta-item--words",
+				)!,
+			).display !== "none",
+	}));
+	expect(compact.categoryWidth).toBeGreaterThanOrEqual(60);
+	expect(compact.wordsVisible).toBe(true);
+
+	await card.evaluate((node) => {
+		const list = node.parentElement as HTMLElement;
+		list.style.width = "305px";
+		node.style.width = "305px";
+	});
+	await expect(icons.first()).not.toHaveCSS("display", "none");
+	const regularCategoryWidth = await card
+		.locator(".home-post-card__meta-link")
+		.evaluate((node) => node.getBoundingClientRect().width);
+	expect(regularCategoryWidth).toBeGreaterThanOrEqual(60);
+});
+
 test("post list view does not imply desktop page layout preference", async ({
 	page,
 }) => {

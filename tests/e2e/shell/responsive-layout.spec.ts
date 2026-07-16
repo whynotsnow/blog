@@ -47,7 +47,7 @@ test("responsive width budgets preserve Card and support module stability", asyn
 		.locator(".page-support-region")
 		.evaluate((node) => node.getBoundingClientRect().width);
 	expect(compressedLargeCardWidth).toBeGreaterThanOrEqual(295);
-	expect(compressedLargeCardWidth).toBeLessThanOrEqual(346);
+	expect(compressedLargeCardWidth).toBeLessThanOrEqual(323);
 	expect(
 		Math.abs(compressedLargeCardWidth - mediumCardWidth) / mediumCardWidth,
 	).toBeLessThan(0.12);
@@ -101,11 +101,11 @@ test("responsive width budgets preserve Card and support module stability", asyn
 		),
 	).toBe(2);
 	expect(maximumCardWidth).toBeGreaterThan(compressedLargeCardWidth);
-	expect(maximumCardWidth).toBeLessThanOrEqual(346);
+	expect(maximumCardWidth).toBeLessThanOrEqual(323);
 	expect(maximumSidebarWidth).toBeCloseTo(272, 0);
-	expect(shellGeometry.shellWidth).toBeLessThanOrEqual(1352 + 1);
+	expect(shellGeometry.shellWidth).toBeLessThanOrEqual(1280 + 1);
 	expect(shellGeometry.bannerWidth).toBeCloseTo(1920, 0);
-	expect(shellGeometry.gridWidth).toBeLessThanOrEqual(1352 + 1);
+	expect(shellGeometry.gridWidth).toBeLessThanOrEqual(1280 + 1);
 	expect(
 		Math.abs(shellGeometry.shellWidth - shellGeometry.gridWidth),
 	).toBeLessThan(1);
@@ -152,9 +152,103 @@ test("container-content pages distinguish supported and content-only widths", as
 		await gotoPage(page, pathname);
 		const geometry = await readGeometry();
 		expect(geometry.supportWidth).toBe(0);
-		expect(geometry.gridWidth).toBeLessThanOrEqual(1064 + 1);
+		expect(geometry.gridWidth).toBeLessThanOrEqual(992 + 1);
 		expect(geometry.navbarWidth).toBeCloseTo(home.navbarWidth, 0);
 	}
+});
+
+test("container breakpoints retain minimum safe budgets after Shell contraction", async ({
+	page,
+}) => {
+	await useStoredPreference(page, "postListLayout", "grid");
+	await page.setViewportSize({ width: 1920, height: 1080 });
+	await gotoPage(page, "/");
+
+	const shell = page.locator(".main-grid-shell");
+	const mainGrid = page.locator("#main-grid");
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
+	const listingPage = postList.locator(
+		"xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' listing-page ')][1]",
+	);
+
+	const setListingWidth = async (width: number) => {
+		await listingPage.evaluate((node, nextWidth) => {
+			const element = node as HTMLElement;
+			element.style.width = `${nextWidth}px`;
+			element.style.maxWidth = "none";
+		}, width);
+	};
+	const readFeedGeometry = () =>
+		postList.evaluate((node) => {
+			const columns = getComputedStyle(node)
+				.gridTemplateColumns.split(" ")
+				.map(Number.parseFloat);
+			return {
+				columnCount: columns.length,
+				firstCardWidth: columns[0] ?? 0,
+			};
+		});
+
+	await setListingWidth(607);
+	expect((await readFeedGeometry()).columnCount).toBe(1);
+	await setListingWidth(608);
+	const twoColumnMinimum = await readFeedGeometry();
+	expect(twoColumnMinimum.columnCount).toBe(2);
+	expect(twoColumnMinimum.firstCardWidth).toBeCloseTo(296, 0);
+	await setListingWidth(931);
+	expect((await readFeedGeometry()).columnCount).toBe(2);
+	await setListingWidth(932);
+	const threeColumnMinimum = await readFeedGeometry();
+	expect(threeColumnMinimum.columnCount).toBe(3);
+	expect(threeColumnMinimum.firstCardWidth).toBeCloseTo(300, 0);
+
+	await listingPage.evaluate((node) => {
+		const element = node as HTMLElement;
+		element.style.removeProperty("width");
+		element.style.removeProperty("max-width");
+	});
+
+	const setShellWidth = async (width: number) => {
+		await shell.evaluate((node, nextWidth) => {
+			const element = node as HTMLElement;
+			element.style.width = `${nextWidth}px`;
+			element.style.maxWidth = "none";
+		}, width);
+	};
+	const readShellGeometry = () =>
+		mainGrid.evaluate((node) => {
+			const tracks = getComputedStyle(node)
+				.gridTemplateColumns.split(" ")
+				.map(Number.parseFloat);
+			const feed = node
+				.querySelector<HTMLElement>(".page-main-content")
+				?.getBoundingClientRect();
+			const support = node
+				.querySelector<HTMLElement>(".page-support-region")
+				?.getBoundingClientRect();
+			return {
+				trackCount: tracks.length,
+				feedWidth: feed?.width ?? 0,
+				supportWidth: support?.width ?? 0,
+			};
+		});
+
+	await setShellWidth(879);
+	expect((await readShellGeometry()).trackCount).toBe(1);
+	await setShellWidth(880);
+	const supportedTwoColumnMinimum = await readShellGeometry();
+	expect(supportedTwoColumnMinimum.trackCount).toBe(2);
+	expect(supportedTwoColumnMinimum.feedWidth).toBeCloseTo(608, 0);
+	expect(supportedTwoColumnMinimum.supportWidth).toBeCloseTo(256, 0);
+	await setShellWidth(1199);
+	const supportedTwoColumnMaximum = await readShellGeometry();
+	expect(supportedTwoColumnMaximum.feedWidth).toBeCloseTo(656, 0);
+	expect(supportedTwoColumnMaximum.supportWidth).toBeCloseTo(272, 0);
+	await setShellWidth(1200);
+	const supportedThreeColumnMinimum = await readShellGeometry();
+	expect(supportedThreeColumnMinimum.trackCount).toBe(2);
+	expect(supportedThreeColumnMinimum.feedWidth).toBeCloseTo(932, 0);
+	expect(supportedThreeColumnMinimum.supportWidth).toBeCloseTo(252, 0);
 });
 
 test("container-content pages do not inherit legacy root scaling", async ({
