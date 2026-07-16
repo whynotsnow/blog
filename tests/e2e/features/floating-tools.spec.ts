@@ -179,7 +179,39 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	await miniPlayer.getByRole("button", { name: "暂停" }).click();
 	await expect(tools).toHaveAttribute("data-music-playing", "false");
 	await expect(miniPlayer).toBeVisible();
-	await miniPlayer.getByTitle("隐藏播放器").click();
+	const compactTransition = await miniPlayer
+		.getByTitle("隐藏播放器")
+		.evaluate(async (button) => {
+			const player = document.querySelector<HTMLElement>(".music-player");
+			if (!player) throw new Error("Music player container is missing");
+
+			const heights: number[] = [player.getBoundingClientRect().height];
+			const startedAt = performance.now();
+			(button as HTMLButtonElement).click();
+
+			await new Promise<void>((resolve) => {
+				const sample = (now: number) => {
+					heights.push(player.getBoundingClientRect().height);
+					if (now - startedAt >= 320) {
+						resolve();
+						return;
+					}
+					requestAnimationFrame(sample);
+				};
+				requestAnimationFrame(sample);
+			});
+
+			return {
+				heights,
+				transitionProperty: getComputedStyle(player).transitionProperty,
+			};
+		});
+	expect(compactTransition.transitionProperty).toContain("height");
+	expect(compactTransition.heights[0]).toBeGreaterThanOrEqual(70);
+	expect(compactTransition.heights.at(-1)).toBeCloseTo(48, 0);
+	expect(
+		compactTransition.heights.some((height) => height > 50 && height < 70),
+	).toBe(true);
 	const hiddenOrb = page.locator(".orb-player");
 	await expect(hiddenOrb).not.toHaveClass(/opacity-0/);
 	await expect(hiddenOrb.locator(".orb-player__cover")).toHaveAttribute(

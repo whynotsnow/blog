@@ -15,7 +15,7 @@
 </script>
 
 <div
-	class="mini-player card-base bg-(--surface-overlay) shadow-xl rounded-2xl p-3 transition-all duration-500 ease-in-out"
+	class="mini-player card-base bg-(--surface-overlay) shadow-xl rounded-2xl p-3"
 	class:opacity-0={isExpanded || isHidden}
 	class:scale-95={isExpanded || isHidden}
 	class:pointer-events-none={isExpanded || isHidden}

@@ -94,7 +94,7 @@ Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读�
 - `sakuraConfig.switchable`：控制樱花特效设置入口。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
 - `pioConfig.enable`：决定是否提供看板娘功能；`hiddenOnMobile` 继续作为设备限制。允许显示时，Floating Tools 提供访客级开关，偏好复用 Pio 的 `localStorage.posterGirl`，因此 Tools 与 Pio 自带关闭/恢复入口保持同步。隐藏只改变运行时可见性，不重复加载 Live2D 脚本。
 - Music Player 仍拥有播放与展开状态。默认以右下角隐藏控件出现：请求 Playlist 时显示旋转的 Theme-aware Music Icon fallback，成功后切换为第一首封面，列表或封面不可用时保留静态 fallback。未开始播放时不显示 Mini Player，Floating Tools 的 Music 入口或隐藏控件负责呼出控制面板；首次播放后 Mini Player 持续可用，即使暂停也不会消失。展开面板采用紧凑的单一 Surface，Playlist 在同一 Surface 内向上展开并与播放控制区贴合；左侧播放顺序按钮在 Sequential 与 Shuffle 间切换，并通过图标、颜色和 `aria-pressed` 明确反馈当前状态。播放器通过 Feature-local Event Contract 发布必要的 UI 状态，Floating Tools 只更新入口提示、状态动画和自动收起，不直接操作 Audio。Floating Tools 与 Music Player 位于同一个固定 Flex Layer，浏览器在同一次布局计算中维持安全间距；Playlist 展开时不再依赖独立的位置 easing 或异步测量追赶。Floating Tools 的总入口、Display Settings、TOC 与 Pio 开关使用对应场景的本地 Semantic Icon。
-- Music Player 的可见状态遵循 `Hidden fallback → Expanded Panel → Mini Player` 状态机。点击面板外区域、收起按钮或再次点击 Floating Tools Music 入口都会回到合法默认态：播放前返回 Hidden fallback，首次播放后返回 Mini Player，右下角不会出现无 Music UI 的空状态。状态组件使用统一的轻量 Fly/Fade 过渡，并在 `prefers-reduced-motion` 下取消时长。
+- Music Player 的可见状态遵循 `Hidden fallback → Expanded Panel → Mini Player` 状态机。点击面板外区域、收起按钮或再次点击 Floating Tools Music 入口都会回到合法默认态：播放前返回 Hidden fallback，首次播放后返回 Mini Player，右下角不会出现无 Music UI 的空状态。Hidden 与 Mini 由同一外层尺寸状态机承载，在固定的右下锚点同步插值宽高并配合轻量 Fly/Fade，避免 `auto height` 引起的布局跳变；所有状态过渡均在 `prefers-reduced-motion` 下取消时长。
 - Display Settings 首次定位不参与动画，只过渡 `opacity`、轻微纵向 `transform` 与 Surface 属性，避免从旧坐标横向飞入。
 
 ## 特色页面

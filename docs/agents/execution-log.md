@@ -227,3 +227,4 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Increased the no-Playlist panel clearance and replaced generic Floating Tools glyphs with local icons that represent Widgets, Display Settings, TOC, and Pio visibility.
 - Consolidated Music visibility into Hidden, Expanded, and Mini states with one Fly/Fade transition contract and outside-click/default-state recovery, eliminating empty bottom-right UI states.
 - Restricted the first Display Settings entrance to opacity and subtle vertical transform so runtime positioning variables never animate across the viewport.
+- Gave the Hidden and Mini Music states stable outer dimensions and one bottom-right anchor so container resizing and content transitions run together without an `auto`-height jump.

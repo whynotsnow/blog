@@ -571,7 +571,7 @@
 
 	<div
 		bind:this={playerRoot}
-		class="music-player z-50 transition-all duration-300 ease-in-out"
+		class="music-player z-50"
 		class:expanded={isExpanded}
 		class:has-started={hasStarted}
 		class:hidden-mode={showHiddenState}
@@ -579,7 +579,7 @@
 		{#if showHiddenState}
 			<div
 				class="music-player__state music-player__state--hidden"
-				in:fly={{ y: 8, duration: stateEnterDuration }}
+				in:fly={{ y: 4, duration: stateEnterDuration }}
 				out:fade={{ duration: stateExitDuration }}
 			>
 				<HiddenOrb
@@ -652,7 +652,7 @@
 		{:else if hasStarted}
 			<div
 				class="music-player__state music-player__state--mini"
-				in:fly={{ y: 8, duration: stateEnterDuration }}
+				in:fly={{ y: 4, duration: stateEnterDuration }}
 				out:fade={{ duration: stateExitDuration }}
 			>
 				<MiniPlayer
