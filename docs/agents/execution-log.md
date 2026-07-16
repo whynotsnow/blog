@@ -266,3 +266,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Removed the global `14px` to `16px` root-font jump at the Tailwind `768px` boundary and kept the root at the browser-standard `16px` across listing viewports.
 - Fixed Grid Card Typography independently from viewport compensation, reduced Title and Summary to one and two reserved lines, and moved the Pinned state onto the Cover.
 - Kept one Meta row with localized compact word counts and capped Tags at six source items plus two fitted visual rows without changing Feed, Shell, or Container Query width budgets.
+
+### Contracted the shared Shell around validated Card widths
+
+- Established `296px` as the safe Grid Card minimum and about `320px` as the preferred width after Chinese-first Meta, English overflow, and six-Tag pressure checks.
+- Contracted the shared Navbar and Main Shell maximum from `1352px` to `1280px`, the three-column Feed to `992px`, and the two-column Feed to `656px` while preserving the `248px–272px` Profile support range.
+- Retained the `608px`, `932px`, `880px`, and `1200px` Container Query boundaries because boundary geometry still maps directly to the validated Card, Feed, gap, and Sidebar minimum budgets.

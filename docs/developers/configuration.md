@@ -79,7 +79,7 @@ Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读�
 
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。它只控制 Post List View，不再隐式改写页面级 Desktop Layout Preference。
-- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 共享 `1352px` 外部最大宽度。首页在 `1200px` 以上使用三列 Feed + Profile support，在 `880px–1199px` 使用双列 Feed + Profile support，低于 `880px` 时把同一个 Profile DOM 放到 Main 前方；Feed 低于 `608px` 后退为单列。分类页与文章页不提供 support slot，内容区在 `1200px` 以下最大 `704px`、达到 `1200px` 后最大 `1064px`。断点针对实际容器，不直接对应 viewport 宽度。
+- 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 共享 `1280px` 外部最大宽度。首页在 `1200px` 以上使用最大 `992px` 的三列 Feed + Profile support，在 `880px–1199px` 使用最大 `656px` 的双列 Feed + Profile support，低于 `880px` 时把同一个 Profile DOM 放到 Main 前方；Feed 低于 `608px` 后退为单列。分类页与文章页不提供 support slot，内容区在 `1200px` 以下最大 `656px`、达到 `1200px` 后最大 `992px`。断点针对实际容器，不直接对应 viewport 宽度。
 - `siteConfig.pageScaling` 仅保留给尚未迁移的 `viewport-legacy` 页面；首页、分类页和文章详情页会主动清除根字号缩放，不能依赖该配置改变 Card、Sidebar 或 Typography 尺寸。
 - `desktopLayoutPreference`：保留旧存储兼容，但当前全部页面 policy 只允许 `content-right`，设置面板不会显示无效的 `three-column` 选择；该值仍不会从 `postListLayout` 推导。
 - `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。`fullscreen` 表示全屏高度的 banner 模式；`overlay` 才会显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果。

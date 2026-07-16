@@ -76,7 +76,7 @@ src/features/music-player/
 
 首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块，每组 6 篇；分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro 输出 SSG 快照，带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果；查询参数、history、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
-首页、分类页与文章详情页使用 `container-content` 布局策略。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用统一的 `1352px` 外部最大宽度。首页显式提供一份 Profile support 内容：`1200px` 以上为三列 Feed + `248px–272px` support column，`880px–1199px` 为双列 Feed + support column，低于 `880px` 时同一个 Profile DOM 移到 Main 前方；Feed 在 `608px` 以下退为单列。分类页与文章详情页不提供 support slot，内容区在 `1200px` 以下最大 `704px`，达到 `1200px` 后最大 `1064px`；文章正文内部仍使用阅读宽度。站点统计由 `src/services/footer.ts` 生成 View Model，并由 `src/components/footer` 在 Footer 中渲染一次。归档页在主内容流中拥有 Calendar、Categories 与 Tags。`PanelCard.astro` 只负责通用卡片 Surface，不负责注册、解析或放置业务组件。旧 viewport Grid 已隔离到 `page-grid-legacy.css`，不得重新覆盖 `container-content` 状态。
+首页、分类页与文章详情页使用 `container-content` 布局策略。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用统一的 `1280px` 外部最大宽度。首页显式提供一份 Profile support 内容：`1200px` 以上为最大 `992px` 的三列 Feed + `248px–272px` support column，`880px–1199px` 为最大 `656px` 的双列 Feed + support column，低于 `880px` 时同一个 Profile DOM 移到 Main 前方；Feed 在 `608px` 以下退为单列，并在 `932px` 进入三列。分类页与文章详情页不提供 support slot，内容区在 `1200px` 以下最大 `656px`，达到 `1200px` 后最大 `992px`；文章正文内部仍使用阅读宽度。站点统计由 `src/services/footer.ts` 生成 View Model，并由 `src/components/footer` 在 Footer 中渲染一次。归档页在主内容流中拥有 Calendar、Categories 与 Tags。`PanelCard.astro` 只负责通用卡片 Surface，不负责注册、解析或放置业务组件。旧 viewport Grid 已隔离到 `page-grid-legacy.css`，不得重新覆盖 `container-content` 状态。
 
 `container-content` 页面会停用旧 `pageScaling` 根字号缩放，避免在 1280px 附近同时存在 px Shell 预算和 rem 全局缩放。文章 Sidebar TOC 也从 `--width-shell-wide` 推导外侧 Rail；只有 viewport 能容纳完整 Shell 与 TOC 时才显示，否则使用已有的窄屏 TOC 入口。
 
