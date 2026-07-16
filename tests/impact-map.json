@@ -58,6 +58,13 @@
 			"test",
 			"tests/e2e/features/activity-center.spec.ts"
 		],
+		"floating-tools": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/floating-tools.spec.ts"
+		],
 		"design-contract": [
 			"pnpm",
 			"exec",
@@ -68,6 +75,7 @@
 		"astro-build": ["pnpm", "build:astro"],
 		"full": ["pnpm", "verify:full"]
 	},
+	"coverage": ["src/features/**", "tests/e2e/**"],
 	"rules": [
 		{
 			"patterns": [
@@ -105,6 +113,23 @@
 				"astro-build",
 				"smoke"
 			]
+		},
+		{
+			"patterns": [
+				"src/features/floating-tools/**",
+				"src/features/music-player/**",
+				"src/features/pio/**",
+				"src/components/LightDarkSwitch.svelte",
+				"src/components/control/BackToTop.astro",
+				"src/components/control/FloatingTOC.astro",
+				"src/components/features/settings/**",
+				"src/config/music.ts"
+			],
+			"groups": ["lint", "type", "astro", "design", "floating-tools"]
+		},
+		{
+			"patterns": ["src/features/layout-preference/**"],
+			"groups": ["lint", "type", "astro", "unit", "shell"]
 		},
 		{
 			"patterns": ["src/content/**"],
@@ -216,6 +241,10 @@
 		{
 			"patterns": ["tests/e2e/features/activity-center.spec.ts"],
 			"groups": ["test-type", "activity-center"]
+		},
+		{
+			"patterns": ["tests/e2e/features/floating-tools.spec.ts"],
+			"groups": ["test-type", "floating-tools"]
 		},
 		{
 			"patterns": ["tests/e2e/contracts/**"],

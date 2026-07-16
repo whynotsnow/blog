@@ -189,7 +189,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Split the monolithic Playwright regression into smoke, Shell, Feature, and Contract owners while preserving the 32-scenario inventory.
 - Added fast Unit and Integration layers plus independent test TypeScript validation.
 - Added a versioned impact map with conservative full-regression fallback for unknown runtime paths.
-- Made pre-commit select staged static gates and made pull request CI select Quality, Fast, Browser, and Build jobs while retaining full main regression.
+- Made pre-commit select staged static gates and made pull request and ordinary `main` push CI select Quality, Fast, Browser, and Build jobs, while scheduled and manual runs retain full regression.
 - Preserved an explicit two-worker Playwright budget after learning that spec-file splits otherwise increase effective concurrency.
 
 ## 2026-07-16

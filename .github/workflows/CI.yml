@@ -5,6 +5,8 @@ on:
         branches: [main]
     pull_request:
         branches: [main]
+    schedule:
+        - cron: "0 18 * * 0"
     workflow_dispatch:
 
 concurrency:
@@ -30,13 +32,25 @@ jobs:
               id: plan
               env:
                   BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  BEFORE_SHA: ${{ github.event.before }}
                   EVENT_NAME: ${{ github.event_name }}
               run: |
-                  if [ "$EVENT_NAME" = "pull_request" ]; then
-                    node scripts/test-impact.mjs --base "$BASE_SHA" --json > test-plan.json
-                  else
-                    echo '{"groups":["full"],"files":[],"unmatched":[],"commands":[]}' > test-plan.json
-                  fi
+                  node scripts/test-impact.mjs --check-coverage
+                  case "$EVENT_NAME" in
+                    pull_request)
+                      node scripts/test-impact.mjs --base "$BASE_SHA" --json > test-plan.json
+                      ;;
+                    push)
+                      if [[ -z "$BEFORE_SHA" || "$BEFORE_SHA" =~ ^0+$ ]]; then
+                        echo '{"groups":["full"],"files":[],"unmatched":[],"commands":[]}' > test-plan.json
+                      else
+                        node scripts/test-impact.mjs --base "$BEFORE_SHA" --json > test-plan.json
+                      fi
+                      ;;
+                    *)
+                      echo '{"groups":["full"],"files":[],"unmatched":[],"commands":[]}' > test-plan.json
+                      ;;
+                  esac
                   cat test-plan.json
                   GROUPS=$(node -e 'const fs=require("node:fs");const plan=JSON.parse(fs.readFileSync("test-plan.json","utf8"));process.stdout.write(JSON.stringify(plan.groups))')
                   echo "groups=$GROUPS" >> "$GITHUB_OUTPUT"
@@ -126,6 +140,8 @@ jobs:
             contains(needs.plan.outputs.groups, '"post-list"') ||
             contains(needs.plan.outputs.groups, '"post-detail"') ||
             contains(needs.plan.outputs.groups, '"site-notice"') ||
+            contains(needs.plan.outputs.groups, '"activity-center"') ||
+            contains(needs.plan.outputs.groups, '"floating-tools"') ||
             contains(needs.plan.outputs.groups, '"design-contract"')
         runs-on: ubuntu-latest
         steps:
@@ -163,6 +179,12 @@ jobs:
             - name: Run Site Notice suite
               if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"site-notice"') }}
               run: pnpm exec playwright test tests/e2e/features/site-notice.spec.ts
+            - name: Run Activity Center suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"activity-center"') }}
+              run: pnpm exec playwright test tests/e2e/features/activity-center.spec.ts
+            - name: Run Floating Tools suite
+              if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"floating-tools"') }}
+              run: pnpm exec playwright test tests/e2e/features/floating-tools.spec.ts
             - name: Run Design contract suite
               if: ${{ !contains(needs.plan.outputs.groups, '"full"') && contains(needs.plan.outputs.groups, '"design-contract"') }}
               run: pnpm exec playwright test tests/e2e/contracts/design-system.spec.ts

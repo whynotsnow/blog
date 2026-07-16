@@ -25,7 +25,7 @@ Use `pnpm test:plan` to inspect the current working-tree plan and `pnpm test:aff
 | L3 Integration | Content Store, service view models, static paths, build-script contracts | Owning service or pipeline |
 | L4 Feature E2E | One feature's rendered or interactive behavior | Owning feature spec |
 | L5 Contract E2E | Page Shell, navigation, responsive layout, Design and cross-page contracts | Shared contract suite |
-| L6 Full regression | All automated tests and the complete production build | Escalated, main, scheduled, or release runs |
+| L6 Full regression | All automated tests and the complete production build | Escalated, scheduled, manual, or release runs |
 
 Prefer L2 or L3 over browser coverage for deterministic pure logic. Use L4 or L5 only when the behavior depends on rendering, browser state, navigation, responsive CSS, or DOM interaction.
 
@@ -51,7 +51,7 @@ Run L6 when any condition applies:
 - three or more unrelated feature owners are affected;
 - a changed runtime path is not classified by the impact map;
 - selected validation reveals an unexpected cross-module dependency;
-- the work targets main, a scheduled regression, or a release.
+- the run is scheduled, manually requested as full, or targets a release.
 
 An expensive check may be skipped only when a lower layer proves the same contract or the environment cannot run it. Environment gaps must remain explicit.
 
@@ -85,7 +85,7 @@ Do not place unrelated behavior in a convenient existing spec. Avoid duplicating
 | `pnpm build:astro` | Astro build stage without Pagefind or font compression |
 | `pnpm verify:full` | Static checks, fast tests, full E2E, and complete production build |
 
-Pre-commit uses staged-file categories for local static gates and never runs browser tests. Pull request CI consumes the impact plan. Pushes to `main` and manual full runs keep L6 as the mapping safety net.
+Pre-commit uses staged-file categories for local static gates and never runs browser tests. Pull request and ordinary `main` push CI consume the same impact plan. Weekly scheduled runs, manual full runs, releases, and risk-based escalation keep L6 as the mapping safety net. `pnpm test:impact:check` guards `src/features/**` and `tests/e2e/**` so newly added paths cannot silently fall through to full validation.
 
 ## Handoff Evidence
 

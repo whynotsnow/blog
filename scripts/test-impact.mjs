@@ -11,6 +11,7 @@ const args = process.argv.slice(2);
 const shouldRun = args.includes("--run");
 const json = args.includes("--json");
 const staged = args.includes("--staged");
+const checkCoverage = args.includes("--check-coverage");
 const baseIndex = args.indexOf("--base");
 const base = baseIndex >= 0 ? args[baseIndex + 1] : undefined;
 const explicitFiles = args
@@ -59,21 +60,52 @@ function matches(file, pattern) {
 	return globRegex(pattern).test(file);
 }
 
+function matchingRules(file) {
+	return impactMap.rules.filter((rule) =>
+		rule.patterns.some((pattern) => matches(file, pattern)),
+	);
+}
+
+if (checkCoverage) {
+	const coveragePatterns = impactMap.coverage ?? [];
+	const coveredFiles = gitLines([
+		"ls-files",
+		"--cached",
+		"--others",
+		"--exclude-standard",
+	]).filter((file) =>
+		coveragePatterns.some((pattern) => matches(file, pattern)),
+	);
+	const uncoveredFiles = coveredFiles.filter(
+		(file) => matchingRules(file).length === 0,
+	);
+
+	if (uncoveredFiles.length > 0) {
+		console.error(
+			`[test-impact] Unclassified covered paths:\n${uncoveredFiles.map((file) => `- ${file}`).join("\n")}`,
+		);
+		process.exit(1);
+	}
+
+	console.log(
+		`[test-impact] Coverage PASS: ${coveredFiles.length} guarded path(s) are classified.`,
+	);
+	process.exit(0);
+}
+
 const files = [...new Set(changedFiles())].sort();
 const selected = new Set();
 const reasons = new Map();
 const unmatched = [];
 
 for (const file of files) {
-	const matchingRules = impactMap.rules.filter((rule) =>
-		rule.patterns.some((pattern) => matches(file, pattern)),
-	);
-	if (!matchingRules.length) {
+	const fileRules = matchingRules(file);
+	if (!fileRules.length) {
 		unmatched.push(file);
 		for (const group of impactMap.fallback) selected.add(group);
 		continue;
 	}
-	for (const rule of matchingRules) {
+	for (const rule of fileRules) {
 		for (const group of rule.groups) {
 			selected.add(group);
 			const groupReasons = reasons.get(group) ?? [];

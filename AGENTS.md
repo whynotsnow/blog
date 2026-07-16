@@ -60,6 +60,7 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm precommit`: run the same pre-commit gate as the Git hook.
 - `pnpm test:plan`: print the validation selected for current changes without executing it.
 - `pnpm test:affected`: execute the validation selected by `tests/impact-map.json`.
+- `pnpm test:impact:check`: ensure guarded Feature and E2E paths are classified by the impact map.
 - `pnpm test:fast`: run Unit and Integration tests.
 - `pnpm test:smoke`: run the critical-route Playwright smoke suite.
 - `pnpm test:e2e:full`: run the complete Playwright regression suite.
@@ -152,7 +153,7 @@ Before running checks:
 2. Select the directly owned checks plus checks for any shared contract the change consumes.
 3. Record why the selected set is sufficient and report skipped higher-level checks in the handoff.
 
-Escalate to full regression when a change affects shared content/core contracts, global layout/navigation/design infrastructure, build or test configuration, dependencies, three or more unrelated features, or a path that the impact rules cannot classify. A selected test exposing cross-module behavior also requires escalation.
+Escalate to full regression when a change affects shared content/core contracts, global layout/navigation/design infrastructure, build or test configuration, dependencies, three or more unrelated features, or a path that the impact rules cannot classify. A selected test exposing cross-module behavior also requires escalation. The target branch alone is not an escalation condition; ordinary `main` work uses the same impact plan as a pull request.
 
 Use `docs/agents/testing-strategy.md` as the normative selection matrix. Never skip a relevant check merely because it is expensive; choose a narrower layer that proves the same behavior when one exists.
 

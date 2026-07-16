@@ -33,6 +33,7 @@
 		"test:e2e:full": "playwright test",
 		"test:plan": "node scripts/test-impact.mjs",
 		"test:affected": "node scripts/test-impact.mjs --run",
+		"test:impact:check": "node scripts/test-impact.mjs --check-coverage",
 		"type-check:tests": "tsc -p tsconfig.tests.json --noEmit",
 		"verify:full": "pnpm lint && pnpm design:check && pnpm check && pnpm type-check && pnpm type-check:tests && pnpm test:fast && pnpm test:e2e:full && pnpm build",
 		"test:smoke:install": "playwright install chromium",

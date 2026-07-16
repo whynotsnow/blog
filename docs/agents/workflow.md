@@ -269,7 +269,7 @@ Do not read unrelated documents just to appear thorough. If multiple areas are a
 
 Validation scope follows the changed behavior, not a blanket full-suite rule. Before executing checks, list changed files, classify the change, identify directly owned tests and shared contracts, and then run the smallest sufficient set. Read [Testing Strategy](./testing-strategy.md) for the normative matrix and escalation rules.
 
-Full regression is required for unclassified paths, cross-cutting infrastructure, dependency or test-runner changes, and changes spanning three or more unrelated features. It remains a main-branch and scheduled backstop even when a pull request uses affected tests.
+Full regression is required for unclassified paths, cross-cutting infrastructure, dependency or test-runner changes, and changes spanning three or more unrelated features. Ordinary pull requests and `main` pushes use the same affected-test plan; weekly scheduled, manual full, and release runs remain the broad backstop.
 
 ## Handoff Format
 
