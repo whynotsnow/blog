@@ -341,7 +341,7 @@
   height: var(--post-card-block-size);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-raised);
+  box-shadow: none;
 }
 
 .post-list.grid-mode .home-post-card__cover-placeholder {

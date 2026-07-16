@@ -50,6 +50,7 @@ test("fluid two-column post Grid fills the Feed and keeps the semantic gap", asy
 	const postList = page.locator('[data-post-list-renderer="astro"]').first();
 	const cards = postList.locator(":scope > .post-list__item");
 	await expect(cards).toHaveCount(6);
+	await expect(cards.first()).toHaveCSS("box-shadow", "none");
 
 	const geometry = await postList.evaluate((node) => {
 		const items = Array.from(
