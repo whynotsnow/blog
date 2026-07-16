@@ -260,3 +260,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Aligned Astro and Svelte Cards on the core `UIPost` contract and the same Title, Card Meta, Summary, Tags, and Cover regions without changing Feed or Shell width budgets.
 - Isolated listing Metadata from the post-detail renderer and moved shared Grid/List Card geometry out of renderer utility classes into the Post List feature stylesheet.
 - Added cross-renderer browser assertions for the shared semantic structure and Metadata geometry.
+
+### Stabilized Post Card content density
+
+- Removed the global `14px` to `16px` root-font jump at the Tailwind `768px` boundary and kept the root at the browser-standard `16px` across listing viewports.
+- Fixed Grid Card Typography independently from viewport compensation, reduced Title and Summary to one and two reserved lines, and moved the Pinned state onto the Cover.
+- Kept one Meta row with localized compact word counts and capped Tags at six source items plus two fitted visual rows without changing Feed, Shell, or Container Query width budgets.
