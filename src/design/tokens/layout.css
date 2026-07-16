@@ -19,7 +19,7 @@
   --space-page-x: clamp(1rem, 3vw, 2rem);
   --space-shell-wide-x: clamp(1rem, 1.75vw, 1.5rem);
   --space-grid-gap: clamp(0.75rem, 1vw, 1rem);
-  --space-section: clamp(2.5rem, 6vw, 5rem);
+  --space-section: clamp(2rem, 4vw, 3rem);
   --space-content: var(--size-6);
   --space-card: var(--size-5);
   --space-cluster: var(--size-3);
