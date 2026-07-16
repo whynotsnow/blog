@@ -474,6 +474,13 @@
   white-space: nowrap;
 }
 
+/* Container queries use the content box: 302px maps to the 304px bordered Card width. */
+@container post-card (max-width: 302px) {
+  .post-list.grid-mode .home-post-card__meta-icon {
+    display: none;
+  }
+}
+
 body.is-home .home-post-card {
   background: var(--surface-card);
   color: var(--text-primary);
