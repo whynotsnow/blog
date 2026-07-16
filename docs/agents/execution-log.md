@@ -200,6 +200,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Made the `container-content` layout strategy the automatic compensation boundary so future consumers inherit the same shared Shell behavior without route-specific handling.
 - Limited the first compensation pass to Typography and internal Spacing above `1280px` in Desktop Landscape, returning to default values at `2000px` without depending on input-device media reporting.
 - Preserved viewport-based Banner geometry, Main Grid and shared component widths, Card dimensions, Container Query thresholds, Navbar control heights, and post TOC behavior for later layout-specific work.
+- Added a shared Navbar Shell height and clearance contract for outer height, Main Content offset, Page Entry alignment, Site Notice positioning, and runtime Banner thresholds while preserving the `44px` Navigation targets.
 
 ### Refined Banner and Navbar responsive interaction
 

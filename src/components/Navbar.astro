@@ -41,7 +41,7 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
     <div class="absolute h-8 left-0 right-0 -top-8 bg-(--card-bg) transition"></div> <!-- used for onload animation -->
 	    <div class:list={[
 			className,
-			"navbar__inner overflow-visible! h-18 mx-auto flex items-center justify-between px-4",
+			"navbar__inner overflow-visible! mx-auto flex items-center justify-between px-4",
 			{ "max-w-(--page-width)": !containerContent },
 		]}>
 		<a href={url('/')} class="navbar__brand btn-plain scale-animation rounded-lg h-10 md:h-13 md:in-[.enable-banner]:h-10 md:in-[.enable-banner]:group-[.scrolled]:h-13 px-5 font-bold active:scale-95 shrink-0 transition-all duration-300">

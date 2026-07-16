@@ -1,6 +1,21 @@
+@property --main-content-offset {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 88px;
+}
+
 :root {
-  --main-content-offset: 5.5rem;
-  --page-entry-clearance: calc(var(--main-content-offset) + 1rem);
+  --navbar-shell-height: 4.5rem;
+  --navbar-shell-clearance: 1rem;
+  --main-content-offset: calc(var(--navbar-shell-height) + var(--navbar-shell-clearance));
+  --page-entry-clearance: calc(var(--main-content-offset) + var(--navbar-shell-clearance));
+}
+
+@media (min-width: 1281px) and (orientation: landscape) {
+  :root:has(.main-grid-shell[data-shell-strategy="container-content"]) {
+    --navbar-shell-height: clamp(4.05rem, 3.6vw, 4.5rem);
+    --navbar-shell-clearance: clamp(0.9rem, 0.8vw, 1rem);
+  }
 }
 
 .page-main-content {

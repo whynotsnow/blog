@@ -61,6 +61,8 @@ Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Sv
 
 `container-content` 的共享 Shell 补偿由布局策略自动启用，不按具体 route 建立白名单。Banner、Navbar 与 Footer 先在宽于 `1280px` 的 Desktop Landscape 环境中补偿 Typography 和组件内部 Spacing，并在 `2000px` 恢复默认尺寸；补偿继续使用 Feature-local `rem` token，不修改根字号。Banner 的 `vh`/`svh`/`dvh` 几何、Navbar 与 Footer 容器宽度、Main Grid 宽度、Card 尺寸和 Container Query 端点不属于这一阶段，必须等 Main Grid 容器方案确定后一起调整。
 
+Navbar 外层高度由 `--navbar-shell-height` 所有；`--main-content-offset` 与 Page Entry Clearance 从该高度和 `--navbar-shell-clearance` 推导。`container-content` 在同一 Desktop Landscape 范围内将 Shell 高度从 `1536px` viewport 的约 `64.8px` 平滑恢复到 `2000px` 的 `72px`，但 Navigation Button 继续保留 `44px` 点击区域，Logo 高度也不随这轮补偿变化。Site Notice 顶部位置和 Navbar 滚动阈值必须消费同一高度契约，不得重新写入固定 `72px` 或 `88px`。
+
 顶部 Navigation Progress 是 Shell-local Pattern：颜色消费 `--accent`，过渡消费 `--motion-*`，固定覆盖在页面顶部且不占文档流高度。它消费 Swup 生命周期并保证快速导航仍有短暂的可见反馈，但不作为内容、图片或 Svelte hydration 的完成状态。
 
 ## Theme 与 Wallpaper

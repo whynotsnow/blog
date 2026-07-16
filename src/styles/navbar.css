@@ -34,6 +34,10 @@
     backdrop-filter var(--motion-normal) var(--motion-ease-standard);
 }
 
+#navbar > .navbar__inner {
+  height: var(--navbar-shell-height);
+}
+
 #navbar .navbar__brand {
   padding-inline: var(--navbar-brand-padding-inline);
 }

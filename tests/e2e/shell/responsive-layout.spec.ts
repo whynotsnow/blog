@@ -194,6 +194,12 @@ test("container-content compensates shared Shell type without resizing its conta
 				document.querySelector<HTMLElement>(".site-footer__meta")!;
 			const footerStats =
 				document.querySelector<HTMLElement>(".footer-stats")!;
+			const mainContent =
+				document.querySelector<HTMLElement>(".page-main-content")!;
+			const siteNotice = document.querySelector<HTMLElement>(
+				"[data-site-notice-region]",
+			)!;
+			const rootStyle = getComputedStyle(document.documentElement);
 
 			return {
 				bannerStrategy: banner.dataset.shellStrategy,
@@ -207,6 +213,15 @@ test("container-content compensates shared Shell type without resizing its conta
 				navbarWidth: navbarInner.getBoundingClientRect().width,
 				navbarFontSize: Number.parseFloat(
 					getComputedStyle(navbarLink).fontSize,
+				),
+				mainContentOffset: Number.parseFloat(
+					rootStyle.getPropertyValue("--main-content-offset"),
+				),
+				pageEntryClearance: Number.parseFloat(
+					getComputedStyle(mainContent).scrollMarginBlockStart,
+				),
+				siteNoticeTop: Number.parseFloat(
+					getComputedStyle(siteNotice).insetBlockStart,
 				),
 				footerWidth: footerMeta
 					.closest(".site-footer")!
@@ -229,7 +244,10 @@ test("container-content compensates shared Shell type without resizing its conta
 	expect(compensated.navbarFontSize).toBeCloseTo(14.4, 1);
 	expect(compensated.footerMetaSize).toBeCloseTo(12.6, 1);
 	expect(compensated.footerStatsSize).toBeCloseTo(11.7, 1);
-	expect(compensated.navbarHeight).toBeCloseTo(72, 0);
+	expect(compensated.navbarHeight).toBeCloseTo(64.8, 1);
+	expect(compensated.mainContentOffset).toBeCloseTo(79.2, 1);
+	expect(compensated.pageEntryClearance).toBeCloseTo(93.6, 1);
+	expect(compensated.siteNoticeTop).toBeCloseTo(80.8, 1);
 
 	for (const pathname of ["/category/tech/", "/posts/markdown-tutorial/"]) {
 		await gotoPage(page, pathname);
@@ -251,6 +269,10 @@ test("container-content compensates shared Shell type without resizing its conta
 			compensated.navbarHeight,
 			0,
 		);
+		expect(contentPage.mainContentOffset).toBeCloseTo(
+			compensated.mainContentOffset,
+			1,
+		);
 	}
 
 	await page.setViewportSize({ width: 2000, height: 900 });
@@ -261,7 +283,10 @@ test("container-content compensates shared Shell type without resizing its conta
 	expect(restored.navbarFontSize).toBeCloseTo(16, 1);
 	expect(restored.footerMetaSize).toBeCloseTo(14, 1);
 	expect(restored.footerStatsSize).toBeCloseTo(13, 1);
-	expect(restored.navbarHeight).toBeCloseTo(compensated.navbarHeight, 0);
+	expect(restored.navbarHeight).toBeCloseTo(72, 0);
+	expect(restored.mainContentOffset).toBeCloseTo(88, 1);
+	expect(restored.pageEntryClearance).toBeCloseTo(104, 1);
+	expect(restored.siteNoticeTop).toBeCloseTo(88, 1);
 	expect(restored.navbarWidth).toBeGreaterThanOrEqual(
 		compensated.navbarWidth,
 	);

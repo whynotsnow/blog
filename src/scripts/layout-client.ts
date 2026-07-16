@@ -19,6 +19,19 @@ const setTimeout = (
 const bannerEnabled = !!document.getElementById("banner-wrapper");
 let panelToggleDelegationBound = false;
 
+const DEFAULT_MAIN_CONTENT_OFFSET = 88;
+
+function readMainContentOffset() {
+	const value = Number.parseFloat(
+		getComputedStyle(document.documentElement).getPropertyValue(
+			"--main-content-offset",
+		),
+	);
+	return Number.isFinite(value) ? value : DEFAULT_MAIN_CONTENT_OFFSET;
+}
+
+let mainContentOffset = readMainContentOffset();
+
 // 导入面板管理器
 async function initializePanelManager() {
 	try {
@@ -239,7 +252,8 @@ const setup = () => {
 			const navbar = document.getElementById("navbar-wrapper");
 			if (navbar && document.body.classList.contains("is-home")) {
 				const threshold =
-					window.innerHeight * (BANNER_HEIGHT / 100) - 88;
+					window.innerHeight * (BANNER_HEIGHT / 100) -
+					mainContentOffset;
 				if (document.documentElement.scrollTop >= threshold) {
 					navbar.classList.add("navbar-hidden");
 				}
@@ -248,6 +262,8 @@ const setup = () => {
 	});
 
 	onPageLifecycle("content-replace", () => {
+		mainContentOffset = readMainContentOffset();
+
 		// 初始化新页面的图片、公式、滚动条和TOC
 		initFancybox();
 		checkKatex();
@@ -497,7 +513,8 @@ function scrollFunction() {
 			const currentBannerHeight = BANNER_HEIGHT_HOME;
 
 			const threshold =
-				window.innerHeight * (currentBannerHeight / 100) - 88;
+				window.innerHeight * (currentBannerHeight / 100) -
+				mainContentOffset;
 			if (scrollTop >= threshold) {
 				navbar.classList.add("navbar-hidden");
 			} else {
@@ -513,6 +530,8 @@ function scrollFunction() {
 window.onscroll = throttle(scrollFunction, 16); // 约60fps
 
 window.onresize = () => {
+	mainContentOffset = readMainContentOffset();
+
 	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
 	offset = offset - (offset % 4);
