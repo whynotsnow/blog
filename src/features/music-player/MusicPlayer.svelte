@@ -111,8 +111,8 @@
 
 	const interactionEvents = ["click", "keydown", "touchstart"];
 	$: showHiddenState = isHidden || (!isExpanded && !hasStarted);
-	$: stateEnterDuration = prefersReducedMotion ? 0 : 220;
-	$: stateExitDuration = prefersReducedMotion ? 0 : 120;
+	$: stateEnterDuration = prefersReducedMotion ? 0 : 250;
+	$: stateExitDuration = prefersReducedMotion ? 0 : 180;
 
 	async function fetchMetingPlaylist() {
 		if (!metingApi || !metingId) {
@@ -579,7 +579,7 @@
 		{#if showHiddenState}
 			<div
 				class="music-player__state music-player__state--hidden"
-				in:fly={{ y: 4, duration: stateEnterDuration }}
+				in:fade={{ duration: stateEnterDuration }}
 				out:fade={{ duration: stateExitDuration }}
 			>
 				<HiddenOrb
@@ -652,7 +652,7 @@
 		{:else if hasStarted}
 			<div
 				class="music-player__state music-player__state--mini"
-				in:fly={{ y: 4, duration: stateEnterDuration }}
+				in:fade={{ duration: stateEnterDuration }}
 				out:fade={{ duration: stateExitDuration }}
 			>
 				<MiniPlayer

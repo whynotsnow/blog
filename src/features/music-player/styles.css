@@ -133,6 +133,7 @@
 .music-player.hidden-mode {
   width: 3rem;
   height: 3rem;
+  border-radius: 1.5rem;
 }
 
 .music-player {
@@ -140,22 +141,28 @@
   width: 3rem;
   height: 3rem;
   max-width: 20rem;
+  overflow: clip;
+  border-radius: 1.5rem;
   pointer-events: auto;
   user-select: none;
   transition:
     width var(--motion-normal) var(--motion-ease-standard),
-    height var(--motion-normal) var(--motion-ease-standard);
+    height var(--motion-normal) var(--motion-ease-standard),
+    border-radius var(--motion-normal) var(--motion-ease-standard);
 }
 
 .music-player.has-started:not(.expanded):not(.hidden-mode) {
   width: 17.5rem;
   height: 4.5rem;
+  border-radius: 1rem;
 }
 
 .music-player.expanded {
   width: min(20rem, calc(100vw - 2rem));
   height: auto;
   max-width: none;
+  overflow: visible;
+  border-radius: 1.25rem;
 }
 
 .music-player__state {
@@ -168,6 +175,16 @@
   position: absolute;
   right: 0;
   bottom: 0;
+}
+
+.music-player__state--hidden {
+  width: 3rem;
+  height: 3rem;
+}
+
+.music-player__state--mini {
+  width: 17.5rem;
+  height: 4.5rem;
 }
 
 .music-player__panel-stack {
@@ -222,6 +239,10 @@
     width: 280px;
   }
 
+  .music-player__state--mini {
+    width: 280px;
+  }
+
   .music-player.expanded {
     width: calc(100vw - 16px);
     max-width: none;
@@ -234,6 +255,10 @@
   }
 
   .music-player.has-started:not(.expanded):not(.hidden-mode) {
+    width: 260px;
+  }
+
+  .music-player__state--mini {
     width: 260px;
   }
 

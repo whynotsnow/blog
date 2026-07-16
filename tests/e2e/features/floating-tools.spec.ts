@@ -185,13 +185,33 @@ test("music starts from floating tools and then keeps its mini player visible", 
 			const player = document.querySelector<HTMLElement>(".music-player");
 			if (!player) throw new Error("Music player container is missing");
 
-			const heights: number[] = [player.getBoundingClientRect().height];
+			const initialRect = player.getBoundingClientRect();
+			const frames: Array<{
+				height: number;
+				miniWidth: number | null;
+				width: number;
+			}> = [
+				{
+					height: initialRect.height,
+					miniWidth: initialRect.width,
+					width: initialRect.width,
+				},
+			];
 			const startedAt = performance.now();
 			(button as HTMLButtonElement).click();
 
 			await new Promise<void>((resolve) => {
 				const sample = (now: number) => {
-					heights.push(player.getBoundingClientRect().height);
+					const rect = player.getBoundingClientRect();
+					const miniState = player.querySelector<HTMLElement>(
+						".music-player__state--mini",
+					);
+					frames.push({
+						height: rect.height,
+						miniWidth:
+							miniState?.getBoundingClientRect().width ?? null,
+						width: rect.width,
+					});
 					if (now - startedAt >= 320) {
 						resolve();
 						return;
@@ -202,15 +222,26 @@ test("music starts from floating tools and then keeps its mini player visible", 
 			});
 
 			return {
-				heights,
+				frames,
 				transitionProperty: getComputedStyle(player).transitionProperty,
 			};
 		});
 	expect(compactTransition.transitionProperty).toContain("height");
-	expect(compactTransition.heights[0]).toBeGreaterThanOrEqual(70);
-	expect(compactTransition.heights.at(-1)).toBeCloseTo(48, 0);
+	expect(compactTransition.transitionProperty).toContain("width");
+	expect(compactTransition.frames[0].height).toBeGreaterThanOrEqual(70);
+	expect(compactTransition.frames.at(-1)?.height).toBeCloseTo(48, 0);
+	expect(compactTransition.frames.at(-1)?.width).toBeCloseTo(48, 0);
 	expect(
-		compactTransition.heights.some((height) => height > 50 && height < 70),
+		compactTransition.frames.some(
+			({ height, width }) =>
+				height > 50 && height < 70 && width > 60 && width < 270,
+		),
+	).toBe(true);
+	expect(
+		compactTransition.frames
+			.map(({ miniWidth }) => miniWidth)
+			.filter((width): width is number => width !== null)
+			.every((width) => width >= 279),
 	).toBe(true);
 	const hiddenOrb = page.locator(".orb-player");
 	await expect(hiddenOrb).not.toHaveClass(/opacity-0/);
