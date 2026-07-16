@@ -84,6 +84,118 @@ test("fluid two-column post Grid fills the Feed and keeps the semantic gap", asy
 	expect(coverHeight).toBeLessThanOrEqual(224);
 });
 
+test("container-content compensates post Card vertical geometry without changing its width budget", async ({
+	page,
+}) => {
+	await useStoredPreference(page, "postListLayout", "grid");
+
+	const readCardGeometry = async (renderer: "astro" | "svelte") => {
+		const postList = page
+			.locator(`[data-post-list-renderer="${renderer}"]`)
+			.first();
+		const item = postList.locator(":scope > .post-list__item").first();
+		await expect(item).toBeVisible();
+
+		return item.evaluate((node) => {
+			const card = node.matches(".home-post-card")
+				? node
+				: node.querySelector<HTMLElement>(".home-post-card")!;
+			const cover = card.querySelector<HTMLElement>(
+				".home-post-card__cover",
+			)!;
+			const content = card.querySelector<HTMLElement>(
+				".home-post-card__content",
+			)!;
+			const title = card.querySelector<HTMLElement>(
+				".home-post-card__title",
+			)!;
+			const summary = card.querySelector<HTMLElement>(
+				".home-post-card__summary",
+			)!;
+			const tag = card.querySelector<HTMLElement>(
+				".home-post-card__tags > :first-child",
+			)!;
+			const meta = card.querySelector<HTMLElement>(
+				".home-post-card__meta",
+			);
+			const itemStyle = getComputedStyle(node);
+			const cardStyle = getComputedStyle(card);
+			const contentStyle = getComputedStyle(content);
+
+			return {
+				width: Number.parseFloat(itemStyle.width),
+				height: Number.parseFloat(itemStyle.height),
+				cardHeight: Number.parseFloat(cardStyle.height),
+				coverHeight: Number.parseFloat(getComputedStyle(cover).height),
+				contentPaddingBlockStart: Number.parseFloat(
+					contentStyle.paddingBlockStart,
+				),
+				titleSize: Number.parseFloat(getComputedStyle(title).fontSize),
+				summarySize: Number.parseFloat(
+					getComputedStyle(summary).fontSize,
+				),
+				tagSize: Number.parseFloat(getComputedStyle(tag).fontSize),
+				metaSize: meta
+					? Number.parseFloat(getComputedStyle(meta).fontSize)
+					: null,
+				intrinsicSize: itemStyle.containIntrinsicBlockSize,
+				contentOverflows:
+					content.scrollHeight > content.clientHeight + 1,
+			};
+		});
+	};
+
+	await page.setViewportSize({ width: 1536, height: 900 });
+	await gotoPage(page, "/");
+	const compensatedAstro = await readCardGeometry("astro");
+	expect(compensatedAstro.height).toBeCloseTo(417.6, 1);
+	expect(compensatedAstro.cardHeight).toBeCloseTo(417.6, 1);
+	expect(compensatedAstro.contentPaddingBlockStart).toBeCloseTo(18, 1);
+	expect(compensatedAstro.titleSize).toBeCloseTo(20.7, 1);
+	expect(compensatedAstro.summarySize).toBeCloseTo(14.4, 1);
+	expect(compensatedAstro.tagSize).toBeCloseTo(10.8, 1);
+	expect(compensatedAstro.metaSize).toBeCloseTo(12.6, 1);
+	expect(compensatedAstro.intrinsicSize).toContain("417.6px");
+	expect(compensatedAstro.contentOverflows).toBe(false);
+
+	await gotoPage(page, "/category/tech/");
+	const tagLink = page.locator('a[href^="/category/tech/?tag="]').first();
+	await tagLink.click();
+	await expect(page).toHaveURL(/\?tag=/);
+	const compensatedSvelte = await readCardGeometry("svelte");
+	expect(compensatedSvelte.height).toBeCloseTo(compensatedAstro.height, 1);
+	expect(compensatedSvelte.cardHeight).toBeCloseTo(
+		compensatedAstro.cardHeight,
+		1,
+	);
+	expect(compensatedSvelte.titleSize).toBeCloseTo(
+		compensatedAstro.titleSize,
+		1,
+	);
+	expect(compensatedSvelte.summarySize).toBeCloseTo(
+		compensatedAstro.summarySize,
+		1,
+	);
+	expect(compensatedSvelte.tagSize).toBeCloseTo(compensatedAstro.tagSize, 1);
+	expect(compensatedSvelte.contentOverflows).toBe(false);
+
+	await page.setViewportSize({ width: 2000, height: 900 });
+	await gotoPage(page, "/");
+	const restored = await readCardGeometry("astro");
+	expect(restored.width).toBeCloseTo(compensatedAstro.width, 0);
+	expect(restored.height).toBeCloseTo(464, 1);
+	expect(restored.cardHeight).toBeCloseTo(464, 1);
+	expect(restored.contentPaddingBlockStart).toBeCloseTo(20, 1);
+	expect(restored.titleSize).toBeCloseTo(23.9, 1);
+	expect(restored.summarySize).toBeCloseTo(16, 1);
+	expect(restored.tagSize).toBeCloseTo(12, 1);
+	expect(restored.metaSize).toBeCloseTo(14, 1);
+	expect(restored.intrinsicSize).toContain("464px");
+	expect(
+		Math.abs(restored.coverHeight - compensatedAstro.coverHeight),
+	).toBeLessThan(1);
+});
+
 test("post list view does not imply desktop page layout preference", async ({
 	page,
 }) => {

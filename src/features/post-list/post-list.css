@@ -6,8 +6,39 @@
 }
 
 .listing-page {
+  --post-card-block-size: 29rem;
+  --post-card-cover-min-size: 10rem;
+  --post-card-cover-max-size: 14rem;
+  --post-card-content-padding: var(--space-card);
+  --post-card-title-min-size: 1.2rem;
+  --post-card-title-fluid-base: 1.1rem;
+  --post-card-title-fluid-rate: 0.35vw;
+  --post-card-title-max-size: 1.5rem;
+  --post-card-section-gap: var(--space-cluster);
+  --post-card-summary-size: 1rem;
+  --post-card-meta-size: 0.875rem;
+  --post-card-tag-size: 0.75rem;
+  --post-card-tag-gap: var(--size-2);
   container-name: post-feed;
   container-type: inline-size;
+}
+
+@media (min-width: 1281px) and (orientation: landscape) {
+  .main-grid-shell[data-shell-strategy="container-content"] .listing-page {
+    --post-card-block-size: clamp(26.1rem, 23.2vw, 29rem);
+    --post-card-cover-min-size: clamp(9rem, 8vw, 10rem);
+    --post-card-cover-max-size: clamp(12.6rem, 11.2vw, 14rem);
+    --post-card-content-padding: clamp(1.125rem, 1vw, 1.25rem);
+    --post-card-title-min-size: clamp(1.08rem, 0.96vw, 1.2rem);
+    --post-card-title-fluid-base: clamp(0.99rem, 0.88vw, 1.1rem);
+    --post-card-title-fluid-rate: 0.315vw;
+    --post-card-title-max-size: clamp(1.35rem, 1.2vw, 1.5rem);
+    --post-card-section-gap: clamp(0.675rem, 0.6vw, 0.75rem);
+    --post-card-summary-size: clamp(0.9rem, 0.8vw, 1rem);
+    --post-card-meta-size: clamp(0.7875rem, 0.7vw, 0.875rem);
+    --post-card-tag-size: clamp(0.675rem, 0.6vw, 0.75rem);
+    --post-card-tag-gap: clamp(0.45rem, 0.4vw, 0.5rem);
+  }
 }
 
 .post-list.list-mode {
@@ -25,9 +56,9 @@
   container-type: inline-size;
   min-width: 0;
   width: 100%;
-  height: 29rem;
-  max-height: 29rem;
-  contain-intrinsic-size: auto 29rem;
+  height: var(--post-card-block-size);
+  max-height: var(--post-card-block-size);
+  contain-intrinsic-size: auto var(--post-card-block-size);
 }
 
 .listing-page .post-list.grid-mode {
@@ -39,7 +70,7 @@
 .post-list.grid-mode .home-post-card {
   display: flex;
   flex-direction: column;
-  height: 29rem;
+  height: var(--post-card-block-size);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-raised);
@@ -54,7 +85,7 @@
   inset: auto;
   order: -1;
   width: 100%;
-  height: clamp(10rem, 56.25cqi, 14rem);
+  height: clamp(var(--post-card-cover-min-size), 56.25cqi, var(--post-card-cover-max-size));
   max-height: none;
   margin: 0;
   border-radius: 0;
@@ -65,15 +96,15 @@
   flex: 1;
   flex-direction: column;
   width: 100%;
-  padding: var(--space-card);
+  padding: var(--post-card-content-padding);
 }
 
 .post-list.grid-mode .home-post-card__title {
   display: -webkit-box;
-  margin-bottom: var(--space-cluster);
+  margin-bottom: var(--post-card-section-gap);
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(1.2rem, 1.1rem + 0.35vw, 1.5rem);
+  font-size: clamp(var(--post-card-title-min-size), calc(var(--post-card-title-fluid-base) + var(--post-card-title-fluid-rate)), var(--post-card-title-max-size));
   line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -87,17 +118,34 @@
 
 .post-list.grid-mode .home-post-card__summary {
   display: -webkit-box;
-  margin-bottom: var(--space-cluster);
+  margin-bottom: var(--post-card-section-gap);
   overflow: hidden;
   color: var(--text-secondary);
+  font-size: var(--post-card-summary-size);
   line-height: 1.65;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
 
 .post-list.grid-mode .home-post-card__tags {
+  gap: var(--post-card-tag-gap);
   margin-top: auto;
-  padding-top: var(--space-cluster);
+  padding-top: var(--post-card-section-gap);
+  font-size: var(--post-card-tag-size);
+}
+
+.post-list.grid-mode .home-post-card__tags :is(a, span) {
+  font-size: inherit;
+}
+
+.post-list.grid-mode .home-post-card__meta {
+  margin-bottom: var(--post-card-section-gap);
+  font-size: var(--post-card-meta-size);
+  gap: var(--post-card-tag-gap);
+}
+
+.post-list.grid-mode .home-post-card__meta :is(a, span) {
+  font-size: inherit;
 }
 
 body.is-home .home-post-card {

@@ -53,7 +53,7 @@ Primitive → Semantic → Theme/Pattern → Component
 
 Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Svelte 的同一 UI 应消费相同 Pattern class。
 
-首页与分类页的文章 Grid 使用 `post-feed` Container Query：容器小于 `608px` 为单列，达到 `608px` 为双列，达到 `932px` 为三列。单列 Grid 最大 `400px`，双列组合最大 `704px`，三列组合最大 `1064px`。双列与三列 Card 的目标范围约为 `296px–344px`，列间距使用更紧凑的 `--space-grid-gap`，避免 Card 达到最大宽度后在两列到三列之间形成过长的闲置区；单列保留稍宽的阅读宽度。Grid Card 固定高度继续为 `29rem`，封面高度根据 Card 容器宽度在 `10rem–14rem` 内流式变化；无图片时使用 Semantic token 生成占位封面。List 模式继续使用 `--width-listing` 阅读宽度，Astro 与 Svelte renderer 必须保持同一 Card 结构和 Semantic token 契约。
+首页与分类页的文章 Grid 使用 `post-feed` Container Query：容器小于 `608px` 为单列，达到 `608px` 为双列，达到 `932px` 为三列。单列 Grid 最大 `400px`，双列组合最大 `704px`，三列组合最大 `1064px`。双列与三列 Card 的目标范围约为 `296px–344px`，列间距使用更紧凑的 `--space-grid-gap`，避免 Card 达到最大宽度后在两列到三列之间形成过长的闲置区；单列保留稍宽的阅读宽度。Grid Card 默认固定高度为 `29rem`，封面高度根据 Card 容器宽度在 `10rem–14rem` 内流式变化；无图片时使用 Semantic token 生成占位封面。`container-content` 在 Desktop Landscape 补偿 Card 高度、封面 `rem` 边界、内部 Typography 与 Spacing，并在 `2000px` 恢复默认值；`56.25cqi` 封面比例、Feed 宽度和 `608px`/`932px` 端点保持不变。Card 的 `contain-intrinsic-size` 必须消费同一个高度 token。List 模式继续使用 `--width-listing` 阅读宽度，Astro 与 Svelte renderer 必须保持同一 Card 结构和 Semantic token 契约。
 
 首页、分类页与文章详情页的 Main Grid 使用 `page-shell` Container Query。Banner 始终铺满 viewport；Navbar 与 Main Shell 共享 `1352px` 外部最大宽度。首页是唯一提供 support slot 的内容页：Shell 达到 `1200px` 时显示三列 Feed + `248px–272px` Profile support，`880px–1199px` 显示双列 Feed + Profile support，低于 `880px` 时同一个 Profile DOM 进入 Main 前方。分类页与文章详情页不提供 support slot，内容区在 `1200px` 以下最大 `704px`、达到 `1200px` 后最大 `1064px`。`PanelCard` 仅组合 `.ds-surface-card` 与局部间距，不拥有页面 placement 规则；Footer Stats 也在 Footer 内消费 Semantic token，而不模拟侧栏 Card。
 

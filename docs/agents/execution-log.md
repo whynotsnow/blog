@@ -248,3 +248,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 - Kept Banner viewport geometry and Footer width unchanged while moving the remaining Footer Stats and Meta spacing behind Footer-local compensation tokens.
 - Preserved content-driven Footer height and added cross-page Shell assertions for compensated spacing and invariant Banner height.
+
+### Compensated Post Card vertical geometry
+
+- Restored the Desktop Landscape density of shared Astro and Svelte Grid Cards through Post List-local height, cover-boundary, typography, and spacing tokens.
+- Kept Feed widths, Container Query breakpoints, and the `56.25cqi` cover ratio unchanged while binding intrinsic placeholders to the compensated Card height.
+- Made browser geometry assertions consume computed layout sizes so Card entrance transforms cannot masquerade as width or height contract changes.
