@@ -2,7 +2,6 @@
 import Pagination from "@components/control/Pagination.astro";
 import PostGrid from "@components/post/PostGrid.astro";
 import type { CategoryPageProps } from "@/services/category-page";
-import CategoryFilter from "./CategoryFilter.astro";
 import CategoryPostListClient from "./CategoryPostListClient.svelte";
 
 type Props = CategoryPageProps;
@@ -10,10 +9,13 @@ type Props = CategoryPageProps;
 const { posts, allPosts, page, categories, categorySlug } = Astro.props;
 ---
 
-<CategoryPostListClient client:load posts={allPosts} {categories} {categorySlug}>
-	<div id="page-content" class="listing-page category-page ds-stack w-full" style="--stack-space: var(--space-content);">
-		<CategoryFilter {categories} {categorySlug} resultCount={page.total} />
-		<PostGrid posts={posts} id="post-list-container" />
-		<Pagination page={page} class="mx-auto" style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`} />
-	</div>
+<CategoryPostListClient
+	client:load
+	posts={allPosts}
+	{categories}
+	{categorySlug}
+	resultCount={page.total}
+>
+	<PostGrid posts={posts} id="post-list-container" />
+	<Pagination page={page} class="mx-auto" style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`} />
 </CategoryPostListClient>

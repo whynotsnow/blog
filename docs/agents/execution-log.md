@@ -272,3 +272,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Established `296px` as the safe Grid Card minimum and about `320px` as the preferred width after Chinese-first Meta, English overflow, and six-Tag pressure checks.
 - Contracted the shared Navbar and Main Shell maximum from `1352px` to `1280px`, the three-column Feed to `992px`, and the two-column Feed to `656px` while preserving the `248px–272px` Profile support range.
 - Retained the `608px`, `932px`, `880px`, and `1200px` Container Query boundaries because boundary geometry still maps directly to the validated Card, Feed, gap, and Sidebar minimum budgets.
+
+## 2026-07-17
+
+### Unified the category filter across Astro fallback and Svelte Tag mode
+
+- Kept one Svelte-owned Category Filter and stable Page Content Shell while preserving the Astro Post Grid and Pagination as the unfiltered SSR fallback.
+- Limited Tag-mode hydration updates to the filtered Post List, Pagination, active Tag, and result count instead of replacing the Filter with a legacy Taxonomy renderer.
+- Removed the duplicate legacy-token Taxonomy component and added browser coverage for desktop geometry, Semantic Surface usage, active Tag state, and Mobile collapse behavior.

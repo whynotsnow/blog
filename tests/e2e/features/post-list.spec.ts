@@ -452,3 +452,53 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 	).toHaveClass(/ds-surface-card/);
 	await expectSharedCardStructure("svelte");
 });
+
+test("category filter keeps one visual and responsive contract in tag mode", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await gotoPage(page, "/category/tech/");
+
+	const filter = page.locator(".category-filter");
+	const readFilterGeometry = () =>
+		filter.evaluate((node) => {
+			const rect = node.getBoundingClientRect();
+			const style = getComputedStyle(node);
+			return {
+				width: rect.width,
+				height: rect.height,
+				borderRadius: style.borderRadius,
+				padding: style.padding,
+			};
+		});
+
+	await expect(filter).toHaveClass(/ds-surface-card/);
+	await expect(filter).toContainText("17 篇文章");
+	const defaultGeometry = await readFilterGeometry();
+
+	const tagLink = filter.locator('a[href^="/category/tech/?tag="]').first();
+	await tagLink.click();
+	await expect(page).toHaveURL(/\?tag=/);
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	await expect(filter).toHaveClass(/ds-surface-card/);
+	await expect(
+		filter.locator('a[href*="?tag="][aria-current="page"]'),
+	).toContainText("#");
+	await expect(page.locator(".post-taxonomy-nav")).toHaveCount(0);
+
+	const tagGeometry = await readFilterGeometry();
+	expect(tagGeometry.width).toBeCloseTo(defaultGeometry.width, 1);
+	expect(tagGeometry.height).toBeCloseTo(defaultGeometry.height, 1);
+	expect(tagGeometry.borderRadius).toBe(defaultGeometry.borderRadius);
+	expect(tagGeometry.padding).toBe(defaultGeometry.padding);
+
+	await page.setViewportSize({ width: 375, height: 812 });
+	const mobileFilter = filter.locator(".category-filter__mobile");
+	const filterOptions = filter.locator(".category-filter__options");
+	await expect(mobileFilter).toBeVisible();
+	await expect(filterOptions).toBeHidden();
+	await mobileFilter.locator("summary").click();
+	await expect(filterOptions).toBeVisible();
+});
