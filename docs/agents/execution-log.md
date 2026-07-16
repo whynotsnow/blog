@@ -243,3 +243,8 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Made an activated Hidden fallback restore the Mini Player directly while preserving the pre-playback path to the Expanded Player and the Floating Tools command path.
 - Added a shared-element handoff in which the Hidden orb travels to the Mini cover position before the real cover takes over, with reduced-motion and intermediate-frame browser coverage.
 - Isolated browser validation on a fresh Playwright port when an existing developer preview server exposed stale client-island state; the fresh server passed the complete Floating Tools feature suite.
+
+### Completed Footer spacing compensation
+
+- Kept Banner viewport geometry and Footer width unchanged while moving the remaining Footer Stats and Meta spacing behind Footer-local compensation tokens.
+- Preserved content-driven Footer height and added cross-page Shell assertions for compensated spacing and invariant Banner height.

@@ -194,6 +194,12 @@ test("container-content compensates shared Shell type without resizing its conta
 				document.querySelector<HTMLElement>(".site-footer__meta")!;
 			const footerStats =
 				document.querySelector<HTMLElement>(".footer-stats")!;
+			const footerStatsContent = document.querySelector<HTMLElement>(
+				".footer-stats__content",
+			)!;
+			const footerMetaRow = document.querySelector<HTMLElement>(
+				".site-footer__meta-row:not(:last-child)",
+			)!;
 			const mainContent =
 				document.querySelector<HTMLElement>(".page-main-content")!;
 			const siteNotice = document.querySelector<HTMLElement>(
@@ -203,6 +209,7 @@ test("container-content compensates shared Shell type without resizing its conta
 
 			return {
 				bannerStrategy: banner.dataset.shellStrategy,
+				bannerHeight: banner.getBoundingClientRect().height,
 				bannerTitleSize: Number.parseFloat(
 					getComputedStyle(bannerTitle).fontSize,
 				),
@@ -232,6 +239,15 @@ test("container-content compensates shared Shell type without resizing its conta
 				footerStatsSize: Number.parseFloat(
 					getComputedStyle(footerStats).fontSize,
 				),
+				footerStatsColumnGap: Number.parseFloat(
+					getComputedStyle(footerStatsContent).columnGap,
+				),
+				footerStatsWrapRowGap: Number.parseFloat(
+					getComputedStyle(footerStatsContent).rowGap,
+				),
+				footerMetaRowGap: Number.parseFloat(
+					getComputedStyle(footerMetaRow).marginBlockEnd,
+				),
 			};
 		});
 
@@ -239,11 +255,15 @@ test("container-content compensates shared Shell type without resizing its conta
 	await gotoPage(page, "/");
 	const compensated = await readSharedShell();
 	expect(compensated.bannerStrategy).toBe("container-content");
+	expect(compensated.bannerHeight).toBeCloseTo(585, 0);
 	expect(compensated.bannerTitleSize).toBeCloseTo(86.4, 1);
 	expect(compensated.bannerSubtitleSize).toBeCloseTo(27, 1);
 	expect(compensated.navbarFontSize).toBeCloseTo(14.4, 1);
 	expect(compensated.footerMetaSize).toBeCloseTo(12.6, 1);
 	expect(compensated.footerStatsSize).toBeCloseTo(11.7, 1);
+	expect(compensated.footerStatsColumnGap).toBeCloseTo(21.6, 1);
+	expect(compensated.footerStatsWrapRowGap).toBeCloseTo(7.2, 1);
+	expect(compensated.footerMetaRowGap).toBeCloseTo(7.2, 1);
 	expect(compensated.navbarHeight).toBeCloseTo(64.8, 1);
 	expect(compensated.mainContentOffset).toBeCloseTo(79.2, 1);
 	expect(compensated.pageEntryClearance).toBeCloseTo(93.6, 1);
@@ -253,6 +273,10 @@ test("container-content compensates shared Shell type without resizing its conta
 		await gotoPage(page, pathname);
 		const contentPage = await readSharedShell();
 		expect(contentPage.bannerStrategy).toBe("container-content");
+		expect(contentPage.bannerHeight).toBeCloseTo(
+			compensated.bannerHeight,
+			0,
+		);
 		expect(contentPage.navbarFontSize).toBeCloseTo(
 			compensated.navbarFontSize,
 			1,
@@ -263,6 +287,18 @@ test("container-content compensates shared Shell type without resizing its conta
 		);
 		expect(contentPage.footerStatsSize).toBeCloseTo(
 			compensated.footerStatsSize,
+			1,
+		);
+		expect(contentPage.footerStatsColumnGap).toBeCloseTo(
+			compensated.footerStatsColumnGap,
+			1,
+		);
+		expect(contentPage.footerStatsWrapRowGap).toBeCloseTo(
+			compensated.footerStatsWrapRowGap,
+			1,
+		);
+		expect(contentPage.footerMetaRowGap).toBeCloseTo(
+			compensated.footerMetaRowGap,
 			1,
 		);
 		expect(contentPage.navbarHeight).toBeCloseTo(
@@ -278,11 +314,15 @@ test("container-content compensates shared Shell type without resizing its conta
 	await page.setViewportSize({ width: 2000, height: 900 });
 	await gotoPage(page, "/");
 	const restored = await readSharedShell();
+	expect(restored.bannerHeight).toBeCloseTo(compensated.bannerHeight, 0);
 	expect(restored.bannerTitleSize).toBeCloseTo(90, 1);
 	expect(restored.bannerSubtitleSize).toBeCloseTo(30, 1);
 	expect(restored.navbarFontSize).toBeCloseTo(16, 1);
 	expect(restored.footerMetaSize).toBeCloseTo(14, 1);
 	expect(restored.footerStatsSize).toBeCloseTo(13, 1);
+	expect(restored.footerStatsColumnGap).toBeCloseTo(24, 1);
+	expect(restored.footerStatsWrapRowGap).toBeCloseTo(8, 1);
+	expect(restored.footerMetaRowGap).toBeCloseTo(8, 1);
 	expect(restored.navbarHeight).toBeCloseTo(72, 0);
 	expect(restored.mainContentOffset).toBeCloseTo(88, 1);
 	expect(restored.pageEntryClearance).toBeCloseTo(104, 1);

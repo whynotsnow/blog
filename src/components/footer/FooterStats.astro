@@ -54,8 +54,8 @@ const { model } = Astro.props;
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		column-gap: var(--space-content);
-		row-gap: var(--size-2);
+		column-gap: var(--footer-stats-column-gap, var(--space-content));
+		row-gap: var(--footer-stats-wrap-row-gap, var(--size-2));
 	}
 
 	.footer-stats__item {

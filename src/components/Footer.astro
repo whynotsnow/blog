@@ -48,17 +48,17 @@ if (footerConfig.enable) {
 
 	<div class="site-footer__meta transition text-center">
     {customFooterHtml && (
-        <div class="mb-2" set:html={customFooterHtml}></div>
+        <div class="site-footer__meta-row" set:html={customFooterHtml}></div>
     )}
 
-    <div class="mb-2">
+		<div class="site-footer__meta-row">
 			&copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved. /
 			<a class="transition link text-(--primary) font-medium" href={url('rss/')} onclick={`event.preventDefault(); navigateToPage('${url('rss/')}')`}>RSS</a> /
 			<a class="transition link text-(--primary) font-medium" href={url('atom/')} onclick={`event.preventDefault(); navigateToPage('${url('atom/')}')`}>Atom</a> /
 			<a class="transition link text-(--primary) font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
     </div>
 
-    <div>
+		<div class="site-footer__meta-row">
 			Powered by
 			<a class="transition link text-(--primary) font-medium" target="_blank" href="https://astro.build">Astro</a> &
 			<a class="transition link text-(--primary) font-medium" target="_blank" href="https://github.com/matsuzaka-yuki/mizuki">Mizuki</a>&nbsp; Version <a class="transition link text-(--primary) font-medium" target="_blank" href="https://github.com/matsuzaka-yuki/mizuki">8.3</a>
@@ -78,6 +78,9 @@ if (footerConfig.enable) {
 		--footer-stats-size: 0.8125rem;
 		--footer-stats-row-gap: var(--size-2);
 		--footer-stats-item-gap: var(--size-1);
+		--footer-stats-column-gap: var(--space-content);
+		--footer-stats-wrap-row-gap: var(--size-2);
+		--footer-meta-row-gap: var(--size-2);
 		display: grid;
 		justify-items: center;
 		gap: var(--footer-content-gap);
@@ -92,6 +95,10 @@ if (footerConfig.enable) {
 		font-size: var(--footer-meta-size);
 	}
 
+	.site-footer__meta-row:not(:last-child) {
+		margin-block-end: var(--footer-meta-row-gap);
+	}
+
 	@media (min-width: 1281px) and (orientation: landscape) {
 		.site-footer[data-shell-strategy="container-content"] {
 			--footer-content-gap: clamp(1.35rem, 1.2vw, 1.5rem);
@@ -103,6 +110,9 @@ if (footerConfig.enable) {
 			--footer-stats-size: clamp(0.73125rem, 0.65vw, 0.8125rem);
 			--footer-stats-row-gap: clamp(0.45rem, 0.4vw, 0.5rem);
 			--footer-stats-item-gap: clamp(0.225rem, 0.2vw, 0.25rem);
+			--footer-stats-column-gap: clamp(1.35rem, 1.2vw, 1.5rem);
+			--footer-stats-wrap-row-gap: clamp(0.45rem, 0.4vw, 0.5rem);
+			--footer-meta-row-gap: clamp(0.45rem, 0.4vw, 0.5rem);
 		}
 	}
 </style>
