@@ -275,6 +275,13 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 ## 2026-07-17
 
+### Stabilized Post Card height by Feed density
+
+- Replaced fixed Grid Card heights with natural Cover-plus-Content geometry so a narrower Cover no longer transfers unused height into the text region.
+- Kept approximate `28rem` single-column and `25rem` multi-column intrinsic placeholders for `content-visibility` without treating them as rendered height contracts.
+- Kept fixed Title, Meta, two-line Summary, and two-line Tag slots, but removed the Tag slot's automatic top margin and duplicate top padding so one section gap owns the transition from Summary to Tags.
+- Kept the Tag region limited to two rows without its own trailing inset, while preserving the Content bottom padding, Card-width-driven cover geometry, and intrinsic placeholders.
+
 ### Unified the category filter across Astro fallback and Svelte Tag mode
 
 - Kept one Svelte-owned Category Filter and stable Page Content Shell while preserving the Astro Post Grid and Pagination as the unfiltered SSR fallback.

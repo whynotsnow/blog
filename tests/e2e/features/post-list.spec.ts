@@ -40,6 +40,112 @@ test("saved Grid preference follows the post Feed container width", async ({
 	).toBe(2);
 });
 
+test("Grid Card height follows its cover while Content keeps a bounded budget", async ({
+	page,
+}) => {
+	await useStoredPreference(page, "postListLayout", "grid");
+	await page.setViewportSize({ width: 1920, height: 1080 });
+	await gotoPage(page, "/");
+
+	const postList = page.locator('[data-post-list-renderer="astro"]').first();
+	const firstCard = postList.locator(":scope > .post-list__item").first();
+	const listingPage = postList.locator(
+		"xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' listing-page ')][1]",
+	);
+	const setListingWidth = async (width: number) => {
+		await listingPage.evaluate((node, nextWidth) => {
+			const element = node as HTMLElement;
+			element.style.width = `${nextWidth}px`;
+			element.style.maxWidth = "none";
+		}, width);
+	};
+	const readCardGeometry = () =>
+		firstCard.evaluate((node) => {
+			const card = node.matches(".home-post-card")
+				? node
+				: node.querySelector<HTMLElement>(".home-post-card")!;
+			const summary = card.querySelector<HTMLElement>(
+				".home-post-card__summary",
+			)!;
+			const tags = card.querySelector<HTMLElement>(
+				".home-post-card__tags",
+			)!;
+			const content = card.querySelector<HTMLElement>(
+				".home-post-card__content",
+			)!;
+			const tagsStyle = getComputedStyle(tags);
+			const contentStyle = getComputedStyle(content);
+			const cover = card.querySelector<HTMLElement>(
+				".home-post-card__cover",
+			)!;
+			return {
+				columnCount: getComputedStyle(
+					node.parentElement!,
+				).gridTemplateColumns.split(" ").length,
+				height: Number.parseFloat(getComputedStyle(card).height),
+				coverHeight: Number.parseFloat(getComputedStyle(cover).height),
+				contentHeight: Number.parseFloat(contentStyle.height),
+				gapBeforeTags:
+					tags.offsetTop - (summary.offsetTop + summary.offsetHeight),
+				tagsHeight: Number.parseFloat(tagsStyle.height),
+				tagsPaddingBlockEnd: Number.parseFloat(
+					tagsStyle.paddingBlockEnd,
+				),
+				tagsMarginBlockEnd: Number.parseFloat(tagsStyle.marginBlockEnd),
+				contentPaddingBlockEnd: Number.parseFloat(
+					contentStyle.paddingBlockEnd,
+				),
+				contentBottomGap:
+					content.clientHeight - (tags.offsetTop + tags.offsetHeight),
+				contentOverflows:
+					content.scrollHeight > content.clientHeight + 1,
+			};
+		});
+
+	await setListingWidth(607);
+	const singleColumn = await readCardGeometry();
+	expect(singleColumn.columnCount).toBe(1);
+	expect(singleColumn.contentOverflows).toBe(false);
+
+	await setListingWidth(608);
+	const twoColumn = await readCardGeometry();
+	expect(twoColumn.columnCount).toBe(2);
+	expect(twoColumn.contentOverflows).toBe(false);
+	expect(twoColumn.contentHeight).toBeCloseTo(singleColumn.contentHeight, 1);
+	expect(twoColumn.coverHeight).toBeLessThan(singleColumn.coverHeight);
+	expect(twoColumn.height).toBeLessThan(singleColumn.height);
+
+	await listingPage.evaluate((node) => {
+		const element = node as HTMLElement;
+		element.style.removeProperty("width");
+		element.style.removeProperty("max-width");
+	});
+
+	for (const width of [1243, 1247, 1280, 1281, 2000]) {
+		await page.setViewportSize({ width, height: 900 });
+		const geometry = await readCardGeometry();
+		expect(geometry.height).toBeCloseTo(
+			geometry.coverHeight + geometry.contentHeight + 2,
+			1,
+		);
+		expect(geometry.contentHeight).toBeGreaterThanOrEqual(215);
+		expect(geometry.contentHeight).toBeLessThanOrEqual(226);
+		expect(geometry.gapBeforeTags).toBeGreaterThanOrEqual(10);
+		expect(geometry.gapBeforeTags).toBeLessThanOrEqual(13);
+		expect(geometry.tagsHeight).toBeGreaterThanOrEqual(55);
+		expect(geometry.tagsHeight).toBeLessThanOrEqual(57);
+		expect(geometry.tagsPaddingBlockEnd).toBe(0);
+		expect(geometry.tagsMarginBlockEnd).toBe(0);
+		expect(geometry.contentPaddingBlockEnd).toBeGreaterThanOrEqual(17);
+		expect(geometry.contentPaddingBlockEnd).toBeLessThanOrEqual(21);
+		expect(geometry.contentBottomGap).toBeCloseTo(
+			geometry.contentPaddingBlockEnd,
+			1,
+		);
+		expect(geometry.contentOverflows).toBe(false);
+	}
+});
+
 test("fluid two-column post Grid fills the Feed and keeps the semantic gap", async ({
 	page,
 }) => {
@@ -85,7 +191,7 @@ test("fluid two-column post Grid fills the Feed and keeps the semantic gap", asy
 	expect(coverHeight).toBeLessThanOrEqual(224);
 });
 
-test("container-content compensates post Card vertical geometry without changing its width budget", async ({
+test("multi-column post Card derives height from Cover and Content across desktop compensation", async ({
 	page,
 }) => {
 	await useStoredPreference(page, "postListLayout", "grid");
@@ -128,6 +234,7 @@ test("container-content compensates post Card vertical geometry without changing
 				height: Number.parseFloat(itemStyle.height),
 				cardHeight: Number.parseFloat(cardStyle.height),
 				coverHeight: Number.parseFloat(getComputedStyle(cover).height),
+				contentHeight: Number.parseFloat(contentStyle.height),
 				contentPaddingBlockStart: Number.parseFloat(
 					contentStyle.paddingBlockStart,
 				),
@@ -149,14 +256,17 @@ test("container-content compensates post Card vertical geometry without changing
 	await page.setViewportSize({ width: 1536, height: 900 });
 	await gotoPage(page, "/");
 	const compensatedAstro = await readCardGeometry("astro");
-	expect(compensatedAstro.height).toBeCloseTo(417.6, 1);
-	expect(compensatedAstro.cardHeight).toBeCloseTo(417.6, 1);
+	expect(compensatedAstro.cardHeight).toBeCloseTo(
+		compensatedAstro.coverHeight + compensatedAstro.contentHeight + 2,
+		1,
+	);
+	expect(compensatedAstro.height).toBeCloseTo(compensatedAstro.cardHeight, 1);
 	expect(compensatedAstro.contentPaddingBlockStart).toBeCloseTo(18, 1);
 	expect(compensatedAstro.titleSize).toBeCloseTo(20, 1);
 	expect(compensatedAstro.summarySize).toBeCloseTo(14, 1);
 	expect(compensatedAstro.tagSize).toBeCloseTo(12, 1);
 	expect(compensatedAstro.metaSize).toBeCloseTo(12, 1);
-	expect(compensatedAstro.intrinsicSize).toContain("417.6px");
+	expect(compensatedAstro.intrinsicSize).toContain("400px");
 	expect(compensatedAstro.contentOverflows).toBe(false);
 
 	await gotoPage(page, "/category/tech/");
@@ -167,6 +277,10 @@ test("container-content compensates post Card vertical geometry without changing
 	expect(compensatedSvelte.height).toBeCloseTo(compensatedAstro.height, 1);
 	expect(compensatedSvelte.cardHeight).toBeCloseTo(
 		compensatedAstro.cardHeight,
+		1,
+	);
+	expect(compensatedSvelte.contentHeight).toBeCloseTo(
+		compensatedAstro.contentHeight,
 		1,
 	);
 	expect(compensatedSvelte.titleSize).toBeCloseTo(
@@ -188,14 +302,17 @@ test("container-content compensates post Card vertical geometry without changing
 	await gotoPage(page, "/");
 	const restored = await readCardGeometry("astro");
 	expect(restored.width).toBeCloseTo(compensatedAstro.width, 0);
-	expect(restored.height).toBeCloseTo(464, 1);
-	expect(restored.cardHeight).toBeCloseTo(464, 1);
+	expect(restored.cardHeight).toBeCloseTo(
+		restored.coverHeight + restored.contentHeight + 2,
+		1,
+	);
+	expect(restored.height).toBeCloseTo(restored.cardHeight, 1);
 	expect(restored.contentPaddingBlockStart).toBeCloseTo(20, 1);
 	expect(restored.titleSize).toBeCloseTo(20, 1);
 	expect(restored.summarySize).toBeCloseTo(14, 1);
 	expect(restored.tagSize).toBeCloseTo(12, 1);
 	expect(restored.metaSize).toBeCloseTo(12, 1);
-	expect(restored.intrinsicSize).toContain("464px");
+	expect(restored.intrinsicSize).toContain("400px");
 	expect(
 		Math.abs(restored.coverHeight - compensatedAstro.coverHeight),
 	).toBeLessThan(1);

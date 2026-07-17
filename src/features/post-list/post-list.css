@@ -6,7 +6,7 @@
 }
 
 .listing-page {
-  --post-card-block-size: 29rem;
+  --post-card-intrinsic-block-size: 28rem;
   --post-card-cover-min-size: 10rem;
   --post-card-cover-max-size: 14rem;
   --post-card-content-padding: var(--space-card);
@@ -300,7 +300,6 @@
 
 @media (min-width: 1281px) and (orientation: landscape) {
   .main-grid-shell[data-shell-strategy="container-content"] .listing-page {
-    --post-card-block-size: clamp(26.1rem, 23.2vw, 29rem);
     --post-card-cover-min-size: clamp(9rem, 8vw, 10rem);
     --post-card-cover-max-size: clamp(12.6rem, 11.2vw, 14rem);
     --post-card-content-padding: clamp(1.125rem, 1vw, 1.25rem);
@@ -324,9 +323,7 @@
   container-type: inline-size;
   min-width: 0;
   width: 100%;
-  height: var(--post-card-block-size);
-  max-height: var(--post-card-block-size);
-  contain-intrinsic-size: auto var(--post-card-block-size);
+  contain-intrinsic-size: auto var(--post-card-intrinsic-block-size);
 }
 
 .listing-page .post-list.grid-mode {
@@ -338,7 +335,6 @@
 .post-list.grid-mode .home-post-card {
   display: flex;
   flex-direction: column;
-  height: var(--post-card-block-size);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: none;
@@ -362,7 +358,7 @@
 
 .post-list.grid-mode .home-post-card__content {
   display: flex;
-  flex: 1;
+  flex: none;
   flex-direction: column;
   width: 100%;
   padding: var(--post-card-content-padding);
@@ -400,12 +396,12 @@
 }
 
 .post-list.grid-mode .home-post-card__tags {
-  block-size: calc(var(--post-card-section-gap) + 2 * var(--post-card-tag-block-size) + var(--post-card-tag-gap));
+  block-size: calc(2 * var(--post-card-tag-block-size) + var(--post-card-tag-gap));
+  flex: none;
   align-content: flex-start;
   gap: var(--post-card-tag-gap);
-  margin-top: auto;
+  margin-top: 0;
   overflow: clip;
-  padding-top: var(--post-card-section-gap);
   font-size: var(--post-card-tag-size);
 }
 
@@ -539,6 +535,7 @@ body.is-home .home-post-card__summary {
 
 @container post-feed (min-width: 608px) {
   .post-list.grid-mode {
+    --post-card-intrinsic-block-size: 25rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-grid-gap);
   }
