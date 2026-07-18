@@ -13,6 +13,7 @@ import {
 	getCategoryUrl,
 } from "@utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
+import { buildPostRouteIndex } from "./post-routes";
 
 /* 全局缓存，避免重复，加快构建时速度 */
 let cachedStore: ContentStore | null = null;
@@ -133,9 +134,17 @@ function buildCategoryTaxonomy(posts: ListPost[]): {
  */
 export function buildContentStore(posts: ListPost[]): ContentStore {
 	const taxonomy = buildCategoryTaxonomy(posts);
+	const routes = buildPostRouteIndex(
+		posts.map((post) => ({
+			id: post.id,
+			filePath: post.filePath,
+			alias: post.data.alias,
+		})),
+	);
 
 	return {
 		posts, // 原始文章数据
+		routes,
 		...taxonomy, // 分类索引数据 (categoryMap, categories)
 	};
 }

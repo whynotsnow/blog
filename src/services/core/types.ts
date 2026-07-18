@@ -3,6 +3,25 @@ import type { CollectionEntry } from "astro:content";
 //基础类型
 export type RawPost = CollectionEntry<"posts">;
 
+export type PostRouteSource = {
+	id: string;
+	filePath?: string;
+	alias?: string;
+};
+
+export type PostRoute = {
+	postId: string;
+	defaultSlug: string;
+	canonicalSlug: string;
+	canonicalUrl: string;
+	usesAlias: boolean;
+};
+
+export type PostRouteIndex = {
+	byId: ReadonlyMap<string, PostRoute>;
+	bySlug: ReadonlyMap<string, PostRoute>;
+};
+
 /* List 页面数据结构 */
 export type ListPost = RawPost & {
 	meta: PostMeta;
@@ -132,6 +151,7 @@ export interface CategoryTaxonomy {
 
 export interface ContentStore extends CategoryTaxonomy {
 	posts: ListPost[];
+	routes: PostRouteIndex;
 }
 
 export type PostSort = "score" | "date";

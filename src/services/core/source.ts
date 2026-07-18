@@ -6,11 +6,20 @@ import {
 	injectSystemMeta,
 } from "./inject";
 import { applyPostQuery, sortByDate } from "./sort";
+import { validatePostRoutes } from "./post-routes";
 
 export async function getAllPostsRaw(): Promise<RawPost[]> {
-	return getCollection("posts", ({ data }) => {
+	const posts = await getCollection("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
+	validatePostRoutes(
+		posts.map((post) => ({
+			id: post.id,
+			filePath: post.filePath,
+			alias: post.data.alias,
+		})),
+	);
+	return posts;
 }
 
 export async function getAllPosts(
