@@ -49,6 +49,8 @@ export type BlogPostingJsonLd = {
 
 export type PostDetailPageProps = {
 	entry: ListPost;
+	canonicalUrl: string;
+	canonicalOgSlug: string;
 	Content: AstroComponentFactory;
 	headings: MarkdownHeading[];
 	isEncrypted: boolean;

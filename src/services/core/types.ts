@@ -36,11 +36,14 @@ export interface PostMeta {
 	minutes: number;
 	excerpt: string;
 
-	prevSlug?: string;
-	prevTitle?: string;
-	nextSlug?: string;
-	nextTitle?: string;
+	prev?: PostNavigationLink;
+	next?: PostNavigationLink;
 }
+
+export type PostNavigationLink = {
+	title: string;
+	url: string;
+};
 export interface UIPagination<T> {
 	data: T[];
 	start: number;

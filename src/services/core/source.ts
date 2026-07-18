@@ -6,7 +6,7 @@ import {
 	injectSystemMeta,
 } from "./inject";
 import { applyPostQuery, sortByDate } from "./sort";
-import { validatePostRoutes } from "./post-routes";
+import { buildPostRouteIndex, validatePostRoutes } from "./post-routes";
 
 export async function getAllPostsRaw(): Promise<RawPost[]> {
 	const posts = await getCollection("posts", ({ data }) => {
@@ -33,7 +33,14 @@ export async function getAllPosts(
 
 	const listPosts = await injectListMeta(systemPosts);
 
-	const navPosts = injectNavigationMeta(listPosts);
+	const routes = buildPostRouteIndex(
+		listPosts.map((post) => ({
+			id: post.id,
+			filePath: post.filePath,
+			alias: post.data.alias,
+		})),
+	);
+	const navPosts = injectNavigationMeta(listPosts, routes);
 
 	return applyPostQuery(navPosts, query);
 }

@@ -5,11 +5,16 @@ import {
 	generateTagSlug,
 	getCategoryUrl,
 	getPostUrl,
-	removeFileExtension,
 	resolveImageUrl,
 } from "@/utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
-import type { RawPost, ListPost, UIPost } from "./types";
+import type {
+	RawPost,
+	ListPost,
+	PostNavigationLink,
+	PostRouteIndex,
+	UIPost,
+} from "./types";
 import { calculateRecommendScore } from "./sort";
 
 type BaseMeta = {
@@ -29,10 +34,8 @@ type ScoreMeta = {
 // type ListMeta = ContentMeta & ScoreMeta;
 
 type NavigationMeta = {
-	prevSlug?: string;
-	prevTitle?: string;
-	nextSlug?: string;
-	nextTitle?: string;
+	prev?: PostNavigationLink;
+	next?: PostNavigationLink;
 };
 
 export type PostWithSystemMeta = RawPost & {
@@ -96,23 +99,38 @@ export async function injectListMeta(
 	);
 }
 
-export function injectNavigationMeta(posts: PostWithListMeta[]): ListPost[] {
+export function injectNavigationMeta(
+	posts: PostWithListMeta[],
+	routes: PostRouteIndex,
+): ListPost[] {
 	const map = new Map<string, NavigationMeta>();
 
 	for (let i = 1; i < posts.length; i++) {
+		const nextPost = posts[i - 1];
+		const nextRoute = routes.byId.get(nextPost.id);
+		if (!nextRoute)
+			throw new Error(`Missing post route for ${nextPost.id}`);
 		map.set(posts[i].id, {
-			nextSlug: removeFileExtension(posts[i - 1].id),
-			nextTitle: posts[i - 1].data.title,
+			next: {
+				title: nextPost.data.title,
+				url: nextRoute.canonicalUrl,
+			},
 		});
 	}
 
 	for (let i = 0; i < posts.length - 1; i++) {
+		const prevPost = posts[i + 1];
+		const prevRoute = routes.byId.get(prevPost.id);
+		if (!prevRoute)
+			throw new Error(`Missing post route for ${prevPost.id}`);
 		const prev = map.get(posts[i].id) ?? {};
 
 		map.set(posts[i].id, {
 			...prev,
-			prevSlug: removeFileExtension(posts[i + 1].id),
-			prevTitle: posts[i + 1].data.title,
+			prev: {
+				title: prevPost.data.title,
+				url: prevRoute.canonicalUrl,
+			},
 		});
 	}
 
