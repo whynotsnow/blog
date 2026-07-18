@@ -21,6 +21,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
+	canonicalUrl?: string;
 	headings?: MarkdownHeading[];
 	store: ContentStore;
 	layoutPolicy?: PageLayoutPolicyName;
@@ -33,6 +34,7 @@ const {
 	lang,
 	setOGTypeArticle,
 	postSlug,
+	canonicalUrl,
 	headings = [],
 	store,
 	layoutPolicy = "default",
@@ -53,7 +55,8 @@ const hasSupportContent = Astro.slots.has("support");
 	description={description}
 	lang={lang}
 	setOGTypeArticle={setOGTypeArticle}
-	postSlug={postSlug}
+		postSlug={postSlug}
+		canonicalUrl={canonicalUrl}
 	navbarBehavior={viewModel.interaction.navbar}
 	shellStrategy={viewModel.pageLayout.shellStrategy}
 >

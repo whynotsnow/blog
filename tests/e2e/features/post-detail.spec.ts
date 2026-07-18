@@ -23,6 +23,23 @@ test("post detail components render through the thin route", async ({
 	expect(errors).toEqual([]);
 });
 
+test("post detail exposes one canonical route", async ({ page, request }) => {
+	const response = await gotoPage(page, "/posts/encrypted-example/");
+
+	expect(response?.ok()).toBe(true);
+	await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+		"href",
+		"https://blog.whynotsnow.com/posts/encrypted-example/",
+	);
+	await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+		"content",
+		"https://blog.whynotsnow.com/posts/encrypted-example/",
+	);
+
+	const legacyResponse = await request.get("/posts/encrypted-post/");
+	expect(legacyResponse.status()).toBe(404);
+});
+
 test("post content shares markdown styles and copy behavior", async ({
 	page,
 }) => {
@@ -41,7 +58,7 @@ test("post content shares markdown styles and copy behavior", async ({
 test("encrypted posts reuse the shared post content contract", async ({
 	page,
 }) => {
-	await gotoPage(page, "/posts/encrypted-post/");
+	await gotoPage(page, "/posts/encrypted-example/");
 
 	await expect(page.locator("#password-protection")).toBeVisible();
 	await page.locator("#password-input").fill("123456");

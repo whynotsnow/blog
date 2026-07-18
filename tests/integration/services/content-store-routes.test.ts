@@ -34,6 +34,13 @@ function listPost(id: string, alias?: string): ListPost {
 		meta: {
 			postId: 1,
 			score: 0,
+			route: {
+				postId: id,
+				defaultSlug: id,
+				canonicalSlug: alias ?? id,
+				canonicalUrl: `/posts/${alias ?? id}/`,
+				usesAlias: Boolean(alias),
+			},
 			words: 0,
 			minutes: 0,
 			excerpt: "",

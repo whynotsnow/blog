@@ -1,7 +1,6 @@
 import type { APIContext } from "astro";
 import { profileConfig, siteConfig } from "@/config";
 import { getFeedPosts, renderFeedContent } from "@/services/feed";
-import { getPostUrl } from "@/utils/url-utils";
 
 export async function GET(context: APIContext) {
 	if (!context.site) {
@@ -22,7 +21,8 @@ export async function GET(context: APIContext) {
   <language>${siteConfig.lang}</language>`;
 
 	for (const post of posts) {
-		const postUrl = new URL(getPostUrl(post), context.site).href;
+		const postUrl = new URL(post.meta.route.canonicalUrl, context.site)
+			.href;
 		const content = await renderFeedContent(post, context.site);
 
 		atomFeed += `

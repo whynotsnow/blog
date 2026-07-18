@@ -1,6 +1,5 @@
 import { getContentStore } from "./core/content-store";
 import type { ListPost } from "./core/types";
-import { getPostUrl } from "@/utils/url-utils";
 
 export type CalendarPostData = {
 	id: string;
@@ -26,7 +25,7 @@ export function buildCalendarPosts(posts: ListPost[]): CalendarPostData[] {
 			id: post.id,
 			title: post.data.title,
 			date: `${year}-${month}-${day}`,
-			url: getPostUrl(post),
+			url: post.meta.route.canonicalUrl,
 		};
 	});
 }

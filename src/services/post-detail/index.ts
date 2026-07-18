@@ -29,6 +29,10 @@ async function buildPostDetailPageData(
 	const lastModified = dayjs(entry.data.updated || entry.data.published)
 		.utc()
 		.format("YYYY-MM-DDTHH:mm:ss");
+	const canonicalUrl = new URL(
+		route.canonicalUrl,
+		siteConfig.siteURL,
+	).toString();
 
 	const jsonLd: BlogPostingJsonLd = {
 		"@context": "https://schema.org",
@@ -41,6 +45,11 @@ async function buildPostDetailPageData(
 			name: profileConfig.name,
 		},
 		datePublished: formatDateToYYYYMMDD(entry.data.published),
+		url: canonicalUrl,
+		mainEntityOfPage: {
+			"@type": "WebPage",
+			"@id": canonicalUrl,
+		},
 		inLanguage: entry.data.lang
 			? entry.data.lang.replace("_", "-")
 			: siteConfig.lang.replace("_", "-"),
@@ -48,7 +57,7 @@ async function buildPostDetailPageData(
 
 	return {
 		entry,
-		canonicalUrl: route.canonicalUrl,
+		canonicalUrl,
 		canonicalOgSlug: route.canonicalSlug,
 		Content,
 		headings,

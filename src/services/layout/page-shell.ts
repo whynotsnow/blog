@@ -15,6 +15,7 @@ export interface LayoutPageShellInput {
 	banner?: string;
 	lang?: string;
 	postSlug?: string;
+	canonicalUrl?: string;
 	pathname: string;
 	site?: URL;
 }
@@ -23,6 +24,7 @@ export interface LayoutPageShellModel {
 	banner: string;
 	bodyFontFamily: string;
 	configHue: number;
+	canonicalUrl: string;
 	description?: string;
 	enableBanner: boolean;
 	favicons: Favicon[];
@@ -73,6 +75,13 @@ function buildPageTitle(title?: string) {
 function buildOgImageUrl(postSlug: string | undefined, site: URL | undefined) {
 	if (!siteConfig.generateOgImages || !postSlug || !site) return undefined;
 	return new URL(`/og/${postSlug}.png`, site).toString();
+}
+
+function buildCanonicalUrl(input: LayoutPageShellInput): string {
+	const canonicalPath = input.canonicalUrl ?? input.pathname;
+	return input.site
+		? new URL(canonicalPath, input.site).toString()
+		: canonicalPath;
 }
 
 function buildSiteLang(lang?: string) {
@@ -126,6 +135,7 @@ export function buildLayoutPageShellModel(
 	return {
 		banner: getDefaultBanner(),
 		bodyFontFamily: buildBodyFontFamily(),
+		canonicalUrl: buildCanonicalUrl(input),
 		configHue: siteConfig.themeColor.hue,
 		description: input.description,
 		enableBanner: !!siteConfig.banner.src,

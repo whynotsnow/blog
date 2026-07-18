@@ -22,6 +22,7 @@ import type { PostDetailPageProps } from "./types";
 
 const {
 	entry,
+	canonicalUrl,
 	canonicalOgSlug,
 	Content,
 	headings,
@@ -42,6 +43,7 @@ const store = await getContentStore();
 	lang={entry.data.lang}
 	setOGTypeArticle={true}
 	postSlug={canonicalOgSlug}
+	canonicalUrl={canonicalUrl}
 	headings={headings}
 	store={store}
 	layoutPolicy="post"
@@ -129,7 +131,7 @@ const store = await getContentStore();
 										entry.data.published,
 									)}
 									coverImage={posterCoverUrl}
-									url={Astro.url.toString()}
+									url={canonicalUrl}
 									siteTitle={siteConfig.title}
 									avatar={posterAvatarUrl}
 								/>

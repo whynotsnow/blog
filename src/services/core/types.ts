@@ -31,6 +31,7 @@ export type ListPost = RawPost & {
 export interface PostMeta {
 	postId: number;
 	score: number;
+	route: PostRoute;
 
 	words: number;
 	minutes: number;

@@ -1,5 +1,4 @@
 import type { CollectionEntry } from "astro:content";
-import { getPostUrl } from "@utils/url-utils";
 import { getContentStore } from "@/services/core/content-store";
 import type { ListPost } from "@/services/core/types";
 
@@ -20,7 +19,7 @@ export async function getSortedPostsList(): Promise<PostForList[]> {
 	return posts.map((post) => ({
 		id: post.id,
 		data: post.data,
-		url: getPostUrl(post),
+		url: post.meta.route.canonicalUrl,
 	}));
 }
 

@@ -4,7 +4,6 @@ import {
 	generateCategorySlug,
 	generateTagSlug,
 	getCategoryUrl,
-	getPostUrl,
 	resolveImageUrl,
 } from "@/utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
@@ -138,6 +137,7 @@ export function injectNavigationMeta(
 		...post,
 		meta: {
 			...post.meta,
+			route: routes.byId.get(post.id)!,
 			...map.get(post.id),
 		},
 	}));
@@ -190,7 +190,7 @@ export function toUIPost(post: ListPost): UIPost {
 	const ui: UIPost = {
 		id,
 		slug: category.slug,
-		url: getPostUrl(post),
+		url: meta.route.canonicalUrl,
 
 		title: data.title,
 		description: data.description,

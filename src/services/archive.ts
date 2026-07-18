@@ -20,7 +20,7 @@ export interface SlugItem {
 
 export type ArchivePost = {
 	id: string;
-	url?: string;
+	url: string;
 	data: {
 		title: string;
 		tags: SlugItem[];
@@ -58,7 +58,7 @@ function toArchivePost(post: ListPost): ArchivePost {
 
 	return {
 		id: post.id,
-		// url: `/posts/${post.id}/`,
+		url: post.meta.route.canonicalUrl,
 		data: {
 			title: post.data.title,
 			tags,

@@ -24,6 +24,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
+	canonicalUrl?: string;
 	navbarBehavior?: NavbarBehavior;
 	shellStrategy?: ResponsiveShellStrategy;
 }
@@ -33,6 +34,7 @@ const {
 	description,
 	setOGTypeArticle,
 	postSlug,
+	canonicalUrl,
 	navbarBehavior = "fixed-visible",
 	shellStrategy = "viewport-legacy",
 } = Astro.props;
@@ -43,6 +45,7 @@ const pageShell = buildLayoutPageShellModel({
 	banner,
 	lang,
 	postSlug,
+	canonicalUrl,
 	pathname: Astro.url.pathname,
 	site: Astro.site,
 });
@@ -58,7 +61,7 @@ const pageShell = buildLayoutPageShellModel({
 			configHue={pageShell.configHue}
 			bannerHeightHome={`${LAYOUT_BANNER_HEIGHT_HOME}vh`}
 			bannerOffset={pageShell.bannerOffset}
-			currentUrl={Astro.url}
+				canonicalUrl={pageShell.canonicalUrl}
 			description={pageShell.description}
 			favicons={pageShell.favicons}
 			generator={Astro.generator}

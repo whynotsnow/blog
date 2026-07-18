@@ -1,10 +1,9 @@
-import type { CollectionEntry } from "astro:content";
-import { getCollection } from "astro:content";
 import * as fs from "node:fs";
 import type { APIContext, GetStaticPaths } from "astro";
 import satori from "satori";
 import sharp from "sharp";
-import { removeFileExtension } from "@/utils/url-utils";
+import { getContentStore } from "@/services/core/content-store";
+import type { ListPost } from "@/services/core/types";
 
 import { profileConfig, siteConfig } from "../../config";
 
@@ -24,14 +23,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
 		return [];
 	}
 
-	const allPosts = await getCollection("posts");
-	const publishedPosts = allPosts.filter((post) => !post.data.draft);
+	const { posts } = await getContentStore();
+	const publishedPosts = posts.filter((post) => !post.data.draft);
 
 	return publishedPosts.map((post) => {
-		// 将 id 转换为 slug（移除扩展名）以匹配路由参数
-		const slug = removeFileExtension(post.id);
 		return {
-			params: { slug },
+			params: { slug: post.meta.route.canonicalSlug },
 			props: { post },
 		};
 	});
@@ -97,9 +94,7 @@ async function fetchNotoSansSCFonts() {
 	}
 }
 
-export async function GET({
-	props,
-}: APIContext<{ post: CollectionEntry<"posts"> }>) {
+export async function GET({ props }: APIContext<{ post: ListPost }>) {
 	const { post } = props;
 
 	// Try to fetch fonts from Google Fonts (woff2) at runtime.
