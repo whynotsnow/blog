@@ -287,3 +287,12 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Kept one Svelte-owned Category Filter and stable Page Content Shell while preserving the Astro Post Grid and Pagination as the unfiltered SSR fallback.
 - Limited Tag-mode hydration updates to the filtered Post List, Pagination, active Tag, and result count instead of replacing the Filter with a legacy Taxonomy renderer.
 - Removed the duplicate legacy-token Taxonomy component and added browser coverage for desktop geometry, Semantic Surface usage, active Tag state, and Mobile collapse behavior.
+
+## 2026-07-18
+
+### Unified canonical post and category routes at build time
+
+- Added one build-time post route model that validates aliases before content rendering and indexes posts by ID, canonical slug, and canonical URL.
+- Made alias-backed pages replace filename-backed pages instead of creating duplicate content; canonical metadata, JSON-LD, feeds, OG paths, cards, calendar entries, archive entries, sharing, and post navigation now consume pre-resolved routes.
+- Kept UI modules as pure consumers of final URLs and navigation objects; route normalization and collision handling remain in the content service pipeline.
+- Kept category roots as the sole first page and generated paginated static paths from page 2 onward, with first and previous links resolving back to the category root.

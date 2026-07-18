@@ -55,7 +55,17 @@ alias: ""
 - `draft`：为 `true` 时生产环境不发布。
 - `pinned`、`priority`、`recommendScore`：列表排序和推荐权重。
 - `comment`：是否开启评论。
-- `alias`：可选文章别名，生成 `/posts/{alias}/` 路径。项目不再支持根级 `permalink` 路径。
+- `alias`：可选文章别名，作为文章唯一的 canonical slug。项目不再支持根级 `permalink` 路径。
+
+### 文章路由与 alias
+
+文章路由在 Astro 构建时由 `src/services/core/post-routes.ts` 统一生成和校验，UI 只消费 service 提供的 `url`、`canonicalUrl` 与导航链接。
+
+- 未设置 `alias` 时，文章文件名是 canonical slug，生成 `/posts/{文件名}/`。
+- 设置 `alias` 时，只生成 `/posts/{alias}/`；原文件名路径不再生成，也不提供 redirect。
+- `alias` 可以省略首尾 `/` 和可选的 `posts/` 前缀，构建时会执行 Unicode NFC 规范化。
+- `alias` 不能包含 query、hash、反斜杠、控制字符、空路径段、`.`、`..` 或非法 percent encoding。
+- alias 与其他 alias、任意文章文件名发生解码后、NFC 且大小写无关的冲突时，构建会一次性报告所有冲突并终止。
 
 兼容旧版本但不建议新文章继续使用的字段：
 
@@ -84,6 +94,8 @@ pnpm new-post -- my-post-title
 - 空分类会回落到 `uncategorized`。
 
 首页以 6 篇文章为一个内容区块，当前版本生成推荐阅读、最近更新与技术文章三个引导区块。分类页是完整浏览入口，每页显示 12 篇文章；分类和 Tag 筛选位于分类页主内容顶部，带 Tag 查询时由客户端保持相同分页容量。
+
+分类根路径 `/category/{slug}/` 是唯一的第一页。静态分页从 `/category/{slug}/page/2/` 开始；不会生成 `/page/1/`，也不提供 redirect。分页的 first 链接以及第 2 页的 prev 链接始终指向分类根路径。
 
 ## 草稿行为
 

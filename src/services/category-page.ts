@@ -113,9 +113,10 @@ export async function getCategoryPaginatedStaticPaths(): Promise<
 		const lastPageNumber = Math.ceil(
 			sortedPosts.length / CATEGORY_PAGE_SIZE,
 		);
+		const paginatedPageCount = Math.max(0, lastPageNumber - 1);
 
-		return Array.from({ length: lastPageNumber }, (_, index) => {
-			const currentPage = index + 1;
+		return Array.from({ length: paginatedPageCount }, (_, index) => {
+			const currentPage = index + 2;
 
 			return {
 				params: { slug, page: String(currentPage) },
