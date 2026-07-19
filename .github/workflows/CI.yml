@@ -16,6 +16,9 @@ concurrency:
 permissions:
     contents: read
 
+env:
+    ENABLE_CONTENT_SYNC: "false"
+
 jobs:
     plan:
         name: Validation Plan

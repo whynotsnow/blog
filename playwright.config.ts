@@ -30,7 +30,7 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: `(node scripts/sync-content.js || true) && astro dev --host 127.0.0.1 --port ${port}`,
+		command: `pnpm content:prepare && astro dev --host 127.0.0.1 --port ${port}`,
 		url: baseURL,
 		reuseExistingServer: !process.env.CI,
 		timeout: 60_000,

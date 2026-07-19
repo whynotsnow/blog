@@ -264,6 +264,15 @@
 				".github/workflows/**"
 			],
 			"groups": ["full"]
+		},
+		{
+			"patterns": [
+				"scripts/content-sync/**",
+				"scripts/prepare-content.mjs",
+				"scripts/init-content-repo.js",
+				"scripts/compress-fonts.js"
+			],
+			"groups": ["full"]
 		}
 	],
 	"fallback": ["full"]

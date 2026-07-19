@@ -876,11 +876,12 @@ async function collectText() {
 
 	// 4. 读取 content 目录（根据环境变量决定路径）
 	let contentDir;
-	if (process.env.ENABLE_CONTENT_SYNC === "true" && process.env.CONTENT_DIR) {
-		// 使用环境变量指定的目录（以项目根目录为基准）
-		contentDir = path.join(__dirname, "..", process.env.CONTENT_DIR);
+	if (process.env.ENABLE_CONTENT_SYNC === "true") {
+		// 使用准备流程激活的 immutable release（以项目根目录为基准）
+		const contentStateDir = process.env.CONTENT_DIR || "content";
+		contentDir = path.join(__dirname, "..", contentStateDir, "current");
 		console.log(
-			`ℹ Using external content directory: ${process.env.CONTENT_DIR}`,
+			`ℹ Using prepared external content: ${contentStateDir}/current`,
 		);
 	} else {
 		// 使用默认的 src/content 目录
