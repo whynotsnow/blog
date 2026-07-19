@@ -1,7 +1,10 @@
 import { HOME_SECTION_SIZE } from "@constants/constants";
+import { CATEGORY_SLUGS } from "@/config";
+import { getCategoryPageUrl } from "@/utils/url";
 import { toPostCardViewModel } from "./core/inject";
 import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
+import { sortByScore } from "./core/sort";
 
 export interface HomePostSection {
 	id: string;
@@ -28,9 +31,22 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 		)
 		.slice(0, HOME_SECTION_SIZE)
 		.map(toPostCardViewModel);
-	const technology = store.posts
-		.slice(HOME_SECTION_SIZE, HOME_SECTION_SIZE * 2)
+	const technology = sortByScore(
+		store.categoryMap.get(CATEGORY_SLUGS.technology)?.posts ?? [],
+	)
+		.slice(0, HOME_SECTION_SIZE)
 		.map(toPostCardViewModel);
+	const technologySection: HomePostSection[] = technology.length
+		? [
+				{
+					id: "technology",
+					title: "技术文章",
+					href: getCategoryPageUrl(CATEGORY_SLUGS.technology),
+					linkLabel: "查看技术文章",
+					posts: technology,
+				},
+			]
+		: [];
 
 	return {
 		sections: [
@@ -48,13 +64,7 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 				linkLabel: "查看全部文章",
 				posts: recommended,
 			},
-			{
-				id: "technology",
-				title: "技术文章",
-				href: "/category/technology/",
-				linkLabel: "查看技术文章",
-				posts: technology,
-			},
+			...technologySection,
 		],
 	};
 }

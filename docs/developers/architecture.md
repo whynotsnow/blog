@@ -160,6 +160,8 @@ RawPost
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码。共享 URL 拼接使用 `src/utils/url.ts`，分类与标签规范化使用 `src/services/core/taxonomy.ts`，文章 canonical URL 使用 `src/services/core/post-routes.ts`。图片 glob、Astro Content 类型与 Node API 只属于 `src/services/core/content-assets.ts`，不得进入客户端依赖图。
 
+首页的“技术文章”区块通过 Content Store 的规范 `tech` taxonomy 选取并按推荐分排序；不得通过全局推荐列表的固定切片模拟分类内容。分类为空时不输出该区块，文章不足上限时不跨分类补位。
+
 ## 首页与文章视觉基础
 
 首页和文章详情页通过 `src/design/` 统一 Surface、文本层级、内容宽度、页面间距与 Typography。其他功能页仍可通过 Legacy token 保持兼容，详细分层和迁移规则见 [Design System](./design-system.md)。

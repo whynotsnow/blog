@@ -1,6 +1,7 @@
 export { CLARITY_PROJECT_ID, GTM_ID, umamiConfig } from "./analytics";
 export {
 	CATEGORY_DEFINITIONS,
+	CATEGORY_SLUGS,
 	type CategoryDefinition,
 } from "./category-slugs";
 export { commentConfig } from "./comments";

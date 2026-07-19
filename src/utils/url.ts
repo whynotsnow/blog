@@ -26,3 +26,7 @@ export function getTagUrl(tag: string): string {
 	if (!normalized) return url("/archive/");
 	return url(`/archive/?tag=${encodeURIComponent(normalized)}`);
 }
+
+export function getCategoryPageUrl(slug: string): string {
+	return url(`/category/${encodeURIComponent(slug.trim())}/`);
+}

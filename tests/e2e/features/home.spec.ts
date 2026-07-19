@@ -15,7 +15,7 @@ test("home sections expose six-card guide destinations", async ({ page }) => {
 	).toBeVisible();
 	await expect(sections.nth(1).locator('a[href="/archive/"]')).toBeVisible();
 	await expect(
-		sections.nth(2).locator('a[href="/category/technology/"]'),
+		sections.nth(2).locator('a[href="/category/tech/"]'),
 	).toBeVisible();
 
 	for (let index = 0; index < 3; index += 1) {

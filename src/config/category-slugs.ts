@@ -4,8 +4,16 @@ export type CategoryDefinition = {
 	aliases?: readonly string[];
 };
 
+export const CATEGORY_SLUGS = {
+	technology: "tech",
+} as const;
+
 export const CATEGORY_DEFINITIONS: readonly CategoryDefinition[] = [
-	{ name: "技术", slug: "tech", aliases: ["Technology"] },
+	{
+		name: "技术",
+		slug: CATEGORY_SLUGS.technology,
+		aliases: ["Technology"],
+	},
 	{ name: "前端", slug: "frontend" },
 	{ name: "随笔", slug: "notes" },
 	{ name: "生活", slug: "life" },
