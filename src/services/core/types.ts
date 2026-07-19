@@ -152,6 +152,11 @@ export interface ContentStore extends CategoryTaxonomy {
 	stats: ContentStats;
 }
 
+export type PostIndexBuildResult = {
+	posts: PostIndexEntry[];
+	routes: PostRouteIndex;
+};
+
 export type PostSort = "score" | "date";
 export interface PostQuery {
 	sort?: PostSort;

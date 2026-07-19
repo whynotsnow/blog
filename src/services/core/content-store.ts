@@ -5,7 +5,7 @@ import type {
 	PostNavigatorCategory,
 	TagItem,
 } from "./types";
-import { getAllPosts } from "./source";
+import { buildPostIndex } from "./source";
 import { getTagUrl } from "@utils/url";
 import { generateTagSlug, getCategoryUrl } from "./taxonomy";
 import { UNCATEGORIZED } from "@constants/constants";
@@ -118,23 +118,36 @@ function buildCategoryTaxonomy(posts: PostIndexEntry[]): {
  * 将原始文章数据与分类索引合并，生成完整的内容存储结构。
  * 这是整个内容系统的核心数据模型，包含了所有文章及其分类导航信息。
  *
- * @param posts - 原始文章列表数据
+ * @param posts - 轻量文章索引
+ * @param routes - Post Index 构建阶段生成的权威路由索引
  * @returns 完整的内容存储对象，包含文章列表和分类导航数据
  *
  * @example
- * const store = buildContentStore(allPosts);
+ * const store = buildContentStore(posts, routes);
  * console.log(store.posts.length); // 文章总数
  * console.log(store.categories); // 分类导航数据
  */
-export function buildContentStore(posts: PostIndexEntry[]): ContentStore {
+export function buildContentStore(
+	posts: PostIndexEntry[],
+	routes: ContentStore["routes"],
+): ContentStore {
+	if (routes.byId.size !== posts.length) {
+		throw new Error(
+			`Post route index size ${routes.byId.size} does not match post index size ${posts.length}`,
+		);
+	}
+	for (const post of posts) {
+		const route = routes.byId.get(post.id);
+		if (!route) throw new Error(`Missing post route for ${post.id}`);
+		if (route !== post.route) {
+			throw new Error(
+				`Post route for ${post.id} is not the canonical index entry`,
+			);
+		}
+	}
+
 	const taxonomy = buildCategoryTaxonomy(posts);
 	const postsById = new Map(posts.map((post) => [post.id, post]));
-	const routes = {
-		byId: new Map(posts.map((post) => [post.id, post.route])),
-		bySlug: new Map(
-			posts.map((post) => [post.route.canonicalSlug, post.route]),
-		),
-	};
 	const lastActivityAt = posts.reduce<Date | null>((latest, post) => {
 		const activityAt = post.updated ?? post.published;
 		return !latest || activityAt > latest ? activityAt : latest;
@@ -170,9 +183,9 @@ export function buildContentStore(posts: PostIndexEntry[]): ContentStore {
 export function getContentStore(): Promise<ContentStore> {
 	if (storePromise) return storePromise;
 
-	storePromise = getAllPosts()
-		.then((posts) => {
-			const store = buildContentStore(posts);
+	storePromise = buildPostIndex()
+		.then(({ posts, routes }) => {
+			const store = buildContentStore(posts, routes);
 			if (import.meta.env.DEV) {
 				console.log("[ContentStore] 构建完成:", {
 					posts: posts.length,

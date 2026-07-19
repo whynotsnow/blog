@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/services/core/source", () => ({ getAllPosts: vi.fn() }));
+vi.mock("@/services/core/source", () => ({ buildPostIndex: vi.fn() }));
 
 import { buildContentStore } from "@/services/core/content-store";
 import { buildCategoryItems } from "@/services/core/inject";
+import { buildPostRouteIndex } from "@/services/core/post-routes";
 import type { PostIndexEntry } from "@/services/core/types";
 
 function post(id: string, category: string): PostIndexEntry {
@@ -34,10 +35,10 @@ function post(id: string, category: string): PostIndexEntry {
 
 describe("content store taxonomy", () => {
 	it("merges canonical category names and aliases with shared tag counts", () => {
-		const store = buildContentStore([
-			post("canonical", "技术"),
-			post("alias", "Technology"),
-		]);
+		const posts = [post("canonical", "技术"), post("alias", "Technology")];
+		const routes = buildPostRouteIndex(posts);
+		for (const entry of posts) entry.route = routes.byId.get(entry.id)!;
+		const store = buildContentStore(posts, routes);
 
 		expect(Array.from(store.categoryMap.keys())).toEqual(["tech"]);
 		expect(store.categoryMap.get("tech")?.category).toMatchObject({

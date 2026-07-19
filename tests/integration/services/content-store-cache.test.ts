@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getAllPosts } = vi.hoisted(() => ({
-	getAllPosts: vi.fn(),
+const { buildPostIndex } = vi.hoisted(() => ({
+	buildPostIndex: vi.fn(),
 }));
 
-vi.mock("@/services/core/source", () => ({ getAllPosts }));
+vi.mock("@/services/core/source", () => ({ buildPostIndex }));
 
 import {
 	_clearContentStoreCache,
@@ -14,11 +14,14 @@ import {
 describe("content store cache", () => {
 	beforeEach(() => {
 		_clearContentStoreCache();
-		getAllPosts.mockReset();
+		buildPostIndex.mockReset();
 	});
 
 	it("shares one in-flight initialization across concurrent callers", async () => {
-		getAllPosts.mockResolvedValue([]);
+		buildPostIndex.mockResolvedValue({
+			posts: [],
+			routes: { byId: new Map(), bySlug: new Map() },
+		});
 
 		const [first, second] = await Promise.all([
 			getContentStore(),
@@ -26,26 +29,32 @@ describe("content store cache", () => {
 		]);
 
 		expect(first).toBe(second);
-		expect(getAllPosts).toHaveBeenCalledTimes(1);
+		expect(buildPostIndex).toHaveBeenCalledTimes(1);
 	});
 
 	it("drops a rejected initialization so development can retry", async () => {
-		getAllPosts
+		buildPostIndex
 			.mockRejectedValueOnce(new Error("content unavailable"))
-			.mockResolvedValueOnce([]);
+			.mockResolvedValueOnce({
+				posts: [],
+				routes: { byId: new Map(), bySlug: new Map() },
+			});
 
 		await expect(getContentStore()).rejects.toThrow("content unavailable");
 		await expect(getContentStore()).resolves.toMatchObject({ posts: [] });
-		expect(getAllPosts).toHaveBeenCalledTimes(2);
+		expect(buildPostIndex).toHaveBeenCalledTimes(2);
 	});
 
 	it("rebuilds after explicit invalidation", async () => {
-		getAllPosts.mockResolvedValue([]);
+		buildPostIndex.mockResolvedValue({
+			posts: [],
+			routes: { byId: new Map(), bySlug: new Map() },
+		});
 
 		await getContentStore();
 		_clearContentStoreCache();
 		await getContentStore();
 
-		expect(getAllPosts).toHaveBeenCalledTimes(2);
+		expect(buildPostIndex).toHaveBeenCalledTimes(2);
 	});
 });

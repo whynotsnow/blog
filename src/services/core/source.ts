@@ -1,5 +1,5 @@
 import { getCollection, getEntry } from "astro:content";
-import type { PostIndexEntry, PostQuery, RawPost } from "./types";
+import type { PostIndexBuildResult, PostQuery, RawPost } from "./types";
 import { buildPostIndexEntries } from "./inject";
 import { applyPostQuery, sortByDate } from "./sort";
 import { buildPostRouteIndex, validatePostRoutes } from "./post-routes";
@@ -24,9 +24,9 @@ export async function getRawPostById(id: string): Promise<RawPost> {
 	return post;
 }
 
-export async function getAllPosts(
+export async function buildPostIndex(
 	query: PostQuery = { sort: "score" },
-): Promise<PostIndexEntry[]> {
+): Promise<PostIndexBuildResult> {
 	const rawPosts = await getAllPostsRaw();
 	const sortedPosts = sortByDate(rawPosts);
 	const routes = buildPostRouteIndex(
@@ -38,5 +38,5 @@ export async function getAllPosts(
 	);
 	const indexedPosts = buildPostIndexEntries(sortedPosts, routes);
 
-	return applyPostQuery(indexedPosts, query);
+	return { posts: applyPostQuery(indexedPosts, query), routes };
 }
