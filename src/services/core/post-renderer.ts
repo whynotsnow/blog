@@ -9,24 +9,32 @@ export function createPostRenderRegistry(
 	renderEntry: RenderPost,
 	runTask: TaskRunner,
 ) {
-	const cache = new Map<string, Promise<RenderedPost>>();
+	const inFlight = new Map<string, Promise<RenderedPost>>();
 
 	return {
 		get(entry: RawPost): Promise<RenderedPost> {
-			const cached = cache.get(entry.id);
+			const cached = inFlight.get(entry.id);
 			if (cached) return cached;
 
-			const rendered = runTask(() => renderEntry(entry)).catch(
+			const rendered = runTask(() => renderEntry(entry)).then(
+				(result) => {
+					if (inFlight.get(entry.id) === rendered) {
+						inFlight.delete(entry.id);
+					}
+					return result;
+				},
 				(error: unknown) => {
-					cache.delete(entry.id);
+					if (inFlight.get(entry.id) === rendered) {
+						inFlight.delete(entry.id);
+					}
 					throw error;
 				},
 			);
-			cache.set(entry.id, rendered);
+			inFlight.set(entry.id, rendered);
 			return rendered;
 		},
 		clear(): void {
-			cache.clear();
+			inFlight.clear();
 		},
 	};
 }
