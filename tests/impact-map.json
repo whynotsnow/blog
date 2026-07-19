@@ -183,12 +183,29 @@
 		},
 		{
 			"patterns": [
+				"src/pages/category/**",
+				"src/pages/api/categories/**",
 				"src/components/category/**",
 				"src/components/post/**",
 				"src/features/post-list/**",
 				"src/services/category-page.ts"
 			],
 			"groups": ["lint", "type", "astro", "post-list"]
+		},
+		{
+			"patterns": [
+				"src/services/feed.ts",
+				"src/pages/rss.xml.ts",
+				"src/pages/atom.xml.ts"
+			],
+			"groups": [
+				"lint",
+				"type",
+				"astro",
+				"unit",
+				"integration",
+				"astro-build"
+			]
 		},
 		{
 			"patterns": [
