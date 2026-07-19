@@ -325,6 +325,18 @@ function cleanupReleases(config, keepCommits, fsApi = fs) {
 	}
 }
 
+function cleanupStaging(config, fsApi = fs) {
+	const stagingRoot = path.join(config.stateDir, "staging");
+	if (!fsApi.existsSync(stagingRoot)) return;
+
+	for (const entry of fsApi.readdirSync(stagingRoot)) {
+		fsApi.rmSync(path.join(stagingRoot, entry), {
+			recursive: true,
+			force: true,
+		});
+	}
+}
+
 export function prepareContent(
 	config,
 	{
@@ -338,6 +350,8 @@ export function prepareContent(
 		logger.log("[content] mode=local");
 		return { mode: "local" };
 	}
+
+	cleanupStaging(config, fsApi);
 
 	const previousCommit = getCurrentCommit(config, fsApi);
 	const existingRelease = path.join(

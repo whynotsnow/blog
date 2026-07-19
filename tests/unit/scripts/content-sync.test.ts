@@ -227,6 +227,27 @@ describe("atomic content activation", () => {
 		expect(prepareCheckout).toHaveBeenCalledTimes(1);
 	});
 
+	it("cleans stale staging before preparing the requested release", () => {
+		const rootDir = createTempDirectory();
+		createProjectContent(rootDir, "local");
+		const config = createExternalConfig(rootDir);
+		const staleCheckout = path.join(config.stateDir, "staging", "stale");
+		fs.mkdirSync(staleCheckout, { recursive: true });
+		fs.writeFileSync(path.join(staleCheckout, "partial"), "stale");
+		const checkoutDir = createReleaseCheckout(rootDir, "external");
+
+		prepareContent(config, {
+			prepareCheckout: () => ({
+				checkoutDir,
+				commitSha,
+				cleanup: vi.fn(),
+			}),
+			logger: { log: vi.fn(), warn: vi.fn() },
+		});
+
+		expect(fs.existsSync(staleCheckout)).toBe(false);
+	});
+
 	it("leaves local content untouched when validation fails", () => {
 		const rootDir = createTempDirectory();
 		createProjectContent(rootDir, "local");
