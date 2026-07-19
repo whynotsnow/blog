@@ -620,7 +620,7 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 	await expect(filterOptions).toBeVisible();
 });
 
-test("category tag index loads on demand and is reused for tag navigation", async ({
+test("category tag index prefetches when idle and is reused for tag navigation", async ({
 	page,
 }) => {
 	let indexRequests = 0;
@@ -634,7 +634,7 @@ test("category tag index loads on demand and is reused for tag navigation", asyn
 	await expect(
 		page.locator('[data-post-list-renderer="astro"]'),
 	).toBeVisible();
-	expect(indexRequests).toBe(0);
+	await expect.poll(() => indexRequests).toBe(1);
 
 	const tagLinks = page.locator(
 		'.category-filter a[href^="/category/tech/?tag="]',
@@ -664,6 +664,37 @@ test("category tag index loads on demand and is reused for tag navigation", asyn
 	expect(indexRequests).toBe(1);
 
 	await tagLinks.nth(1).click();
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	expect(indexRequests).toBe(1);
+});
+
+test("category tag index skips constrained prefetch but loads in tag mode", async ({
+	page,
+}) => {
+	await page.addInitScript(() => {
+		Object.defineProperty(navigator, "connection", {
+			configurable: true,
+			value: { effectiveType: "4g", saveData: true },
+		});
+	});
+
+	let indexRequests = 0;
+	page.on("request", (request) => {
+		if (new URL(request.url()).pathname === "/api/categories/tech.json/") {
+			indexRequests += 1;
+		}
+	});
+
+	await gotoPage(page, "/category/tech/");
+	await page.waitForTimeout(1000);
+	expect(indexRequests).toBe(0);
+
+	await page
+		.locator('.category-filter a[href^="/category/tech/?tag="]')
+		.first()
+		.click();
 	await expect(
 		page.locator('[data-post-list-renderer="svelte"]'),
 	).toBeVisible();

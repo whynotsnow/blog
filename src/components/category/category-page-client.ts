@@ -26,8 +26,59 @@ export type CategoryPaginationResult = {
 };
 
 type Fetcher = typeof fetch;
+type FetchPriority = "auto" | "low";
 
+export type CategoryIndexPrefetchConditions = {
+	isVisible: boolean;
+	isOnline: boolean;
+	saveData: boolean;
+	effectiveType?: string;
+};
+
+type NetworkInformationLike = {
+	saveData?: boolean;
+	effectiveType?: string;
+};
+
+const MAX_CACHED_CATEGORY_INDEXES = 3;
 const tagIndexCache = new Map<string, Promise<ClientPostCard[]>>();
+
+function touchCategoryTagIndexCache(
+	indexUrl: string,
+	request: Promise<ClientPostCard[]>,
+): void {
+	tagIndexCache.delete(indexUrl);
+	tagIndexCache.set(indexUrl, request);
+
+	while (tagIndexCache.size > MAX_CACHED_CATEGORY_INDEXES) {
+		const oldestIndexUrl = tagIndexCache.keys().next().value;
+		if (typeof oldestIndexUrl !== "string") return;
+		tagIndexCache.delete(oldestIndexUrl);
+	}
+}
+
+function getNetworkInformation(): NetworkInformationLike | undefined {
+	return (
+		navigator as Navigator & {
+			connection?: NetworkInformationLike;
+		}
+	).connection;
+}
+
+export function shouldPrefetchCategoryTagIndex({
+	isVisible,
+	isOnline,
+	saveData,
+	effectiveType,
+}: CategoryIndexPrefetchConditions): boolean {
+	return (
+		isVisible &&
+		isOnline &&
+		!saveData &&
+		effectiveType !== "slow-2g" &&
+		effectiveType !== "2g"
+	);
+}
 
 export function parseCategoryUrl(href: string): CategoryPaginationState {
 	const currentUrl = new URL(href);
@@ -70,13 +121,20 @@ export function buildPage<T>(
 export function loadCategoryTagIndex(
 	indexUrl: string,
 	fetcher: Fetcher = fetch,
+	priority: FetchPriority = "auto",
 ): Promise<ClientPostCard[]> {
 	const cached = tagIndexCache.get(indexUrl);
-	if (cached) return cached;
+	if (cached) {
+		touchCategoryTagIndexCache(indexUrl, cached);
+		return cached;
+	}
 
-	const request = fetcher(indexUrl, {
+	const requestInit: RequestInit & { priority?: FetchPriority } = {
 		headers: { Accept: "application/json" },
-	})
+	};
+	if (priority === "low") requestInit.priority = "low";
+
+	const request = fetcher(indexUrl, requestInit)
 		.then(async (response) => {
 			if (!response.ok) {
 				throw new Error(
@@ -92,12 +150,71 @@ export function loadCategoryTagIndex(
 			return data as ClientPostCard[];
 		})
 		.catch((error: unknown) => {
-			tagIndexCache.delete(indexUrl);
+			if (tagIndexCache.get(indexUrl) === request) {
+				tagIndexCache.delete(indexUrl);
+			}
 			throw error;
 		});
 
-	tagIndexCache.set(indexUrl, request);
+	touchCategoryTagIndexCache(indexUrl, request);
 	return request;
+}
+
+export function scheduleCategoryTagIndexPrefetch(indexUrl: string): () => void {
+	let idleCallbackId: number | undefined;
+	let fallbackTimerId: number | undefined;
+	let disposed = false;
+
+	const prefetch = () => {
+		if (disposed) return;
+		const connection = getNetworkInformation();
+		if (
+			!shouldPrefetchCategoryTagIndex({
+				isVisible: document.visibilityState === "visible",
+				isOnline: navigator.onLine,
+				saveData: connection?.saveData === true,
+				effectiveType: connection?.effectiveType,
+			})
+		) {
+			return;
+		}
+
+		void loadCategoryTagIndex(indexUrl, fetch, "low").catch(
+			() => undefined,
+		);
+	};
+
+	const scheduleWhenIdle = () => {
+		if (disposed) return;
+		const idleWindow = window as Window & {
+			requestIdleCallback?: Window["requestIdleCallback"];
+		};
+		if (idleWindow.requestIdleCallback) {
+			idleCallbackId = idleWindow.requestIdleCallback(prefetch, {
+				timeout: 4000,
+			});
+			return;
+		}
+
+		fallbackTimerId = window.setTimeout(prefetch, 1500);
+	};
+
+	if (document.readyState === "complete") {
+		scheduleWhenIdle();
+	} else {
+		window.addEventListener("load", scheduleWhenIdle, { once: true });
+	}
+
+	return () => {
+		disposed = true;
+		window.removeEventListener("load", scheduleWhenIdle);
+		if (idleCallbackId !== undefined) {
+			window.cancelIdleCallback(idleCallbackId);
+		}
+		if (fallbackTimerId !== undefined) {
+			window.clearTimeout(fallbackTimerId);
+		}
+	};
 }
 
 export function clearCategoryTagIndexCache(): void {
@@ -161,10 +278,17 @@ export function useCategoryPagination(
 	}
 
 	onMount(() => {
+		const initialState = parseCategoryUrl(window.location.href);
 		void syncFromUrl();
+		const cancelPrefetch = initialState.isTagMode
+			? () => undefined
+			: scheduleCategoryTagIndexPrefetch(options.tagIndexUrl);
 		const sync = () => void syncFromUrl();
 		window.addEventListener("popstate", sync);
-		return () => window.removeEventListener("popstate", sync);
+		return () => {
+			cancelPrefetch();
+			window.removeEventListener("popstate", sync);
+		};
 	});
 
 	return {

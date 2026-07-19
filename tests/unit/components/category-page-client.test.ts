@@ -4,6 +4,7 @@ import {
 	clearCategoryTagIndexCache,
 	loadCategoryTagIndex,
 	parseCategoryUrl,
+	shouldPrefetchCategoryTagIndex,
 } from "@/components/category/category-page-client";
 import type { ClientPostCard } from "@/services/category-page";
 
@@ -60,6 +61,80 @@ describe("category page client", () => {
 			loadCategoryTagIndex("/api/categories/tech.json", fetcher),
 		).resolves.toEqual(posts);
 		expect(fetcher).toHaveBeenCalledTimes(1);
+	});
+
+	it("isolates category indexes by URL and evicts the least recently used entry", async () => {
+		const fetcher = vi.fn<typeof fetch>().mockImplementation(
+			async (url) =>
+				new Response(
+					JSON.stringify([{ ...posts[0], id: String(url) }]),
+					{
+						status: 200,
+					},
+				),
+		);
+
+		await loadCategoryTagIndex("/api/categories/tech.json/", fetcher);
+		await loadCategoryTagIndex("/api/categories/life.json/", fetcher);
+		await loadCategoryTagIndex("/api/categories/notes.json/", fetcher);
+		await loadCategoryTagIndex("/api/categories/tech.json/", fetcher);
+		await loadCategoryTagIndex("/api/categories/travel.json/", fetcher);
+		await loadCategoryTagIndex("/api/categories/life.json/", fetcher);
+
+		expect(fetcher).toHaveBeenCalledTimes(5);
+		expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+			"/api/categories/tech.json/",
+			"/api/categories/life.json/",
+			"/api/categories/notes.json/",
+			"/api/categories/travel.json/",
+			"/api/categories/life.json/",
+		]);
+	});
+
+	it("prefetches only on visible, online, unmetered non-2g pages", () => {
+		expect(
+			shouldPrefetchCategoryTagIndex({
+				isVisible: true,
+				isOnline: true,
+				saveData: false,
+				effectiveType: "4g",
+			}),
+		).toBe(true);
+
+		for (const conditions of [
+			{
+				isVisible: false,
+				isOnline: true,
+				saveData: false,
+				effectiveType: "4g",
+			},
+			{
+				isVisible: true,
+				isOnline: false,
+				saveData: false,
+				effectiveType: "4g",
+			},
+			{
+				isVisible: true,
+				isOnline: true,
+				saveData: true,
+				effectiveType: "4g",
+			},
+			{
+				isVisible: true,
+				isOnline: true,
+				saveData: false,
+				effectiveType: "2g",
+			},
+			{
+				isVisible: true,
+				isOnline: true,
+				saveData: false,
+				effectiveType: "slow-2g",
+			},
+		]) {
+			expect(shouldPrefetchCategoryTagIndex(conditions)).toBe(false);
+		}
 	});
 
 	it("evicts failed requests so retry can succeed", async () => {
