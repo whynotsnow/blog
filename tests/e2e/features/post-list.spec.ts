@@ -590,7 +590,7 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 		});
 
 	await expect(filter).toHaveClass(/ds-surface-card/);
-	await expect(filter).toContainText("17 篇文章");
+	await expect(filter).toContainText("18 篇文章");
 	const defaultGeometry = await readFilterGeometry();
 
 	const tagLink = filter.locator('a[href^="/category/tech/?tag="]').first();
