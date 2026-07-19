@@ -4,7 +4,6 @@ import { toPostCardViewModel } from "./core/inject";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
 import type {
-	ContentStore,
 	PostCardViewModel,
 	PostIndexEntry,
 	PostNavigatorCategory,
@@ -16,7 +15,6 @@ export type CategoryPageProps = {
 	page: Page<PostCardViewModel>;
 	categorySlug: string;
 	categories: PostNavigatorCategory[];
-	store: ContentStore;
 };
 
 function buildCategoryPage(
@@ -65,9 +63,8 @@ function buildCategoryPageProps(params: {
 	slug: string;
 	currentPage: number;
 	categories: PostNavigatorCategory[];
-	store: ContentStore;
 }): CategoryPageProps {
-	const { sortedPosts, slug, currentPage, categories, store } = params;
+	const { sortedPosts, slug, currentPage, categories } = params;
 	const allPosts = sortedPosts.map(toPostCardViewModel);
 	const page = buildCategoryPage(allPosts, slug, currentPage);
 
@@ -77,7 +74,6 @@ function buildCategoryPageProps(params: {
 		page,
 		categorySlug: slug,
 		categories,
-		store,
 	};
 }
 
@@ -97,7 +93,6 @@ export async function getCategoryIndexStaticPaths(): Promise<
 				slug,
 				currentPage: 1,
 				categories,
-				store,
 			}),
 		};
 	});
@@ -126,7 +121,6 @@ export async function getCategoryPaginatedStaticPaths(): Promise<
 					slug,
 					currentPage,
 					categories,
-					store,
 				}),
 			};
 		});

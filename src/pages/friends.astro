@@ -6,7 +6,6 @@ import { getShuffledFriendsList } from "../data/friends";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import { getContentStore } from "@/services/core/content-store";
 
 // 检查友链页面是否启用
 if (!siteConfig.featurePages.friends) {
@@ -25,10 +24,9 @@ const friendsList = getShuffledFriendsList();
 // 获取所有标签
 const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 
-const store = await getContentStore();
 ---
 
-<MainGridLayout title={i18n(I18nKey.friends)} description={i18n(I18nKey.friends)} store={store}>
+<MainGridLayout title={i18n(I18nKey.friends)} description={i18n(I18nKey.friends)}>
 	<!-- 只在友情链接页面加载脚本 -->
 	<script is:inline>
 		// 标记当前页面为友情链接页面

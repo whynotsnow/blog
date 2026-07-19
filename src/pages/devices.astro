@@ -5,7 +5,6 @@ import { devicesData } from "../data/devices";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import { getContentStore } from "@/services/core/content-store";
 export const prerender = true;
 
 // 检查设备页面是否启用
@@ -16,10 +15,9 @@ if (!siteConfig.featurePages.devices) {
 // 设备数据
 const devices = devicesData;
 const brands = Object.keys(devices);
-const store = await getContentStore();
 ---
 
-<MainGridLayout title={i18n(I18nKey.devices)} store={store}>
+<MainGridLayout title={i18n(I18nKey.devices)}>
   <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
     <div class="card-base z-10 px-9 py-6 relative w-full">
       <!-- 页面标题 -->

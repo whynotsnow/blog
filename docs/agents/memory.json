@@ -1,6 +1,6 @@
 {
 	"version": 2,
-	"updated": "2026-07-15",
+	"updated": "2026-07-19",
 	"principle": "This project is not debugged repeatedly. It is learned once and reused forever.",
 	"architecture_constraints": [
 		{
@@ -20,8 +20,8 @@
 		},
 		{
 			"id": "content-store-contract",
-			"rule": "Do not bypass getContentStore() for normal post collection access unless the route is a specialized static endpoint.",
-			"reason": "content-store centralizes posts, categoryMap, and categories."
+			"rule": "Use getContentStore() for normal post index access. Keep RawPost, Markdown bodies, rendered HTML, passwords, and detail-only frontmatter behind the detail or Feed build-time service boundary.",
+			"reason": "ContentStore is a lightweight, shared index; retaining or exposing raw entries recreates memory pressure and lets UI infer content routes or implementation details."
 		},
 		{
 			"id": "config-ownership",

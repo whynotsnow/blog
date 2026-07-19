@@ -6,10 +6,8 @@ import Navbar from "@components/Navbar.astro";
 import Banner from "@/components/layout/Banner/Banner.astro";
 import MainGridContent from "@/components/layout/MainGridContent.astro";
 import { fullscreenWallpaperConfig, siteConfig, siteNoticeConfig } from "@/config";
-import type { ContentStore } from "@/services/core/types";
 import { buildMainGridLayoutViewModel } from "@/services/layout/main-grid";
 import { buildSiteNoticeViewModel } from "@/services/site-notice";
-import { buildFooterViewModel } from "@/services/footer";
 import type { PageLayoutPolicyName } from "@/services/layout/types";
 import Layout from "./Layout.astro";
 import "@/styles/main-grid-layout.css";
@@ -23,7 +21,6 @@ interface Props {
 	postSlug?: string;
 	canonicalUrl?: string;
 	headings?: MarkdownHeading[];
-	store: ContentStore;
 	layoutPolicy?: PageLayoutPolicyName;
 }
 
@@ -36,7 +33,6 @@ const {
 	postSlug,
 	canonicalUrl,
 	headings = [],
-	store,
 	layoutPolicy = "default",
 } = Astro.props;
 const viewModel = await buildMainGridLayoutViewModel({
@@ -45,7 +41,6 @@ const viewModel = await buildMainGridLayoutViewModel({
 	pathname: Astro.url.pathname,
 });
 const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname);
-const footer = buildFooterViewModel(store);
 const hasSupportContent = Astro.slots.has("support");
 ---
 
@@ -113,7 +108,7 @@ const hasSupportContent = Astro.slots.has("support");
 		headings={headings}
 		viewModel={viewModel}
 		siteNotice={siteNotice}
-		footer={footer}
+		footer={viewModel.footer}
 		hasSupportContent={hasSupportContent}
 	>
 		<slot name="support" slot="support" />

@@ -1,9 +1,9 @@
 ---
 import PostGrid from "@components/post/PostGrid.astro";
-import type { UIPost } from "@/services/core/types";
+import type { PostCardViewModel } from "@/services/core/types";
 
 interface Props {
-	posts: UIPost[];
+	posts: PostCardViewModel[];
 	id: string;
 }
 

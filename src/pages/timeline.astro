@@ -2,7 +2,6 @@
 import TimelinePage from "@/components/timeline/TimelinePage.astro";
 import IconifyLoader from "@/components/misc/IconifyLoader.astro";
 import { siteConfig } from "@/config";
-import { getContentStore } from "@/services/core/content-store";
 import { buildTimelinePageModel } from "@/services/timeline";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 
@@ -10,11 +9,10 @@ if (!siteConfig.featurePages.timeline) {
 	return Astro.redirect("/404/");
 }
 
-const store = await getContentStore();
 const model = buildTimelinePageModel();
 ---
 
-<MainGridLayout title={model.title} description={model.subtitle} store={store}>
+<MainGridLayout title={model.title} description={model.subtitle}>
 	<IconifyLoader preloadIcons={model.preloadIcons} />
 	<TimelinePage model={model} />
 </MainGridLayout>

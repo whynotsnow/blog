@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import type { UIPost } from "@/services/core/types";
+	import type { PostCardViewModel } from "@/services/core/types";
 	import I18nKey from "@/i18n/i18nKey";
 	import { i18n } from "@/i18n/translation";
 	import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 	import { siteConfig } from "@/config";
 	import { formatPostCardWordCount } from "@/features/post-list/word-count";
 
-	export let post: Pick<UIPost, "published" | "category" | "meta">;
+	export let post: Pick<PostCardViewModel, "published" | "category" | "meta">;
 
 	$: wordCount =
 		post.meta.words > 0

@@ -14,7 +14,7 @@ const store = await getContentStore();
 const { groups, calendar, categories, tags } = await buildArchivePageData(store);
 ---
 
-<MainGridLayout title={i18n(I18nKey.archive)} store={store}>
+<MainGridLayout title={i18n(I18nKey.archive)}>
 	<div class="ds-stack">
 		<ArchiveCalendar calendarData={calendar} />
 		<div class="grid gap-4 md:grid-cols-2">

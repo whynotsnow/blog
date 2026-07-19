@@ -16,7 +16,6 @@ import PostHeader from "./PostHeader.astro";
 import PostLastModified from "./PostLastModified.astro";
 import PostNavigation from "./PostNavigation.astro";
 import "./post-detail.css";
-import { getContentStore } from "@/services/core/content-store";
 import type { PostDetailPageProps } from "./types";
 
 const {
@@ -41,7 +40,6 @@ const {
 	posterCoverUrl,
 	posterAvatarUrl,
 } = Astro.props as PostDetailPageProps;
-const store = await getContentStore();
 
 ---
 
@@ -54,7 +52,6 @@ const store = await getContentStore();
 	postSlug={canonicalOgSlug}
 	canonicalUrl={canonicalUrl}
 	headings={headings}
-	store={store}
 	layoutPolicy="post"
 >
 	<script

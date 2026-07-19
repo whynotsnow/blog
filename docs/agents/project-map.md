@@ -117,15 +117,13 @@ Content preparation and content transformation are separate boundaries. `scripts
    - Production: drafts are excluded.
    - Development: drafts are included.
 4. `validatePostRoutes()` validates all published post routes before content rendering, then `buildPostRouteIndex()` creates the immutable ID, canonical-slug, and URL indexes.
-5. `injectSystemMeta`, `injectListMeta`, and `injectNavigationMeta` enrich raw entries with stable metadata and pre-resolved canonical navigation URLs.
-6. `buildContentStore()` creates the unified store:
-   - `posts`
-   - `routes`
-   - `categoryMap`
-   - `categories`
-7. Feature services and route handlers consume the store. Feed and calendar endpoints should use `src/services/feed.ts` and `src/services/calendar.ts` instead of querying Astro content directly.
+5. `buildPostIndexEntries()` reads list statistics from Astro's prepared `entry.rendered.metadata`, resolves taxonomy, score, cover, and navigation data, and produces body-free `PostIndexEntry` values.
+6. `buildContentStore()` retains only the lightweight post index, ID and route indexes, taxonomy, and aggregate statistics. It never stores raw Markdown bodies, rendered HTML, passwords, or detail-only frontmatter.
+7. `getContentStore()` caches the in-flight Promise so concurrent first callers share one initialization. Rejected initialization and Vite HMR disposal clear the cache.
+8. Post detail static paths contain only canonical slugs and post IDs. The detail service fetches the raw entry on demand, builds a UI-ready detail view model, and shares a bounded, failure-evicting `Map<id, Promise<RenderedPost>>` render registry.
+9. Feed retains its separate Markdown semantics and receives raw entries only through its build-time service boundary. UI components consume `PostCardViewModel`, `PostDetailPageProps`, navigation URLs, and Shell view models rather than `RawPost` or `ContentStore`.
 
-Use `getContentStore()` as the default data access point for post collections.
+Use `getContentStore()` as the default data access point for post indexes. Raw entries are detail/feed build inputs and must stay behind their owning service boundary.
 
 Route derivation is a build-time service responsibility. A post with an alias generates only its alias-backed canonical page; its filename route is intentionally absent. Feature services must consume `ContentStore.routes` or a page view model instead of reconstructing a post URL. UI components receive final `url`, `canonicalUrl`, and navigation links and must not parse aliases, entry IDs, or slugs.
 

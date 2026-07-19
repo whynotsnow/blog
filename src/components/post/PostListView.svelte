@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { UIPost } from "./types";
+	import type { PostCardViewModel } from "./types";
 	import { siteConfig } from "@/config";
 	import PostCardView from "./PostCardView.svelte";
 	import { initializePostList } from "@/features/post-list/controller";
 	import "@/features/post-list/post-list.css";
 
-	export let posts: UIPost[];
+	export let posts: PostCardViewModel[];
 
 	let container: HTMLDivElement | null = null;
 

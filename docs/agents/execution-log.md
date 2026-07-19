@@ -305,3 +305,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Prepared Git checkouts in staging with argument-array process execution, validated all four source directories, and activated immutable releases through one current pointer.
 - Kept first-time link installation and local restoration rollback-safe; external failures now stop builds instead of selecting local or stale content.
 - Routed build, Astro build, development, Playwright, and CI through one preparation command and made the selected external commit visible in sanitized build logs.
+
+### Narrowed the build-time content model
+
+- Replaced the raw-entry-based list model with body-free `PostIndexEntry` values and browser-serializable `PostCardViewModel` values.
+- Read list statistics from Astro's prepared rendered metadata instead of constructing `Content` for every list entry.
+- Cached the in-flight Content Store Promise, cleared failed initialization, and tied Store and render caches to Vite HMR disposal.
+- Reduced post static path props to canonical slug plus post ID, then rendered detail view models on demand through a four-slot bounded queue and an ID-keyed Promise registry.
+- Kept Feed raw Markdown behind its build-time service boundary, moved canonical comment paths into the detail view model, and stopped passing the complete Content Store through page and layout props.

@@ -1,5 +1,4 @@
 ---
-import { getContentStore } from "@/services/core/content-store";
 import { siteConfig } from "../config";
 import { UNCATEGORIZED } from "../constants/constants";
 import {
@@ -58,10 +57,9 @@ const getCategoryText = (category: string) => {
 			return category;
 	}
 };
-const store = await getContentStore();
 ---
 
-<MainGridLayout title={title} description={subtitle} store={store}>
+<MainGridLayout title={title} description={subtitle}>
 	<script>
 		import { loadIconify } from "../utils/icon-loader";
 

@@ -101,12 +101,20 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 3. 草稿过滤在 `getAllPostsRaw()` 中完成：
    - 开发环境包含草稿。
    - 生产环境排除 `draft: true` 的文章。
-4. `injectSystemMeta`、`injectListMeta`、`injectNavigationMeta` 为文章注入系统元数据、摘要、阅读时间和上下篇导航。
-5. `buildContentStore()` 生成统一内容存储：
-   - `posts`
-   - `categoryMap`
-   - `categories`
-6. 页面和业务服务优先消费 `getContentStore()`。Feed 与日历端点应通过 `src/services/feed.ts`、`src/services/calendar.ts` 取数，不直接查询 Astro Content Collection。
+4. `buildPostIndexEntries()` 从 Astro 已准备好的 `entry.rendered.metadata` 读取摘要、字数和阅读时间，并生成不含正文的 `PostIndexEntry`。
+5. `buildContentStore()` 只保存轻量索引：文章索引、ID/Route Map、分类标签 Taxonomy 与聚合统计；不得保存 Markdown 正文、渲染 HTML、密码或详情专用 frontmatter。
+6. `getContentStore()` 缓存初始化 Promise，首次并发调用共享同一次构建；初始化失败和 Vite HMR disposal 会清除缓存。
+7. 文章 static paths 只携带 canonical slug 与文章 ID。详情 service 按 ID 获取 RawPost，通过有上限的共享队列生成 `Content`、headings 与详情 View Model；UI 不接触 RawPost。
+8. 浏览器文章卡片统一消费可序列化的 `PostCardViewModel`。Feed 保留独立 Markdown 语义，但 RawPost 只能停留在 Feed 的构建态 service 内。
+
+数据层级如下：
+
+```text
+RawPost
+├─ PostIndexEntry：构建态轻量索引
+├─ PostCardViewModel：浏览器可序列化卡片字段
+└─ PostDetailPageProps：Content、headings 与详情资源
+```
 
 ## 路由说明
 

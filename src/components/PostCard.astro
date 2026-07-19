@@ -5,11 +5,11 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import ImageWrapper from "./misc/ImageWrapper.astro";
 import PostCardMeta from "./post/PostCardMeta.astro";
-import { UIPost } from "@/services/core/types";
+import type { PostCardViewModel } from "@/services/core/types";
 
 interface Props {
 	class?: string;
-	entry: UIPost;
+	entry: PostCardViewModel;
 	style?: string;
 	variant?: "adaptive" | "list" | "grid";
 }

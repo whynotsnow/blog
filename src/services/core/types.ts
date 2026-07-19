@@ -118,9 +118,6 @@ export interface PostCardViewModel {
 	image?: ImageMetadata;
 }
 
-/** @deprecated Use PostCardViewModel. */
-export type UIPost = PostCardViewModel;
-
 export interface CategoryEntry {
 	category: CategoryItem;
 	posts: PostIndexEntry[];

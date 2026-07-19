@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import type { UIPost } from "@/services/core/types";
+import type { PostCardViewModel } from "@/services/core/types";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
@@ -8,7 +8,7 @@ import { siteConfig } from "@/config";
 import { formatPostCardWordCount } from "@/features/post-list/word-count";
 
 interface Props {
-	post: Pick<UIPost, "published" | "category" | "meta">;
+	post: Pick<PostCardViewModel, "published" | "category" | "meta">;
 }
 
 const { post } = Astro.props;

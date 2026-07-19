@@ -4,20 +4,17 @@ import { siteConfig } from "../config";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import "../styles/anime.css";
 import { buildAnimePageModel } from "@/services/anime";
-import { getContentStore } from "@/services/core/content-store";
 
 if (!siteConfig.featurePages.anime) {
 	return Astro.redirect("/404/");
 }
 
 const animePageModel = buildAnimePageModel();
-const store = await getContentStore();
 ---
 
 <MainGridLayout
 	title={animePageModel.title}
 	description={animePageModel.subtitle}
-	store={store}
 >
 	<AnimePage model={animePageModel} />
 </MainGridLayout>

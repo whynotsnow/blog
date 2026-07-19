@@ -1,5 +1,4 @@
 ---
-import { getContentStore } from "@/services/core/content-store";
 import { siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -15,10 +14,9 @@ if (!siteConfig.featurePages.albums) {
 // 获取所有相册
 const albumsData = await scanAlbums();
 
-const store = await getContentStore();
 ---
 
-<MainGridLayout title={i18n(I18nKey.albums)} description={i18n(I18nKey.albumsSubtitle)} store={store}>
+<MainGridLayout title={i18n(I18nKey.albums)} description={i18n(I18nKey.albumsSubtitle)}>
   <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
     <div class="card-base z-10 px-9 py-6 relative w-full">
       

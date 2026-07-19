@@ -1,5 +1,4 @@
 ---
-import { getContentStore } from "@/services/core/content-store";
 import Icon from "../components/misc/Icon.astro";
 import IconifyLoader from "../components/misc/IconifyLoader.astro";
 import SkillsChart from "../components/skills/SkillsChart.astro";
@@ -97,10 +96,9 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 // 收集所有技能图标用于预加载
 const allIcons = skillsData.map((skill) => skill.icon).filter(Boolean);
 
-const store = await getContentStore();
 ---
 
-<MainGridLayout title={title} description={subtitle} store={store}>
+<MainGridLayout title={title} description={subtitle}>
 	<!-- 设置页面类型属性 -->
 	<script is:inline>
 		document.documentElement.setAttribute("data-page-type", "skills");

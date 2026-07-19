@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { UIPost } from "./types";
+	import type { PostCardViewModel } from "./types";
 
-	export let posts: UIPost[];
+	export let posts: PostCardViewModel[];
 </script>
 
 <ul>

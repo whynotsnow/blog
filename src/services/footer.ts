@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config";
 import type { ContentStore } from "@/services/core/types";
+import { getContentStore } from "@/services/core/content-store";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 
@@ -77,4 +78,8 @@ export function buildFooterViewModel(
 			visitsLabel: i18n(I18nKey.profileStatsVisits),
 		},
 	};
+}
+
+export async function getFooterViewModel(): Promise<FooterViewModel> {
+	return buildFooterViewModel(await getContentStore());
 }

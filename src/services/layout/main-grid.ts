@@ -1,5 +1,6 @@
 import { getBannerImages, type BannerImages } from "@/services/banner";
 import type { SiteConfig } from "@/types/config";
+import { getFooterViewModel, type FooterViewModel } from "@/services/footer";
 import { resolvePageLayout } from "./resolver";
 import type {
 	PageInteractionPolicy,
@@ -11,6 +12,7 @@ export type MainGridLayoutViewModel = {
 	bannerImages: BannerImages;
 	pageLayout: ResolvedPageLayout;
 	interaction: PageInteractionPolicy;
+	footer: FooterViewModel;
 	toc: {
 		mode: "float" | "sidebar";
 		enable: boolean;
@@ -56,8 +58,14 @@ export async function buildMainGridLayoutViewModel({
 		config.wallpaperMode.defaultMode === "fullscreen"
 			? "wallpaper-transparent"
 			: "";
+	const [bannerImages, footer] = await Promise.all([
+		getBannerImages(config),
+		getFooterViewModel(),
+	]);
+
 	return {
-		bannerImages: await getBannerImages(config),
+		bannerImages,
+		footer,
 		pageLayout: resolvePageLayout(layoutPolicy),
 		interaction: {
 			navbar: isHomePage ? "banner-aware" : "fixed-visible",

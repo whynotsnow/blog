@@ -11,7 +11,7 @@ const store = await getContentStore();
 const recentPosts = store.posts.slice(0, 6);
 ---
 
-<MainGridLayout title={i18n(I18nKey.rss)} store={store}>
+<MainGridLayout title={i18n(I18nKey.rss)}>
 	<!-- 引入右侧边栏布局管理器 -->
 	<div class="onload-animation">
 		<!-- RSS 标题和介绍 -->

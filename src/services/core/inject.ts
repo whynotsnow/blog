@@ -146,6 +146,3 @@ export function toPostCardViewModel(post: PostIndexEntry): PostCardViewModel {
 		image: post.cover,
 	};
 }
-
-/** @deprecated Use toPostCardViewModel. */
-export const toUIPost = toPostCardViewModel;

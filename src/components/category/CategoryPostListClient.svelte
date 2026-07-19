@@ -3,11 +3,11 @@
 	import type { PostNavigatorCategory } from "@/services/core/types";
 	import PaginationClient from "@components/post/PaginationClient.svelte";
 	import PostListView from "@components/post/PostListView.svelte";
-	import type { UIPost } from "@components/post/types";
+	import type { PostCardViewModel } from "@components/post/types";
 	import CategoryFilter from "./CategoryFilter.svelte";
 	import { useCategoryPagination } from "./category-page-client";
 
-	export let posts: UIPost[];
+	export let posts: PostCardViewModel[];
 	export let categories: PostNavigatorCategory[];
 	export let categorySlug: string;
 	export let resultCount: number;

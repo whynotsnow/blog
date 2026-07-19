@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import type { UIPost } from "@/services/core/types";
+	import type { PostCardViewModel } from "@/services/core/types";
 	import { siteConfig } from "@/config";
 	import I18nKey from "@/i18n/i18nKey";
 	import { i18n } from "@/i18n/translation";
@@ -8,7 +8,7 @@
 	import PostCardMeta from "./PostCardMeta.svelte";
 
 	// ========= props =========
-	export let post: UIPost;
+	export let post: PostCardViewModel;
 	export let className = "";
 	export let style: string | undefined = undefined;
 

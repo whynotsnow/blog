@@ -1,5 +1,4 @@
 ---
-import { getContentStore } from "@/services/core/content-store";
 import { siteConfig } from "../config";
 import { getDiaryList, getDiaryStats } from "../data/diary";
 import I18nKey from "../i18n/i18nKey";
@@ -40,13 +39,11 @@ function formatTime(dateString: string): string {
 	const days = Math.floor(diffInMinutes / 1440);
 	return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
 }
-const store = await getContentStore();
 ---
 
 <MainGridLayout
 	title={i18n(I18nKey.diary)}
 	description="即刻短文"
-	store={store}
 >
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"

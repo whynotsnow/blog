@@ -1,6 +1,6 @@
 import { HOME_SECTION_SIZE } from "@constants/constants";
 import { toPostCardViewModel } from "./core/inject";
-import type { ContentStore, UIPost } from "./core/types";
+import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
 
 export interface HomePostSection {
@@ -8,12 +8,11 @@ export interface HomePostSection {
 	title: string;
 	href: string;
 	linkLabel: string;
-	posts: UIPost[];
+	posts: PostCardViewModel[];
 }
 
 export interface HomePageViewModel {
 	sections: HomePostSection[];
-	store: ContentStore;
 }
 
 export async function getHomePageViewModel(): Promise<HomePageViewModel> {
@@ -34,7 +33,6 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 		.map(toPostCardViewModel);
 
 	return {
-		store,
 		sections: [
 			{
 				id: "recent",

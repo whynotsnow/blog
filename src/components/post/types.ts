@@ -1,7 +1,7 @@
 import type { Writable, Readable } from "svelte/store";
-import type { UIPost } from "@/services/core/types";
+import type { PostCardViewModel } from "@/services/core/types";
 
-export type { UIPost } from "@/services/core/types";
+export type { PostCardViewModel } from "@/services/core/types";
 
 export interface UIPagination<T> {
 	data: T[];
@@ -30,7 +30,7 @@ export type CategoryItem = BaseSlug;
 export type TagItem = BaseSlug;
 
 export interface CategoryPaginationOptions {
-	posts: UIPost[];
+	posts: PostCardViewModel[];
 	pageSize: number;
 }
 
@@ -44,6 +44,6 @@ export interface CategoryPaginationState {
 
 export interface CategoryPaginationResult {
 	state: Writable<CategoryPaginationState>;
-	page: Readable<UIPagination<UIPost>>;
-	filteredPosts: Readable<UIPost[]>;
+	page: Readable<UIPagination<PostCardViewModel>>;
+	filteredPosts: Readable<PostCardViewModel[]>;
 }

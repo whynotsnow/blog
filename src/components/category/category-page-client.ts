@@ -4,8 +4,8 @@ import type {
 	CategoryPaginationOptions,
 	CategoryPaginationResult,
 	CategoryPaginationState,
+	PostCardViewModel,
 	UIPagination,
-	UIPost,
 } from "@components/post/types";
 
 function parseUrl(): CategoryPaginationState {
@@ -58,7 +58,7 @@ export function useCategoryPagination(
 				),
 	);
 	const page = derived([filteredPosts, state], ([$posts, $state]) =>
-		buildPage<UIPost>(
+		buildPage<PostCardViewModel>(
 			$posts,
 			$state.isTagMode ? $state.tagPage : $state.page,
 			options.pageSize,
