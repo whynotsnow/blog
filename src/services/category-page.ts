@@ -1,4 +1,4 @@
-import type { GetStaticPathsItem, Page } from "astro";
+import type { GetStaticPathsItem, ImageMetadata, Page } from "astro";
 import { CATEGORY_PAGE_SIZE } from "@constants/constants";
 import { toPostCardViewModel } from "./core/inject";
 import { getContentStore } from "./core/content-store";
@@ -16,6 +16,65 @@ export type CategoryPageProps = {
 	categorySlug: string;
 	categories: PostNavigatorCategory[];
 };
+
+export type ClientPostCard = {
+	id: string;
+	url: string;
+	title: string;
+	summary: string;
+	published: string;
+	category: {
+		name: string;
+		url: string;
+	};
+	tags: Array<{
+		slug: string;
+		name: string;
+		url: string;
+	}>;
+	words: number;
+	pinned: boolean;
+	image?: ImageMetadata;
+};
+
+export type CategoryTagIndexStaticPathProps = {
+	posts: ClientPostCard[];
+};
+
+export function toClientPostCard(post: PostIndexEntry): ClientPostCard {
+	return {
+		id: post.id,
+		url: post.route.canonicalUrl,
+		title: post.title,
+		summary: post.description.trim() || post.excerpt.trim() || post.title,
+		published: post.published.toISOString(),
+		category: {
+			name: post.category.name,
+			url: post.category.url,
+		},
+		tags: post.tags.map(({ slug, name, url }) => ({ slug, name, url })),
+		words: post.words,
+		pinned: post.pinned,
+		image: post.cover,
+	};
+}
+
+export function buildCategoryTagIndex(
+	posts: PostIndexEntry[],
+): ClientPostCard[] {
+	return sortByScore(posts).map(toClientPostCard);
+}
+
+export async function getCategoryTagIndexStaticPaths(): Promise<
+	GetStaticPathsItem[]
+> {
+	const { categoryMap } = await getContentStore();
+
+	return Array.from(categoryMap.entries()).map(([slug, entry]) => ({
+		params: { slug },
+		props: { posts: buildCategoryTagIndex(entry.posts) },
+	}));
+}
 
 function buildCategoryPage(
 	allPosts: PostCardViewModel[],
