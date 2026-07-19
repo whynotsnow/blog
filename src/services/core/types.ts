@@ -1,6 +1,6 @@
+import type { ImageMetadata } from "astro";
 import type { CollectionEntry } from "astro:content";
 
-//基础类型
 export type RawPost = CollectionEntry<"posts">;
 
 export type PostRouteSource = {
@@ -22,29 +22,50 @@ export type PostRouteIndex = {
 	bySlug: ReadonlyMap<string, PostRoute>;
 };
 
-/* List 页面数据结构 */
-export type ListPost = RawPost & {
-	meta: PostMeta;
+export type PostNavigationLink = {
+	title: string;
+	url: string;
 };
 
-// meta是所有派生的post状态信息
-export interface PostMeta {
+export interface UIMeta {
+	slug: string;
+	name: string;
+	url: string;
+}
+
+/**
+ * Build-time, body-free post index entry.
+ *
+ * Raw Markdown, rendered HTML, passwords, and detail-only frontmatter must not
+ * cross the ContentStore boundary.
+ */
+export interface PostIndexEntry {
+	id: string;
 	postId: number;
-	score: number;
 	route: PostRoute;
 
+	title: string;
+	description: string;
+	published: Date;
+	updated?: Date;
+
+	category: UIMeta;
+	tags: UIMeta[];
+
+	score: number;
 	words: number;
 	minutes: number;
 	excerpt: string;
+
+	pinned: boolean;
+	draft: boolean;
+	encrypted: boolean;
+	cover?: ImageMetadata;
 
 	prev?: PostNavigationLink;
 	next?: PostNavigationLink;
 }
 
-export type PostNavigationLink = {
-	title: string;
-	url: string;
-};
 export interface UIPagination<T> {
 	data: T[];
 	start: number;
@@ -61,6 +82,7 @@ export interface UIPagination<T> {
 		next?: string;
 	};
 }
+
 export interface BaseSlug {
 	slug: string;
 	name: string;
@@ -68,74 +90,40 @@ export interface BaseSlug {
 	url?: string;
 }
 
-export interface UIMeta {
-	slug: string;
-	name: string;
-	url: string;
-}
-
 export type CategoryItem = BaseSlug;
-
 export type TagItem = BaseSlug;
 
-export interface UIPostMeta {
-	published: Date;
-	updated?: Date;
-
+export interface PostCardMetaViewModel {
 	category: UIMeta;
-
 	tags: UIMeta[];
-
 	words: number;
 	excerpt: string;
-
-	/** 用于 PostMetadataView 的控制 */
 	id?: string;
 }
 
-export interface UIPost {
-	// 基础标识
+/** Browser-serializable post card contract. */
+export interface PostCardViewModel {
 	id: string;
-	slug: string; // 分类的slug
+	slug: string;
 	url: string;
-
-	// 文本内容
 	title: string;
 	description?: string;
-
-	// 时间
-	published: Date;
-	updated?: Date;
-
-	// 分类 & 标签
+	published: string;
+	updated?: string;
 	category: UIMeta;
-
 	tags: UIMeta[];
 	pinned?: boolean;
-	// 统计信息（PostMetadataView）
-	meta: UIPostMeta;
-
-	// UI 控制
-	hasCoverImage?: boolean; // 给 PostCard / ImageWrapper 用
+	meta: PostCardMetaViewModel;
+	hasCoverImage?: boolean;
 	image?: ImageMetadata;
-
-	filePath?: string;
-
-	source?: "ssg" | "client";
-
-	_dev?: {
-		_listPost: ListPost;
-		_words: number;
-		_excerpt: string;
-		_minutes: number;
-		_score: number;
-		_views?: number;
-	};
 }
+
+/** @deprecated Use PostCardViewModel. */
+export type UIPost = PostCardViewModel;
 
 export interface CategoryEntry {
 	category: CategoryItem;
-	posts: ListPost[];
+	posts: PostIndexEntry[];
 	tags: Map<string, TagItem>;
 }
 
@@ -148,14 +136,23 @@ export type PostNavigatorCategory = {
 	url?: string;
 	tags: TagItem[];
 };
+
 export interface CategoryTaxonomy {
 	categoryMap: CategoryMap;
 	categories: PostNavigatorCategory[];
 }
 
+export type ContentStats = {
+	postCount: number;
+	totalWords: number;
+	lastActivityAt: Date | null;
+};
+
 export interface ContentStore extends CategoryTaxonomy {
-	posts: ListPost[];
+	posts: PostIndexEntry[];
+	postsById: ReadonlyMap<string, PostIndexEntry>;
 	routes: PostRouteIndex;
+	stats: ContentStats;
 }
 
 export type PostSort = "score" | "date";

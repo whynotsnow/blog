@@ -6,40 +6,36 @@ import {
 	sortByDate,
 	sortByScore,
 } from "@/services/core/sort";
-import type { ListPost, RawPost } from "@/services/core/types";
+import type { PostIndexEntry, RawPost } from "@/services/core/types";
 
-function listPost(score: number, published: string): ListPost {
+function indexPost(score: number, published: string): PostIndexEntry {
 	return {
-		data: { published: new Date(published) },
-		meta: { score },
-	} as unknown as ListPost;
+		published: new Date(published),
+		score,
+	} as PostIndexEntry;
 }
 
 describe("content sorting", () => {
 	it("sorts scores without mutating the source", () => {
-		const posts = [listPost(2, "2025-01-02"), listPost(9, "2025-01-01")];
+		const posts = [indexPost(2, "2025-01-02"), indexPost(9, "2025-01-01")];
 
-		expect(sortByScore(posts).map((post) => post.meta.score)).toEqual([
-			9, 2,
-		]);
-		expect(posts.map((post) => post.meta.score)).toEqual([2, 9]);
+		expect(sortByScore(posts).map((post) => post.score)).toEqual([9, 2]);
+		expect(posts.map((post) => post.score)).toEqual([2, 9]);
 	});
 
 	it("sorts dates in either direction", () => {
-		const posts = [listPost(1, "2025-01-02"), listPost(2, "2025-01-01")];
+		const posts = [indexPost(1, "2025-01-02"), indexPost(2, "2025-01-01")];
 
-		expect(sortByDate(posts).map((post) => post.meta.score)).toEqual([
-			2, 1,
+		expect(sortByDate(posts).map((post) => post.score)).toEqual([2, 1]);
+		expect(sortByDate(posts, "desc").map((post) => post.score)).toEqual([
+			1, 2,
 		]);
-		expect(
-			sortByDate(posts, "desc").map((post) => post.meta.score),
-		).toEqual([1, 2]);
 	});
 
 	it("applies the requested query sorter", () => {
-		const posts = [listPost(2, "2025-01-02"), listPost(9, "2025-01-01")];
+		const posts = [indexPost(2, "2025-01-02"), indexPost(9, "2025-01-01")];
 
-		expect(applyPostQuery(posts, { sort: "score" })[0].meta.score).toBe(9);
+		expect(applyPostQuery(posts, { sort: "score" })[0].score).toBe(9);
 	});
 
 	it("combines recommendation inputs deterministically", () => {

@@ -1,4 +1,4 @@
-import type { ListPost, PostQuery, RawPost } from "./types";
+import type { PostIndexEntry, PostQuery, RawPost } from "./types";
 
 /**
  * 原始推荐算法
@@ -33,18 +33,27 @@ export function calculateRecommendScore(post: RawPost) {
 	return score;
 }
 
-export function sortByScore(posts: ListPost[], order: "asc" | "desc" = "desc") {
-	const sorted = [...posts].sort((a, b) => a.meta.score - b.meta.score);
+export function sortByScore(
+	posts: PostIndexEntry[],
+	order: "asc" | "desc" = "desc",
+) {
+	const sorted = [...posts].sort((a, b) => a.score - b.score);
 
 	return order === "asc" ? sorted : sorted.reverse();
 }
 
-export function sortByDate<T extends RawPost>(
+type DatedPost = RawPost | PostIndexEntry;
+
+function getPublishedDate(post: DatedPost): Date {
+	return "data" in post ? post.data.published : post.published;
+}
+
+export function sortByDate<T extends DatedPost>(
 	posts: T[],
 	order: "asc" | "desc" = "asc",
 ): T[] {
 	const sorted = [...posts].sort(
-		(a, b) => a.data.published.getTime() - b.data.published.getTime(),
+		(a, b) => getPublishedDate(a).getTime() - getPublishedDate(b).getTime(),
 	);
 
 	return order === "asc" ? sorted : sorted.reverse();
@@ -56,9 +65,9 @@ const POST_SORTERS = {
 } as const;
 
 export function applyPostQuery(
-	posts: ListPost[],
+	posts: PostIndexEntry[],
 	query: PostQuery = {},
-): ListPost[] {
+): PostIndexEntry[] {
 	let result = [...posts];
 
 	if (query.sort) {

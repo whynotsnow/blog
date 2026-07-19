@@ -1,5 +1,5 @@
 import { getContentStore } from "./core/content-store";
-import type { ListPost } from "./core/types";
+import type { PostIndexEntry } from "./core/types";
 
 export type CalendarPostData = {
 	id: string;
@@ -14,18 +14,20 @@ export async function getCalendarData(): Promise<CalendarPostData[]> {
 	return buildCalendarPosts(posts);
 }
 
-export function buildCalendarPosts(posts: ListPost[]): CalendarPostData[] {
+export function buildCalendarPosts(
+	posts: PostIndexEntry[],
+): CalendarPostData[] {
 	return posts.map((post) => {
-		const date = new Date(post.data.published);
+		const date = post.published;
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, "0");
 		const day = String(date.getDate()).padStart(2, "0");
 
 		return {
 			id: post.id,
-			title: post.data.title,
+			title: post.title,
 			date: `${year}-${month}-${day}`,
-			url: post.meta.route.canonicalUrl,
+			url: post.route.canonicalUrl,
 		};
 	});
 }

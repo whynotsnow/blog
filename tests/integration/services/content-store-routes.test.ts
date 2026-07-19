@@ -5,54 +5,43 @@ vi.mock("@/services/core/source", () => ({
 }));
 
 import { buildContentStore } from "@/services/core/content-store";
-import type { ListPost } from "@/services/core/types";
+import type { PostIndexEntry } from "@/services/core/types";
 
-function listPost(id: string, alias?: string): ListPost {
+function indexPost(id: string, alias?: string): PostIndexEntry {
 	return {
 		id,
-		collection: "posts",
-		data: {
-			title: id,
-			published: new Date("2026-01-01T00:00:00.000Z"),
-			draft: false,
-			pinned: false,
-			description: "",
-			image: "",
-			author: "",
-			lang: "",
-			tags: [],
-			category: "",
-			comment: true,
-			sourceLink: "",
-			licenseName: "",
-			licenseUrl: "",
-			encrypted: false,
-			password: "",
-			alias,
-			recommendScore: 0,
+		postId: 1,
+		route: {
+			postId: id,
+			defaultSlug: id,
+			canonicalSlug: alias ?? id,
+			canonicalUrl: `/posts/${alias ?? id}/`,
+			usesAlias: Boolean(alias),
 		},
-		meta: {
-			postId: 1,
-			score: 0,
-			route: {
-				postId: id,
-				defaultSlug: id,
-				canonicalSlug: alias ?? id,
-				canonicalUrl: `/posts/${alias ?? id}/`,
-				usesAlias: Boolean(alias),
-			},
-			words: 0,
-			minutes: 0,
-			excerpt: "",
+		title: id,
+		description: "",
+		published: new Date("2026-01-01T00:00:00.000Z"),
+		category: {
+			name: "uncategorized",
+			slug: "uncategorized",
+			url: "/category/uncategorized/",
 		},
-	} as ListPost;
+		tags: [],
+		score: 0,
+		words: 0,
+		minutes: 0,
+		excerpt: "",
+		pinned: false,
+		draft: false,
+		encrypted: false,
+	};
 }
 
 describe("content store route index", () => {
 	it("exposes canonical routes without presentation-side derivation", () => {
 		const store = buildContentStore([
-			listPost("guide"),
-			listPost("legacy-name", "canonical-name"),
+			indexPost("guide"),
+			indexPost("legacy-name", "canonical-name"),
 		]);
 
 		expect(store.routes.byId.get("guide")?.canonicalUrl).toBe(

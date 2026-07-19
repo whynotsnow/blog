@@ -1,4 +1,8 @@
-import type { ListPost } from "../core/types";
+import type {
+	PostIndexEntry,
+	PostNavigationLink,
+	RawPost,
+} from "../core/types";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { MarkdownHeading } from "astro";
 
@@ -47,8 +51,20 @@ export type BlogPostingJsonLd = {
 	thumbnailUrl?: string;
 };
 
+export type PostDetailEntry = RawPost & {
+	meta: {
+		postId: number;
+		route: PostIndexEntry["route"];
+		words: number;
+		minutes: number;
+		excerpt: string;
+		prev?: PostNavigationLink;
+		next?: PostNavigationLink;
+	};
+};
+
 export type PostDetailPageProps = {
-	entry: ListPost;
+	entry: PostDetailEntry;
 	canonicalUrl: string;
 	canonicalOgSlug: string;
 	Content: AstroComponentFactory;

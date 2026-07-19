@@ -3,7 +3,7 @@ import type { APIContext, GetStaticPaths } from "astro";
 import satori from "satori";
 import sharp from "sharp";
 import { getContentStore } from "@/services/core/content-store";
-import type { ListPost } from "@/services/core/types";
+import type { PostIndexEntry } from "@/services/core/types";
 
 import { profileConfig, siteConfig } from "../../config";
 
@@ -24,11 +24,11 @@ export const getStaticPaths: GetStaticPaths = async () => {
 	}
 
 	const { posts } = await getContentStore();
-	const publishedPosts = posts.filter((post) => !post.data.draft);
+	const publishedPosts = posts.filter((post) => !post.draft);
 
 	return publishedPosts.map((post) => {
 		return {
-			params: { slug: post.meta.route.canonicalSlug },
+			params: { slug: post.route.canonicalSlug },
 			props: { post },
 		};
 	});
@@ -94,7 +94,7 @@ async function fetchNotoSansSCFonts() {
 	}
 }
 
-export async function GET({ props }: APIContext<{ post: ListPost }>) {
+export async function GET({ props }: APIContext<{ post: PostIndexEntry }>) {
 	const { post } = props;
 
 	// Try to fetch fonts from Google Fonts (woff2) at runtime.
@@ -119,13 +119,13 @@ export async function GET({ props }: APIContext<{ post: ListPost }>) {
 	const subtleTextColor = `hsl(${hue}, 10%, 75%)`;
 	const backgroundColor = `hsl(${hue}, 15%, 12%)`;
 
-	const pubDate = post.data.published.toLocaleDateString("en-US", {
+	const pubDate = post.published.toLocaleDateString("en-US", {
 		year: "numeric",
 		month: "short",
 		day: "numeric",
 	});
 
-	const description = post.data.description;
+	const description = post.description;
 
 	const template = {
 		type: "div",
@@ -223,7 +223,7 @@ export async function GET({ props }: APIContext<{ post: ListPost }>) {
 													WebkitLineClamp: 3,
 													WebkitBoxOrient: "vertical",
 												},
-												children: post.data.title,
+												children: post.title,
 											},
 										},
 									],

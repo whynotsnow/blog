@@ -1,5 +1,5 @@
 import { HOME_SECTION_SIZE } from "@constants/constants";
-import { toUIPost } from "./core/inject";
+import { toPostCardViewModel } from "./core/inject";
 import type { ContentStore, UIPost } from "./core/types";
 import { getContentStore } from "./core/content-store";
 
@@ -18,18 +18,20 @@ export interface HomePageViewModel {
 
 export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 	const store = await getContentStore();
-	const recommended = store.posts.slice(0, HOME_SECTION_SIZE).map(toUIPost);
+	const recommended = store.posts
+		.slice(0, HOME_SECTION_SIZE)
+		.map(toPostCardViewModel);
 	const recent = [...store.posts]
 		.sort(
 			(a, b) =>
-				(b.data.updated ?? b.data.published).getTime() -
-				(a.data.updated ?? a.data.published).getTime(),
+				(b.updated ?? b.published).getTime() -
+				(a.updated ?? a.published).getTime(),
 		)
 		.slice(0, HOME_SECTION_SIZE)
-		.map(toUIPost);
+		.map(toPostCardViewModel);
 	const technology = store.posts
 		.slice(HOME_SECTION_SIZE, HOME_SECTION_SIZE * 2)
-		.map(toUIPost);
+		.map(toPostCardViewModel);
 
 	return {
 		store,

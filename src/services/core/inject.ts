@@ -1,4 +1,3 @@
-import { render } from "astro:content";
 import { getTagUrl } from "@/utils/client-utils";
 import {
 	generateCategorySlug,
@@ -8,227 +7,145 @@ import {
 } from "@/utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
 import type {
-	RawPost,
-	ListPost,
+	PostCardViewModel,
+	PostIndexEntry,
 	PostNavigationLink,
 	PostRouteIndex,
-	UIPost,
+	RawPost,
+	UIMeta,
 } from "./types";
 import { calculateRecommendScore } from "./sort";
 
-type BaseMeta = {
-	postId: number;
-};
-
 type ContentMeta = {
-	words: number;
-	excerpt: string;
-	minutes: number;
+	words?: number;
+	excerpt?: string;
+	minutes?: number;
 };
-
-type ScoreMeta = {
-	score: number;
-};
-
-// type ListMeta = ContentMeta & ScoreMeta;
 
 type NavigationMeta = {
 	prev?: PostNavigationLink;
 	next?: PostNavigationLink;
 };
 
-export type PostWithSystemMeta = RawPost & {
-	meta: BaseMeta;
-};
+function getContentMeta(post: RawPost): Required<ContentMeta> {
+	const frontmatter = post.rendered?.metadata?.frontmatter as
+		| ContentMeta
+		| undefined;
 
-export type PostWithListMeta = RawPost & {
-	meta: BaseMeta & ContentMeta & ScoreMeta;
-};
-
-export async function renderPost(entry: RawPost) {
-	const result = await render(entry);
 	return {
-		...result,
-		remarkPluginFrontmatter: result.remarkPluginFrontmatter as {
-			words?: number;
-			minutes?: number;
-			excerpt?: string;
-		},
+		words: frontmatter?.words ?? 0,
+		excerpt: frontmatter?.excerpt ?? "",
+		minutes: frontmatter?.minutes ?? 0,
 	};
 }
 
-/**
- * 为每篇文章生成顺序 ID。
- */
-export function injectSystemMeta(posts: RawPost[]): PostWithSystemMeta[] {
-	const idMap = new Map<string, number>();
-
-	posts.forEach((post, index) => {
-		idMap.set(post.id, index + 1);
-	});
-
-	return posts.map((post) => ({
-		...post,
-		meta: {
-			postId: idMap.get(post.id)!,
-		},
-	}));
-}
-
-export async function injectListMeta(
-	posts: PostWithSystemMeta[],
-): Promise<PostWithListMeta[]> {
-	return Promise.all(
-		posts.map(async (post) => {
-			const { remarkPluginFrontmatter } = await renderPost(post);
-
-			const score = calculateRecommendScore(post);
-
-			return {
-				...post,
-				meta: {
-					...post.meta,
-					words: remarkPluginFrontmatter.words ?? 0,
-					excerpt: remarkPluginFrontmatter.excerpt ?? "",
-					minutes: remarkPluginFrontmatter.minutes ?? 0,
-					score,
-				},
-			};
-		}),
-	);
-}
-
-export function injectNavigationMeta(
-	posts: PostWithListMeta[],
-	routes: PostRouteIndex,
-): ListPost[] {
-	const map = new Map<string, NavigationMeta>();
-
-	for (let i = 1; i < posts.length; i++) {
-		const nextPost = posts[i - 1];
-		const nextRoute = routes.byId.get(nextPost.id);
-		if (!nextRoute)
-			throw new Error(`Missing post route for ${nextPost.id}`);
-		map.set(posts[i].id, {
-			next: {
-				title: nextPost.data.title,
-				url: nextRoute.canonicalUrl,
-			},
-		});
-	}
-
-	for (let i = 0; i < posts.length - 1; i++) {
-		const prevPost = posts[i + 1];
-		const prevRoute = routes.byId.get(prevPost.id);
-		if (!prevRoute)
-			throw new Error(`Missing post route for ${prevPost.id}`);
-		const prev = map.get(posts[i].id) ?? {};
-
-		map.set(posts[i].id, {
-			...prev,
-			prev: {
-				title: prevPost.data.title,
-				url: prevRoute.canonicalUrl,
-			},
-		});
-	}
-
-	return posts.map((post) => ({
-		...post,
-		meta: {
-			...post.meta,
-			route: routes.byId.get(post.id)!,
-			...map.get(post.id),
-		},
-	}));
-}
-
-// 构建分类信息的函数
-export function buildCategoryItems(category: string): {
-	slug: string;
-	name: string;
-	url: string;
-} {
-	const slug = generateCategorySlug(category);
+export function buildCategoryItems(category: string): UIMeta {
+	const name = category.trim() || UNCATEGORIZED;
+	const slug = generateCategorySlug(name);
 	return {
-		name: category.trim() || UNCATEGORIZED,
+		name,
 		slug,
 		url: getCategoryUrl(slug),
 	};
 }
 
-// 构建标签列表的函数
-export function buildTagItems(tags: string[]): {
-	slug: string;
-	name: string;
-	url: string;
-}[] {
+export function buildTagItems(tags: string[]): UIMeta[] {
 	return (tags ?? [])
-		.map((t: string) => {
-			const slug = generateTagSlug(t);
+		.map((tag) => {
+			const name = tag.trim();
+			const slug = generateTagSlug(name);
 			return {
-				name: t.trim(),
+				name,
 				slug,
 				url: getTagUrl(slug),
 			};
 		})
+		.filter((tag) => tag.name.length > 0)
 		.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/* =========================
-   Raw → UIPost
-========================= */
+function buildNavigation(
+	posts: readonly PostIndexEntry[],
+): ReadonlyMap<string, NavigationMeta> {
+	const navigation = new Map<string, NavigationMeta>();
 
-export function toUIPost(post: ListPost): UIPost {
-	const { id, data, filePath, meta } = post;
-	const { words, excerpt, score, minutes } = meta;
-
-	const imageUrl = resolveImageUrl(post);
-
-	const category = buildCategoryItems(data.category);
-	const tags = buildTagItems(data.tags);
-	const ui: UIPost = {
-		id,
-		slug: category.slug,
-		url: meta.route.canonicalUrl,
-
-		title: data.title,
-		description: data.description,
-
-		published: data.published,
-		updated: data.updated,
-		pinned: data.pinned,
-
-		category,
-		tags,
-
-		meta: {
-			id,
-			published: data.published,
-			updated: data.updated,
-			category,
-			tags,
-			words,
-			excerpt,
-		},
-
-		hasCoverImage: Boolean(data.image),
-		image: imageUrl,
-
-		filePath,
-		source: "client",
-	};
-
-	// 开发时可查看所有字段
-	if (import.meta.env.DEV) {
-		ui._dev = {
-			_listPost: post,
-			_words: words,
-			_score: score,
-			_excerpt: excerpt,
-			_minutes: minutes,
-		};
+	for (let index = 1; index < posts.length; index++) {
+		const nextPost = posts[index - 1];
+		navigation.set(posts[index].id, {
+			next: { title: nextPost.title, url: nextPost.route.canonicalUrl },
+		});
 	}
 
-	return ui;
+	for (let index = 0; index < posts.length - 1; index++) {
+		const prevPost = posts[index + 1];
+		const current = navigation.get(posts[index].id) ?? {};
+		navigation.set(posts[index].id, {
+			...current,
+			prev: { title: prevPost.title, url: prevPost.route.canonicalUrl },
+		});
+	}
+
+	return navigation;
 }
+
+export function buildPostIndexEntries(
+	posts: readonly RawPost[],
+	routes: PostRouteIndex,
+): PostIndexEntry[] {
+	const entries = posts.map((post, index): PostIndexEntry => {
+		const route = routes.byId.get(post.id);
+		if (!route) throw new Error(`Missing post route for ${post.id}`);
+
+		const contentMeta = getContentMeta(post);
+		return {
+			id: post.id,
+			postId: index + 1,
+			route,
+			title: post.data.title,
+			description: post.data.description,
+			published: post.data.published,
+			updated: post.data.updated,
+			category: buildCategoryItems(post.data.category),
+			tags: buildTagItems(post.data.tags),
+			score: calculateRecommendScore(post),
+			...contentMeta,
+			pinned: post.data.pinned,
+			draft: post.data.draft,
+			encrypted: post.data.encrypted,
+			cover: resolveImageUrl(post),
+		};
+	});
+
+	const navigation = buildNavigation(entries);
+	return entries.map((entry) => ({
+		...entry,
+		...navigation.get(entry.id),
+	}));
+}
+
+export function toPostCardViewModel(post: PostIndexEntry): PostCardViewModel {
+	return {
+		id: post.id,
+		slug: post.category.slug,
+		url: post.route.canonicalUrl,
+		title: post.title,
+		description: post.description,
+		published: post.published.toISOString(),
+		updated: post.updated?.toISOString(),
+		category: post.category,
+		tags: post.tags,
+		pinned: post.pinned,
+		meta: {
+			id: post.id,
+			category: post.category,
+			tags: post.tags,
+			words: post.words,
+			excerpt: post.excerpt,
+		},
+		hasCoverImage: Boolean(post.cover),
+		image: post.cover,
+	};
+}
+
+/** @deprecated Use toPostCardViewModel. */
+export const toUIPost = toPostCardViewModel;

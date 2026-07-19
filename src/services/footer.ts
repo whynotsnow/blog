@@ -35,24 +35,13 @@ function runningDaysSince(date: Date, now: Date): number {
 	return Math.max(0, Math.ceil((now.getTime() - date.getTime()) / DAY_IN_MS));
 }
 
-function getLastActivityDate(store: ContentStore): Date | null {
-	return store.posts.reduce<Date | null>((latest, post) => {
-		const activityDate = post.data.updated ?? post.data.published;
-		return !latest || activityDate > latest ? activityDate : latest;
-	}, null);
-}
-
 export function buildFooterViewModel(
 	store: ContentStore,
 	now = new Date(),
 ): FooterViewModel {
 	const siteStartDate = siteConfig.siteStartDate || "2025-01-01";
 	const startDate = new Date(siteStartDate);
-	const lastActivityDate = getLastActivityDate(store);
-	const totalWords = store.posts.reduce(
-		(total, post) => total + post.meta.words,
-		0,
-	);
+	const lastActivityDate = store.stats.lastActivityAt;
 
 	return {
 		statsLabel: i18n(I18nKey.siteStats),
@@ -62,12 +51,12 @@ export function buildFooterViewModel(
 			{
 				id: "posts",
 				label: i18n(I18nKey.siteStatsPostCount),
-				value: store.posts.length,
+				value: store.stats.postCount,
 			},
 			{
 				id: "words",
 				label: i18n(I18nKey.siteStatsTotalWords),
-				value: totalWords,
+				value: store.stats.totalWords,
 				formatted: true,
 			},
 			{

@@ -29,7 +29,7 @@
 			icon="material-symbols:calendar-today-outline-rounded"
 			class="home-post-card__meta-icon"
 		/>
-		<time datetime={post.published.toISOString()}>
+		<time datetime={post.published}>
 			{formatDateToYYYYMMDD(post.published)}
 		</time>
 	</div>

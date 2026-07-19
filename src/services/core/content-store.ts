@@ -1,19 +1,14 @@
 import type {
 	CategoryEntry,
 	ContentStore,
-	ListPost,
+	PostIndexEntry,
 	PostNavigatorCategory,
 	TagItem,
 } from "./types";
 import { getAllPosts } from "./source";
 import { getTagUrl } from "@utils/client-utils";
-import {
-	generateCategorySlug,
-	generateTagSlug,
-	getCategoryUrl,
-} from "@utils/url-utils";
+import { generateTagSlug, getCategoryUrl } from "@utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
-import { buildPostRouteIndex } from "./post-routes";
 
 /* 全局缓存，避免重复，加快构建时速度 */
 let cachedStore: ContentStore | null = null;
@@ -49,7 +44,7 @@ function updateTagCount(tags: Map<string, TagItem>, tagName: string): void {
  * @param posts - 文章列表数据
  * @returns 包含分类 Map 和分类导航数据的对象
  */
-function buildCategoryTaxonomy(posts: ListPost[]): {
+function buildCategoryTaxonomy(posts: PostIndexEntry[]): {
 	categoryMap: Map<string, CategoryEntry>;
 	categories: PostNavigatorCategory[];
 } {
@@ -59,8 +54,8 @@ function buildCategoryTaxonomy(posts: ListPost[]): {
 	// 第一遍遍历：构建分类和标签索引
 	for (const post of posts) {
 		// 获取分类信息，默认为 "uncategorized"
-		const rawCategory = post.data.category?.trim() || UNCATEGORIZED;
-		const categorySlug = generateCategorySlug(rawCategory);
+		const rawCategory = post.category.name || UNCATEGORIZED;
+		const categorySlug = post.category.slug;
 
 		// 获取或创建分类条目
 		let categoryEntry = categoryMap.get(categorySlug);
@@ -84,11 +79,10 @@ function buildCategoryTaxonomy(posts: ListPost[]): {
 		categoryEntry.category.count++;
 
 		// 处理文章的所有标签
-		const postTags = post.data.tags ?? [];
-		for (const tagName of postTags) {
-			if (tagName) {
+		for (const tag of post.tags) {
+			if (tag.name) {
 				// 忽略空标签
-				updateTagCount(categoryEntry.tags, tagName);
+				updateTagCount(categoryEntry.tags, tag.name);
 			}
 		}
 	}
@@ -132,20 +126,30 @@ function buildCategoryTaxonomy(posts: ListPost[]): {
  * console.log(store.posts.length); // 文章总数
  * console.log(store.categories); // 分类导航数据
  */
-export function buildContentStore(posts: ListPost[]): ContentStore {
+export function buildContentStore(posts: PostIndexEntry[]): ContentStore {
 	const taxonomy = buildCategoryTaxonomy(posts);
-	const routes = buildPostRouteIndex(
-		posts.map((post) => ({
-			id: post.id,
-			filePath: post.filePath,
-			alias: post.data.alias,
-		})),
-	);
+	const postsById = new Map(posts.map((post) => [post.id, post]));
+	const routes = {
+		byId: new Map(posts.map((post) => [post.id, post.route])),
+		bySlug: new Map(
+			posts.map((post) => [post.route.canonicalSlug, post.route]),
+		),
+	};
+	const lastActivityAt = posts.reduce<Date | null>((latest, post) => {
+		const activityAt = post.updated ?? post.published;
+		return !latest || activityAt > latest ? activityAt : latest;
+	}, null);
 
 	return {
-		posts, // 原始文章数据
+		posts,
+		postsById,
 		routes,
-		...taxonomy, // 分类索引数据 (categoryMap, categories)
+		stats: {
+			postCount: posts.length,
+			totalWords: posts.reduce((total, post) => total + post.words, 0),
+			lastActivityAt,
+		},
+		...taxonomy,
 	};
 }
 

@@ -91,23 +91,23 @@ const recentPosts = store.posts.slice(0, 6);
 						<article class="bg-[var(--card-bg)] rounded-xl p-4 border border-[var(--line-divider)] hover:border-[var(--primary)] transition-all duration-300">
 							<h3 class="text-lg font-semibold text-90 mb-2 hover:text-[var(--primary)] transition-colors">
 								<a
-									href={post.meta.route.canonicalUrl}
+									href={post.route.canonicalUrl}
 									class="hover:underline"
 								>
-									{post.data.title}
+									{post.title}
 								</a>
 							</h3>
-							{post.data.description && (
+							{post.description && (
 								<p class="text-75 mb-3 line-clamp-2">
-									{post.data.description}
+									{post.description}
 								</p>
 							)}
 							<div class="flex items-center gap-4 text-sm text-60">
 								<time
-									datetime={post.data.published.toISOString()}
+									datetime={post.published.toISOString()}
 									class="text-75"
 								>
-									{formatDateToYYYYMMDD(post.data.published)}
+									{formatDateToYYYYMMDD(post.published)}
 								</time>
 							</div>
 						</article>

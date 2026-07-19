@@ -5,9 +5,14 @@ import utc from "dayjs/plugin/utc";
 import { resolveSharePosterImages } from "@/utils/url-utils";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 import { siteConfig, profileConfig } from "@/config";
-import type { ListPost, PostRoute } from "../core/types";
-import type { BlogPostingJsonLd, PostDetailPageProps } from "./types";
+import type { PostIndexEntry, PostRoute, RawPost } from "../core/types";
+import type {
+	BlogPostingJsonLd,
+	PostDetailEntry,
+	PostDetailPageProps,
+} from "./types";
 import { getContentStore } from "../core/content-store";
+import { getAllPostsRaw } from "../core/source";
 import { buildCanonicalPostPaths } from "./static-paths";
 
 /* =========================
@@ -15,9 +20,22 @@ import { buildCanonicalPostPaths } from "./static-paths";
 ========================= */
 
 async function buildPostDetailPageData(
-	entry: ListPost,
+	index: PostIndexEntry,
+	raw: RawPost,
 	route: PostRoute,
 ): Promise<PostDetailPageProps> {
+	const entry: PostDetailEntry = {
+		...raw,
+		meta: {
+			postId: index.postId,
+			route: index.route,
+			words: index.words,
+			minutes: index.minutes,
+			excerpt: index.excerpt,
+			prev: index.prev,
+			next: index.next,
+		},
+	};
 	const { Content, headings } = await render(entry);
 	const { posterCoverUrl, posterAvatarUrl } =
 		await resolveSharePosterImages(entry);
@@ -74,13 +92,24 @@ async function buildPostDetailPageData(
 ========================= */
 
 export const buildPostDetailStaticPaths: GetStaticPaths = async () => {
-	const { posts: listPosts, routes } = await getContentStore();
+	const [{ posts, routes }, rawPosts] = await Promise.all([
+		getContentStore(),
+		getAllPostsRaw(),
+	]);
+	const rawById = new Map(rawPosts.map((post) => [post.id, post]));
 
 	return Promise.all(
-		buildCanonicalPostPaths(listPosts, routes).map(
-			async ({ entry, route }) => ({
+		buildCanonicalPostPaths(posts, routes).map(
+			async ({ entry: index, route }) => ({
 				params: { slug: route.canonicalSlug },
-				props: await buildPostDetailPageData(entry, route),
+				props: await buildPostDetailPageData(
+					index,
+					rawById.get(index.id) ??
+						(() => {
+							throw new Error(`Missing raw post for ${index.id}`);
+						})(),
+					route,
+				),
 			}),
 		),
 	);

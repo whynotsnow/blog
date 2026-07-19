@@ -3,12 +3,12 @@ import PostMetadata from "@components/PostMeta.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { buildCategoryItems, buildTagItems } from "@/services/core/inject";
-import type { ListPost } from "@/services/core/types";
+import type { PostDetailEntry } from "@/services/post-detail/types";
 import { siteConfig } from "@/config";
 import { Icon } from "astro-icon/components";
 
 interface Props {
-	entry: ListPost;
+	entry: PostDetailEntry;
 }
 
 const { entry } = Astro.props;

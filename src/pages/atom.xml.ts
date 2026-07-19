@@ -21,27 +21,27 @@ export async function GET(context: APIContext) {
   <language>${siteConfig.lang}</language>`;
 
 	for (const post of posts) {
-		const postUrl = new URL(post.meta.route.canonicalUrl, context.site)
+		const postUrl = new URL(post.index.route.canonicalUrl, context.site)
 			.href;
 		const content = await renderFeedContent(post, context.site);
 
 		atomFeed += `
   <entry>
-    <title>${post.data.title}</title>
+    <title>${post.index.title}</title>
     <link href="${postUrl}" rel="alternate" type="text/html"/>
     <id>${postUrl}</id>
-    <published>${post.data.published.toISOString()}</published>
-    <updated>${post.data.updated?.toISOString() || post.data.published.toISOString()}</updated>
-    <summary>${post.data.description || ""}</summary>
+    <published>${post.index.published.toISOString()}</published>
+    <updated>${post.index.updated?.toISOString() || post.index.published.toISOString()}</updated>
+    <summary>${post.index.description || ""}</summary>
     <content type="html"><![CDATA[${content}]]></content>
     <author>
       <name>${profileConfig.name}</name>
     </author>`;
 
 		// 添加分类标签
-		if (post.data.category) {
+		if (post.index.category.name) {
 			atomFeed += `
-    <category term="${post.data.category}"></category>`;
+    <category term="${post.index.category.name}"></category>`;
 		}
 
 		atomFeed += `

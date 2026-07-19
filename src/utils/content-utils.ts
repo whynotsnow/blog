@@ -1,16 +1,15 @@
-import type { CollectionEntry } from "astro:content";
 import { getContentStore } from "@/services/core/content-store";
-import type { ListPost } from "@/services/core/types";
+import type { PostIndexEntry } from "@/services/core/types";
 
-export async function getSortedPosts(): Promise<ListPost[]> {
+export async function getSortedPosts(): Promise<PostIndexEntry[]> {
 	const { posts } = await getContentStore();
 	return posts;
 }
 
 export type PostForList = {
 	id: string;
-	data: CollectionEntry<"posts">["data"];
-	url?: string;
+	title: string;
+	url: string;
 };
 
 export async function getSortedPostsList(): Promise<PostForList[]> {
@@ -18,8 +17,8 @@ export async function getSortedPostsList(): Promise<PostForList[]> {
 
 	return posts.map((post) => ({
 		id: post.id,
-		data: post.data,
-		url: post.meta.route.canonicalUrl,
+		title: post.title,
+		url: post.route.canonicalUrl,
 	}));
 }
 
@@ -33,8 +32,8 @@ export async function getTagList(): Promise<Tag[]> {
 	const countMap: Record<string, number> = {};
 
 	posts.forEach((post) => {
-		post.data.tags.forEach((tag) => {
-			countMap[tag] = (countMap[tag] ?? 0) + 1;
+		post.tags.forEach((tag) => {
+			countMap[tag.name] = (countMap[tag.name] ?? 0) + 1;
 		});
 	});
 

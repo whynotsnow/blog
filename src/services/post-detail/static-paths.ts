@@ -1,12 +1,12 @@
-import type { ListPost, PostRoute, PostRouteIndex } from "../core/types";
+import type { PostIndexEntry, PostRoute, PostRouteIndex } from "../core/types";
 
 export type CanonicalPostPath = {
-	entry: ListPost;
+	entry: PostIndexEntry;
 	route: PostRoute;
 };
 
 export function buildCanonicalPostPaths(
-	posts: readonly ListPost[],
+	posts: readonly PostIndexEntry[],
 	routes: PostRouteIndex,
 ): CanonicalPostPath[] {
 	return posts.map((entry) => {

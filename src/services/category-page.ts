@@ -1,29 +1,29 @@
 import type { GetStaticPathsItem, Page } from "astro";
 import { CATEGORY_PAGE_SIZE } from "@constants/constants";
-import { toUIPost } from "./core/inject";
+import { toPostCardViewModel } from "./core/inject";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
 import type {
 	ContentStore,
-	ListPost,
+	PostCardViewModel,
+	PostIndexEntry,
 	PostNavigatorCategory,
-	UIPost,
 } from "./core/types";
 
 export type CategoryPageProps = {
-	posts: UIPost[];
-	allPosts: UIPost[];
-	page: Page<ListPost>;
+	posts: PostCardViewModel[];
+	allPosts: PostCardViewModel[];
+	page: Page<PostCardViewModel>;
 	categorySlug: string;
 	categories: PostNavigatorCategory[];
 	store: ContentStore;
 };
 
 function buildCategoryPage(
-	allPosts: ListPost[],
+	allPosts: PostCardViewModel[],
 	slug: string,
 	currentPage: number,
-): Page<ListPost> {
+): Page<PostCardViewModel> {
 	const lastPageNumber = Math.ceil(allPosts.length / CATEGORY_PAGE_SIZE);
 	const start = (currentPage - 1) * CATEGORY_PAGE_SIZE;
 	const end = start + CATEGORY_PAGE_SIZE;
@@ -61,18 +61,19 @@ function buildCategoryPage(
 }
 
 function buildCategoryPageProps(params: {
-	sortedPosts: ListPost[];
+	sortedPosts: PostIndexEntry[];
 	slug: string;
 	currentPage: number;
 	categories: PostNavigatorCategory[];
 	store: ContentStore;
 }): CategoryPageProps {
 	const { sortedPosts, slug, currentPage, categories, store } = params;
-	const page = buildCategoryPage(sortedPosts, slug, currentPage);
+	const allPosts = sortedPosts.map(toPostCardViewModel);
+	const page = buildCategoryPage(allPosts, slug, currentPage);
 
 	return {
-		posts: page.data.map(toUIPost),
-		allPosts: sortedPosts.map(toUIPost),
+		posts: page.data,
+		allPosts,
 		page,
 		categorySlug: slug,
 		categories,

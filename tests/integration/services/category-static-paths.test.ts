@@ -6,7 +6,7 @@ const { getContentStore } = vi.hoisted(() => ({
 
 vi.mock("@/services/core/content-store", () => ({ getContentStore }));
 vi.mock("@/services/core/inject", () => ({
-	toUIPost: (post: { id: string }) => ({ id: post.id }),
+	toPostCardViewModel: (post: { id: string }) => ({ id: post.id }),
 }));
 vi.mock("@/services/core/sort", () => ({
 	sortByScore: <T>(posts: T[]) => posts,

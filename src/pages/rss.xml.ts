@@ -15,10 +15,10 @@ export async function GET(context: APIContext) {
 
 	for (const post of posts) {
 		feed.push({
-			title: post.data.title,
-			description: post.data.description,
-			pubDate: post.data.published,
-			link: post.meta.route.canonicalUrl,
+			title: post.index.title,
+			description: post.index.description,
+			pubDate: post.index.published,
+			link: post.index.route.canonicalUrl,
 			content: await renderFeedContent(post, context.site),
 		});
 	}

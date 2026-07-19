@@ -1,11 +1,10 @@
 import type {
 	BaseSlug,
 	ContentStore,
-	ListPost,
+	PostIndexEntry,
 	PostNavigatorCategory,
 } from "./core/types";
 
-import { generateCategorySlug, generateTagSlug } from "@utils/url-utils";
 import { buildCalendarPosts } from "./calendar";
 import {
 	buildArchiveCalendarData,
@@ -43,28 +42,27 @@ export type ArchivePageData = {
 	tags: BaseSlug[];
 };
 
-function toArchivePost(post: ListPost): ArchivePost {
-	const tags: SlugItem[] = (post.data.tags ?? []).map((t: string) => ({
-		name: t,
-		slug: generateTagSlug(t),
+function toArchivePost(post: PostIndexEntry): ArchivePost {
+	const tags: SlugItem[] = post.tags.map((tag) => ({
+		name: tag.name,
+		slug: tag.slug,
 	}));
 
-	const category = post.data.category
+	const category = post.category.name
 		? {
-				name: post.data.category,
-				slug: generateCategorySlug(post.data.category),
+				name: post.category.name,
+				slug: post.category.slug,
 			}
 		: undefined;
 
 	return {
 		id: post.id,
-		url: post.meta.route.canonicalUrl,
+		url: post.route.canonicalUrl,
 		data: {
-			title: post.data.title,
+			title: post.title,
 			tags,
 			category,
-			published: post.data.published,
-			alias: post.data.alias,
+			published: post.published,
 		},
 	};
 }

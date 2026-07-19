@@ -1,14 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { buildPostRouteIndex } from "@/services/core/post-routes";
-import type { ListPost } from "@/services/core/types";
+import type { PostIndexEntry } from "@/services/core/types";
 import { buildCanonicalPostPaths } from "@/services/post-detail/static-paths";
 
-function post(id: string, alias?: string): ListPost {
+function post(id: string, alias?: string): PostIndexEntry {
+	const canonicalSlug = alias ?? id;
 	return {
 		id,
-		filePath: `src/content/posts/${id}.md`,
-		data: { alias },
-	} as ListPost;
+		route: {
+			postId: id,
+			defaultSlug: id,
+			canonicalSlug,
+			canonicalUrl: `/posts/${canonicalSlug}/`,
+			usesAlias: Boolean(alias),
+		},
+	} as PostIndexEntry;
 }
 
 describe("post detail canonical static paths", () => {
@@ -17,8 +23,10 @@ describe("post detail canonical static paths", () => {
 		const routes = buildPostRouteIndex(
 			posts.map((entry) => ({
 				id: entry.id,
-				filePath: entry.filePath,
-				alias: entry.data.alias,
+				filePath: `src/content/posts/${entry.id}.md`,
+				alias: entry.route.usesAlias
+					? entry.route.canonicalSlug
+					: undefined,
 			})),
 		);
 
