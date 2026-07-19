@@ -1,5 +1,8 @@
 export { CLARITY_PROJECT_ID, GTM_ID, umamiConfig } from "./analytics";
-export { CATEGORY_SLUG_MAP } from "./category-slugs";
+export {
+	CATEGORY_DEFINITIONS,
+	type CategoryDefinition,
+} from "./category-slugs";
 export { commentConfig } from "./comments";
 export { sakuraConfig } from "./effects";
 export { expressiveCodeConfig } from "./expressive-code";

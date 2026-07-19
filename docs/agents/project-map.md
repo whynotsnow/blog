@@ -119,6 +119,7 @@ Content preparation and content transformation are separate boundaries. `scripts
 4. `validatePostRoutes()` validates all published post routes before content rendering, then `buildPostRouteIndex()` creates the immutable ID, canonical-slug, and URL indexes.
 5. `buildPostIndexEntries()` reads list statistics from Astro's prepared `entry.rendered.metadata`, resolves taxonomy, score, cover, and navigation data, and produces body-free `PostIndexEntry` values.
 6. `buildContentStore()` retains only the lightweight post index, ID and route indexes, taxonomy, and aggregate statistics. It never stores raw Markdown bodies, rendered HTML, passwords, or detail-only frontmatter.
+   Known category names and aliases are canonicalized before this boundary. The canonical technology taxonomy is `技术` / `tech`; `Technology` is accepted only as an input alias and never owns a separate route.
 7. `getContentStore()` caches the in-flight Promise so concurrent first callers share one initialization. Rejected initialization and Vite HMR disposal clear the cache.
 8. Post detail static paths contain only canonical slugs and post IDs. The detail service fetches the raw entry on demand, builds a UI-ready detail view model, and shares a bounded, failure-evicting `Map<id, Promise<RenderedPost>>` render registry.
 9. Category Tag endpoints map the index to compact `ClientPostCard` values. Default category pages never serialize or download a complete category.

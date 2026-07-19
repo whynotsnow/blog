@@ -65,6 +65,7 @@ describe("post index", () => {
 		expect(index).toMatchObject({
 			id: "indexed",
 			title: "Indexed post",
+			category: { name: "技术", slug: "tech" },
 			words: 42,
 			minutes: 2,
 			excerpt: "Index excerpt",

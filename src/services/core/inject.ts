@@ -1,9 +1,5 @@
 import { getTagUrl } from "@/utils/url";
-import {
-	generateCategorySlug,
-	generateTagSlug,
-	getCategoryUrl,
-} from "./taxonomy";
+import { generateTagSlug, getCategoryUrl, resolveCategory } from "./taxonomy";
 import { resolveImageUrl } from "./content-assets";
 import { UNCATEGORIZED } from "@constants/constants";
 import type {
@@ -40,12 +36,10 @@ function getContentMeta(post: RawPost): Required<ContentMeta> {
 }
 
 export function buildCategoryItems(category: string): UIMeta {
-	const name = category.trim() || UNCATEGORIZED;
-	const slug = generateCategorySlug(name);
+	const canonical = resolveCategory(category.trim() || UNCATEGORIZED);
 	return {
-		name,
-		slug,
-		url: getCategoryUrl(slug),
+		...canonical,
+		url: getCategoryUrl(canonical.slug),
 	};
 }
 

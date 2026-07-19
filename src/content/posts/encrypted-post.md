@@ -7,7 +7,7 @@ pinned: true
 password: "123456"
 alias: "encrypted-example"
 tags: ["Test", "Encryption"]
-category: "Technology"
+category: "技术"
 ---
 
 This blog template is built with [Astro](https://astro.build/). For the things that are not mentioned in this guide, you may find the answers in the [Astro Docs](https://docs.astro.build/).

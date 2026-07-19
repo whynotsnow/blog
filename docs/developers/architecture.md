@@ -149,6 +149,7 @@ RawPost
 ## 扩展原则
 
 - 新增文章字段：先改 `src/content.config.ts`，再改 `src/services/core` 的派生逻辑。
+- 分类定义由 `src/config/category-slugs.ts` 维护规范名称、slug 与兼容 alias，`src/services/core/taxonomy.ts` 在内容进入 Post Index 前完成统一；同义分类不得在 Content Store 中形成不同 route。
 - 新增非文章数据：优先放到 `src/data`。
 - 新增页面模块：放入所属领域目录，通过路由或 layout 显式组合；只有被多个无关功能复用的视觉外壳才提升为 `src/components/ui` 组件。不要恢复通用 placement registry。
 - 网站级通知由 `src/config/site-notice.ts` 配置，`src/services/site-notice.ts` 生成 View Model，`src/components/site-notice` 拥有右上角预览呈现，`src/features/activity-center/notice-state.ts` 分别管理已读与关闭状态。通知通过独立的 `#site-notice-container` 在主内容 Shell 中更新，不得放进带 `transform` 的 `#swup-container`，否则固定定位会在过渡期间改用内容容器作为 containing block。Desktop/Tablet 通知使用贴近 viewport 右上角的单行状态卡，层级低于 Navbar 与交互浮层；Mobile 则限制在页面安全边距内并允许两行正文。通知 viewport 高度按断点固定，轮播不得在客户端按单条内容重新测量高度，因此通知切换不会改变文档 `scrollHeight` 或滚动条比例。`info` / `success` 作为短时 Preview 自动退场但继续保留在 Activity Center，`warning` / `danger` 保持可见直至用户处理。

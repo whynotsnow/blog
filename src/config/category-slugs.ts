@@ -1,11 +1,16 @@
-export const CATEGORY_SLUG_MAP: Record<string, string> = {
-	技术: "tech",
-	前端: "frontend",
-	随笔: "notes",
-	生活: "life",
-	学习: "learn",
-	工作: "work",
-	教程: "tutorials",
-	Guides: "guides",
-	Technology: "technology",
-} as const;
+export type CategoryDefinition = {
+	name: string;
+	slug: string;
+	aliases?: readonly string[];
+};
+
+export const CATEGORY_DEFINITIONS: readonly CategoryDefinition[] = [
+	{ name: "技术", slug: "tech", aliases: ["Technology"] },
+	{ name: "前端", slug: "frontend" },
+	{ name: "随笔", slug: "notes" },
+	{ name: "生活", slug: "life" },
+	{ name: "学习", slug: "learn" },
+	{ name: "工作", slug: "work" },
+	{ name: "教程", slug: "tutorials" },
+	{ name: "Guides", slug: "guides" },
+] as const;

@@ -89,7 +89,8 @@ pnpm new-post -- my-post-title
 规则：
 
 - 每篇文章只设置一个分类。
-- 分类名称应保持稳定，重命名会改变分类 URL。
+- 分类规范定义位于 `src/config/category-slugs.ts`。已知分类会统一为规范 `name` 与 `slug`；例如“技术”和兼容输入 `Technology` 都归入“技术/tech”。
+- 新文章应直接使用规范分类名。alias 只用于兼容输入，不会生成第二个分类 URL。
 - 标签可以多个，但应避免同义词和大小写差异造成导航碎片。
 - 空分类会回落到 `uncategorized`。
 
