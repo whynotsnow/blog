@@ -10,8 +10,8 @@ import { getTagUrl } from "@utils/client-utils";
 import { generateTagSlug, getCategoryUrl } from "@utils/url-utils";
 import { UNCATEGORIZED } from "@constants/constants";
 
-/* 全局缓存，避免重复，加快构建时速度 */
-let cachedStore: ContentStore | null = null;
+/* Cache the in-flight build as well as the completed store. */
+let storePromise: Promise<ContentStore> | undefined;
 
 /**
  * 更新分类的标签计数
@@ -167,26 +167,26 @@ export function buildContentStore(posts: PostIndexEntry[]): ContentStore {
  * 在开发环境（DEV）下，每次重新构建都会重新加载数据，
  * 确保你总是能看到最新的内容变更。
  */
-export async function getContentStore(): Promise<ContentStore> {
-	// 命中缓存：直接返回已构建的存储对象
-	if (cachedStore) {
-		if (import.meta.env.DEV) console.log("[ContentStore] 命中缓存");
-		return cachedStore;
-	}
+export function getContentStore(): Promise<ContentStore> {
+	if (storePromise) return storePromise;
 
-	// 缓存未命中：加载原始数据并构建存储对象
-	const posts = await getAllPosts();
-	cachedStore = buildContentStore(posts);
-
-	// 开发环境日志：帮助开发者了解内容索引状态
-	if (import.meta.env.DEV) {
-		console.log("[ContentStore] 构建完成:", {
-			posts: posts.length, // 文章总数
-			categories: cachedStore.categories.length, // 分类总数
+	storePromise = getAllPosts()
+		.then((posts) => {
+			const store = buildContentStore(posts);
+			if (import.meta.env.DEV) {
+				console.log("[ContentStore] 构建完成:", {
+					posts: posts.length,
+					categories: store.categories.length,
+				});
+			}
+			return store;
+		})
+		.catch((error: unknown) => {
+			storePromise = undefined;
+			throw error;
 		});
-	}
 
-	return cachedStore;
+	return storePromise;
 }
 
 /**
@@ -196,7 +196,9 @@ export async function getContentStore(): Promise<ContentStore> {
  * @internal
  */
 export function _clearContentStoreCache(): void {
-	if (import.meta.env.DEV) {
-		cachedStore = null;
-	}
+	storePromise = undefined;
+}
+
+if (import.meta.hot) {
+	import.meta.hot.dispose(_clearContentStoreCache);
 }
