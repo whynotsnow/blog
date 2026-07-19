@@ -296,3 +296,12 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Made alias-backed pages replace filename-backed pages instead of creating duplicate content; canonical metadata, JSON-LD, feeds, OG paths, cards, calendar entries, archive entries, sharing, and post navigation now consume pre-resolved routes.
 - Kept UI modules as pure consumers of final URLs and navigation objects; route normalization and collision handling remain in the content service pipeline.
 - Kept category roots as the sole first page and generated paginated static paths from page 2 onward, with first and previous links resolving back to the category root.
+
+## 2026-07-19
+
+### Made external content preparation deterministic
+
+- Defaulted content preparation to explicit local mode and required a full commit SHA whenever external content is enabled.
+- Prepared Git checkouts in staging with argument-array process execution, validated all four source directories, and activated immutable releases through one current pointer.
+- Kept first-time link installation and local restoration rollback-safe; external failures now stop builds instead of selecting local or stale content.
+- Routed build, Astro build, development, Playwright, and CI through one preparation command and made the selected external commit visible in sanitized build logs.

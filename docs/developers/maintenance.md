@@ -78,7 +78,7 @@ pnpm lint:md
 - 生成的搜索索引
 - 压缩后的字体产物
 
-启用内容分离时，`src/content`、`src/data`、`public/images` 可能来自 `CONTENT_DIR` 的链接或复制结果。大范围修改前先确认当前内容来源。
+启用内容分离时，`src/content/posts`、`src/content/spec`、`src/data`、`public/images` 是指向 `CONTENT_DIR/current` 的受管理链接。大范围修改前先运行 `pnpm content:prepare` 并确认日志中的模式与 commit SHA。
 
 ## 高风险区域
 
@@ -88,7 +88,7 @@ pnpm lint:md
 | `src/services/core/inject.ts` | 派生元数据会影响列表、详情、归档、Feed 和卡片。 |
 | `src/services/core/content-store.ts` | 分类和标签索引会影响路由与导航。 |
 | `src/utils/url-utils.ts` | URL 变化会影响旧链接和 SEO。 |
-| `scripts/sync-content.js` | 会移动、链接或复制内容目录。 |
+| `scripts/prepare-content.mjs`、`scripts/content-sync/` | 会准备 pinned checkout，并事务性切换四个内容目录。 |
 | `src/config.ts` | 站点私有行为和外部服务配置集中在这里。 |
 
 ## 文档维护

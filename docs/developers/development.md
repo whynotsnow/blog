@@ -129,11 +129,13 @@ pnpm new-post -- my-new-post
 pnpm generate-posts
 ```
 
-同步外部内容：
+准备配置中锁定的外部内容版本：
 
 ```bash
-pnpm sync-content
+pnpm content:prepare
 ```
+
+`pnpm sync-content` 是同一命令的兼容别名。未启用外部内容时，两个命令都只确认 `mode=local`，不会执行 Git 或修改本地内容。
 
 ## Git 注意事项
 

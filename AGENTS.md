@@ -27,7 +27,7 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 
 - Framework: Astro 5 with Svelte components.
 - Package manager: pnpm only.
-- Content source: `src/content/posts` and `src/content/spec`, optionally synchronized from an external content repository by `scripts/sync-content.js`.
+- Content source: `src/content/posts` and `src/content/spec`, optionally prepared from a pinned external commit by `scripts/prepare-content.mjs`.
 - Core content pipeline: `src/services/core`.
 - UI-facing service layer: `src/services`.
 - Site configuration: `src/config.ts` and `src/types/config.ts`.

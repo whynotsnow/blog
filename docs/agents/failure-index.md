@@ -4,6 +4,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 
 ## CLI
 
+### content-sync-fallback-drift
+
+- Symptom: an external-content build succeeds with local, stale, or untraceable content after preparation failed or was skipped.
+- Playbook: [content-sync-fallback-drift](./runtime-playbook.md#content-sync-fallback-drift)
+
 ### zsh-glob-expansion
 
 - Symptom: `zsh: no matches found` for Astro route files or glob-like paths.

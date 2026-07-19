@@ -4,6 +4,21 @@ This playbook records known runtime and tooling pitfalls for this repository. Ch
 
 ## Shell
 
+### content-sync-fallback-drift
+
+Pattern:
+
+- External content is enabled, but a missing URL/SHA, failed fetch, or invalid directory silently continues with local or previously activated content.
+- A build entrypoint bypasses `pnpm content:prepare`, or wraps preparation with `|| true`.
+
+Use:
+
+- Keep `ENABLE_CONTENT_SYNC` defaulted to local mode and require both `CONTENT_REPO_URL` and a full `CONTENT_REPO_COMMIT_SHA` in external mode.
+- Route `pnpm build`, `pnpm build:astro`, development, and Playwright through the same preparation entry.
+- Treat external preparation failure as fatal. Only explicit local mode may consume repository content.
+- Use Git argument arrays with `shell: false`; never log a credential-bearing repository URL.
+- Confirm the `[content] mode=external commit=<sha>` line when tracing a deployment.
+
 ### zsh-glob-expansion
 
 Pattern:

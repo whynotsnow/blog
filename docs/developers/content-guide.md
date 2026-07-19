@@ -115,10 +115,12 @@ pnpm new-post -- my-post-title
 - [内容分离](./content-separation.md)
 - [内容仓库结构](./content-repository.md)
 
-`scripts/sync-content.js` 的默认行为：
+`pnpm content:prepare` 的默认行为：
 
-- `ENABLE_CONTENT_SYNC=false`：跳过同步，使用本地内容。
-- `ENABLE_CONTENT_SYNC=true`：将 `CONTENT_REPO_URL` 克隆或更新到 `CONTENT_DIR`，再把内容链接或复制到项目目录。
+- `ENABLE_CONTENT_SYNC=false` 或未设置：使用本地内容，不执行 Git。
+- `ENABLE_CONTENT_SYNC=true`：必须同时提供 `CONTENT_REPO_URL` 和完整 `CONTENT_REPO_COMMIT_SHA`。
+- 外部 checkout 在 staging 中完成 fetch、SHA 与目录校验，成功后通过 `CONTENT_DIR/current` 一次切换；失败不会回退到本地内容，而是终止命令和构建。
+- `posts`、`spec`、`data`、`images` 四个目录必须同时存在，不支持混合本地与外部来源。
 
 映射关系：
 

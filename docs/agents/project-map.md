@@ -6,6 +6,8 @@ This project is a customized Mizuki-based static blog built with Astro, Svelte, 
 
 Astro builds the site statically. Content is loaded at build time through Astro content collections, transformed by `src/services/core`, and then passed into layouts and UI components.
 
+Before development or build entrypoints start Astro, `pnpm content:prepare` selects the content source. Local mode leaves repository content untouched. External mode fetches one required commit SHA into staging, validates `posts`, `spec`, `data`, and `images`, promotes an immutable release, and switches the single `CONTENT_DIR/current` pointer. External preparation failures stop the command; they never fall back to local or stale content.
+
 ```mermaid
 flowchart TD
   A["Markdown content<br/>src/content/posts"] --> B["Astro content collection<br/>src/content.config.ts"]
@@ -106,6 +108,8 @@ Route motion has one owner: `#swup-container` uses `.transition-swup-layout` for
 Legacy variables are one-way aliases from the Compatibility layer to Design tokens. New legacy consumption is rejected by `pnpm design:check`; existing debt is recorded in `scripts/design-system-baseline.json` and should only decrease.
 
 ## Content Pipeline
+
+Content preparation and content transformation are separate boundaries. `scripts/content-sync/` owns Git, staging, release validation, managed links, and source activation. It must invoke Git with argument arrays and `shell: false`; no URL or credential-bearing command may be logged. `src/services/core` begins only after the selected filesystem content is stable.
 
 1. `src/content.config.ts` defines the `posts` and `spec` content collections.
 2. `getAllPostsRaw()` in `src/services/core/source.ts` reads posts from Astro content.

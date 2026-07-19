@@ -118,9 +118,10 @@ Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读�
 
 | 变量 | 说明 |
 | --- | --- |
-| `ENABLE_CONTENT_SYNC` | 是否启用外部内容仓库同步。 |
-| `CONTENT_REPO_URL` | 外部内容仓库地址。 |
-| `CONTENT_DIR` | 外部内容仓库本地目录。 |
+| `ENABLE_CONTENT_SYNC` | 是否启用外部内容准备；未设置时默认为 `false`。 |
+| `CONTENT_REPO_URL` | 外部内容仓库地址，启用时必需。 |
+| `CONTENT_REPO_COMMIT_SHA` | 要构建的完整 40 位 commit SHA，启用时必需。 |
+| `CONTENT_DIR` | staging、release、current 指针和本地备份的状态目录，默认 `./content`。 |
 | `GTM_ID` | Google Tag Manager 容器 ID。 |
 | `CLARITY_PROJECT_ID` | Microsoft Clarity 项目 ID。 |
 | `UMAMI_API_KEY` | 启用 Umami 统计时的 API key。 |
