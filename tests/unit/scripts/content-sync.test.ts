@@ -7,7 +7,13 @@ import {
 	parseContentSyncConfig,
 } from "../../../scripts/content-sync/config.mjs";
 import { createGitRunner } from "../../../scripts/content-sync/git.mjs";
-import { preparePinnedCheckout } from "../../../scripts/content-sync/prepare.mjs";
+import {
+	CONTENT_MAPPINGS,
+	prepareContent,
+	preparePinnedCheckout,
+	restoreLocalContent,
+	validateContentCheckout,
+} from "../../../scripts/content-sync/prepare.mjs";
 
 const tempDirectories: string[] = [];
 const commitSha = "a".repeat(40);
@@ -144,5 +150,181 @@ describe("pinned Git checkout", () => {
 		expect(fs.readdirSync(path.join(config.stateDir, "staging"))).toEqual(
 			[],
 		);
+	});
+});
+
+function createProjectContent(rootDir: string, marker: string) {
+	for (const mapping of CONTENT_MAPPINGS) {
+		const destination = path.join(rootDir, mapping.destination);
+		fs.mkdirSync(destination, { recursive: true });
+		fs.writeFileSync(path.join(destination, "marker.txt"), marker);
+	}
+}
+
+function createReleaseCheckout(rootDir: string, marker: string) {
+	const checkoutDir = fs.mkdtempSync(path.join(rootDir, "checkout-"));
+	for (const mapping of CONTENT_MAPPINGS) {
+		const source = path.join(checkoutDir, mapping.source);
+		fs.mkdirSync(source, { recursive: true });
+		fs.writeFileSync(path.join(source, "marker.txt"), marker);
+	}
+	return checkoutDir;
+}
+
+function createExternalConfig(rootDir: string, sha = commitSha) {
+	return parseContentSyncConfig(
+		{
+			ENABLE_CONTENT_SYNC: "true",
+			CONTENT_REPO_URL: "https://example.com/content.git",
+			CONTENT_REPO_COMMIT_SHA: sha,
+		},
+		rootDir,
+	);
+}
+
+describe("content checkout validation", () => {
+	it("requires all four real directories", () => {
+		const rootDir = createTempDirectory();
+		const checkoutDir = createReleaseCheckout(rootDir, "external");
+		fs.rmSync(path.join(checkoutDir, "images"), { recursive: true });
+
+		expect(() => validateContentCheckout(checkoutDir)).toThrow("images");
+
+		fs.symlinkSync("posts", path.join(checkoutDir, "images"), "dir");
+		expect(() => validateContentCheckout(checkoutDir)).toThrow(
+			"real directory",
+		);
+	});
+});
+
+describe("atomic content activation", () => {
+	it("activates all mappings through one current release and reuses the SHA", () => {
+		const rootDir = createTempDirectory();
+		createProjectContent(rootDir, "local");
+		const config = createExternalConfig(rootDir);
+		const checkoutDir = createReleaseCheckout(rootDir, "external");
+		const prepareCheckout = vi.fn(() => ({
+			checkoutDir,
+			commitSha,
+			cleanup: vi.fn(),
+		}));
+		const logger = { log: vi.fn(), warn: vi.fn() };
+
+		prepareContent(config, { prepareCheckout, logger });
+
+		for (const mapping of CONTENT_MAPPINGS) {
+			const destination = path.join(rootDir, mapping.destination);
+			expect(fs.lstatSync(destination).isSymbolicLink()).toBe(true);
+			expect(
+				fs.readFileSync(path.join(destination, "marker.txt"), "utf8"),
+			).toBe("external");
+		}
+		expect(logger.log).toHaveBeenCalledWith(
+			`[content] mode=external commit=${commitSha}`,
+		);
+
+		prepareContent(config, { prepareCheckout, logger });
+		expect(prepareCheckout).toHaveBeenCalledTimes(1);
+	});
+
+	it("leaves local content untouched when validation fails", () => {
+		const rootDir = createTempDirectory();
+		createProjectContent(rootDir, "local");
+		const config = createExternalConfig(rootDir);
+		const checkoutDir = createReleaseCheckout(rootDir, "external");
+		fs.rmSync(path.join(checkoutDir, "spec"), { recursive: true });
+
+		const cleanup = vi.fn();
+		expect(() =>
+			prepareContent(config, {
+				prepareCheckout: () => ({
+					checkoutDir,
+					commitSha,
+					cleanup,
+				}),
+				logger: { log: vi.fn(), warn: vi.fn() },
+			}),
+		).toThrow("spec");
+		expect(cleanup).toHaveBeenCalledOnce();
+
+		for (const mapping of CONTENT_MAPPINGS) {
+			expect(
+				fs.readFileSync(
+					path.join(rootDir, mapping.destination, "marker.txt"),
+					"utf8",
+				),
+			).toBe("local");
+		}
+	});
+
+	it("rolls back every local mapping when managed link installation fails", () => {
+		const rootDir = createTempDirectory();
+		createProjectContent(rootDir, "local");
+		const config = createExternalConfig(rootDir);
+		const checkoutDir = createReleaseCheckout(rootDir, "external");
+		const originalSymlink = fs.symlinkSync.bind(fs);
+		const fsApi = Object.assign(Object.create(fs), {
+			symlinkSync(
+				target: fs.PathLike,
+				destination: fs.PathLike,
+				type?: fs.symlink.Type,
+			) {
+				if (
+					path.normalize(String(destination)) ===
+					path.join(rootDir, "src/data")
+				) {
+					throw new Error("injected link failure");
+				}
+				return originalSymlink(target, destination, type);
+			},
+		});
+
+		expect(() =>
+			prepareContent(config, {
+				fsApi,
+				prepareCheckout: () => ({
+					checkoutDir,
+					commitSha,
+					cleanup: vi.fn(),
+				}),
+				logger: { log: vi.fn(), warn: vi.fn() },
+			}),
+		).toThrow("local content was restored");
+
+		for (const mapping of CONTENT_MAPPINGS) {
+			const destination = path.join(rootDir, mapping.destination);
+			expect(fs.lstatSync(destination).isSymbolicLink()).toBe(false);
+			expect(
+				fs.readFileSync(path.join(destination, "marker.txt"), "utf8"),
+			).toBe("local");
+		}
+		expect(fs.existsSync(path.join(config.stateDir, "current"))).toBe(
+			false,
+		);
+	});
+
+	it("restores the original local directories", () => {
+		const rootDir = createTempDirectory();
+		createProjectContent(rootDir, "local");
+		const externalConfig = createExternalConfig(rootDir);
+		const checkoutDir = createReleaseCheckout(rootDir, "external");
+		prepareContent(externalConfig, {
+			prepareCheckout: () => ({
+				checkoutDir,
+				commitSha,
+				cleanup: vi.fn(),
+			}),
+			logger: { log: vi.fn(), warn: vi.fn() },
+		});
+
+		const localConfig = parseContentSyncConfig({}, rootDir);
+		expect(restoreLocalContent(localConfig)).toBe(true);
+		for (const mapping of CONTENT_MAPPINGS) {
+			const destination = path.join(rootDir, mapping.destination);
+			expect(fs.lstatSync(destination).isSymbolicLink()).toBe(false);
+			expect(
+				fs.readFileSync(path.join(destination, "marker.txt"), "utf8"),
+			).toBe("local");
+		}
 	});
 });

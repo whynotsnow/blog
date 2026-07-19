@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnv } from "./load-env.js";
 import { parseContentSyncConfig } from "./content-sync/config.mjs";
-import { preparePinnedCheckout } from "./content-sync/prepare.mjs";
+import { prepareContent } from "./content-sync/prepare.mjs";
 
 const rootDir = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
@@ -14,18 +14,7 @@ const rootDir = path.resolve(
 export function main() {
 	loadEnv();
 	const config = parseContentSyncConfig(process.env, rootDir);
-
-	if (!config.enabled) {
-		console.log("[content] mode=local");
-		return;
-	}
-
-	const prepared = preparePinnedCheckout(config);
-	try {
-		console.log(`[content] mode=external commit=${prepared.commitSha}`);
-	} finally {
-		prepared.cleanup();
-	}
+	prepareContent(config);
 }
 
 try {

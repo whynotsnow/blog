@@ -20,12 +20,19 @@ function parseEnabled(value) {
 }
 
 function resolveStateDirectory(rootDir, value) {
-	const stateDir = path.resolve(rootDir, value || "content");
+	const resolvedRoot = path.resolve(rootDir);
+	const stateDir = path.resolve(resolvedRoot, value || "content");
 	const filesystemRoot = path.parse(stateDir).root;
+	const relativeToProject = path.relative(resolvedRoot, stateDir);
 
-	if (stateDir === filesystemRoot || stateDir === path.resolve(rootDir)) {
+	if (
+		stateDir === filesystemRoot ||
+		stateDir === resolvedRoot ||
+		relativeToProject.startsWith(`..${path.sep}`) ||
+		relativeToProject === ".."
+	) {
 		throw new ContentSyncError(
-			"CONTENT_DIR must not resolve to the filesystem or project root",
+			"CONTENT_DIR must resolve to a dedicated directory inside the project root",
 		);
 	}
 
