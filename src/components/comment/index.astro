@@ -1,26 +1,21 @@
 ---
-import type { CollectionEntry } from "astro:content";
 import { commentConfig } from "@/config";
-import { removeFileExtension } from "@/utils/url-utils";
 import Twikoo from "./Twikoo.astro";
 
 interface Props {
-	post: CollectionEntry<"posts">;
+	enabled: boolean;
+	path: string;
 }
 
-const { id, data } = Astro.props.post;
-
-const slug = removeFileExtension(id);
-const path = `/posts/${slug}`;
+const { enabled, path } = Astro.props;
 
 let commentService = "";
 if (commentConfig?.enable && commentConfig?.twikoo) {
 	commentService = "twikoo";
 }
 
-const commentEnabled = data.comment ?? true;
 ---
-{commentConfig?.enable && commentEnabled && (
+{commentConfig?.enable && enabled && (
   <div class="card-base ds-surface-card p-6 mb-4">
     {commentService === 'twikoo' && <Twikoo path={path} />}
     {commentService === '' && null}

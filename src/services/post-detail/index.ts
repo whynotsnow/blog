@@ -1,85 +1,114 @@
 import type { GetStaticPaths } from "astro";
-import { render } from "astro:content";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { resolveSharePosterImages } from "@/utils/url-utils";
+import {
+	getFileDirFromPath,
+	resolveSharePosterImages,
+} from "@/utils/url-utils";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 import { siteConfig, profileConfig } from "@/config";
-import type { PostIndexEntry, PostRoute, RawPost } from "../core/types";
-import type {
-	BlogPostingJsonLd,
-	PostDetailEntry,
-	PostDetailPageProps,
-} from "./types";
+import type { BlogPostingJsonLd, PostDetailPageProps } from "./types";
 import { getContentStore } from "../core/content-store";
-import { getAllPostsRaw } from "../core/source";
-import { buildCanonicalPostPaths } from "./static-paths";
+import { getRawPostById } from "../core/source";
+import { getRenderedPost } from "../core/post-renderer";
+import { runPostBuildTask } from "../core/concurrency";
+import { buildPostDetailStaticPathItems } from "./static-paths";
 
-/* =========================
-   构建单篇文章页面数据
-========================= */
+dayjs.extend(utc);
 
-async function buildPostDetailPageData(
-	index: PostIndexEntry,
-	raw: RawPost,
-	route: PostRoute,
+export type PostDetailStaticPathProps = {
+	postId: string;
+};
+
+export async function getPostDetailPageData(
+	postId: string,
 ): Promise<PostDetailPageProps> {
-	const entry: PostDetailEntry = {
-		...raw,
-		meta: {
-			postId: index.postId,
-			route: index.route,
-			words: index.words,
-			minutes: index.minutes,
-			excerpt: index.excerpt,
-			prev: index.prev,
-			next: index.next,
-		},
-	};
-	const { Content, headings } = await render(entry);
-	const { posterCoverUrl, posterAvatarUrl } =
-		await resolveSharePosterImages(entry);
+	const [store, raw] = await Promise.all([
+		getContentStore(),
+		getRawPostById(postId),
+	]);
+	const index = store.postsById.get(postId);
+	if (!index) throw new Error(`Missing post index for ${postId}`);
 
-	const isEncrypted = !!entry.data.encrypted && !!entry.data.password;
+	const [{ Content, headings }, { posterCoverUrl, posterAvatarUrl }] =
+		await Promise.all([
+			getRenderedPost(raw),
+			runPostBuildTask(() => resolveSharePosterImages(raw)),
+		]);
 
-	dayjs.extend(utc);
-
-	const lastModified = dayjs(entry.data.updated || entry.data.published)
+	const lastModified = dayjs(raw.data.updated || raw.data.published)
 		.utc()
 		.format("YYYY-MM-DDTHH:mm:ss");
 	const canonicalUrl = new URL(
-		route.canonicalUrl,
+		index.route.canonicalUrl,
 		siteConfig.siteURL,
 	).toString();
 
 	const jsonLd: BlogPostingJsonLd = {
 		"@context": "https://schema.org",
 		"@type": "BlogPosting",
-		headline: entry.data.title,
-		description: entry.data.description || entry.data.title,
-		keywords: entry.data.tags,
+		headline: index.title,
+		description: index.description || index.title,
+		keywords: raw.data.tags,
 		author: {
 			"@type": "Person",
 			name: profileConfig.name,
 		},
-		datePublished: formatDateToYYYYMMDD(entry.data.published),
+		datePublished: formatDateToYYYYMMDD(index.published),
 		url: canonicalUrl,
 		mainEntityOfPage: {
 			"@type": "WebPage",
 			"@id": canonicalUrl,
 		},
-		inLanguage: entry.data.lang
-			? entry.data.lang.replace("_", "-")
+		inLanguage: raw.data.lang
+			? raw.data.lang.replace("_", "-")
 			: siteConfig.lang.replace("_", "-"),
 	};
 
 	return {
-		entry,
+		id: index.id,
+		title: index.title,
+		description: index.description,
+		author: raw.data.author,
+		lang: raw.data.lang,
+		banner: raw.data.image || undefined,
+		header: {
+			id: index.id,
+			title: index.title,
+			published: index.published,
+			updated: index.updated,
+			category: index.category,
+			tags: index.tags,
+			words: index.words,
+			minutes: index.minutes,
+			hasCover: Boolean(raw.data.image),
+		},
+		cover: raw.data.image
+			? {
+					src: index.cover ?? raw.data.image,
+					basePath: index.cover
+						? undefined
+						: getFileDirFromPath(raw.filePath ?? ""),
+				}
+			: undefined,
+		encryption: {
+			enabled: Boolean(raw.data.encrypted && raw.data.password),
+			password: raw.data.password,
+		},
+		comment: {
+			enabled: raw.data.comment,
+			path: index.route.canonicalUrl,
+		},
+		license: {
+			sourceLink: raw.data.sourceLink,
+			licenseName: raw.data.licenseName,
+			licenseUrl: raw.data.licenseUrl,
+		},
+		navigation: { prev: index.prev, next: index.next },
 		canonicalUrl,
-		canonicalOgSlug: route.canonicalSlug,
+		canonicalOgSlug: index.route.canonicalSlug,
 		Content,
 		headings,
-		isEncrypted,
 		lastModified,
 		jsonLd,
 		posterCoverUrl,
@@ -87,30 +116,8 @@ async function buildPostDetailPageData(
 	};
 }
 
-/* =========================
-   统一构建 posts/[...slug]
-========================= */
-
 export const buildPostDetailStaticPaths: GetStaticPaths = async () => {
-	const [{ posts, routes }, rawPosts] = await Promise.all([
-		getContentStore(),
-		getAllPostsRaw(),
-	]);
-	const rawById = new Map(rawPosts.map((post) => [post.id, post]));
+	const { posts } = await getContentStore();
 
-	return Promise.all(
-		buildCanonicalPostPaths(posts, routes).map(
-			async ({ entry: index, route }) => ({
-				params: { slug: route.canonicalSlug },
-				props: await buildPostDetailPageData(
-					index,
-					rawById.get(index.id) ??
-						(() => {
-							throw new Error(`Missing raw post for ${index.id}`);
-						})(),
-					route,
-				),
-			}),
-		),
-	);
+	return buildPostDetailStaticPathItems(posts);
 };

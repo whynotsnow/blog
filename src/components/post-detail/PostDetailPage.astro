@@ -6,7 +6,6 @@ import SharePoster from "@components/misc/SharePoster.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getFileDirFromPath } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
 import { licenseConfig, shareConfig } from "@/config";
 import ImageWrapper from "@components/misc/ImageWrapper.astro";
@@ -21,12 +20,22 @@ import { getContentStore } from "@/services/core/content-store";
 import type { PostDetailPageProps } from "./types";
 
 const {
-	entry,
+	id,
+	title,
+	description,
+	author,
+	lang,
+	banner,
+	header,
+	cover,
+	encryption,
+	comment,
+	license,
+	navigation,
 	canonicalUrl,
 	canonicalOgSlug,
 	Content,
 	headings,
-	isEncrypted,
 	lastModified,
 	jsonLd,
 	posterCoverUrl,
@@ -37,10 +46,10 @@ const store = await getContentStore();
 ---
 
 <MainGridLayout
-	banner={entry.data.image}
-	title={entry.data.title}
-	description={entry.data.description}
-	lang={entry.data.lang}
+	{banner}
+	{title}
+	{description}
+	{lang}
 	setOGTypeArticle={true}
 	postSlug={canonicalOgSlug}
 	canonicalUrl={canonicalUrl}
@@ -58,21 +67,21 @@ const store = await getContentStore();
 			<div
 				id="post-container"
 				class="post-detail__article post-detail__surface ds-surface-content z-10"
-				data-reading-title={entry.data.title}
-				data-reading-minutes={entry.meta.minutes}
+				data-reading-title={title}
+				data-reading-minutes={header.minutes}
 			>
-			<PostHeader {entry} />
+			<PostHeader post={header} />
 
 			<!-- always show cover as long as it has one -->
 
 			{
-				entry.data.image && siteConfig.showCoverInContent && (
+				cover && siteConfig.showCoverInContent && (
 					<>
 						<div class="mt-4" />
 						<ImageWrapper
 							id="post-cover"
-							src={entry.data.image}
-							basePath={getFileDirFromPath(entry.filePath || "")}
+							src={cover.src}
+							basePath={cover.basePath}
 							class="mb-8 rounded-xl banner-container"
 						/>
 					</>
@@ -80,8 +89,8 @@ const store = await getContentStore();
 			}
 
 			{
-				isEncrypted ? (
-					<Encryptor password={entry.data.password}>
+				encryption.enabled ? (
+					<Encryptor password={encryption.password}>
 						<Markdown class="post-detail__content mb-6 markdown-content">
 							<Content />
 						</Markdown>
@@ -99,7 +108,7 @@ const store = await getContentStore();
 						id="share-component"
 						class:list={[
 							"p-6 bg-(--license-block-bg) rounded-xl mb-6",
-							{ "encrypted-hidden": isEncrypted },
+							{ "encrypted-hidden": encryption.enabled },
 						]}
 					>
 						<div class="post-detail__share-row flex flex-col items-center justify-between gap-4">
@@ -122,14 +131,10 @@ const store = await getContentStore();
 							<div class="flex items-center gap-3">
 								<SharePoster
 									client:load
-									title={entry.data.title}
-									author={
-										entry.data.author || profileConfig.name
-									}
-									description={entry.data.description || ""}
-									pubDate={formatDateToYYYYMMDD(
-										entry.data.published,
-									)}
+									{title}
+									author={author || profileConfig.name}
+									description={description || ""}
+									pubDate={formatDateToYYYYMMDD(header.published)}
 									coverImage={posterCoverUrl}
 									url={canonicalUrl}
 									siteTitle={siteConfig.title}
@@ -147,17 +152,17 @@ const store = await getContentStore();
 						id="license-component"
 						class:list={[
 							"encrypted-hidden-wrapper",
-							{ "encrypted-hidden": isEncrypted },
+							{ "encrypted-hidden": encryption.enabled },
 						]}
 					>
 						<License
-							title={entry.data.title}
-							id={entry.id}
-							pubDate={entry.data.published}
-							author={entry.data.author}
-							sourceLink={entry.data.sourceLink}
-							licenseName={entry.data.licenseName}
-							licenseUrl={entry.data.licenseUrl}
+							{title}
+							{id}
+							pubDate={header.published}
+							{author}
+							sourceLink={license.sourceLink}
+							licenseName={license.licenseName}
+							licenseUrl={license.licenseUrl}
 							class="mb-6 rounded-xl license-container"
 						/>
 					</div>
@@ -167,12 +172,9 @@ const store = await getContentStore();
 	</div>
 
 	<!-- 评论 -->
-	<Comment post={entry} />
+	<Comment enabled={comment.enabled} path={comment.path} />
 
 	{siteConfig.showLastModified && <PostLastModified {lastModified} />}
 
-	<PostNavigation
-		next={entry.meta.next}
-		prev={entry.meta.prev}
-	/>
+	<PostNavigation next={navigation.next} prev={navigation.prev} />
 </MainGridLayout>

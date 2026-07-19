@@ -1,4 +1,4 @@
-import { getCollection } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 import type { PostIndexEntry, PostQuery, RawPost } from "./types";
 import { buildPostIndexEntries } from "./inject";
 import { applyPostQuery, sortByDate } from "./sort";
@@ -16,6 +16,12 @@ export async function getAllPostsRaw(): Promise<RawPost[]> {
 		})),
 	);
 	return posts;
+}
+
+export async function getRawPostById(id: string): Promise<RawPost> {
+	const post = await getEntry("posts", id);
+	if (!post) throw new Error(`Missing raw post for ${id}`);
+	return post;
 }
 
 export async function getAllPosts(

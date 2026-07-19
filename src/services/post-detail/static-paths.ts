@@ -5,6 +5,11 @@ export type CanonicalPostPath = {
 	route: PostRoute;
 };
 
+export type PostDetailStaticPathItem = {
+	params: { slug: string };
+	props: { postId: string };
+};
+
 export function buildCanonicalPostPaths(
 	posts: readonly PostIndexEntry[],
 	routes: PostRouteIndex,
@@ -14,4 +19,13 @@ export function buildCanonicalPostPaths(
 		if (!route) throw new Error(`Missing post route for ${entry.id}`);
 		return { entry, route };
 	});
+}
+
+export function buildPostDetailStaticPathItems(
+	posts: readonly PostIndexEntry[],
+): PostDetailStaticPathItem[] {
+	return posts.map((post) => ({
+		params: { slug: post.route.canonicalSlug },
+		props: { postId: post.id },
+	}));
 }

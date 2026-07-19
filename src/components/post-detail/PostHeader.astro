@@ -2,17 +2,16 @@
 import PostMetadata from "@components/PostMeta.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { buildCategoryItems, buildTagItems } from "@/services/core/inject";
-import type { PostDetailEntry } from "@/services/post-detail/types";
+import type { PostDetailHeaderViewModel } from "@/services/post-detail/types";
 import { siteConfig } from "@/config";
 import { Icon } from "astro-icon/components";
 
 interface Props {
-	entry: PostDetailEntry;
+	post: PostDetailHeaderViewModel;
 }
 
-const { entry } = Astro.props;
-const { words, minutes } = entry.meta;
+const { post } = Astro.props;
+const { words, minutes } = post;
 ---
 
 <header class="post-detail__header ds-reading-flow">
@@ -40,19 +39,19 @@ const { words, minutes } = entry.meta;
 			data-pagefind-meta="title"
 			class="post-detail__title transition w-full block font-bold mb-3 text-90"
 		>
-			{entry.data.title}
+			{post.title}
 		</h1>
 	</div>
 
 	<PostMetadata
 		className="mb-5"
-		published={entry.data.published}
-		updated={entry.data.updated}
-		tags={buildTagItems(entry.data.tags)}
-		category={buildCategoryItems(entry.data.category)}
-		id={entry.id}
+		published={post.published}
+		updated={post.updated}
+		tags={post.tags}
+		category={post.category}
+		id={post.id}
 	/>
-	{(!entry.data.image || !siteConfig.showCoverInContent) && (
+	{(!post.hasCover || !siteConfig.showCoverInContent) && (
 		<div class="mt-4 border-(--line-divider) border-dashed border-b mb-5" />
 	)}
 </header>
