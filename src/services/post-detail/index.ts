@@ -4,7 +4,7 @@ import utc from "dayjs/plugin/utc";
 import {
 	getFileDirFromPath,
 	resolveSharePosterImages,
-} from "@/utils/url-utils";
+} from "../core/content-assets";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 import { siteConfig, profileConfig } from "@/config";
 import type { BlogPostingJsonLd, PostDetailPageProps } from "./types";

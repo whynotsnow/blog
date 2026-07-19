@@ -1,4 +1,4 @@
-import { pathsEqual, url } from "../utils/url-utils";
+import { pathsEqual, url } from "../utils/url";
 import { DARK_MODE, DEFAULT_THEME } from "../constants/constants";
 
 const BANNER_HEIGHT = 35;

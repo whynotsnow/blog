@@ -156,15 +156,3 @@ export function isPostPage(): boolean {
 	const path = getCurrentPath();
 	return path.startsWith("/posts/");
 }
-
-/**
- * 检查两个路径是否相等
- */
-export function pathsEqual(path1: string, path2: string): boolean {
-	// 标准化路径（移除末尾斜杠）
-	const normalize = (path: string) => {
-		return path.endsWith("/") && path.length > 1 ? path.slice(0, -1) : path;
-	};
-
-	return normalize(path1) === normalize(path2);
-}

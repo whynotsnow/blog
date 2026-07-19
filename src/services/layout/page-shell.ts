@@ -2,7 +2,7 @@ import { siteConfig } from "@/config";
 import { BANNER_HEIGHT_EXTEND } from "@/constants/constants";
 import { defaultFavicons } from "@/constants/icon";
 import type { Favicon } from "@/types/config";
-import { pathsEqual, url } from "@/utils/url-utils";
+import { pathsEqual, url } from "@/utils/url";
 
 export const LAYOUT_BANNER_HEIGHT = 35;
 export const LAYOUT_BANNER_HEIGHT_EXTEND = 30;

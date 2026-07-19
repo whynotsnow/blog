@@ -132,9 +132,6 @@ Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读�
 
 ## URL
 
-URL 相关工具位于：
+浏览器与构建阶段共用的纯 URL 工具位于 `src/utils/url.ts`，分页 URL 展示算法位于 `src/utils/pagination.ts`。分类与标签规范化由 `src/services/core/taxonomy.ts` 负责，文章 canonical URL 由 `src/services/core/post-routes.ts` 负责；包含 Astro Content 或 Node API 的图片解析只允许放在 `src/services/core/content-assets.ts`。
 
-- `src/utils/url-utils.ts`
-- `src/utils/client-utils.ts`
-
-新增代码不要硬编码分类、标签、文章 URL。文章详情页使用 `/posts/{slug}/`，可选 `alias` 会生成 `/posts/{alias}/`。
+新增代码不要硬编码分类、标签、文章 URL，也不要让客户端模块导入构建期工具。文章详情页使用 `/posts/{slug}/`，可选 `alias` 会生成 `/posts/{alias}/`。

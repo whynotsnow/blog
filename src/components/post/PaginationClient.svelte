@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import { generatePages, HIDDEN } from "@utils/client-utils";
+	import { generatePages, HIDDEN } from "@utils/pagination";
 
 	export let currentPage: number;
 	export let lastPage: number;

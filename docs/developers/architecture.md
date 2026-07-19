@@ -157,7 +157,7 @@ RawPost
 - 右下角 Floating Tools 由 `src/features/floating-tools` 统一拥有 viewport placement、响应式触摸尺寸与展开状态，并在 `MainGridContent.astro` 中挂载到整个动画 Main Content Layer 外。Theme、Music、Settings、Floating TOC 与 Back to Top 继续拥有各自行为，只把入口组合进统一 Rail；新的 Shell 悬浮入口不得再单独声明互相竞争的右下角 fixed 坐标。Settings 必须使用传入的 Feature class 形成真正的 viewport Panel，不能把 Astro 的 `class:list` 语法用于 Svelte 组件。
 - Pio 的 `pioConfig.enable` 与 `hiddenOnMobile` 决定功能是否可用，`src/features/pio/preferences.ts` 则封装访客的显示偏好；Tools 开关与 Pio 自带关闭/恢复入口共享同一事件契约。Music Player 通过 `src/features/music-player/events.ts` 接收 Panel 命令并发布播放、加载、首次播放与展开状态；Floating Tools 只消费该契约并根据播放器占用高度避让，不直接持有 Audio 状态，也不通过 DOM Mutation 反推播放器状态。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
-- 分类、标签和文章 URL 不要硬编码，使用 `src/utils/url-utils.ts` 和 `src/utils/client-utils.ts`。
+- 分类、标签和文章 URL 不要硬编码。共享 URL 拼接使用 `src/utils/url.ts`，分类与标签规范化使用 `src/services/core/taxonomy.ts`，文章 canonical URL 使用 `src/services/core/post-routes.ts`。图片 glob、Astro Content 类型与 Node API 只属于 `src/services/core/content-assets.ts`，不得进入客户端依赖图。
 
 ## 首页与文章视觉基础
 

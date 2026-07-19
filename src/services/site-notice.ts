@@ -3,7 +3,7 @@ import type {
 	SiteNoticeItemConfig,
 	SiteNoticeStatus,
 } from "@/types/config";
-import { url } from "@/utils/url-utils";
+import { url } from "@/utils/url";
 
 export type SiteNoticeItemViewModel = {
 	id: string;

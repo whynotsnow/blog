@@ -1,10 +1,10 @@
-import { getTagUrl } from "@/utils/client-utils";
+import { getTagUrl } from "@/utils/url";
 import {
 	generateCategorySlug,
 	generateTagSlug,
 	getCategoryUrl,
-	resolveImageUrl,
-} from "@/utils/url-utils";
+} from "./taxonomy";
+import { resolveImageUrl } from "./content-assets";
 import { UNCATEGORIZED } from "@constants/constants";
 import type {
 	PostCardViewModel,

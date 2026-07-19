@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PostNavigatorCategory } from "@/services/core/types";
-	import { url } from "@utils/client-utils";
+	import { url } from "@utils/url";
 
 	export let categories: PostNavigatorCategory[];
 	export let categorySlug: string;

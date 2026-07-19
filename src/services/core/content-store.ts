@@ -6,8 +6,8 @@ import type {
 	TagItem,
 } from "./types";
 import { getAllPosts } from "./source";
-import { getTagUrl } from "@utils/client-utils";
-import { generateTagSlug, getCategoryUrl } from "@utils/url-utils";
+import { getTagUrl } from "@utils/url";
+import { generateTagSlug, getCategoryUrl } from "./taxonomy";
 import { UNCATEGORIZED } from "@constants/constants";
 
 /* Cache the in-flight build as well as the completed store. */

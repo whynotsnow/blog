@@ -1,4 +1,4 @@
-import { url } from "@/utils/client-utils";
+import { url } from "@/utils/url";
 import type { PostRoute, PostRouteIndex, PostRouteSource } from "./types";
 
 const FORBIDDEN_ALIAS_CHARACTER_PATTERN = /[?#\\]/;

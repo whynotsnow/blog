@@ -89,7 +89,7 @@ pnpm lint:md
 | `src/content.config.ts` | Schema 变化可能影响大量文章构建。 |
 | `src/services/core/inject.ts` | 派生元数据会影响列表、详情、归档、Feed 和卡片。 |
 | `src/services/core/content-store.ts` | 分类和标签索引会影响路由与导航。 |
-| `src/utils/url-utils.ts` | URL 变化会影响旧链接和 SEO。 |
+| `src/utils/url.ts`、`src/services/core/taxonomy.ts`、`src/services/core/post-routes.ts` | URL 变化会影响旧链接和 SEO；Universal 工具不得引入 Node 或 Astro Content API。 |
 | `scripts/prepare-content.mjs`、`scripts/content-sync/` | 会准备 pinned checkout，并事务性切换四个内容目录。 |
 | `src/config.ts` | 站点私有行为和外部服务配置集中在这里。 |
 

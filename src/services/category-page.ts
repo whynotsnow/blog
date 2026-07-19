@@ -1,6 +1,6 @@
 import type { GetStaticPathsItem, ImageMetadata } from "astro";
 import { CATEGORY_PAGE_SIZE } from "@constants/constants";
-import { url } from "@utils/url-utils";
+import { url } from "@utils/url";
 import { toPostCardViewModel } from "./core/inject";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";

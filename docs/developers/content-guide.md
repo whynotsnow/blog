@@ -84,7 +84,7 @@ pnpm new-post -- my-post-title
 
 ## 分类和标签
 
-分类和标签会通过 `src/utils/url-utils.ts` 归一化为 slug。
+分类和标签由 `src/services/core/taxonomy.ts` 归一化为 slug，共享 URL 拼接由浏览器安全的 `src/utils/url.ts` 提供。
 
 规则：
 

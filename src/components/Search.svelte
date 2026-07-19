@@ -4,7 +4,7 @@
 	import Icon from "@iconify/svelte";
 	import { navigateToPage } from "@utils/navigation-utils";
 	import { panelManager } from "@utils/panel-manager";
-	import { url } from "@utils/url-utils";
+	import { url } from "@utils/url";
 	import { onMount, onDestroy } from "svelte";
 	import type { SearchResult } from "@/global";
 
