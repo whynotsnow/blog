@@ -48,7 +48,7 @@ alias: ""
 常用可选字段：
 
 - `updated`：内容最后有效更新时间。
-- `description`：卡片、Feed 和 SEO 摘要。
+- `description`：卡片、Feed 和 SEO 摘要。Feed 不输出 Markdown 全文；为空时依次回落到构建期 `excerpt` 和标题。
 - `image`：封面图。
 - `tags`：标签列表。
 - `category`：单一分类名称。
@@ -95,7 +95,7 @@ pnpm new-post -- my-post-title
 
 首页以 6 篇文章为一个内容区块，当前版本生成推荐阅读、最近更新与技术文章三个引导区块。分类页是完整浏览入口，每页显示 12 篇文章；分类和 Tag 筛选位于分类页主内容顶部，带 Tag 查询时由客户端保持相同分页容量。
 
-分类根路径 `/category/{slug}/` 是唯一的第一页。静态分页从 `/category/{slug}/page/2/` 开始；不会生成 `/page/1/`，也不提供 redirect。分页的 first 链接以及第 2 页的 prev 链接始终指向分类根路径。
+分类根路径 `/category/{slug}/` 是唯一的第一页。静态分页从 `/category/{slug}/page/2/` 开始；不会生成 `/page/1/`，也不提供 redirect。分页的 first 链接以及第 2 页的 prev 链接始终指向分类根路径。每个分类会生成一份 `/api/categories/{slug}.json/` 紧凑 Tag 索引；普通分类页只携带当前页文章，浏览器仅在进入合法 `?tag=` 模式时加载索引，并在同一页面生命周期内复用请求。
 
 ## 草稿行为
 

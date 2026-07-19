@@ -20,8 +20,8 @@
 		},
 		{
 			"id": "content-store-contract",
-			"rule": "Use getContentStore() for normal post index access. Keep RawPost, Markdown bodies, rendered HTML, passwords, and detail-only frontmatter behind the detail or Feed build-time service boundary.",
-			"reason": "ContentStore is a lightweight, shared index; retaining or exposing raw entries recreates memory pressure and lets UI infer content routes or implementation details."
+			"rule": "Use getContentStore() for normal post index access. Keep RawPost, Markdown bodies, rendered HTML, passwords, and detail-only frontmatter behind the post-detail build-time service boundary; Feed must consume only body-free PostIndexEntry values.",
+			"reason": "ContentStore is a lightweight, shared index; retaining or exposing raw entries recreates memory pressure and boundary leaks, while summary-only Feed output does not require raw content."
 		},
 		{
 			"id": "config-ownership",

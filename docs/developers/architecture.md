@@ -74,7 +74,7 @@ src/features/music-player/
 
 拆分时优先把 helper 和类型留在所属功能目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
 
-首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块，每组 6 篇；分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro 输出 SSG 快照，带 Tag 查询参数时由 Svelte 在浏览器端渲染分页结果；查询参数、history、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
+首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块，每组 6 篇；分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro SSG 页面 props 只保留当前页文章与不含 `data` 的分页元数据；每个分类另外生成一份 `/api/categories/{slug}.json/` 紧凑索引，只有 URL 进入合法 Tag 查询模式时才由 Svelte 加载。查询参数、history、请求缓存、失败重试、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
 首页、分类页与文章详情页使用 `container-content` 布局策略。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用统一的 `1280px` 外部最大宽度。首页显式提供一份 Profile support 内容：`1200px` 以上为最大 `992px` 的三列 Feed + `248px–272px` support column，`880px–1199px` 为最大 `656px` 的双列 Feed + support column，低于 `880px` 时同一个 Profile DOM 移到 Main 前方；Feed 在 `608px` 以下退为单列，并在 `932px` 进入三列。分类页与文章详情页不提供 support slot，内容区在 `1200px` 以下最大 `656px`，达到 `1200px` 后最大 `992px`；文章正文内部仍使用阅读宽度。站点统计由 `src/services/footer.ts` 生成 View Model，并由 `src/components/footer` 在 Footer 中渲染一次。归档页在主内容流中拥有 Calendar、Categories 与 Tags。`PanelCard.astro` 只负责通用卡片 Surface，不负责注册、解析或放置业务组件。旧 viewport Grid 已隔离到 `page-grid-legacy.css`，不得重新覆盖 `container-content` 状态。
 
@@ -105,7 +105,8 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 5. `buildContentStore()` 只保存轻量索引：文章索引、ID/Route Map、分类标签 Taxonomy 与聚合统计；不得保存 Markdown 正文、渲染 HTML、密码或详情专用 frontmatter。
 6. `getContentStore()` 缓存初始化 Promise，首次并发调用共享同一次构建；初始化失败和 Vite HMR disposal 会清除缓存。
 7. 文章 static paths 只携带 canonical slug 与文章 ID。详情 service 按 ID 获取 RawPost，通过有上限的共享队列生成 `Content`、headings 与详情 View Model；UI 不接触 RawPost。
-8. 浏览器文章卡片统一消费可序列化的 `PostCardViewModel`。Feed 保留独立 Markdown 语义，但 RawPost 只能停留在 Feed 的构建态 service 内。
+8. Astro 文章卡片消费可序列化的 `PostCardViewModel`；分类 Tag JSON 使用不含重复 `meta` 的 `ClientPostCard`，Svelte 只在 Tag 模式加载这份索引。
+9. RSS 与 Atom 只从 `PostIndexEntry` 构建 `FeedItemViewModel`，正文采用 `description || excerpt || title` 摘要语义。Feed 不读取 RawPost、不渲染 Markdown；Atom 通过 XML serializer 统一转义文本和属性。
 
 数据层级如下：
 
@@ -113,6 +114,8 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 RawPost
 ├─ PostIndexEntry：构建态轻量索引
 ├─ PostCardViewModel：浏览器可序列化卡片字段
+├─ ClientPostCard：分类 Tag 模式按需加载的紧凑卡片字段
+├─ FeedItemViewModel：RSS/Atom 共用的摘要、URL、时间与 Taxonomy
 └─ PostDetailPageProps：Content、headings 与详情资源
 ```
 
@@ -124,8 +127,9 @@ RawPost
 | `src/pages/posts/[...slug].astro` | 文章详情页，由 `buildPostDetailStaticPaths` 生成路径。 |
 | `src/pages/category/[slug]/index.astro` | 分类第一页，底层由 `src/services/category-page.ts` 生成页面数据。 |
 | `src/pages/category/[slug]/page/[page].astro` | 分类分页，底层由 `src/services/category-page.ts` 生成页面数据。 |
+| `src/pages/api/categories/[slug].json.ts` | 每分类一份紧凑 Tag 索引；普通分类访问不会下载。 |
 | `src/pages/archive.astro` | 归档页。 |
-| `src/pages/rss.xml.ts`、`src/pages/atom.xml.ts` | Feed 输出，底层由 `src/services/feed.ts` 提供数据与内容渲染。 |
+| `src/pages/rss.xml.ts`、`src/pages/atom.xml.ts` | 摘要型 Feed 输出，底层由 `src/services/feed.ts` 统一数据和 XML 语义。 |
 | `src/pages/og/[...slug].png.ts` | Open Graph 图片生成。 |
 
 ## 配置入口

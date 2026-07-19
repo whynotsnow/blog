@@ -313,3 +313,10 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Cached the in-flight Content Store Promise, cleared failed initialization, and tied Store and render caches to Vite HMR disposal.
 - Reduced post static path props to canonical slug plus post ID, then rendered detail view models on demand through a four-slot bounded queue and an ID-keyed Promise registry.
 - Kept Feed raw Markdown behind its build-time service boundary, moved canonical comment paths into the detail view model, and stopped passing the complete Content Store through page and layout props.
+
+### Reduced category payload and made Feed summary-only
+
+- Removed complete-category post arrays and duplicate pagination data from category SSG props; default pages now retain only current-page cards and data-free pagination metadata.
+- Generated one compact static JSON index per category and loaded it only for valid Tag queries with Promise caching, failure eviction, retry, history, and bounded pagination behavior.
+- Replaced Feed raw Markdown rendering with a body-free shared summary model and an explicit Atom XML serializer; RSS and Atom now share canonical URLs, dates, taxonomy, and `description || excerpt || title` fallback semantics.
+- Learned that with Astro `trailingSlash: "always"`, a dynamic static endpoint may emit a file such as `name.json` while the dev-server route is canonicalized as `name.json/`; client endpoint URLs must follow the configured route form and be checked in both development and static build output.
