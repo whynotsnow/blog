@@ -1,96 +1,117 @@
-import { getImage } from "astro:assets";
-import type { ImageMetadata } from "astro";
-import MarkdownIt from "markdown-it";
-import { parse as htmlParser } from "node-html-parser";
-import sanitizeHtml from "sanitize-html";
 import { getContentStore } from "./core/content-store";
-import { getAllPostsRaw } from "./core/source";
-import type { PostIndexEntry, RawPost } from "./core/types";
+import type { PostIndexEntry } from "./core/types";
 
-const markdownParser = new MarkdownIt();
-
-const imagesGlob = import.meta.glob<{ default: ImageMetadata }>(
-	"/src/content/**/*.{jpeg,jpg,png,gif,webp}",
-);
-
-export type FeedPost = {
-	index: PostIndexEntry;
-	raw: RawPost;
+export type FeedItemViewModel = {
+	title: string;
+	summary: string;
+	url: string;
+	published: Date;
+	updated: Date;
+	categories: string[];
 };
 
-export async function getFeedPosts(): Promise<FeedPost[]> {
-	const [store, rawPosts] = await Promise.all([
-		getContentStore(),
-		getAllPostsRaw(),
-	]);
-	const rawById = new Map(rawPosts.map((post) => [post.id, post]));
+export type AtomFeedOptions = {
+	title: string;
+	subtitle: string;
+	site: URL;
+	lang: string;
+	author: string;
+	items: FeedItemViewModel[];
+	emptyUpdated: Date;
+};
 
-	return store.posts
-		.filter((post) => !post.encrypted && !post.draft)
-		.map((index) => {
-			const raw = rawById.get(index.id);
-			if (!raw) throw new Error(`Missing raw feed post for ${index.id}`);
-			return { index, raw };
-		});
+export function toFeedItem(post: PostIndexEntry, site: URL): FeedItemViewModel {
+	return {
+		title: post.title,
+		summary: post.description.trim() || post.excerpt.trim() || post.title,
+		url: new URL(post.route.canonicalUrl, site).href,
+		published: post.published,
+		updated: post.updated ?? post.published,
+		categories: Array.from(
+			new Set(
+				[
+					post.category.name,
+					...post.tags.map((tag) => tag.name),
+				].filter(Boolean),
+			),
+		),
+	};
 }
 
-function resolveContentImageImportPath(post: RawPost, src: string): string {
-	if (src.startsWith("./")) {
-		const prefixRemoved = src.slice(2);
-		const postDir = post.id.includes("/") ? post.id.split("/")[0] : "";
-
-		return postDir
-			? `/src/content/posts/${postDir}/${prefixRemoved}`
-			: `/src/content/posts/${prefixRemoved}`;
-	}
-
-	if (src.startsWith("../")) {
-		const cleaned = src.replace(/^\.\.\//, "");
-		return `/src/content/${cleaned}`;
-	}
-
-	const postDir = post.id.includes("/") ? post.id.split("/")[0] : "";
-	return postDir
-		? `/src/content/posts/${postDir}/${src}`
-		: `/src/content/posts/${src}`;
-}
-
-export async function renderFeedContent(
-	post: FeedPost,
+export function buildFeedItems(
+	posts: readonly PostIndexEntry[],
 	site: URL,
-): Promise<string> {
-	const body = markdownParser.render(String(post.raw.body ?? ""));
-	const html = htmlParser.parse(body);
-	const images = html.querySelectorAll("img");
+): FeedItemViewModel[] {
+	return posts
+		.filter((post) => !post.encrypted && !post.draft)
+		.map((post) => toFeedItem(post, site));
+}
 
-	for (const img of images) {
-		const src = img.getAttribute("src");
-		if (!src) continue;
+export async function getFeedPosts(site: URL): Promise<FeedItemViewModel[]> {
+	const { posts } = await getContentStore();
+	return buildFeedItems(posts, site);
+}
 
-		if (
-			src.startsWith("./") ||
-			src.startsWith("../") ||
-			(!src.startsWith("http") && !src.startsWith("/"))
-		) {
-			const importPath = resolveContentImageImportPath(post.raw, src);
-			const imageMod = await imagesGlob[importPath]?.()?.then(
-				(res) => res.default,
-			);
+export function escapeXmlText(value: string): string {
+	return value
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;");
+}
 
-			if (imageMod) {
-				const optimizedImg = await getImage({ src: imageMod });
-				img.setAttribute("src", new URL(optimizedImg.src, site).href);
-			} else {
-				console.log(
-					`Failed to load image: ${importPath} for post: ${post.index.id}`,
-				);
-			}
-		} else if (src.startsWith("/")) {
-			img.setAttribute("src", new URL(src, site).href);
-		}
-	}
+export function escapeXmlAttribute(value: string): string {
+	return escapeXmlText(value)
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&apos;");
+}
 
-	return sanitizeHtml(html.toString(), {
-		allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
-	});
+export function getFeedUpdated(
+	items: readonly FeedItemViewModel[],
+	fallback: Date,
+): Date {
+	if (items.length === 0) return fallback;
+
+	return items
+		.slice(1)
+		.reduce(
+			(latest, item) => (item.updated > latest ? item.updated : latest),
+			items[0].updated,
+		);
+}
+
+export function renderAtomFeed(options: AtomFeedOptions): string {
+	const siteUrl = options.site.href;
+	const selfUrl = new URL("atom.xml", options.site).href;
+	const language = options.lang.replace("_", "-");
+	const updated = getFeedUpdated(options.items, options.emptyUpdated);
+	const entries = options.items
+		.map(
+			(item) => `  <entry>
+    <title>${escapeXmlText(item.title)}</title>
+    <link href="${escapeXmlAttribute(item.url)}" rel="alternate" type="text/html"/>
+    <id>${escapeXmlText(item.url)}</id>
+    <published>${item.published.toISOString()}</published>
+    <updated>${item.updated.toISOString()}</updated>
+    <summary type="text">${escapeXmlText(item.summary)}</summary>
+    <author>
+      <name>${escapeXmlText(options.author)}</name>
+    </author>${item.categories
+		.map(
+			(category) =>
+				`\n    <category term="${escapeXmlAttribute(category)}"/>`,
+		)
+		.join("")}
+  </entry>`,
+		)
+		.join("\n");
+
+	return `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="${escapeXmlAttribute(language)}">
+  <title>${escapeXmlText(options.title)}</title>
+  <subtitle>${escapeXmlText(options.subtitle)}</subtitle>
+  <link href="${escapeXmlAttribute(siteUrl)}" rel="alternate" type="text/html"/>
+  <link href="${escapeXmlAttribute(selfUrl)}" rel="self" type="application/atom+xml"/>
+  <id>${escapeXmlText(siteUrl)}</id>
+  <updated>${updated.toISOString()}</updated>
+${entries}${entries ? "\n" : ""}</feed>`;
 }
