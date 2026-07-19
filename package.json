@@ -4,6 +4,7 @@
 	"version": "8.3",
 	"scripts": {
 		"check-env": "node scripts/check-env.mjs",
+		"content:prepare": "node scripts/prepare-content.mjs",
 		"sync-content": "node scripts/sync-content.js",
 		"init-content": "node scripts/init-content-repo.js",
 		"predev": "node scripts/check-env.mjs",
