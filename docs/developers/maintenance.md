@@ -26,6 +26,8 @@ pnpm build
 
 团队环境通过本地加盐指纹将当前 Git identity 映射为随机 Developer ID，并为不同机器和会话分别生成 Machine ID 与 Session ID。公开文档不会记录开发者姓名、邮箱或这些本地 ID。
 
+这里的“私有”限制的是数据输出和持久化，不是禁止 Agent 读取。任务确实依赖开发者偏好、机器能力、会话状态或本地诊断时，Agent 可以读取并分析这些目录；无关任务不应为了流程完整而主动检查。最终 handoff 只能报告完成任务所必需的脱敏结论，例如某项能力当前是否可用，不能披露身份、本机路径、hostname、本地 profile ID、私有 URL、credential 或原始观察数据。
+
 首次使用或切换 Git identity 后运行：
 
 ```bash

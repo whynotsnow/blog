@@ -12,6 +12,12 @@ This policy defines what Agent Workspace Spec information may be tracked in the 
 | Quarantine | `.agent-workspace/quarantine/` | Ignored | Candidate memory that has not completed disclosure review |
 | Secret | Dedicated environment or secret store | Never persist in Agent Workspace Spec | Tokens, passwords, cookies, private keys, credential values |
 
+## Operational use of private state
+
+Local, Raw, and Quarantine files are private session inputs, not forbidden inputs. Agents may read and analyze them when their developer, machine, session, or diagnostic context is relevant to the current task. Agents should not inspect private state merely to complete a routine or make a handoff appear more thorough.
+
+Private values must not be reproduced, enumerated, quoted, or copied into tracked files or handoffs. A handoff may report only the minimum task-relevant, sanitized conclusion derived from private state, such as whether a required capability is available or which class of runtime limitation blocked a check. It must not expose identities, user-home paths, hostnames, opaque profile IDs, private URLs, credentials, or raw observations.
+
 ## Team identity model
 
 Use the active Git identity only as a local matching signal. The profile initializer converts it into a locally salted fingerprint and maps it to an opaque developer ID. Public Agent Workspace Spec files must never contain the identity, fingerprint, developer ID, machine ID, or session ID.

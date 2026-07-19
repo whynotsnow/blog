@@ -74,6 +74,10 @@ Agents MUST resolve context in this order:
 
 Local layers MAY refine availability and preferences. They MUST NOT weaken public safety or disclosure rules.
 
+Agents MAY read and analyze local layers when their developer, machine, session, or diagnostic context is relevant to the current task. Implementations SHOULD NOT inspect local state without a task-relevant reason. Privacy is an output and persistence boundary, not an access prohibition.
+
+Agents MUST NOT reproduce private local values in tracked files or handoffs. They MAY report a minimum task-relevant, sanitized conclusion derived from local state when the conclusion does not expose identities, paths, hostnames, opaque profile identifiers, private URLs, credentials, or raw observations.
+
 ## 5. Identity and profile model
 
 The reference profile format uses a locally generated salt and HMAC fingerprint to map a Git identity to an opaque developer ID. Clear-text Git names and emails MUST NOT appear in public workspace files. Implementations SHOULD avoid storing clear-text identity in local profiles when a salted fingerprint is sufficient.

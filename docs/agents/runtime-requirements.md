@@ -46,4 +46,4 @@ node .agent-workspace/tools/agent-workspace.mjs runtime detect
 node .agent-workspace/tools/agent-workspace.mjs session start
 ```
 
-After detection, use the developer-operated manual or automated lane in [workflow.md](./workflow.md#failure-handling-policy-important). Record which execution surface produced each result without copying private profile values into tracked documentation.
+After detection, use the developer-operated manual or automated lane in [workflow.md](./workflow.md#failure-handling-policy-important). Local profiles may be read and analyzed for this capability decision, but should not be inspected when the task does not depend on developer, machine, or session context. Record which execution surface produced each result and report only the minimum sanitized capability conclusion without exposing private profile values.

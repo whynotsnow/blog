@@ -10,6 +10,8 @@ This directory contains the project manifest and ignored local implementation st
 
 All three directories are ignored by Git. Agents must not force-add their contents.
 
+These directories are private session inputs, not forbidden inputs. Agents may read and analyze them when the current task depends on developer, machine, session, or diagnostic context, but should not inspect them gratuitously. Private values must not be reproduced in tracked files or handoffs; only a minimum task-relevant, sanitized conclusion may be reported without exposing identities, paths, hostnames, opaque profile IDs, private URLs, credentials, or raw observations.
+
 Use `spec/agent-workspace/examples/` as the public shape reference and `spec/agent-workspace/schemas/` as the machine-readable contract. Initialize local profiles with:
 
 ```bash

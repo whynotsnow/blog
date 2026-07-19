@@ -320,3 +320,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Generated one compact static JSON index per category and loaded it only for valid Tag queries with Promise caching, failure eviction, retry, history, and bounded pagination behavior.
 - Replaced Feed raw Markdown rendering with a body-free shared summary model and an explicit Atom XML serializer; RSS and Atom now share canonical URLs, dates, taxonomy, and `description || excerpt || title` fallback semantics.
 - Learned that with Astro `trailingSlash: "always"`, a dynamic static endpoint may emit a file such as `name.json` while the dev-server route is canonicalized as `name.json/`; client endpoint URLs must follow the configured route form and be checked in both development and static build output.
+
+### Clarified private-state access and disclosure boundaries
+
+- Defined Local, Raw, and Quarantine data as task-relevant private session inputs rather than forbidden inputs.
+- Allowed agents to read and analyze private state only when developer, machine, session, or diagnostic context matters, while discouraging gratuitous inspection.
+- Restricted tracked files and handoffs to minimum sanitized conclusions so privacy remains an output and persistence boundary without blocking capability resolution or local diagnostics.
