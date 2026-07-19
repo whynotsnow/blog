@@ -1,11 +1,11 @@
 ---
-import type { Page } from "astro";
 import { Icon } from "astro-icon/components";
 import { url } from "../../utils/url-utils";
 import { generatePages, HIDDEN } from "@utils/client-utils";
+import type { CategoryPaginationViewModel } from "@/services/category-page";
 
 interface Props {
-	page: Page;
+	page: CategoryPaginationViewModel;
 	class?: string;
 	style?: string;
 }

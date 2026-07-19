@@ -619,3 +619,97 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 	await mobileFilter.locator("summary").click();
 	await expect(filterOptions).toBeVisible();
 });
+
+test("category tag index loads on demand and is reused for tag navigation", async ({
+	page,
+}) => {
+	let indexRequests = 0;
+	page.on("request", (request) => {
+		if (new URL(request.url()).pathname === "/api/categories/tech.json/") {
+			indexRequests += 1;
+		}
+	});
+
+	await gotoPage(page, "/category/tech/");
+	await expect(
+		page.locator('[data-post-list-renderer="astro"]'),
+	).toBeVisible();
+	expect(indexRequests).toBe(0);
+
+	const tagLinks = page.locator(
+		'.category-filter a[href^="/category/tech/?tag="]',
+	);
+	await tagLinks.first().click();
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	expect(indexRequests).toBe(1);
+
+	const nextPage = page.locator(
+		'#category-pagination a[aria-label="Next Page"]',
+	);
+	await expect(nextPage).toBeEnabled();
+	await nextPage.click();
+	await expect(page).toHaveURL(/tagPage=2/);
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	expect(indexRequests).toBe(1);
+
+	await page.goBack();
+	await expect(page).not.toHaveURL(/tagPage=2/);
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	expect(indexRequests).toBe(1);
+
+	await tagLinks.nth(1).click();
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	expect(indexRequests).toBe(1);
+});
+
+test("category tag index exposes a retry state after a request failure", async ({
+	page,
+}) => {
+	let attempts = 0;
+	await page.route("**/api/categories/tech.json/", async (route) => {
+		attempts += 1;
+		if (attempts === 1) {
+			await route.fulfill({ status: 503, body: "unavailable" });
+			return;
+		}
+		await route.fallback();
+	});
+
+	await gotoPage(page, "/category/tech/?tag=vue");
+	const errorState = page.locator('[data-category-index-state="error"]');
+	await expect(errorState).toBeVisible();
+	await errorState.getByRole("button", { name: "重试" }).click();
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	expect(attempts).toBe(2);
+});
+
+test("unknown category tags render an empty result without loading the index", async ({
+	page,
+}) => {
+	let indexRequests = 0;
+	page.on("request", (request) => {
+		if (new URL(request.url()).pathname === "/api/categories/tech.json/") {
+			indexRequests += 1;
+		}
+	});
+
+	await gotoPage(page, "/category/tech/?tag=missing-tag");
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"]'),
+	).toBeVisible();
+	await expect(
+		page.locator('[data-post-list-renderer="svelte"] .post-list__item'),
+	).toHaveCount(0);
+	await expect(page.locator(".category-filter")).toContainText("0 篇文章");
+	expect(indexRequests).toBe(0);
+});

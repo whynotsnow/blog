@@ -6,16 +6,17 @@ import CategoryPostListClient from "./CategoryPostListClient.svelte";
 
 type Props = CategoryPageProps;
 
-const { posts, allPosts, page, categories, categorySlug } = Astro.props;
+const { posts, pagination, categories, categorySlug, tagIndexUrl } =
+	Astro.props;
 ---
 
 <CategoryPostListClient
 	client:load
-	posts={allPosts}
 	{categories}
 	{categorySlug}
-	resultCount={page.total}
+	{tagIndexUrl}
+	resultCount={pagination.total}
 >
 	<PostGrid posts={posts} id="post-list-container" />
-	<Pagination page={page} class="mx-auto" style={`animation-delay: calc(var(--content-delay) + ${page.data.length * 50}ms)`} />
+	<Pagination page={pagination} class="mx-auto" style={`animation-delay: calc(var(--content-delay) + ${posts.length * 50}ms)`} />
 </CategoryPostListClient>

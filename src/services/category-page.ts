@@ -1,5 +1,6 @@
-import type { GetStaticPathsItem, ImageMetadata, Page } from "astro";
+import type { GetStaticPathsItem, ImageMetadata } from "astro";
 import { CATEGORY_PAGE_SIZE } from "@constants/constants";
+import { url } from "@utils/url-utils";
 import { toPostCardViewModel } from "./core/inject";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
@@ -11,10 +12,26 @@ import type {
 
 export type CategoryPageProps = {
 	posts: PostCardViewModel[];
-	allPosts: PostCardViewModel[];
-	page: Page<PostCardViewModel>;
+	pagination: CategoryPaginationViewModel;
 	categorySlug: string;
 	categories: PostNavigatorCategory[];
+	tagIndexUrl: string;
+};
+
+export type CategoryPaginationViewModel = {
+	start: number;
+	end: number;
+	size: number;
+	total: number;
+	currentPage: number;
+	lastPage: number;
+	url: {
+		current: string;
+		first: string;
+		last: string;
+		prev?: string;
+		next?: string;
+	};
 };
 
 export type ClientPostCard = {
@@ -80,39 +97,41 @@ function buildCategoryPage(
 	allPosts: PostCardViewModel[],
 	slug: string,
 	currentPage: number,
-): Page<PostCardViewModel> {
+): { posts: PostCardViewModel[]; pagination: CategoryPaginationViewModel } {
 	const lastPageNumber = Math.ceil(allPosts.length / CATEGORY_PAGE_SIZE);
 	const start = (currentPage - 1) * CATEGORY_PAGE_SIZE;
 	const end = start + CATEGORY_PAGE_SIZE;
 
 	return {
-		data: allPosts.slice(start, end),
-		start,
-		end: Math.min(end, allPosts.length),
-		size: CATEGORY_PAGE_SIZE,
-		total: allPosts.length,
-		currentPage,
-		lastPage: lastPageNumber,
-		url: {
-			current:
-				currentPage === 1
-					? `/category/${slug}/`
-					: `/category/${slug}/page/${currentPage}/`,
-			first: `/category/${slug}/`,
-			last:
-				lastPageNumber > 1
-					? `/category/${slug}/page/${lastPageNumber}/`
-					: `/category/${slug}/`,
-			prev:
-				currentPage > 1
-					? currentPage === 2
+		posts: allPosts.slice(start, end),
+		pagination: {
+			start,
+			end: Math.min(end, allPosts.length),
+			size: CATEGORY_PAGE_SIZE,
+			total: allPosts.length,
+			currentPage,
+			lastPage: lastPageNumber,
+			url: {
+				current:
+					currentPage === 1
 						? `/category/${slug}/`
-						: `/category/${slug}/page/${currentPage - 1}/`
-					: undefined,
-			next:
-				currentPage < lastPageNumber
-					? `/category/${slug}/page/${currentPage + 1}/`
-					: undefined,
+						: `/category/${slug}/page/${currentPage}/`,
+				first: `/category/${slug}/`,
+				last:
+					lastPageNumber > 1
+						? `/category/${slug}/page/${lastPageNumber}/`
+						: `/category/${slug}/`,
+				prev:
+					currentPage > 1
+						? currentPage === 2
+							? `/category/${slug}/`
+							: `/category/${slug}/page/${currentPage - 1}/`
+						: undefined,
+				next:
+					currentPage < lastPageNumber
+						? `/category/${slug}/page/${currentPage + 1}/`
+						: undefined,
+			},
 		},
 	};
 }
@@ -125,14 +144,18 @@ function buildCategoryPageProps(params: {
 }): CategoryPageProps {
 	const { sortedPosts, slug, currentPage, categories } = params;
 	const allPosts = sortedPosts.map(toPostCardViewModel);
-	const page = buildCategoryPage(allPosts, slug, currentPage);
+	const { posts, pagination } = buildCategoryPage(
+		allPosts,
+		slug,
+		currentPage,
+	);
 
 	return {
-		posts: page.data,
-		allPosts,
-		page,
+		posts,
+		pagination,
 		categorySlug: slug,
 		categories,
+		tagIndexUrl: url(`/api/categories/${slug}.json/`),
 	};
 }
 

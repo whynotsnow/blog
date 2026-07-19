@@ -44,7 +44,12 @@ describe("category static paths", () => {
 			{ slug: "notes" },
 		]);
 		const firstPage = paths[0]?.props as CategoryPageProps;
-		expect(firstPage.page.url.current).toBe("/category/tech/");
+		expect(firstPage.pagination.url.current).toBe("/category/tech/");
+		expect(firstPage.posts).toHaveLength(12);
+		expect(firstPage.posts[0]).toEqual({ id: "post-1" });
+		expect(firstPage).not.toHaveProperty("allPosts");
+		expect(firstPage.pagination).not.toHaveProperty("data");
+		expect(firstPage.tagIndexUrl).toBe("/api/categories/tech.json/");
 	});
 
 	it("generates pagination from page two and skips single-page categories", async () => {
@@ -54,7 +59,7 @@ describe("category static paths", () => {
 			{ slug: "tech", page: "2" },
 		]);
 		const secondPage = paths[0]?.props as CategoryPageProps;
-		expect(secondPage.page.url).toMatchObject({
+		expect(secondPage.pagination.url).toMatchObject({
 			current: "/category/tech/page/2/",
 			first: "/category/tech/",
 			prev: "/category/tech/",

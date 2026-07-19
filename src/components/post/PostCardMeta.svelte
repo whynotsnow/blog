@@ -1,23 +1,21 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import type { PostCardViewModel } from "@/services/core/types";
+	import type { ClientPostCard } from "@/services/category-page";
 	import I18nKey from "@/i18n/i18nKey";
 	import { i18n } from "@/i18n/translation";
 	import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 	import { siteConfig } from "@/config";
 	import { formatPostCardWordCount } from "@/features/post-list/word-count";
 
-	export let post: Pick<PostCardViewModel, "published" | "category" | "meta">;
+	export let post: Pick<ClientPostCard, "published" | "category" | "words">;
 
 	$: wordCount =
-		post.meta.words > 0
+		post.words > 0
 			? formatPostCardWordCount(
-					post.meta.words,
+					post.words,
 					siteConfig.lang,
 					i18n(
-						post.meta.words > 1
-							? I18nKey.wordsCount
-							: I18nKey.wordCount,
+						post.words > 1 ? I18nKey.wordsCount : I18nKey.wordCount,
 					),
 				)
 			: null;

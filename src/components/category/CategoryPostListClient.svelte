@@ -3,17 +3,25 @@
 	import type { PostNavigatorCategory } from "@/services/core/types";
 	import PaginationClient from "@components/post/PaginationClient.svelte";
 	import PostListView from "@components/post/PostListView.svelte";
-	import type { PostCardViewModel } from "@components/post/types";
 	import CategoryFilter from "./CategoryFilter.svelte";
 	import { useCategoryPagination } from "./category-page-client";
 
-	export let posts: PostCardViewModel[];
 	export let categories: PostNavigatorCategory[];
 	export let categorySlug: string;
+	export let tagIndexUrl: string;
 	export let resultCount: number;
 
-	const { page, state: paginationState } = useCategoryPagination({
-		posts,
+	const activeCategory = categories.find(
+		(category) => category.slug === categorySlug,
+	);
+	const {
+		page,
+		state: paginationState,
+		loadState,
+		retry,
+	} = useCategoryPagination({
+		tagIndexUrl,
+		validTagSlugs: activeCategory?.tags.map((tag) => tag.slug) ?? [],
 		pageSize: CATEGORY_PAGE_SIZE,
 	});
 </script>
@@ -33,12 +41,37 @@
 	/>
 
 	{#if $paginationState.isTagMode}
-		<PostListView posts={$page.data} />
-		<PaginationClient
-			currentPage={$page.currentPage}
-			lastPage={$page.lastPage}
-			tag={$paginationState.tag}
-		/>
+		{#if $loadState === "loading"}
+			<div
+				class="ds-surface-card p-6 text-center text-sm text-(--text-secondary)"
+				aria-live="polite"
+				data-category-index-state="loading"
+			>
+				正在加载标签文章…
+			</div>
+		{:else if $loadState === "error"}
+			<div
+				class="ds-surface-card p-6 text-center text-sm text-(--text-secondary)"
+				aria-live="assertive"
+				data-category-index-state="error"
+			>
+				<p>标签文章加载失败。</p>
+				<button
+					type="button"
+					class="mt-3 rounded-(--radius-md) bg-(--accent) px-4 py-2 font-semibold text-(--text-on-accent)"
+					on:click={() => void retry()}
+				>
+					重试
+				</button>
+			</div>
+		{:else}
+			<PostListView posts={$page.data} />
+			<PaginationClient
+				currentPage={$page.currentPage}
+				lastPage={$page.lastPage}
+				tag={$paginationState.tag}
+			/>
+		{/if}
 	{:else}
 		<slot />
 	{/if}

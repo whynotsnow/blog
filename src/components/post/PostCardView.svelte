@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import type { PostCardViewModel } from "@/services/core/types";
+	import type { ClientPostCard } from "@/services/category-page";
 	import { siteConfig } from "@/config";
 	import I18nKey from "@/i18n/i18nKey";
 	import { i18n } from "@/i18n/translation";
@@ -8,12 +8,12 @@
 	import PostCardMeta from "./PostCardMeta.svelte";
 
 	// ========= props =========
-	export let post: PostCardViewModel;
+	export let post: ClientPostCard;
 	export let className = "";
 	export let style: string | undefined = undefined;
 
 	// ========= 派生数据 =========
-	const hasCover = !!(post.hasCoverImage && post.image?.src);
+	const hasCover = Boolean(post.image?.src);
 	const coverWidth = "28%";
 	const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 
@@ -29,7 +29,7 @@
 	data-tags={dataTags}
 	data-card-variant="adaptive"
 	data-has-cover={hasCover}
-	data-has-description={Boolean(post.description)}
+	data-has-description={Boolean(post.summary)}
 	data-tag-style={useNewTagStyle ? "new" : "legacy"}
 	data-pinned={post.pinned}
 >
@@ -62,9 +62,9 @@
 		<!-- ================= 描述 ================= -->
 		<div
 			class="home-post-card__summary transition text-75"
-			title={post.description ?? post.meta?.excerpt ?? ""}
+			title={post.summary}
 		>
-			{post.description ?? post.meta?.excerpt ?? ""}
+			{post.summary}
 		</div>
 
 		<!-- ================= 标签 ================= -->
