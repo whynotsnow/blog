@@ -54,7 +54,7 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm check`: run Astro checks.
 - `pnpm type-check`: run TypeScript declaration-oriented checks.
 - `pnpm build`: production build, Pagefind indexing, and font compression.
-- `pnpm build:astro`: run only the Astro production build stage.
+- `pnpm build:astro`: prepare Content and font subsets, then run only the Astro production build stage without Pagefind.
 - `pnpm format:check`: check formatting.
 - `pnpm format`: format the repository according to the local Prettier config.
 - `pnpm precommit`: run the same pre-commit gate as the Git hook.

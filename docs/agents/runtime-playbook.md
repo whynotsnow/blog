@@ -36,6 +36,23 @@ Example:
 sed -n '1,220p' 'src/pages/posts/[...slug].astro'
 ```
 
+### generated-font-dev-drift
+
+Pattern:
+
+- CSS references generated WOFF2 files, but only a postbuild task creates them, so `astro dev` returns 404 and the browser uses a system fallback.
+- A font script parses an obsolete TypeScript re-export with regular expressions, treats missing configuration as disabled optimization, and lets the build succeed without required output.
+- Source TTF files live under `public`, so Astro publishes the full multi-megabyte sources even when subset WOFF2 files are also generated.
+
+Use:
+
+- Keep original fonts under `src/assets/fonts/source` with lowercase ASCII filenames; never use `public` as the compiler input directory.
+- Run `content:prepare`, then `font:prepare`, before Astro starts in development, production builds, checks, and Playwright web servers.
+- Treat `scripts/fonts/config.mjs` as the font build contract. Do not parse `siteConfig` or TypeScript source with regular expressions.
+- Keep character collection deterministic and local. Runtime API text must use a system fallback or an already persisted data source; do not use network responses, time values, or random sampling as font inputs.
+- Let Astro Font API publish generated `.font-build` WOFF2 files with hashed URLs. Preload the small Latin subset only; load CJK and future locale packages through `unicode-range` and actual text use.
+- Use `pnpm font:check` to detect stale or missing generated output, and verify development responses plus `dist/_astro/fonts` when changing the pipeline.
+
 ## Astro
 
 ### astro-telemetry-side-effects

@@ -82,7 +82,7 @@ Do not place unrelated behavior in a convenient existing spec. Avoid duplicating
 | `pnpm test:smoke` | Critical-route Playwright smoke only |
 | `pnpm test:e2e:shell` | Navigation and responsive Shell contracts |
 | `pnpm test:e2e:full` | All Playwright regression specs |
-| `pnpm build:astro` | Astro build stage without Pagefind or font compression |
+| `pnpm build:astro` | Content/font preparation plus the Astro build stage, without Pagefind |
 | `pnpm verify:full` | Static checks, fast tests, full E2E, and complete production build |
 
 Pre-commit uses staged-file categories for local static gates and never runs browser tests. Pull request and ordinary `main` push CI consume the same impact plan. Weekly scheduled runs, manual full runs, releases, and risk-based escalation keep L6 as the mapping safety net. `pnpm test:impact:check` guards `src/features/**` and `tests/e2e/**` so newly added paths cannot silently fall through to full validation.

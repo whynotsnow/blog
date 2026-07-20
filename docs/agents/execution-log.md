@@ -326,3 +326,13 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Defined Local, Raw, and Quarantine data as task-relevant private session inputs rather than forbidden inputs.
 - Allowed agents to read and analyze private state only when developer, machine, session, or diagnostic context matters, while discouraging gratuitous inspection.
 - Restricted tracked files and handoffs to minimum sanitized conclusions so privacy remains an output and persistence boundary without blocking capability resolution or local diagnostics.
+
+## 2026-07-21
+
+### Made font preparation deterministic across development and production
+
+- Replaced the postbuild-only font script and TypeScript regex parsing with one cached, deterministic `font:prepare` contract shared by development, checks, Playwright, and production builds.
+- Moved original TTF files out of `public`, normalized their filenames and metadata-facing family names, and emitted only content-subset WOFF2 packages through Astro Font API hashed URLs.
+- Preserved the ASCII-first/CJK-fallback behavior by physically limiting Zen Maru Gothic to ASCII, while collecting the Lolita V2 subset from prepared Content, local UI sources, and a fixed safelist without network or random inputs.
+- Kept concrete Astro font variables below Design Typography semantics, preloaded only the small Latin subset, and reserved Locale plus `unicode-range` metadata for future language packages.
+- Learned that generated assets referenced by global CSS must be prepared before every runtime that consumes them; postbuild generation cannot satisfy Dev Server requests, and missing build configuration must fail rather than silently select fallback fonts.

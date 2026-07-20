@@ -1,6 +1,6 @@
 {
 	"version": 2,
-	"updated": "2026-07-19",
+	"updated": "2026-07-21",
 	"principle": "This project is not debugged repeatedly. It is learned once and reused forever.",
 	"architecture_constraints": [
 		{
@@ -84,6 +84,16 @@
 				"pnpm wants to use .pnpm-store while node_modules points to the user-level store"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#pnpm-store-location-mismatch"
+		},
+		{
+			"id": "generated-font-dev-drift",
+			"cluster": "build-pipeline",
+			"symptoms": [
+				"development requests generated WOFF2 paths with 404 responses",
+				"font preparation reports no configuration after configuration files were split",
+				"production output contains full source TTF files alongside or instead of subsets"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#generated-font-dev-drift"
 		},
 		{
 			"id": "md051-emoji-heading-fragments",

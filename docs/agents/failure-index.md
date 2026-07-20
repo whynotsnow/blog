@@ -29,6 +29,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: `ERR_PNPM_UNEXPECTED_STORE` because existing `node_modules` is linked from a different pnpm store than the active pnpm config wants to use.
 - Playbook: [pnpm-store-location-mismatch](./runtime-playbook.md#pnpm-store-location-mismatch)
 
+### generated-font-dev-drift
+
+- Symptom: Dev requests configured WOFF2 URLs with 404 responses while source TTF files exist, or production silently falls back because the font generator found no configuration.
+- Playbook: [generated-font-dev-drift](./runtime-playbook.md#generated-font-dev-drift)
+
 ## Framework
 
 ### astro-telemetry-side-effects

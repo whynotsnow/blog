@@ -259,7 +259,7 @@ Do not read unrelated documents just to appear thorough. If multiple areas are a
 ## Guardrails
 
 - Treat `src/config.ts` as owner-specific configuration, not generic upstream defaults.
-- Do not edit `dist`, `node_modules`, generated Pagefind output, or compressed font output directly.
+- Do not edit `dist`, `node_modules`, generated Pagefind output, `.font-build`, or compressed font output directly.
 - Do not add new dependencies unless the existing Astro/Svelte/Node toolchain cannot reasonably solve the task.
 - Do not bypass `src/services/core` for post list data in normal pages.
 - Do not bypass `getContentStore()` for normal post collection data.
