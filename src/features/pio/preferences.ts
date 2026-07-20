@@ -1,21 +1,21 @@
-export const PIO_VISIBILITY_STORAGE_KEY = "posterGirl";
-export const PIO_VISIBILITY_EVENT = "pio-visibility-change";
+export const PIO_MOUNT_STORAGE_KEY = "pio-module-mounted";
+export const PIO_MOUNT_EVENT = "pio-mount-change";
 
-export type PioVisibilityChangeDetail = {
-	visible: boolean;
-	source: "preference" | "pio";
+export type PioMountChangeDetail = {
+	mounted: boolean;
 };
 
-export function getPioVisible() {
-	if (typeof localStorage === "undefined") return true;
-	return localStorage.getItem(PIO_VISIBILITY_STORAGE_KEY) !== "0";
+export function getPioMounted(defaultMounted = true) {
+	if (typeof localStorage === "undefined") return defaultMounted;
+	const stored = localStorage.getItem(PIO_MOUNT_STORAGE_KEY);
+	return stored === null ? defaultMounted : stored === "1";
 }
 
-export function setPioVisible(visible: boolean) {
-	localStorage.setItem(PIO_VISIBILITY_STORAGE_KEY, visible ? "1" : "0");
+export function setPioMounted(mounted: boolean) {
+	localStorage.setItem(PIO_MOUNT_STORAGE_KEY, mounted ? "1" : "0");
 	window.dispatchEvent(
-		new CustomEvent<PioVisibilityChangeDetail>(PIO_VISIBILITY_EVENT, {
-			detail: { visible, source: "preference" },
+		new CustomEvent<PioMountChangeDetail>(PIO_MOUNT_EVENT, {
+			detail: { mounted },
 		}),
 	);
 }

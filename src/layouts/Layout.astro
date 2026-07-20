@@ -1,7 +1,6 @@
 ---
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import Pio from "@/features/pio/Pio.svelte";
-import { pioConfig } from "@/config";
 import LayoutBannerStyles from "./page-shell/LayoutBannerStyles.astro";
 import LayoutHead from "./page-shell/LayoutHead.astro";
 import {
@@ -101,8 +100,8 @@ const pageShell = buildLayoutPageShellModel({
 		<ConfigCarrier />
 		<slot />
 
-		<!-- Pio 看板娘组件 - 仅在启用时加载 -->
-		{pioConfig.enable && <Pio client:idle />}
+		<!-- Pio controller stays available; config only supplies its default mount state. -->
+		<Pio client:idle />
 
 		<!-- Dynamic route-height compensation; the Shell runtime owns its exact size. -->
 		<div id="page-height-guard" class="page-height-guard" data-state="idle" aria-hidden="true"></div>

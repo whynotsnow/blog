@@ -1,7 +1,7 @@
 import type { PioConfig } from "../types/config";
 
 export const pioConfig: PioConfig = {
-	enable: true, // 启用看板娘
+	enable: true, // 默认挂载看板娘
 	models: ["/pio/models/pio/model.json"], // 默认模型路径
 	position: "left", // 模型位置
 	width: 280, // 默认宽度

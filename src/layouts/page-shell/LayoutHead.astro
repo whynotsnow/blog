@@ -1,5 +1,5 @@
 ---
-import { CLARITY_PROJECT_ID, GTM_ID, pioConfig, profileConfig, siteConfig } from "@/config";
+import { CLARITY_PROJECT_ID, GTM_ID, profileConfig, siteConfig } from "@/config";
 import { umamiConfig } from "@/config";
 import {
 	DARK_MODE,
@@ -245,9 +245,7 @@ const {
 </script>
 <slot />
 
-{
-	pioConfig.enable && <link rel="stylesheet" href="/pio/static/pio.css" />
-}
+<link rel="stylesheet" href="/pio/static/pio.css" />
 
 <link
 	rel="alternate"

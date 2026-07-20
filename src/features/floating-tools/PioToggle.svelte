@@ -5,44 +5,42 @@
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
 	import {
-		getPioVisible,
-		PIO_VISIBILITY_EVENT,
-		setPioVisible,
-		type PioVisibilityChangeDetail,
+		getPioMounted,
+		PIO_MOUNT_EVENT,
+		setPioMounted,
+		type PioMountChangeDetail,
 	} from "@/features/pio/preferences";
 
-	let visible = $state(true);
+	let mounted = $state(pioConfig.enable);
 	let available = $state(false);
 
 	const label = $derived(
-		visible ? i18n(I18nKey.pioHide) : i18n(I18nKey.pioShow),
+		mounted ? i18n(I18nKey.pioHide) : i18n(I18nKey.pioShow),
 	);
 
 	onMount(() => {
 		const media = window.matchMedia("(max-width: 1280px)");
 		const syncAvailability = () => {
-			available =
-				pioConfig.enable &&
-				!(pioConfig.hiddenOnMobile && media.matches);
+			available = !(pioConfig.hiddenOnMobile && media.matches);
 		};
-		const syncVisibility = (event: Event) => {
-			visible = (event as CustomEvent<PioVisibilityChangeDetail>).detail
-				.visible;
+		const syncMount = (event: Event) => {
+			mounted = (event as CustomEvent<PioMountChangeDetail>).detail
+				.mounted;
 		};
 
-		visible = getPioVisible();
+		mounted = getPioMounted(pioConfig.enable);
 		syncAvailability();
 		media.addEventListener("change", syncAvailability);
-		window.addEventListener(PIO_VISIBILITY_EVENT, syncVisibility);
+		window.addEventListener(PIO_MOUNT_EVENT, syncMount);
 
 		return () => {
 			media.removeEventListener("change", syncAvailability);
-			window.removeEventListener(PIO_VISIBILITY_EVENT, syncVisibility);
+			window.removeEventListener(PIO_MOUNT_EVENT, syncMount);
 		};
 	});
 
 	function toggle() {
-		setPioVisible(!visible);
+		setPioMounted(!mounted);
 	}
 </script>
 
@@ -50,16 +48,16 @@
 	<button
 		type="button"
 		class="floating-tool-button"
-		class:is-active={!visible}
+		class:is-active={mounted}
 		aria-label={label}
-		aria-pressed={!visible}
+		aria-pressed={mounted}
 		title={label}
 		onclick={toggle}
 	>
 		<LocalIcon
-			name={visible
-				? "material-symbols:person-rounded"
-				: "material-symbols:person-off-rounded"}
+			name={mounted
+				? "material-symbols:face-retouching-natural-rounded"
+				: "material-symbols:face-retouching-off-rounded"}
 		/>
 	</button>
 {/if}
