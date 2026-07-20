@@ -33,9 +33,18 @@ pnpm install
 pnpm dev
 ```
 
-`dev` 脚本会启动 `astro dev --host`。
+`dev` 脚本会依次准备 Content 和字体子集，再启动 `astro dev --host`。字体准备使用输入 Hash 缓存；源字体、配置和字符集没有变化时不会重复压缩。
 
-`predev` 会先运行环境校验；`dev` 会在启动前运行内容同步脚本。如果未配置内容分离，同步脚本会直接退出并继续使用本地内容。
+`predev` 会先运行环境校验；`dev` 会在启动前运行内容同步脚本。如果未配置内容分离，同步脚本会直接退出并继续使用本地内容。必须保持 `content:prepare → font:prepare → astro dev` 的顺序，否则外部 Content 中的新字符不会进入字体子集。
+
+字体相关命令：
+
+```bash
+pnpm font:prepare
+pnpm font:check
+```
+
+`font:prepare` 生成或复用 `.font-build/*.woff2`；`font:check` 只校验缓存产物是否与当前字体源、配置和字符集一致。开发过程中新增文章字符后，可重新运行 `pnpm font:prepare` 或重启 Dev Server。
 
 ## 构建
 
@@ -45,10 +54,13 @@ pnpm build
 
 构建流程：
 
-1. `scripts/update-anime.mjs`
-2. `astro build`
-3. `pagefind --site dist`
-4. `scripts/compress-fonts.js`
+1. `content:prepare`
+2. `scripts/update-anime.mjs`
+3. `font:prepare`
+4. `astro build`
+5. `pagefind --site dist`
+
+字体子集必须在 `astro build` 之前生成。Astro Font API 从 `.font-build/` 读取 WOFF2，生成带 Hash 的 `/_astro/fonts/` 产物；生产输出不再复制 `src/assets/fonts/source/` 中的原始 TTF。
 
 如果启用了外部服务，构建可能依赖对应环境变量或网络访问。
 

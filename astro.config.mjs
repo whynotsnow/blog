@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import swup from "@swup/astro";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
@@ -27,9 +27,31 @@ import { remarkContent } from "./src/plugins/remark-content.mjs";
 import { rehypeImageWidth } from "./src/plugins/rehype-image-width.mjs";
 import rehypeExternalLinks from "rehype-external-links";
 import { remarkFixGithubAdmonitions } from "./src/plugins/remark-fix-github-admonitions.js";
+import { FONT_BUILD_DIR, FONT_PACKAGES } from "./scripts/fonts/config.mjs";
+
+const fonts = FONT_PACKAGES.map((fontPackage) => ({
+	name: fontPackage.family,
+	cssVariable: fontPackage.cssVariable,
+	provider: fontProviders.local(),
+	options: {
+		variants: [
+			{
+				src: [`./${FONT_BUILD_DIR}/${fontPackage.output}`],
+				weight: String(fontPackage.weight),
+				style: fontPackage.style,
+				unicodeRange: fontPackage.unicodeRange,
+			},
+		],
+	},
+	fallbacks: [],
+	optimizedFallbacks: false,
+}));
 
 // https://astro.build/config
 export default defineConfig({
+	experimental: {
+		fonts,
+	},
 	site: siteConfig.siteURL,
 	base: "/",
 	trailingSlash: "always",

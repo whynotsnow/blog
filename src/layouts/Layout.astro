@@ -1,4 +1,5 @@
 ---
+import { Font } from "astro:assets";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import Pio from "@/features/pio/Pio.svelte";
 import LayoutBannerStyles from "./page-shell/LayoutBannerStyles.astro";
@@ -56,6 +57,8 @@ const pageShell = buildLayoutPageShellModel({
 	class="bg-(--page-bg)"
 >
 	<head>
+		<Font cssVariable="--font-latin" preload />
+		<Font cssVariable="--font-cjk" />
 		<LayoutHead
 			configHue={pageShell.configHue}
 			bannerHeightHome={`${LAYOUT_BANNER_HEIGHT_HOME}vh`}
@@ -83,9 +86,6 @@ const pageShell = buildLayoutPageShellModel({
 				"navbar-fixed-visible": navbarBehavior === "fixed-visible",
 			},
 		]}
-		style={pageShell.bodyFontFamily
-			? `--font-body: ${pageShell.bodyFontFamily}; font-family: var(--font-body);`
-			: ""}
 	>
 		<noscript
 			><iframe

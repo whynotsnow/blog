@@ -37,7 +37,7 @@
 
 | 配置 | 说明 |
 | --- | --- |
-| `siteConfig` | 站点信息、语言、特色页面、横幅、主题、文章列表、字体等。 |
+| `siteConfig` | 站点信息、语言、特色页面、横幅、主题和文章列表等。 |
 | `fullscreenWallpaperConfig` | 叠加全屏壁纸资源与效果行为。 |
 | `navBarConfig` | 顶部导航链接。 |
 | `profileConfig` | 首页作者资料模块内容。 |
@@ -46,6 +46,14 @@
 | `pageLayoutPolicies` | 页面 Shell Strategy 与允许的桌面布局集合；当前仅允许 `content-right`。 |
 | `siteNoticeConfig` | 主内容 Shell 顶部的网站级通知、状态、操作与可见范围。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
+
+## 字体配置
+
+字体属于 Build 与 Design 基础设施，不再由 `siteConfig` 配置。字体源、字重、字符集策略、Locale 适用范围和 Astro CSS Variable 统一声明在 `scripts/fonts/config.mjs`；原始 TTF 使用小写 ASCII 文件名存放在 `src/assets/fonts/source/`，不能放回 `public/`。
+
+`pnpm font:prepare` 根据当前准备完成的 Content、`src` UI 文本和固定 safelist 生成缓存于 `.font-build/` 的 WOFF2 子集。Astro Font API 再将这些产物发布为带内容 Hash 的 `/_astro/fonts/*.woff2`，并生成 `@font-face` 与 CSS Variable。`--font-latin` 和 `--font-cjk` 是字体资源变量，语义字体栈仍由 Design Typography 的 `--font-body`、`--font-heading` 和 `--font-mono` 拥有。
+
+新增 Locale 时，在字体包配置中补充 `locales`、`unicodeRange` 和对应字符集策略。只 Preload 当前首屏必需且体积较小的 Latin 字体；其他语言字体应依赖 `unicode-range` 按实际字符加载，或在用户准备切换语言时 Prefetch，不能默认 Preload 全部语言包。
 
 ## 页面模块与布局
 

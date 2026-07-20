@@ -22,7 +22,6 @@ export interface LayoutPageShellInput {
 
 export interface LayoutPageShellModel {
 	banner: string;
-	bodyFontFamily: string;
 	configHue: number;
 	canonicalUrl: string;
 	description?: string;
@@ -88,35 +87,6 @@ function buildSiteLang(lang?: string) {
 	return (lang || siteConfig.lang).replace("_", "-");
 }
 
-function buildBodyFontFamily() {
-	if (!siteConfig.font) return "";
-
-	const fonts: string[] = [];
-	if (siteConfig.font.asciiFont?.fontFamily) {
-		const asciiFont = siteConfig.font.asciiFont.fontFamily;
-		fonts.push(asciiFont.includes(" ") ? `"${asciiFont}"` : asciiFont);
-	}
-	if (siteConfig.font.cjkFont?.fontFamily) {
-		const cjkFont = siteConfig.font.cjkFont.fontFamily;
-		fonts.push(cjkFont.includes(" ") ? `"${cjkFont}"` : cjkFont);
-	}
-	fonts.push(
-		"system-ui",
-		"-apple-system",
-		"BlinkMacSystemFont",
-		"'Segoe UI'",
-		"Roboto",
-		"Oxygen",
-		"Ubuntu",
-		"Cantarell",
-		"'Open Sans'",
-		"'Helvetica Neue'",
-		"sans-serif",
-	);
-
-	return fonts.join(", ");
-}
-
 function getBannerOffset() {
 	const bannerOffsetByPosition = {
 		top: `${BANNER_HEIGHT_EXTEND}vh`,
@@ -134,7 +104,6 @@ export function buildLayoutPageShellModel(
 
 	return {
 		banner: getDefaultBanner(),
-		bodyFontFamily: buildBodyFontFamily(),
 		canonicalUrl: buildCanonicalUrl(input),
 		configHue: siteConfig.themeColor.hue,
 		description: input.description,

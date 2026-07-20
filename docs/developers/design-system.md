@@ -38,6 +38,8 @@ Primitive → Semantic → Theme/Pattern → Component
 
 `--status-info`、`--status-success`、`--status-warning`、`--status-danger` 表示状态强调色，不直接表示背景或正文颜色。Feature 应基于状态强调色与 `--surface-*`、`--border-*` 组合局部 Surface 和边界；Form、Toast、Badge、Site Notice 等功能因此可以共享状态语言，而不必共享相同的背景强度。
 
+Typography 中，Astro Font API 注入的 `--font-latin` 与 `--font-cjk` 只表示具体字体资源；`src/design/tokens/typography.css` 使用它们组合语义级 `--font-body`，并继续派生 `--font-heading`。Feature 应消费 `--font-body`、`--font-heading` 或 `--font-mono`，不能直接绑定字体文件、Hash URL 或 Font API 生成的 Family Name。
+
 ### Pattern
 
 | Class | 用途 |
