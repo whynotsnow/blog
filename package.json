@@ -18,6 +18,8 @@
 		"update-bilibili": "node scripts/update-bilibili.mjs",
 		"build": "pnpm content:prepare && node scripts/update-anime.mjs && astro build && pagefind --site dist && node scripts/compress-fonts.js",
 		"build:astro": "pnpm content:prepare && astro build",
+		"font:prepare": "node scripts/fonts/index.mjs",
+		"font:check": "node scripts/fonts/index.mjs --check",
 		"submit": "node scripts/indexnow-submit.js",
 		"preview": "astro preview",
 		"astro": "astro",
@@ -50,7 +52,7 @@
 		"prepare": "node scripts/install-git-hooks.mjs",
 		"precommit": "node scripts/check-env.mjs && node scripts/pre-commit-check.mjs",
 		"preinstall": "node scripts/check-env.mjs && npx only-allow pnpm",
-		"compress-fonts": "node scripts/compress-fonts.js",
+		"compress-fonts": "pnpm font:prepare",
 		"clean": "rimraf node_modules pnpm-lock.yaml",
 		"clean:force": "rimraf node_modules pnpm-lock.yaml && pnpm store prune"
 	},
