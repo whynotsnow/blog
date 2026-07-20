@@ -1,7 +1,7 @@
 import type { MusicPlayerConfig } from "../types/config";
 
 export const musicPlayerConfig: MusicPlayerConfig = {
-	enable: true, // 启用音乐播放器功能
+	enable: true, // 默认挂载音乐播放器
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:
 		"https://meting.whynotsnow.com/api?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址

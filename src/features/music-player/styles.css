@@ -6,6 +6,26 @@
   border: 1px solid color-mix(in oklch, var(--accent) 32%, var(--border-subtle));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--accent) 8%, transparent),
+    0 0 0.75rem color-mix(in oklch, var(--accent) 16%, transparent);
+  transform: translateY(0) scale(1);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    box-shadow var(--motion-normal) var(--motion-ease-standard),
+    transform var(--motion-normal) var(--motion-ease-standard);
+}
+
+.orb-player:hover {
+  border-color: color-mix(in oklch, var(--accent) 52%, var(--border-subtle));
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--accent) 16%, transparent),
+    0 0.125rem 0.9rem color-mix(in oklch, var(--accent) 24%, transparent);
+  transform: translateY(-0.125rem);
+}
+
+.orb-player:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .orb-player--fallback {
@@ -132,8 +152,9 @@
 
 .music-player.hidden-mode {
   width: 3rem;
-  height: 3rem;
+  height: 4.5rem;
   border-radius: 1.5rem;
+  overflow: visible;
 }
 
 .music-player {
@@ -151,7 +172,7 @@
     border-radius var(--motion-normal) var(--motion-ease-standard);
 }
 
-.music-player.has-started:not(.expanded):not(.hidden-mode) {
+.music-player:not(.expanded):not(.hidden-mode) {
   width: 17.5rem;
   height: 4.5rem;
   border-radius: 1rem;
@@ -181,6 +202,7 @@
 .music-player__state--hidden {
   width: 3rem;
   height: 3rem;
+  bottom: 0.75rem;
   z-index: 2;
 }
 

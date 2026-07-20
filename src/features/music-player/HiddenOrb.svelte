@@ -23,7 +23,7 @@
 </script>
 
 <div
-	class="orb-player w-12 h-12 rounded-full shadow-lg cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
+	class="orb-player w-12 h-12 rounded-full cursor-pointer flex items-center justify-center"
 	class:orb-player--fallback={!hasCover}
 	class:opacity-0={!isHidden}
 	class:scale-0={!isHidden}
@@ -37,7 +37,7 @@
 	}}
 	role="button"
 	tabindex="0"
-	aria-label={labels.show}
+	aria-label={labels.expand}
 >
 	{#if hasCover}
 		<img

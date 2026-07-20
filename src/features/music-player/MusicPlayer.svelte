@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
-	import { cubicIn, cubicInOut, cubicOut } from "svelte/easing";
-	import { fade, fly } from "svelte/transition";
+	import { cubicOut } from "svelte/easing";
 
 	import { musicPlayerConfig } from "@/config";
 	import Key from "@i18n/i18nKey";
@@ -9,7 +8,9 @@
 	import ExpandedPlayer from "./ExpandedPlayer.svelte";
 	import {
 		MUSIC_PLAYER_COMMAND_EVENT,
+		MUSIC_PLAYER_PANEL_TRANSITION_MS,
 		MUSIC_PLAYER_STATE_EVENT,
+		musicPlayerPanelEasing,
 		type MusicPlayerCommand,
 		type MusicPlayerUiState,
 	} from "./events";
@@ -29,7 +30,12 @@
 		localPlaylist,
 		normalizeMetingPlaylist,
 	} from "./playlist";
-	import { loadStoredVolume, saveStoredVolume } from "./storage";
+	import {
+		loadStoredMusicPlayerMounted,
+		loadStoredVolume,
+		saveStoredMusicPlayerMounted,
+		saveStoredVolume,
+	} from "./storage";
 	import type {
 		MetingSong,
 		MusicPlayerLabels,
@@ -77,9 +83,11 @@
 	};
 
 	let isPlaying = false;
-	let hasStarted = false;
 	let isExpanded = false;
 	let isHidden = true;
+	let isVisible = musicPlayerConfig.enable;
+	let transitionEdge: "default-mini" | "mini-expanded" | "expanded-default" =
+		"default-mini";
 	let showPlaylist = false;
 	let currentTime = 0;
 	let duration = 0;
@@ -109,101 +117,124 @@
 	let prefersReducedMotion = false;
 	let motionMediaQuery: MediaQueryList | null = null;
 	let syncMotionPreference: (() => void) | null = null;
+	let playlistInitialized = false;
+	let panelTransitionStartedAt = 0;
 
 	const interactionEvents = ["click", "keydown", "touchstart"];
-	$: showHiddenState = isHidden || (!isExpanded && !hasStarted);
-	$: stateEnterDuration = prefersReducedMotion ? 0 : 250;
-	$: stateExitDuration = prefersReducedMotion ? 0 : 180;
-	$: compactEnterDuration = prefersReducedMotion ? 0 : 420;
-	$: compactExitDuration = prefersReducedMotion ? 0 : 300;
-	$: compactHandoffDuration = prefersReducedMotion ? 0 : 520;
+	$: showHiddenState = isHidden;
+	$: panelTransitionDuration = prefersReducedMotion
+		? 0
+		: MUSIC_PLAYER_PANEL_TRANSITION_MS;
+	$: compactTransitionDuration = prefersReducedMotion ? 0 : 460;
 
 	function morphMiniPlayer(
 		_node: Element,
-		{ duration, entering }: { duration: number; entering: boolean },
+		{ duration }: { duration: number },
 	) {
 		return {
 			duration,
 			css: (t: number) => {
-				const surfaceProgress = entering ? cubicInOut(t) : cubicOut(t);
+				const surfaceProgress = cubicOut(t);
 				const actionsProgress = Math.min(
 					1,
-					Math.max(0, (t - 0.12) / 0.88),
+					Math.max(0, (t - 0.18) / 0.72),
 				);
-				const metaProgress = Math.min(
-					1,
-					Math.max(0, (t - 0.28) / 0.72),
-				);
+				const metaProgress = Math.min(1, Math.max(0, (t - 0.1) / 0.78));
 				const coverProgress = Math.min(
 					1,
-					Math.max(0, (t - 0.42) / 0.58),
+					Math.max(0, (t - 0.16) / 0.68),
 				);
-				const horizontalInset = (1 - surfaceProgress) * 82;
-				const verticalInset = (1 - surfaceProgress) * 12;
-				const translateX = (1 - surfaceProgress) * 10;
+				const radiusX = 9 + surfaceProgress * 106;
+				const radiusY = 30 + surfaceProgress * 90;
 
 				return `
 					--mini-player-actions-opacity: ${actionsProgress};
-					--mini-player-actions-translate: ${(1 - actionsProgress) * 6}px;
+					--mini-player-actions-translate: ${(1 - actionsProgress) * 4}px;
 					--mini-player-meta-opacity: ${metaProgress};
-					--mini-player-meta-translate: ${(1 - metaProgress) * 11}px;
+					--mini-player-meta-translate: ${(1 - metaProgress) * 7}px;
 					--mini-player-cover-opacity: ${coverProgress};
-					--mini-player-cover-rotation: ${(1 - coverProgress) * -14}deg;
-					--mini-player-cover-scale: ${0.78 + coverProgress * 0.22};
-					opacity: ${Math.min(1, t * 2.5)};
-					clip-path: inset(${verticalInset}px 0 ${verticalInset}px ${horizontalInset}% round ${16 + (1 - surfaceProgress) * 8}px);
-					transform: translate3d(${translateX}px, 0, 0);
+					--mini-player-cover-rotation: ${(1 - coverProgress) * -110}deg;
+					--mini-player-cover-scale: ${0.62 + coverProgress * 0.38};
+					opacity: ${Math.min(1, t * 2.8)};
+					clip-path: ellipse(${radiusX}% ${radiusY}% at 92% 50%);
+					filter: blur(${(1 - surfaceProgress) * 1.8}px) saturate(${0.82 + surfaceProgress * 0.18});
+					transform: scale(${0.92 + surfaceProgress * 0.08});
 				`;
 			},
 		};
 	}
 
-	function handoffHiddenOrb(
-		_node: Element,
-		{ duration }: { duration: number },
-	) {
-		if (!hasStarted || isExpanded) {
-			return morphHiddenOrb(_node, { duration: compactExitDuration });
-		}
-
-		const targetWidth = window.innerWidth <= 480 ? 260 : 280;
-		const travelDistance = targetWidth - 60;
-
-		return {
-			duration,
-			css: (_t: number, u: number) => {
-				const travelProgress = cubicInOut(Math.min(1, u / 0.72));
-				const opacity =
-					u <= 0.58 ? 1 : Math.max(0, 1 - (u - 0.58) / 0.3);
-				const scale = 1 - travelProgress * 0.08;
-
-				return `
-					opacity: ${opacity};
-					transform: translate3d(${-travelDistance * travelProgress}px, 0, 0) scale(${scale});
-				`;
-			},
-		};
-	}
-
-	function morphHiddenOrb(
+	function morphPanelSurface(
 		_node: Element,
 		{ duration }: { duration: number },
 	) {
 		return {
 			duration,
 			css: (t: number) => {
-				const visibility = Math.max(0, (t - 0.28) / 0.72);
-				const motionProgress = cubicIn(visibility);
-				const scale = 0.68 + motionProgress * 0.32;
-				const rotation = (1 - motionProgress) * 10;
-
+				const progress = musicPlayerPanelEasing(t);
 				return `
-					opacity: ${visibility};
-					filter: blur(${(1 - motionProgress) * 4}px);
-					transform: scale(${scale}) rotate(${rotation}deg);
+					--mini-player-actions-opacity: ${progress};
+					--mini-player-actions-translate: ${(1 - progress) * 3}px;
+					--mini-player-meta-opacity: ${progress};
+					--mini-player-meta-translate: ${(1 - progress) * 5}px;
+					--mini-player-cover-opacity: ${progress};
+					--mini-player-cover-rotation: ${(1 - progress) * -24}deg;
+					--mini-player-cover-scale: ${0.84 + progress * 0.16};
+					opacity: ${progress};
+					clip-path: inset(${(1 - progress) * 24}% ${(1 - progress) * 3}% 0 ${(1 - progress) * 8}% round ${16 + (1 - progress) * 6}px);
+					filter: blur(${(1 - progress) * 2.5}px) saturate(${0.88 + progress * 0.12});
+					transform: translate3d(0, ${(1 - progress) * 8}px, 0) scale(${0.93 + progress * 0.07});
 				`;
 			},
 		};
+	}
+
+	function transitionMiniPlayer(node: Element, params: { duration: number }) {
+		return transitionEdge === "mini-expanded"
+			? morphPanelSurface(node, params)
+			: morphMiniPlayer(node, params);
+	}
+
+	function morphDefaultCover(
+		_node: Element,
+		{ duration }: { duration: number },
+	) {
+		return {
+			duration,
+			css: (t: number) => {
+				const visibility = Math.max(0, (t - 0.12) / 0.88);
+				const progress = cubicOut(visibility);
+
+				return `
+					opacity: ${visibility};
+					filter: blur(${(1 - progress) * 3}px) saturate(${0.82 + progress * 0.18});
+					transform: scale(${0.76 + progress * 0.24}) rotate(${(1 - progress) * -145}deg);
+				`;
+			},
+		};
+	}
+
+	function initializePlaylist() {
+		if (playlistInitialized) return;
+		playlistInitialized = true;
+
+		if (mode === "meting") {
+			fetchMetingPlaylist();
+			return;
+		}
+
+		playlist = [...localPlaylist];
+		if (playlist.length > 0) {
+			loadSong(playlist[0]);
+		} else {
+			showErrorMessage("本地播放列表为空");
+		}
+	}
+
+	function waitForUiMount() {
+		return new Promise<void>((resolve) =>
+			requestAnimationFrame(() => resolve()),
+		);
 	}
 
 	async function fetchMetingPlaylist() {
@@ -252,6 +283,8 @@
 	}
 
 	function expandPlayer() {
+		panelTransitionStartedAt = performance.now();
+		transitionEdge = "mini-expanded";
 		isExpanded = true;
 		isHidden = false;
 		showPlaylist = false;
@@ -260,8 +293,10 @@
 	}
 
 	function collapseToDefault() {
+		panelTransitionStartedAt = performance.now();
+		transitionEdge = "mini-expanded";
 		isExpanded = false;
-		isHidden = !hasStarted;
+		isHidden = false;
 		showPlaylist = false;
 		publishLayoutState();
 		publishUiState();
@@ -274,10 +309,7 @@
 
 	function toggleHidden() {
 		if (showHiddenState) {
-			if (!hasStarted) {
-				expandPlayer();
-				return;
-			}
+			transitionEdge = "default-mini";
 			isHidden = false;
 			isExpanded = false;
 			showPlaylist = false;
@@ -285,6 +317,7 @@
 			publishUiState();
 			return;
 		}
+		transitionEdge = isExpanded ? "expanded-default" : "default-mini";
 		isHidden = true;
 		isExpanded = false;
 		showPlaylist = false;
@@ -299,15 +332,18 @@
 
 	function dispatchLayoutState() {
 		if (typeof window === "undefined") return;
-		const panels = playerRoot
-			? Array.from(
-					playerRoot.querySelectorAll<HTMLElement>(
-						".expanded-player, .playlist-panel",
-					),
-				).filter(
-					(panel) => getComputedStyle(panel).pointerEvents !== "none",
-				)
-			: [];
+		const layoutExpanded = isVisible && isExpanded;
+		const panels =
+			layoutExpanded && playerRoot
+				? Array.from(
+						playerRoot.querySelectorAll<HTMLElement>(
+							".expanded-player, .playlist-panel",
+						),
+					).filter(
+						(panel) =>
+							getComputedStyle(panel).pointerEvents !== "none",
+					)
+				: [];
 		const top = panels.length
 			? Math.min(
 					...panels.map((panel) => panel.getBoundingClientRect().top),
@@ -316,10 +352,11 @@
 		window.dispatchEvent(
 			new CustomEvent("music-player-layout-change", {
 				detail: {
-					expanded: isExpanded,
-					occupiedHeight: isExpanded
+					expanded: layoutExpanded,
+					occupiedHeight: layoutExpanded
 						? Math.max(0, window.innerHeight - top)
 						: 0,
+					transitionStartedAt: panelTransitionStartedAt,
 				},
 			}),
 		);
@@ -337,26 +374,34 @@
 	function publishUiState() {
 		if (typeof window === "undefined") return;
 		const detail: MusicPlayerUiState = {
-			hasStarted,
 			isExpanded,
 			isLoading,
 			isPlaying,
+			isVisible,
 		};
 		window.dispatchEvent(
 			new CustomEvent(MUSIC_PLAYER_STATE_EVENT, { detail }),
 		);
 	}
 
-	function handlePlayerCommand(event: Event) {
+	async function handlePlayerCommand(event: Event) {
 		const { type } =
 			(event as CustomEvent<MusicPlayerCommand>).detail ?? {};
-		if (type !== "toggle-panel") return;
-		if (isExpanded) collapseToDefault();
-		else expandPlayer();
+		if (type !== "toggle-visibility") return;
+		isVisible = !isVisible;
+		saveStoredMusicPlayerMounted(isVisible);
+		if (isVisible) {
+			await waitForUiMount();
+			if (playerRoot) layoutResizeObserver?.observe(playerRoot);
+			initializePlaylist();
+		}
+		publishLayoutState();
+		publishUiState();
 	}
 
 	function handleOutsidePointerDown(event: PointerEvent) {
-		if (!isExpanded || !(event.target instanceof Node)) return;
+		if (!isVisible || !isExpanded || !(event.target instanceof Node))
+			return;
 		const floatingTools = document.getElementById("floating-tools");
 		if (
 			playerRoot?.contains(event.target) ||
@@ -472,8 +517,6 @@
 
 	function handleAudioPlay() {
 		isPlaying = true;
-		hasStarted = true;
-		isHidden = false;
 		publishUiState();
 	}
 
@@ -576,6 +619,7 @@
 
 	onMount(() => {
 		volume = loadStoredVolume();
+		isVisible = loadStoredMusicPlayerMounted(musicPlayerConfig.enable);
 		motionMediaQuery = window.matchMedia(
 			"(prefers-reduced-motion: reduce)",
 		);
@@ -594,26 +638,18 @@
 		document.addEventListener("pointerdown", handleOutsidePointerDown);
 		publishLayoutState();
 		publishUiState();
+		void waitForUiMount().then(() => {
+			if (playerRoot) layoutResizeObserver?.observe(playerRoot);
+			publishLayoutState();
+			publishUiState();
+		});
 		interactionEvents.forEach((event) => {
 			document.addEventListener(event, handleUserInteraction, {
 				capture: true,
 			});
 		});
 
-		if (!musicPlayerConfig.enable) {
-			return;
-		}
-
-		if (mode === "meting") {
-			fetchMetingPlaylist();
-		} else {
-			playlist = [...localPlaylist];
-			if (playlist.length > 0) {
-				loadSong(playlist[0]);
-			} else {
-				showErrorMessage("本地播放列表为空");
-			}
-		}
+		if (isVisible) initializePlaylist();
 	});
 
 	onDestroy(() => {
@@ -664,7 +700,7 @@
 	on:pointerup={stopVolumeDrag}
 />
 
-{#if musicPlayerConfig.enable}
+{#if isVisible}
 	{#if showError}
 		<PlayerErrorToast message={errorMessage} onClose={hideError} />
 	{/if}
@@ -673,14 +709,13 @@
 		bind:this={playerRoot}
 		class="music-player z-50"
 		class:expanded={isExpanded}
-		class:has-started={hasStarted}
 		class:hidden-mode={showHiddenState}
 	>
 		{#if showHiddenState}
 			<div
 				class="music-player__state music-player__state--hidden"
-				in:morphHiddenOrb={{ duration: compactEnterDuration }}
-				out:handoffHiddenOrb={{ duration: compactHandoffDuration }}
+				in:morphDefaultCover={{ duration: compactTransitionDuration }}
+				out:morphDefaultCover={{ duration: compactTransitionDuration }}
 			>
 				<HiddenOrb
 					cover={playlist[0]?.cover ?? ""}
@@ -696,8 +731,12 @@
 		{:else if isExpanded}
 			<div
 				class="music-player__state music-player__state--expanded"
-				in:fly={{ y: 10, duration: stateEnterDuration }}
-				out:fade={{ duration: stateExitDuration }}
+				in:morphPanelSurface={{
+					duration: panelTransitionDuration,
+				}}
+				out:morphPanelSurface={{
+					duration: panelTransitionDuration,
+				}}
 			>
 				<div
 					class="music-player__panel-stack"
@@ -749,16 +788,20 @@
 					/>
 				</div>
 			</div>
-		{:else if hasStarted}
+		{:else}
 			<div
 				class="music-player__state music-player__state--mini"
-				in:morphMiniPlayer={{
-					duration: compactEnterDuration,
-					entering: true,
+				in:transitionMiniPlayer={{
+					duration:
+						transitionEdge === "mini-expanded"
+							? panelTransitionDuration
+							: compactTransitionDuration,
 				}}
-				out:morphMiniPlayer={{
-					duration: compactExitDuration,
-					entering: false,
+				out:transitionMiniPlayer={{
+					duration:
+						transitionEdge === "mini-expanded"
+							? panelTransitionDuration
+							: compactTransitionDuration,
 				}}
 			>
 				<MiniPlayer

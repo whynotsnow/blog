@@ -18,6 +18,7 @@ import "./floating-tools.css";
 		class="floating-tools"
 		data-open="false"
 		data-music-expanded="false"
+		data-music-visible={String(musicPlayerConfig.enable)}
 	>
 	<div class="floating-tools__rail" role="toolbar" aria-label={i18n(I18nKey.floatingTools)}>
 		<div class="floating-tools__item floating-tools__item--expandable floating-tools__item--toc">
@@ -32,24 +33,32 @@ import "./floating-tools.css";
 			<PioToggle client:idle />
 		</div>
 
-		{
-			musicPlayerConfig.enable && (
-				<div class="floating-tools__item floating-tools__item--expandable">
-					<button
-						type="button"
-						id="music-player-switch"
-						class="floating-tool-button floating-tools__music-switch"
-						aria-label={i18n(I18nKey.musicPlayerExpand)}
-						aria-controls="music-player-panel"
-						aria-expanded="false"
-						title={i18n(I18nKey.musicPlayerExpand)}
-					>
-						<LocalIcon name="material-symbols:music-note-rounded" />
-						<span class="floating-tools__music-indicator" aria-hidden="true" />
-					</button>
-				</div>
-			)
-		}
+		<div class="floating-tools__item floating-tools__item--expandable">
+			<button
+				type="button"
+				id="music-player-switch"
+				class:list={[
+					"floating-tool-button floating-tools__music-switch",
+					{ "is-active": musicPlayerConfig.enable },
+				]}
+				aria-label={i18n(
+					musicPlayerConfig.enable
+						? I18nKey.musicPlayerHide
+						: I18nKey.musicPlayerShow,
+				)}
+				aria-pressed={musicPlayerConfig.enable}
+				data-label-show={i18n(I18nKey.musicPlayerShow)}
+				data-label-hide={i18n(I18nKey.musicPlayerHide)}
+				title={i18n(
+					musicPlayerConfig.enable
+						? I18nKey.musicPlayerHide
+						: I18nKey.musicPlayerShow,
+				)}
+			>
+				<LocalIcon name="material-symbols:music-note-rounded" />
+				<span class="floating-tools__music-indicator" aria-hidden="true" />
+			</button>
+		</div>
 
 		<div class="floating-tools__item floating-tools__item--expandable">
 			<button
@@ -60,7 +69,7 @@ import "./floating-tools.css";
 				aria-expanded="false"
 				title={i18n(I18nKey.displaySettings)}
 			>
-				<LocalIcon name="material-symbols:display-settings-rounded" />
+				<LocalIcon name="material-symbols:settings-rounded" />
 			</button>
 		</div>
 
@@ -92,13 +101,15 @@ import "./floating-tools.css";
 		/>
 	</div>
 
-	{musicPlayerConfig.enable && <MusicPlayer client:idle />}
+	<MusicPlayer client:idle />
 </div>
 
 <script>
 	import {
 		MUSIC_PLAYER_COMMAND_EVENT,
+		MUSIC_PLAYER_PANEL_TRANSITION_MS,
 		MUSIC_PLAYER_STATE_EVENT,
+		musicPlayerPanelEasing,
 		type MusicPlayerCommand,
 		type MusicPlayerUiState,
 	} from "@/features/music-player/events";
@@ -125,9 +136,63 @@ import "./floating-tools.css";
 		const settingsToggle = document.getElementById(SETTINGS_SWITCH_ID);
 		if (!root || !(toggle instanceof HTMLButtonElement)) return;
 		if (root.dataset.initialized === "true") return;
+		const toolsRoot = root;
+		const toolsToggle = toggle;
+		const toolsRail = toolsRoot.querySelector<HTMLElement>(
+			".floating-tools__rail",
+		);
+		if (!toolsRail) return;
+		const stableToolsRail = toolsRail;
 
-		root.dataset.initialized = "true";
+		toolsRoot.dataset.initialized = "true";
 		let observedSettingsPanel: HTMLElement | null = null;
+		let lastSwitchTop = toolsToggle.getBoundingClientRect().top;
+		let layoutMotion: Animation | null = null;
+
+		function animateFloatingToolsLayout(transitionStartedAt: number) {
+			const visualStartTop = layoutMotion
+				? toolsToggle.getBoundingClientRect().top
+				: lastSwitchTop;
+			const previousMotion = layoutMotion;
+			layoutMotion = null;
+			previousMotion?.cancel();
+			delete toolsRoot.dataset.layoutMotion;
+			const nextSwitchTop = toolsToggle.getBoundingClientRect().top;
+			const offset = visualStartTop - nextSwitchTop;
+			lastSwitchTop = nextSwitchTop;
+			if (Math.abs(offset) < 0.5) return;
+
+			if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				delete toolsRoot.dataset.layoutMotion;
+				return;
+			}
+
+			toolsRoot.dataset.layoutMotion = "running";
+			const keyframes = Array.from({ length: 31 }, (_, index) => {
+				const progress = index / 30;
+				return {
+					offset: progress,
+					transform: `translate3d(0, ${offset * (1 - musicPlayerPanelEasing(progress))}px, 0)`,
+				};
+			});
+			const elapsed = Math.max(0, performance.now() - transitionStartedAt);
+			const animation = stableToolsRail.animate(keyframes, {
+				delay: -Math.min(elapsed, MUSIC_PLAYER_PANEL_TRANSITION_MS - 1),
+				duration: MUSIC_PLAYER_PANEL_TRANSITION_MS,
+				easing: "linear",
+				fill: "both",
+			});
+			layoutMotion = animation;
+			void animation.finished
+				.catch(() => {})
+				.finally(() => {
+					if (layoutMotion !== animation) return;
+					delete toolsRoot.dataset.layoutMotion;
+					lastSwitchTop = toolsToggle.getBoundingClientRect().top;
+					layoutMotion = null;
+					animation.cancel();
+				});
+		}
 
 		function positionSettingsPanel() {
 			const settingsPanel = document.getElementById(SETTINGS_PANEL_ID);
@@ -221,27 +286,37 @@ import "./floating-tools.css";
 		}
 
 		window.addEventListener("music-player-layout-change", (event) => {
-			const detail = (
-				event as CustomEvent<{
-					expanded: boolean;
-					occupiedHeight: number;
-				}>
+				const detail = (
+					event as CustomEvent<{
+						expanded: boolean;
+						occupiedHeight: number;
+						transitionStartedAt: number;
+					}>
 			).detail;
+			const expandedChanged =
+				root.dataset.musicExpanded !== String(detail.expanded);
 			root.dataset.musicExpanded = String(detail.expanded);
 			if (detail.expanded) setFloatingToolsOpen(false);
+			if (expandedChanged) {
+				animateFloatingToolsLayout(detail.transitionStartedAt);
+			}
 		});
 		window.addEventListener(MUSIC_PLAYER_STATE_EVENT, (event) => {
 			if (!(musicToggle instanceof HTMLButtonElement)) return;
 			const detail = (event as CustomEvent<MusicPlayerUiState>).detail;
 			root.dataset.musicPlaying = String(detail.isPlaying);
-			root.dataset.musicStarted = String(detail.hasStarted);
 			root.dataset.musicLoading = String(detail.isLoading);
+			root.dataset.musicVisible = String(detail.isVisible);
 			musicToggle.dataset.loading = String(detail.isLoading);
-			musicToggle.classList.toggle("is-active", detail.isExpanded);
-			musicToggle.setAttribute(
-				"aria-expanded",
-				String(detail.isExpanded),
-			);
+			musicToggle.classList.toggle("is-active", detail.isVisible);
+			musicToggle.setAttribute("aria-pressed", String(detail.isVisible));
+			const label = detail.isVisible
+				? musicToggle.dataset.labelHide
+				: musicToggle.dataset.labelShow;
+			if (label) {
+				musicToggle.setAttribute("aria-label", label);
+				musicToggle.title = label;
+			}
 		});
 		toggle.addEventListener("click", () => {
 			setFloatingToolsOpen(root.dataset.open !== "true");
@@ -249,7 +324,7 @@ import "./floating-tools.css";
 		musicToggle?.addEventListener("click", () => {
 			window.dispatchEvent(
 				new CustomEvent<MusicPlayerCommand>(MUSIC_PLAYER_COMMAND_EVENT, {
-					detail: { type: "toggle-panel" },
+					detail: { type: "toggle-visibility" },
 				}),
 			);
 		});

@@ -43,6 +43,10 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 	const settingsButton = page.locator(
 		"#floating-tools #display-settings-switch",
 	);
+	await expect(settingsButton.locator(".local-icon")).toHaveAttribute(
+		"data-local-icon",
+		"material-symbols:settings-rounded",
+	);
 	await settingsButton.click();
 	await expect(page.locator("#display-setting")).not.toHaveClass(
 		/float-panel-closed/,
@@ -82,7 +86,7 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 		.toBeLessThan(8);
 });
 
-test("music starts from floating tools and then keeps its mini player visible", async ({
+test("floating tools controls music visibility while the player owns its presentation", async ({
 	page,
 }) => {
 	await page.route("https://meting.whynotsnow.com/**", async (route) => {
@@ -119,24 +123,217 @@ test("music starts from floating tools and then keeps its mini player visible", 
 
 	const tools = page.locator("#floating-tools");
 	const miniPlayer = page.locator(".mini-player");
+	const hiddenOrb = page.locator(".orb-player");
 	await expect(miniPlayer).not.toBeVisible();
+	await expect(hiddenOrb).toBeVisible();
 
 	await page.locator("#floating-tools-switch").click();
 	const musicSwitch = page.locator("#music-player-switch");
+	await expect(musicSwitch).toHaveAttribute("aria-pressed", "true");
+	await expect(musicSwitch).toHaveAccessibleName("隐藏播放器");
 	await musicSwitch.click();
-	await expect(tools).toHaveAttribute("data-open", "false");
-	await expect(musicSwitch).toHaveAttribute("aria-expanded", "true");
+	await expect(musicSwitch).toHaveAttribute("aria-pressed", "false");
+	await expect(musicSwitch).toHaveAccessibleName("显示音乐播放器");
+	await expect(hiddenOrb).not.toBeVisible();
+	await musicSwitch.click();
+	await expect(musicSwitch).toHaveAttribute("aria-pressed", "true");
+	await expect(hiddenOrb).toBeVisible();
+	await hiddenOrb.hover();
+	const defaultCoverPresentation = await hiddenOrb.evaluate((element) => {
+		const rect = element.getBoundingClientRect();
+		const player = element.closest<HTMLElement>(".music-player");
+		const matrix = new DOMMatrix(getComputedStyle(element).transform);
+		return {
+			height: rect.height,
+			overflow: player ? getComputedStyle(player).overflow : "",
+			scaleX: Math.hypot(matrix.a, matrix.b),
+			width: rect.width,
+		};
+	});
+	expect(defaultCoverPresentation.overflow).toBe("visible");
+	expect(defaultCoverPresentation.width).toBeCloseTo(48, 0);
+	expect(defaultCoverPresentation.height).toBeCloseTo(48, 0);
+	expect(defaultCoverPresentation.scaleX).toBeCloseTo(1, 2);
+
+	const collapsedCoverGeometry = await hiddenOrb.evaluate((element) => {
+		const rect = element.getBoundingClientRect();
+		return { bottom: rect.bottom, top: rect.top };
+	});
+	await hiddenOrb.click();
+	await expect(miniPlayer).toBeVisible();
+	await expect
+		.poll(() =>
+			miniPlayer
+				.locator(".mini-player__cover")
+				.evaluate((element, collapsedGeometry) => {
+					const rect = element.getBoundingClientRect();
+					return Math.max(
+						Math.abs(collapsedGeometry.bottom - rect.bottom),
+						Math.abs(collapsedGeometry.top - rect.top),
+					);
+				}, collapsedCoverGeometry),
+		)
+		.toBeLessThanOrEqual(1);
+
+	const expandedTransition = await miniPlayer
+		.getByRole("button", { name: "展开音乐播放器" })
+		.evaluate(async (button) => {
+			const frames: Array<{
+				expandedClipPath: string | null;
+				expandedTransform: string | null;
+				miniOpacity: number | null;
+				toolsKeyframeCount: number | null;
+				toolsSwitchTop: number | null;
+				toolsTransitionDuration: number | null;
+			}> = [];
+			const startedAt = performance.now();
+			(button as HTMLElement).click();
+
+			await new Promise<void>((resolve) => {
+				const sample = (now: number) => {
+					const expandedState = document.querySelector<HTMLElement>(
+						".music-player__state--expanded",
+					);
+					const miniState = document.querySelector<HTMLElement>(
+						".music-player__state--mini",
+					);
+					const tools = document.getElementById("floating-tools");
+					const toolsSwitch = document.getElementById(
+						"floating-tools-switch",
+					);
+					const toolsRail = tools?.querySelector<HTMLElement>(
+						".floating-tools__rail",
+					);
+					const toolsAnimation = toolsRail?.getAnimations()[0];
+					const toolsEffect =
+						toolsAnimation?.effect as KeyframeEffect | null;
+					frames.push({
+						expandedClipPath: expandedState
+							? getComputedStyle(expandedState).clipPath
+							: null,
+						expandedTransform: expandedState
+							? getComputedStyle(expandedState).transform
+							: null,
+						miniOpacity: miniState
+							? Number(getComputedStyle(miniState).opacity)
+							: null,
+						toolsKeyframeCount:
+							toolsEffect?.getKeyframes().length ?? null,
+						toolsSwitchTop:
+							toolsSwitch?.getBoundingClientRect().top ?? null,
+						toolsTransitionDuration:
+							Number(toolsEffect?.getTiming().duration) || null,
+					});
+					if (now - startedAt >= 360) {
+						resolve();
+						return;
+					}
+					requestAnimationFrame(sample);
+				};
+				requestAnimationFrame(sample);
+			});
+
+			return frames;
+		});
+	const expandedClipPaths = expandedTransition
+		.map(({ expandedClipPath }) => expandedClipPath)
+		.filter((value): value is string => value !== null);
+	const expandedTransforms = expandedTransition
+		.map(({ expandedTransform }) => expandedTransform)
+		.filter((value): value is string => value !== null);
+	const miniOpacities = expandedTransition
+		.map(({ miniOpacity }) => miniOpacity)
+		.filter((value): value is number => value !== null);
+	const toolsSwitchTops = expandedTransition
+		.map(({ toolsSwitchTop }) => toolsSwitchTop)
+		.filter((value): value is number => value !== null);
+	expect(
+		expandedClipPaths.some((clipPath) => clipPath.includes("inset(")),
+	).toBe(true);
+	expect(new Set(expandedClipPaths).size).toBeGreaterThan(3);
+	expect(new Set(expandedTransforms).size).toBeGreaterThan(3);
+	expect(Math.min(...miniOpacities)).toBeLessThan(0.4);
+	expect(Math.max(...miniOpacities)).toBeGreaterThan(0.8);
+	expect(
+		new Set(toolsSwitchTops.map((top) => top.toFixed(2))).size,
+	).toBeGreaterThan(3);
+	expect(
+		Math.max(...toolsSwitchTops) - Math.min(...toolsSwitchTops),
+	).toBeGreaterThan(20);
+	expect(
+		expandedTransition.some(
+			({ toolsTransitionDuration }) => toolsTransitionDuration === 420,
+		),
+	).toBe(true);
+	expect(
+		expandedTransition.some(
+			({ toolsKeyframeCount }) => toolsKeyframeCount === 31,
+		),
+	).toBe(true);
 
 	const panel = page.locator("#music-player-panel");
 	await expect(panel).toBeVisible();
 	await expect(panel.locator(".song-title")).toHaveText("Test Song");
-	await page.locator("main").click({ position: { x: 16, y: 16 } });
+	await page.waitForTimeout(100);
+	const collapseTransition = await panel
+		.getByTitle("收起播放器")
+		.evaluate(async (button) => {
+			const samples: Array<{
+				keyframeCount: number | null;
+				top: number;
+				transitionDuration: number | null;
+			}> = [];
+			const startedAt = performance.now();
+			(button as HTMLButtonElement).click();
+
+			await new Promise<void>((resolve) => {
+				const sample = (now: number) => {
+					const toolsRail = document.querySelector<HTMLElement>(
+						".floating-tools__rail",
+					);
+					const toolsSwitch = document.getElementById(
+						"floating-tools-switch",
+					);
+					const animation = toolsRail?.getAnimations()[0];
+					const effect = animation?.effect as KeyframeEffect | null;
+					if (toolsSwitch) {
+						samples.push({
+							keyframeCount:
+								effect?.getKeyframes().length ?? null,
+							top: toolsSwitch.getBoundingClientRect().top,
+							transitionDuration:
+								Number(effect?.getTiming().duration) || null,
+						});
+					}
+					if (now - startedAt >= 360) {
+						resolve();
+						return;
+					}
+					requestAnimationFrame(sample);
+				};
+				requestAnimationFrame(sample);
+			});
+
+			return samples;
+		});
+	const collapseTops = collapseTransition.map(({ top }) => top);
+	expect(
+		new Set(collapseTops.map((top) => top.toFixed(2))).size,
+	).toBeGreaterThan(3);
+	expect(collapseTops.at(-1)).toBeGreaterThan(collapseTops[0]);
+	expect(
+		collapseTransition.some(
+			({ transitionDuration }) => transitionDuration === 420,
+		),
+	).toBe(true);
+	expect(
+		collapseTransition.some(({ keyframeCount }) => keyframeCount === 31),
+	).toBe(true);
 	await expect(panel).not.toBeVisible();
-	await expect(page.locator(".orb-player")).toBeVisible();
+	await expect(miniPlayer).toBeVisible();
 	await expect(page.locator(".music-player__state")).toHaveCount(1);
 
-	await page.locator("#floating-tools-switch").click();
-	await musicSwitch.click();
+	await miniPlayer.getByRole("button", { name: "展开音乐播放器" }).click();
 	await expect(panel).toBeVisible();
 	const playOrderButton = panel.locator("[data-play-order]");
 	await expect(playOrderButton).toHaveAttribute(
@@ -157,7 +354,6 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	});
 	await expect(playButton).toBeEnabled();
 	await playButton.click();
-	await expect(tools).toHaveAttribute("data-music-started", "true");
 	await expect(tools).toHaveAttribute("data-music-playing", "true");
 	await expect(tools).toHaveAttribute("data-music-loading", "false");
 	await expect(musicSwitch.locator(".local-icon")).toHaveCSS(
@@ -166,11 +362,12 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	);
 	await page.locator("#floating-tools-switch").click();
 	await musicSwitch.click();
+	await expect(musicSwitch).toHaveAttribute("aria-pressed", "false");
 	await expect(panel).not.toBeVisible();
-	await expect(miniPlayer).toBeVisible();
-	await expect(page.locator(".music-player__state")).toHaveCount(1);
+	await expect(page.locator(".music-player")).not.toBeVisible();
 
 	await musicSwitch.click();
+	await expect(musicSwitch).toHaveAttribute("aria-pressed", "true");
 	await expect(panel).toBeVisible();
 
 	await panel.getByTitle("收起播放器").click();
@@ -180,7 +377,7 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	await expect(tools).toHaveAttribute("data-music-playing", "false");
 	await expect(miniPlayer).toBeVisible();
 	const compactTransition = await miniPlayer
-		.getByTitle("隐藏播放器")
+		.getByTitle("收起播放器")
 		.evaluate(async (button) => {
 			const player = document.querySelector<HTMLElement>(".music-player");
 			if (!player) throw new Error("Music player container is missing");
@@ -214,8 +411,7 @@ test("music starts from floating tools and then keeps its mini player visible", 
 					frames.push({
 						height: rect.height,
 						miniClipPath: miniStyle?.clipPath ?? null,
-						miniWidth:
-							miniState?.getBoundingClientRect().width ?? null,
+						miniWidth: miniState?.offsetWidth ?? null,
 						width: rect.width,
 					});
 					if (now - startedAt >= 320) {
@@ -235,12 +431,14 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	expect(compactTransition.transitionProperty).toContain("height");
 	expect(compactTransition.transitionProperty).toContain("width");
 	expect(compactTransition.frames[0].height).toBeGreaterThanOrEqual(70);
-	expect(compactTransition.frames.at(-1)?.height).toBeCloseTo(48, 0);
+	expect(compactTransition.frames.at(-1)?.height).toBeCloseTo(72, 0);
 	expect(compactTransition.frames.at(-1)?.width).toBeCloseTo(48, 0);
 	expect(
-		compactTransition.frames.some(
-			({ height, width }) =>
-				height > 50 && height < 70 && width > 60 && width < 270,
+		compactTransition.frames.some(({ width }) => width > 60 && width < 270),
+	).toBe(true);
+	expect(
+		compactTransition.frames.every(
+			({ height }) => Math.abs(height - 72) <= 1,
 		),
 	).toBe(true);
 	expect(
@@ -253,10 +451,9 @@ test("music starts from floating tools and then keeps its mini player visible", 
 		.map(({ miniClipPath }) => miniClipPath)
 		.filter((clipPath): clipPath is string => clipPath !== null);
 	expect(
-		miniClipPathFrames.some((clipPath) => clipPath.includes("inset(")),
+		miniClipPathFrames.some((clipPath) => clipPath.includes("ellipse(")),
 	).toBe(true);
 	expect(new Set(miniClipPathFrames).size).toBeGreaterThan(3);
-	const hiddenOrb = page.locator(".orb-player");
 	await expect(hiddenOrb).not.toHaveClass(/opacity-0/);
 	await expect(hiddenOrb.locator(".orb-player__cover")).toHaveAttribute(
 		"src",
@@ -266,6 +463,7 @@ test("music starts from floating tools and then keeps its mini player visible", 
 		const frames: Array<{
 			coverOpacity: number | null;
 			miniClipPath: string | null;
+			orbTranslateX: number | null;
 			orbTransform: string | null;
 		}> = [];
 		const startedAt = performance.now();
@@ -292,6 +490,10 @@ test("music starts from floating tools and then keeps its mini player visible", 
 					orbTransform: hiddenState
 						? getComputedStyle(hiddenState).transform
 						: null,
+					orbTranslateX: hiddenState
+						? new DOMMatrix(getComputedStyle(hiddenState).transform)
+								.e
+						: null,
 				});
 				if (now - startedAt >= 480) {
 					resolve();
@@ -313,8 +515,15 @@ test("music starts from floating tools and then keeps its mini player visible", 
 	const coverOpacities = revealTransition
 		.map(({ coverOpacity }) => coverOpacity)
 		.filter((opacity): opacity is number => opacity !== null);
+	const orbTranslateX = revealTransition
+		.map(({ orbTranslateX }) => orbTranslateX)
+		.filter((value): value is number => value !== null);
 	expect(new Set(orbTransforms).size).toBeGreaterThan(3);
 	expect(new Set(revealClipPaths).size).toBeGreaterThan(3);
+	expect(
+		revealClipPaths.some((clipPath) => clipPath.includes("ellipse(")),
+	).toBe(true);
+	expect(Math.max(...orbTranslateX.map(Math.abs))).toBeLessThanOrEqual(0.1);
 	expect(Math.min(...coverOpacities)).toBeLessThan(0.25);
 	expect(Math.max(...coverOpacities)).toBeGreaterThan(0.9);
 	await expect(miniPlayer).toBeVisible();
@@ -387,8 +596,11 @@ test("hidden music control falls back to the themed icon when cover loading fail
 	});
 	await gotoPage(page, "/");
 
-	await page.locator("#floating-tools-switch").click();
-	await page.locator("#music-player-switch").click();
+	await page.locator(".orb-player").click();
+	await page
+		.locator(".mini-player")
+		.getByRole("button", { name: "展开音乐播放器" })
+		.click();
 	const panel = page.locator("#music-player-panel");
 	await expect(panel.locator(".song-title")).toHaveText("Fallback Song");
 	await panel.getByRole("button", { name: "播放", exact: true }).click();
@@ -450,25 +662,58 @@ test("floating tools controls the user Pio preference", async ({ page }) => {
 	await page.locator("#floating-tools-switch").click();
 	const toggle = page.getByRole("button", { name: "隐藏看板娘" });
 	await expect(toggle).toBeVisible();
+	await expect(toggle).toHaveAttribute("aria-pressed", "true");
+	await expect(toggle.locator(".local-icon")).toHaveAttribute(
+		"data-local-icon",
+		"material-symbols:face-retouching-natural-rounded",
+	);
+	await expect(page.locator(".pio-container .pio-dialog")).toHaveCount(1);
 	await toggle.click();
 
 	await expect
-		.poll(() => page.evaluate(() => localStorage.getItem("posterGirl")))
+		.poll(() =>
+			page.evaluate(() => localStorage.getItem("pio-module-mounted")),
+		)
 		.toBe("0");
-	await expect(page.locator(".pio-container")).toHaveAttribute(
-		"data-user-visible",
-		"false",
-	);
+	await expect(page.locator(".pio-container")).toHaveCount(0);
+	await expect(page.locator("#pio")).toHaveCount(0);
 
 	const showToggle = page.getByRole("button", { name: "显示看板娘" });
+	await expect(showToggle).toHaveAttribute("aria-pressed", "false");
+	await expect(showToggle.locator(".local-icon")).toHaveAttribute(
+		"data-local-icon",
+		"material-symbols:face-retouching-off-rounded",
+	);
 	await showToggle.click();
+	await expect
+		.poll(() =>
+			page.evaluate(() => localStorage.getItem("pio-module-mounted")),
+		)
+		.toBe("1");
+	await expect(page.locator(".pio-container")).toHaveAttribute(
+		"data-pio-mounted",
+		"true",
+	);
+	await expect(page.locator("#pio")).toHaveCount(1);
+	await expect(page.locator(".pio-container .pio-dialog")).toHaveCount(1);
+
+	await page.locator(".pio-close").click({ force: true });
+	await expect(page.locator(".pio-container")).toHaveCount(1);
+	await expect(page.locator(".pio-container")).toHaveClass(/pio-hidden/);
+	await expect
+		.poll(() => page.evaluate(() => localStorage.getItem("posterGirl")))
+		.toBe("0");
+	await expect
+		.poll(() =>
+			page.evaluate(() => localStorage.getItem("pio-module-mounted")),
+		)
+		.toBe("1");
+
+	await page.locator(".pio-show").click();
+	await expect(page.locator(".pio-container")).not.toHaveClass(/pio-hidden/);
 	await expect
 		.poll(() => page.evaluate(() => localStorage.getItem("posterGirl")))
 		.toBe("1");
-	await expect(page.locator(".pio-container")).toHaveAttribute(
-		"data-user-visible",
-		"true",
-	);
 });
 
 test("playlist attaches above the player and floating tools clears the full surface", async ({
@@ -477,8 +722,11 @@ test("playlist attaches above the player and floating tools clears the full surf
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await gotoPage(page, "/");
 
-	await page.locator("#floating-tools-switch").click();
-	await page.locator("#music-player-switch").click();
+	await page.locator(".orb-player").click();
+	await page
+		.locator(".mini-player")
+		.getByRole("button", { name: "展开音乐播放器" })
+		.click();
 	await expect(page.locator(".expanded-player")).toBeVisible();
 	await expect
 		.poll(() =>

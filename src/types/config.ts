@@ -320,7 +320,7 @@ export type SiteNoticeConfig = {
 };
 
 export type MusicPlayerConfig = {
-	enable: boolean; // 是否启用音乐播放器功能
+	enable: boolean; // 是否默认挂载音乐播放器
 	mode: "meting" | "local"; // 音乐播放器模式
 	meting_api: string; // Meting API 地址
 	id: string; // 歌单ID
@@ -407,7 +407,7 @@ export type FullscreenWallpaperConfig = {
  * Pio 看板娘配置
  */
 export type PioConfig = {
-	enable: boolean; // 是否启用看板娘
+	enable: boolean; // 是否默认挂载看板娘
 	models?: string[]; // 模型文件路径数组
 	position?: "left" | "right"; // 看板娘位置
 	width?: number; // 看板娘宽度

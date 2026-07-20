@@ -83,7 +83,7 @@
 			<button
 				class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
 				on:click|stopPropagation={onToggleHidden}
-				title={labels.hide}
+				title={labels.collapse}
 			>
 				<Icon icon="material-symbols:visibility-off" class="text-lg" />
 			</button>

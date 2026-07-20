@@ -14,8 +14,8 @@ test("new shell icons resolve from repository assets without Iconify", async ({
 	for (const name of [
 		"material-symbols:widgets-rounded",
 		"material-symbols:music-note-rounded",
-		"material-symbols:display-settings-rounded",
-		"material-symbols:person-rounded",
+		"material-symbols:settings-rounded",
+		"material-symbols:face-retouching-natural-rounded",
 	]) {
 		await expect(page.locator(`[data-local-icon='${name}']`)).toHaveCount(
 			1,
