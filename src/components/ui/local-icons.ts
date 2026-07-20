@@ -3,6 +3,8 @@ import checkCircleOutlineRounded from "@/assets/icons/material-symbols/check-cir
 import constructionRounded from "@/assets/icons/material-symbols/construction-rounded.svg?url";
 import displaySettingsRounded from "@/assets/icons/material-symbols/display-settings-rounded.svg?url";
 import errorOutlineRounded from "@/assets/icons/material-symbols/error-outline-rounded.svg?url";
+import faceRetouchingNaturalRounded from "@/assets/icons/material-symbols/face-retouching-natural-rounded.svg?url";
+import faceRetouchingOffRounded from "@/assets/icons/material-symbols/face-retouching-off-rounded.svg?url";
 import hideSourceRounded from "@/assets/icons/material-symbols/hide-source-rounded.svg?url";
 import historyRounded from "@/assets/icons/material-symbols/history-rounded.svg?url";
 import infoOutlineRounded from "@/assets/icons/material-symbols/info-outline-rounded.svg?url";
@@ -11,6 +13,7 @@ import musicNoteRounded from "@/assets/icons/material-symbols/music-note-rounded
 import notificationsOutlineRounded from "@/assets/icons/material-symbols/notifications-outline-rounded.svg?url";
 import personOffRounded from "@/assets/icons/material-symbols/person-off-rounded.svg?url";
 import personRounded from "@/assets/icons/material-symbols/person-rounded.svg?url";
+import settingsRounded from "@/assets/icons/material-symbols/settings-rounded.svg?url";
 import smartToyOutlineRounded from "@/assets/icons/material-symbols/smart-toy-outline-rounded.svg?url";
 import tuneRounded from "@/assets/icons/material-symbols/tune-rounded.svg?url";
 import tocRounded from "@/assets/icons/material-symbols/toc-rounded.svg?url";
@@ -23,6 +26,9 @@ export const localIconSources = {
 	"material-symbols:construction-rounded": constructionRounded,
 	"material-symbols:display-settings-rounded": displaySettingsRounded,
 	"material-symbols:error-outline-rounded": errorOutlineRounded,
+	"material-symbols:face-retouching-natural-rounded":
+		faceRetouchingNaturalRounded,
+	"material-symbols:face-retouching-off-rounded": faceRetouchingOffRounded,
 	"material-symbols:hide-source-rounded": hideSourceRounded,
 	"material-symbols:history-rounded": historyRounded,
 	"material-symbols:info-outline-rounded": infoOutlineRounded,
@@ -32,6 +38,7 @@ export const localIconSources = {
 		notificationsOutlineRounded,
 	"material-symbols:person-off-rounded": personOffRounded,
 	"material-symbols:person-rounded": personRounded,
+	"material-symbols:settings-rounded": settingsRounded,
 	"material-symbols:smart-toy-outline-rounded": smartToyOutlineRounded,
 	"material-symbols:tune-rounded": tuneRounded,
 	"material-symbols:toc-rounded": tocRounded,
