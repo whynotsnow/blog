@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const rootDir = path.resolve(import.meta.dirname, "../../..");
 
-describe("content preparation entrypoints", () => {
-	it("routes build and development commands through one strict preparation command", () => {
+describe("build preparation entrypoints", () => {
+	it("prepares content and fonts before every Astro runtime", () => {
 		const packageJson = JSON.parse(
 			fs.readFileSync(path.join(rootDir, "package.json"), "utf8"),
 		) as { scripts: Record<string, string> };
@@ -16,18 +16,27 @@ describe("content preparation entrypoints", () => {
 		expect(packageJson.scripts["sync-content"]).toBe(
 			"pnpm content:prepare",
 		);
+		expect(packageJson.scripts["font:prepare"]).toBe(
+			"node scripts/fonts/index.mjs",
+		);
 		for (const script of ["build", "build:astro", "dev", "start"]) {
-			expect(packageJson.scripts[script]).toContain(
-				"pnpm content:prepare",
+			const command = packageJson.scripts[script];
+			expect(command).not.toContain("|| true");
+			expect(command.indexOf("pnpm content:prepare")).toBeLessThan(
+				command.indexOf("pnpm font:prepare"),
 			);
-			expect(packageJson.scripts[script]).not.toContain("|| true");
+			expect(command.indexOf("pnpm font:prepare")).toBeLessThan(
+				command.indexOf("astro "),
+			);
 		}
 
 		const playwrightConfig = fs.readFileSync(
 			path.join(rootDir, "playwright.config.ts"),
 			"utf8",
 		);
-		expect(playwrightConfig).toContain("pnpm content:prepare && astro dev");
+		expect(playwrightConfig).toContain(
+			"pnpm content:prepare && pnpm font:prepare && astro dev",
+		);
 		expect(playwrightConfig).not.toContain("sync-content.js || true");
 	});
 });
