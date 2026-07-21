@@ -74,13 +74,6 @@ declare global {
 		onPageLifecycle?: typeof onPageLifecycle;
 		sakuraInitialized?: boolean;
 		semifullScrollHandler?: EventListener;
-		iconifyLoaded?: boolean;
-		__iconifyLoader?: {
-			load: () => Promise<void>;
-			addToPreloadQueue: (icons: string[]) => void;
-			onLoad: (callback: () => void) => void;
-			isLoaded: boolean;
-		};
 		panelManager?: typeof panelManager;
 		oddmisc?: {
 			getSiteStats: () => Promise<{

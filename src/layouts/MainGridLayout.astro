@@ -1,7 +1,6 @@
 ---
 import type { MarkdownHeading } from "astro";
 import FullscreenWallpaper from "@components/misc/FullscreenWallpaper.astro";
-import IconifyLoader from "@components/misc/IconifyLoader.astro";
 import Navbar from "@components/Navbar.astro";
 import Banner from "@/components/layout/Banner/Banner.astro";
 import MainGridContent from "@/components/layout/MainGridContent.astro";
@@ -60,7 +59,6 @@ const hasSupportContent = Astro.slots.has("support");
 	</script>
 
 	<FullscreenWallpaper config={fullscreenWallpaperConfig} />
-	<IconifyLoader />
 	<div
 		id="navigation-progress"
 		class="navigation-progress"

@@ -1,6 +1,5 @@
 ---
 import TimelinePage from "@/components/timeline/TimelinePage.astro";
-import IconifyLoader from "@/components/misc/IconifyLoader.astro";
 import { siteConfig } from "@/config";
 import { buildTimelinePageModel } from "@/services/timeline";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
@@ -13,6 +12,5 @@ const model = buildTimelinePageModel();
 ---
 
 <MainGridLayout title={model.title} description={model.subtitle}>
-	<IconifyLoader preloadIcons={model.preloadIcons} />
 	<TimelinePage model={model} />
 </MainGridLayout>

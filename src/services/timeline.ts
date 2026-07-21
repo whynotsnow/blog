@@ -3,7 +3,6 @@ import {
 	getTimelineByType,
 	getTimelineStats,
 	getTotalWorkExperience,
-	timelineData,
 	type TimelineItem,
 } from "@/data/timeline";
 import I18nKey from "@/i18n/i18nKey";
@@ -22,7 +21,6 @@ export interface TimelineDisplayItem extends TimelineItem {
 export interface TimelinePageModel {
 	title: string;
 	subtitle: string;
-	preloadIcons: string[];
 	stats: ReturnType<typeof getTimelineStats>;
 	currentItems: TimelineDisplayItem[];
 	workExperience: ReturnType<typeof getTotalWorkExperience>;
@@ -114,14 +112,9 @@ function toDisplayItem(item: TimelineItem): TimelineDisplayItem {
 }
 
 export function buildTimelinePageModel(): TimelinePageModel {
-	const preloadIcons = timelineData
-		.map((item) => item.icon || getTimelineTypeIcon(item.type))
-		.filter(Boolean);
-
 	return {
 		title: i18n(I18nKey.timeline),
 		subtitle: i18n(I18nKey.timelineSubtitle),
-		preloadIcons,
 		stats: getTimelineStats(),
 		currentItems: getCurrentItems().map(toDisplayItem),
 		workExperience: getTotalWorkExperience(),

@@ -162,6 +162,7 @@
 
 	function resetHue() {
 		hue = defaultHue;
+		setHue(hue);
 	}
 
 	function resetWallpaperMode() {
@@ -297,12 +298,6 @@
 			unsubscribeContentReplace();
 		};
 	});
-
-	$effect(() => {
-		if (hue || hue === 0) {
-			setHue(hue);
-		}
-	});
 </script>
 
 {#if hasAnyContent}
@@ -326,6 +321,7 @@
 							min="0"
 							max="360"
 							bind:value={hue}
+							oninput={() => setHue(hue)}
 							class="color-slider h-full w-full"
 							id="colorSlider"
 							step="5"

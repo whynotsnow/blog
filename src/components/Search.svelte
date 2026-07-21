@@ -90,12 +90,38 @@
 		await panelManager.togglePanel("search-panel");
 	};
 
+	const syncNavbarSearchState = (): void => {
+		const navbar = document.getElementById("navbar");
+		if (isDesktopSearchExpanded) {
+			navbar?.classList.add("is-searching");
+		} else {
+			navbar?.classList.remove("is-searching");
+		}
+	};
+
+	const scheduleSearch = (): void => {
+		if (!initialized) return;
+		const keyword = keywordDesktop || keywordMobile;
+		const isDesktop = !!keywordDesktop || isDesktopSearchExpanded;
+
+		clearTimeout(debounceTimer);
+		if (keyword) {
+			debounceTimer = setTimeout(() => {
+				search(keyword, isDesktop);
+			}, 300);
+		} else {
+			result = [];
+			setPanelVisibility(false, isDesktop);
+		}
+	};
+
 	const toggleDesktopSearch = () => {
 		// 如果窗口刚获得焦点，不自动展开搜索框
 		if (windowJustFocused) {
 			return;
 		}
 		isDesktopSearchExpanded = !isDesktopSearchExpanded;
+		syncNavbarSearchState();
 		if (isDesktopSearchExpanded) {
 			setTimeout(() => {
 				const input = document.getElementById(
@@ -109,6 +135,7 @@
 	const collapseDesktopSearch = () => {
 		if (!keywordDesktop) {
 			isDesktopSearchExpanded = false;
+			syncNavbarSearchState();
 		}
 	};
 
@@ -116,6 +143,7 @@
 		// 延迟处理以允许搜索结果的点击事件先于折叠逻辑执行
 		blurTimer = setTimeout(() => {
 			isDesktopSearchExpanded = false;
+			syncNavbarSearchState();
 			// 仅隐藏面板并折叠，保留搜索关键词和结果以便下次展开时查看
 			setPanelVisibility(false, true);
 		}, 200);
@@ -235,34 +263,6 @@
 		};
 	});
 
-	$effect(() => {
-		if (initialized) {
-			const keyword = keywordDesktop || keywordMobile;
-			const isDesktop = !!keywordDesktop || isDesktopSearchExpanded;
-
-			clearTimeout(debounceTimer);
-			if (keyword) {
-				debounceTimer = setTimeout(() => {
-					search(keyword, isDesktop);
-				}, 300);
-			} else {
-				result = [];
-				setPanelVisibility(false, isDesktop);
-			}
-		}
-	});
-
-	$effect(() => {
-		if (typeof document !== "undefined") {
-			const navbar = document.getElementById("navbar");
-			if (isDesktopSearchExpanded) {
-				navbar?.classList.add("is-searching");
-			} else {
-				navbar?.classList.remove("is-searching");
-			}
-		}
-	});
-
 	onDestroy(() => {
 		if (typeof document !== "undefined") {
 			const navbar = document.getElementById("navbar");
@@ -308,6 +308,7 @@
 			id="search-input-desktop"
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordDesktop}
+			oninput={() => setTimeout(scheduleSearch)}
 			onfocus={() => {
 				clearTimeout(blurTimer);
 				if (!isDesktopSearchExpanded) toggleDesktopSearch();
@@ -349,6 +350,7 @@
 		<input
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordMobile}
+			oninput={() => setTimeout(scheduleSearch)}
 			class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 search-input-color"
 		/>

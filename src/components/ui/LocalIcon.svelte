@@ -2,12 +2,11 @@
 	import { resolveLocalIcon, type LocalIconName } from "./local-icons";
 	import "./local-icon.css";
 
-	let {
-		name,
-		class: className = "",
-	}: { name: LocalIconName | string; class?: string } = $props();
+	export let name: LocalIconName | string;
+	let className = "";
+	export { className as class };
 
-	const source = $derived(resolveLocalIcon(name));
+	$: source = resolveLocalIcon(name);
 </script>
 
 <span

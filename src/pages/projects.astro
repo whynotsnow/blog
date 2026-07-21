@@ -1,4 +1,5 @@
 ---
+import { Icon } from "astro-icon/components";
 import { siteConfig } from "../config";
 import { UNCATEGORIZED } from "../constants/constants";
 import {
@@ -60,14 +61,6 @@ const getCategoryText = (category: string) => {
 ---
 
 <MainGridLayout title={title} description={subtitle}>
-	<script>
-		import { loadIconify } from "../utils/icon-loader";
-
-		// 加载Iconify图标库
-		loadIconify().catch((error) => {
-			console.error("Failed to load Iconify:", error);
-		});
-	</script>
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
@@ -221,10 +214,9 @@ const getCategoryText = (category: string) => {
 													rel="noopener noreferrer"
 													class="btn-gradient btn-gradient-primary btn-gradient-md"
 												>
-													<iconify-icon
-														icon="material-symbols:open-in-new"
-														width="18"
-														height="18"
+													<Icon
+														name="material-symbols:open-in-new"
+														class="text-lg"
 													/>
 													{i18n(
 														I18nKey.projectsVisit,
@@ -238,10 +230,9 @@ const getCategoryText = (category: string) => {
 													rel="noopener noreferrer"
 													class="btn-gradient btn-github btn-gradient-md"
 												>
-													<iconify-icon
-														icon="mdi:github"
-														width="18"
-														height="18"
+													<Icon
+														name="mdi:github"
+														class="text-lg"
 													/>
 													{i18n(
 														I18nKey.projectsGitHub,
@@ -345,10 +336,9 @@ const getCategoryText = (category: string) => {
 															rel="noopener noreferrer"
 															class="btn-gradient btn-gradient-primary btn-gradient-md"
 														>
-															<iconify-icon
-																icon="material-symbols:open-in-new"
-																width="18"
-																height="18"
+															<Icon
+																name="material-symbols:open-in-new"
+																class="text-lg"
 															/>
 															{i18n(
 																I18nKey.projectsVisit,
@@ -364,10 +354,9 @@ const getCategoryText = (category: string) => {
 															rel="noopener noreferrer"
 															class="btn-gradient btn-github btn-gradient-md"
 														>
-															<iconify-icon
-																icon="mdi:github"
-																width="18"
-																height="18"
+															<Icon
+																name="mdi:github"
+																class="text-lg"
 															/>
 															{i18n(
 																I18nKey.projectsGitHub,

@@ -92,7 +92,7 @@
 }
 
 /* 按钮图标样式 */
-.btn-gradient iconify-icon {
+.btn-gradient svg {
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
