@@ -4,20 +4,17 @@ import Footer from "@components/Footer.astro";
 import FloatingTools from "@/features/floating-tools/FloatingTools.astro";
 import type { MainGridLayoutViewModel } from "@/services/layout/main-grid";
 import BannerCredit from "./BannerCredit.astro";
-import SiteNoticeBar from "@components/site-notice/SiteNoticeBar.astro";
-import type { SiteNoticeViewModel } from "@/services/site-notice";
 import type { FooterViewModel } from "@/services/footer";
 import SidebarTocRegion from "./SidebarTocRegion.astro";
 
 interface Props {
 	headings: MarkdownHeading[];
 	viewModel: MainGridLayoutViewModel;
-	siteNotice?: SiteNoticeViewModel;
 	footer: FooterViewModel;
 	hasSupportContent: boolean;
 }
 
-const { headings, viewModel, siteNotice, footer, hasSupportContent } = Astro.props;
+const { headings, viewModel, footer, hasSupportContent } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
 const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-content";
 ---
@@ -33,9 +30,6 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 			]}
 			data-shell-strategy={viewModel.pageLayout.shellStrategy}
 		>
-			<div id="site-notice-container">
-				{siteNotice && <SiteNoticeBar notice={siteNotice} />}
-			</div>
 			<div
 				id="swup-container"
 			class="transition-swup-layout"

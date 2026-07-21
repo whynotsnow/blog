@@ -62,9 +62,7 @@ export default defineConfig({
 		swup({
 			theme: false,
 			animationClass: "transition-swup-",
-			// Replace route-specific notices separately from the animated page layout.
-			// A fixed notice must not become a descendant of the transformed container.
-			containers: ["#site-notice-container", "#swup-container"],
+			containers: ["#swup-container"],
 			smoothScrolling: false, // 页面级滚动由 Shell runtime 统一管理
 			cache: true,
 			preload: true, // swup 默认鼠标悬停预加载
