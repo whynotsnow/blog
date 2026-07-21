@@ -276,14 +276,18 @@ export type ExpressiveCodeConfig = {
 };
 
 export type SiteNoticeStatus = "info" | "success" | "warning" | "danger";
+export type SiteNoticeLevel = "normal" | "important" | "urgent" | "critical";
 
 export type SiteNoticeItemConfig = {
 	id: string;
-	title?: string;
+	title: string;
+	summary?: string;
 	content: string;
 	icon?: string;
 	status: SiteNoticeStatus;
+	level?: SiteNoticeLevel;
 	dismissible: boolean;
+	requiresAck?: boolean;
 	action?: {
 		label: string;
 		href: string;
@@ -298,9 +302,9 @@ export type SiteNoticeItemConfig = {
 
 export type SiteNoticeConfig = {
 	enable: boolean;
-	autoRotate: boolean;
-	rotationIntervalMs: number;
-	notices: SiteNoticeItemConfig[];
+	autoRotate?: boolean;
+	rotationIntervalMs?: number;
+	notices?: SiteNoticeItemConfig[];
 };
 
 export type MusicPlayerConfig = {

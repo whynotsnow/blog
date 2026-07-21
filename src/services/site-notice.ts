@@ -1,22 +1,30 @@
 import type {
 	SiteNoticeConfig,
 	SiteNoticeItemConfig,
+	SiteNoticeLevel,
 	SiteNoticeStatus,
 } from "@/types/config";
 import { url } from "@/utils/url";
+import type { CollectionEntry } from "astro:content";
 
 export type SiteNoticeItemViewModel = {
 	id: string;
-	title?: string;
+	title: string;
+	summary: string;
 	content: string;
 	icon: string;
 	status: SiteNoticeStatus;
+	level: SiteNoticeLevel;
 	dismissible: boolean;
+	requiresAck: boolean;
+	published?: string;
+	expires?: string;
 	action?: {
 		label: string;
 		href: string;
 		external: boolean;
 	};
+	entry?: CollectionEntry<"notifications">;
 };
 
 export type SiteNoticeViewModel = {
@@ -62,37 +70,90 @@ function isVisible(config: SiteNoticeItemConfig, pathname: string) {
 	return true;
 }
 
-export function buildSiteNoticeViewModel(
+function normalizeAction(action: SiteNoticeItemConfig["action"]) {
+	return action
+		? {
+				label: action.label,
+				href: action.external ? action.href : url(action.href),
+				external: action.external ?? false,
+			}
+		: undefined;
+}
+
+function buildConfigNotice(
+	notice: SiteNoticeItemConfig,
+): SiteNoticeItemViewModel {
+	return {
+		id: notice.id,
+		title: notice.title,
+		summary: notice.summary || notice.content,
+		content: notice.content,
+		icon: notice.icon || defaultIcons[notice.status],
+		status: notice.status,
+		level: notice.level ?? "normal",
+		dismissible: notice.dismissible,
+		requiresAck: notice.requiresAck ?? false,
+		action: normalizeAction(notice.action),
+	};
+}
+
+async function getMarkdownNotices(pathname: string) {
+	const { getCollection } = await import("astro:content");
+	const entries = await getCollection("notifications", ({ data }) => {
+		if (data.expires && data.expires.getTime() < Date.now()) return false;
+		return isVisible(
+			{
+				id: data.id,
+				title: data.title,
+				content: data.summary,
+				status: data.status,
+				dismissible: data.dismissible,
+				visibility: data.visibility,
+			},
+			pathname,
+		);
+	});
+
+	return entries.map<SiteNoticeItemViewModel>((entry) => {
+		const { data } = entry;
+		const summary = data.summary || data.title;
+		return {
+			id: data.id,
+			title: data.title,
+			summary,
+			content: summary,
+			icon: data.icon || defaultIcons[data.status],
+			status: data.status,
+			level: data.level,
+			dismissible: data.dismissible,
+			requiresAck: data.requiresAck,
+			published: data.published?.toISOString(),
+			expires: data.expires?.toISOString(),
+			action: normalizeAction(data.action),
+			entry,
+		};
+	});
+}
+
+export async function buildSiteNoticeViewModel(
 	config: SiteNoticeConfig,
 	pathname: string,
-): SiteNoticeViewModel | undefined {
+): Promise<SiteNoticeViewModel | undefined> {
 	if (!config.enable) return;
 
-	const notices = config.notices
+	const configNotices = (config.notices ?? [])
 		.filter((notice) => isVisible(notice, pathname))
-		.map((notice) => ({
-			id: notice.id,
-			title: notice.title?.trim() || undefined,
-			content: notice.content,
-			icon: notice.icon || defaultIcons[notice.status],
-			status: notice.status,
-			dismissible: notice.dismissible,
-			action: notice.action
-				? {
-						label: notice.action.label,
-						href: notice.action.external
-							? notice.action.href
-							: url(notice.action.href),
-						external: notice.action.external ?? false,
-					}
-				: undefined,
-		}));
+		.map(buildConfigNotice);
+	const markdownNotices = config.notices?.length
+		? []
+		: await getMarkdownNotices(pathname);
+	const notices = [...markdownNotices, ...configNotices];
 
 	if (!notices.length) return;
 
 	return {
-		autoRotate: config.autoRotate,
-		rotationIntervalMs: Math.max(config.rotationIntervalMs, 3000),
+		autoRotate: config.autoRotate ?? true,
+		rotationIntervalMs: Math.max(config.rotationIntervalMs ?? 6000, 3000),
 		notices,
 	};
 }

@@ -39,7 +39,10 @@ const viewModel = await buildMainGridLayoutViewModel({
 	layoutPolicy,
 	pathname: Astro.url.pathname,
 });
-const siteNotice = buildSiteNoticeViewModel(siteNoticeConfig, Astro.url.pathname);
+const siteNotice = await buildSiteNoticeViewModel(
+	siteNoticeConfig,
+	Astro.url.pathname,
+);
 const hasSupportContent = Astro.slots.has("support");
 ---
 

@@ -72,6 +72,41 @@ const specCollection = defineCollection({
 	schema: z.object({}),
 });
 
+const notificationVisibilitySchema = z.object({
+	scope: z.enum(["all", "home", "content"]).default("all"),
+	include: z.array(z.string()).optional(),
+	exclude: z.array(z.string()).optional(),
+});
+
+const notificationsCollection = defineCollection({
+	loader: glob({
+		pattern: "**/*.md",
+		base: "./src/content/notifications",
+	}),
+	schema: z.object({
+		id: z.string(),
+		title: z.string(),
+		summary: z.string().optional().default(""),
+		status: z.enum(["info", "success", "warning", "danger"]),
+		level: z
+			.enum(["normal", "important", "urgent", "critical"])
+			.default("normal"),
+		icon: z.string().optional(),
+		dismissible: z.boolean().optional().default(true),
+		requiresAck: z.boolean().optional().default(false),
+		published: z.coerce.date().optional(),
+		expires: z.coerce.date().optional(),
+		action: z
+			.object({
+				label: z.string(),
+				href: z.string(),
+				external: z.boolean().optional().default(false),
+			})
+			.optional(),
+		visibility: notificationVisibilitySchema.optional(),
+	}),
+});
+
 /* =========================
    Export
 ========================= */
@@ -79,4 +114,5 @@ const specCollection = defineCollection({
 export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
+	notifications: notificationsCollection,
 };

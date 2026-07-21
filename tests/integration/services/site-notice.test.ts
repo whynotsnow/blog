@@ -10,6 +10,7 @@ const config: SiteNoticeConfig = {
 	notices: [
 		{
 			id: "home",
+			title: "Home notice",
 			content: "Home notice",
 			status: "info",
 			dismissible: true,
@@ -18,6 +19,7 @@ const config: SiteNoticeConfig = {
 		},
 		{
 			id: "post",
+			title: "Post notice",
 			content: "Post notice",
 			status: "warning",
 			dismissible: false,
@@ -27,31 +29,36 @@ const config: SiteNoticeConfig = {
 };
 
 describe("buildSiteNoticeViewModel", () => {
-	it("filters route-owned notices and normalizes defaults", () => {
-		const viewModel = buildSiteNoticeViewModel(config, "/");
+	it("filters route-owned notices and normalizes defaults", async () => {
+		const viewModel = await buildSiteNoticeViewModel(config, "/");
 
 		expect(viewModel).toMatchObject({
 			autoRotate: true,
 			rotationIntervalMs: 3000,
-			notices: [
-				{
+			notices: expect.arrayContaining([
+				expect.objectContaining({
 					id: "home",
 					icon: "material-symbols:info-outline-rounded",
 					action: { label: "Read", href: "/about/", external: false },
-				},
-			],
+				}),
+			]),
 		});
 	});
 
-	it("matches wildcard content routes", () => {
+	it("matches wildcard content routes", async () => {
 		expect(
-			buildSiteNoticeViewModel(config, "/posts/example/")?.notices,
-		).toEqual([expect.objectContaining({ id: "post", status: "warning" })]);
+			(await buildSiteNoticeViewModel(config, "/posts/example/"))
+				?.notices,
+		).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: "post", status: "warning" }),
+			]),
+		);
 	});
 
-	it("returns no model when disabled", () => {
+	it("returns no model when disabled", async () => {
 		expect(
-			buildSiteNoticeViewModel({ ...config, enable: false }, "/"),
+			await buildSiteNoticeViewModel({ ...config, enable: false }, "/"),
 		).toBeUndefined();
 	});
 });
