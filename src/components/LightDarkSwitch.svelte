@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { DARK_MODE, LIGHT_MODE, DEFAULT_THEME } from "@constants/constants";
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { getStoredTheme, setTheme } from "@utils/setting-utils";
 	import type { LIGHT_DARK_MODE } from "@/types/config.ts";
 	import { onMount } from "svelte";
@@ -68,20 +68,20 @@
 			class:opacity-0={mode !== LIGHT_MODE}
 			class:rotate-180={mode !== LIGHT_MODE}
 		>
-			<Icon
-				icon="material-symbols:wb-sunny-outline-rounded"
+			<LocalIcon
+				name="material-symbols:wb-sunny-outline-rounded"
 				class="text-[1.25rem]"
-			></Icon>
+			/>
 		</div>
 		<div
 			class="absolute transition-all duration-300 ease-in-out"
 			class:opacity-0={mode !== DARK_MODE}
 			class:rotate-180={mode !== DARK_MODE}
 		>
-			<Icon
-				icon="material-symbols:dark-mode-outline-rounded"
+			<LocalIcon
+				name="material-symbols:dark-mode-outline-rounded"
 				class="text-[1.25rem]"
-			></Icon>
+			/>
 		</div>
 	</button>
 </div>

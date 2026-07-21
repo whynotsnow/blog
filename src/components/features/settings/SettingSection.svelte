@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import type { Snippet } from "svelte";
 
 	let {
@@ -38,8 +38,8 @@
 				class="chevron shrink-0 transition-transform duration-200"
 				class:rotate-90={isOpen}
 			>
-				<Icon
-					icon="material-symbols:chevron-right-rounded"
+				<LocalIcon
+					name="material-symbols:chevron-right-rounded"
 					class="text-[1rem] opacity-45"
 				/>
 			</div>
@@ -52,8 +52,8 @@
 				onclick={handleReset}
 				aria-label="Reset section"
 			>
-				<Icon
-					icon="material-symbols:refresh"
+				<LocalIcon
+					name="material-symbols:refresh"
 					class="text-[0.875rem] text-(--btn-content)"
 				/>
 			</button>

@@ -6,7 +6,7 @@
 	} from "@constants/constants";
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import {
 		getStoredWallpaperMode,
 		setWallpaperMode,
@@ -67,7 +67,7 @@
 		id="wallpaper-mode-switch"
 		onclick={togglePanel}
 	>
-		<Icon icon={currentIcon} class="text-[1.25rem]"></Icon>
+		<LocalIcon name={currentIcon} class="text-[1.25rem]" />
 	</button>
 
 	<div
@@ -82,7 +82,7 @@
 					class:scale-animation={mode !== option.mode}
 					onclick={() => switchWallpaperMode(option.mode)}
 				>
-					<Icon icon={option.icon} class="text-[1.25rem] mr-3"></Icon>
+					<LocalIcon name={option.icon} class="mr-3 text-[1.25rem]" />
 					{i18n(option.label)}
 				</button>
 			{/each}

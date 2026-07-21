@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 
 	let {
 		icon = "",
@@ -22,7 +22,7 @@
 	onclick={onToggle}
 >
 	{#if icon}
-		<Icon {icon} class="shrink-0 text-[1.25rem] opacity-80" />
+		<LocalIcon name={icon} class="shrink-0 text-[1.25rem] opacity-80" />
 	{/if}
 	<span class="min-w-0 flex-1 truncate text-sm">{label}</span>
 	<div

@@ -5,7 +5,7 @@
 		WALLPAPER_NONE,
 		WALLPAPER_OVERLAY,
 	} from "@constants/constants";
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
 	import { onMount } from "svelte";
@@ -355,16 +355,16 @@
 							WALLPAPER_BANNER}
 						onclick={() => switchWallpaperMode(WALLPAPER_BANNER)}
 					>
-						<Icon
-							icon="material-symbols:image-outline"
+						<LocalIcon
+							name="material-symbols:image-outline"
 							class="shrink-0 text-[1.25rem]"
 						/>
 						<span class="min-w-0 flex-1 truncate text-sm">
 							{i18n(I18nKey.wallpaperBanner)}
 						</span>
 						{#if wallpaperMode === WALLPAPER_BANNER}
-							<Icon
-								icon="material-symbols:check-circle"
+							<LocalIcon
+								name="material-symbols:check-circle"
 								class="shrink-0 text-[1rem] text-(--primary)"
 							/>
 						{/if}
@@ -379,16 +379,16 @@
 						onclick={() =>
 							switchWallpaperMode(WALLPAPER_FULLSCREEN)}
 					>
-						<Icon
-							icon="material-symbols:wallpaper"
+						<LocalIcon
+							name="material-symbols:wallpaper"
 							class="shrink-0 text-[1.25rem]"
 						/>
 						<span class="min-w-0 flex-1 truncate text-sm">
 							{i18n(I18nKey.wallpaperFullscreen)}
 						</span>
 						{#if wallpaperMode === WALLPAPER_FULLSCREEN}
-							<Icon
-								icon="material-symbols:check-circle"
+							<LocalIcon
+								name="material-symbols:check-circle"
 								class="shrink-0 text-[1rem] text-(--primary)"
 							/>
 						{/if}
@@ -401,16 +401,16 @@
 							WALLPAPER_OVERLAY}
 						onclick={() => switchWallpaperMode(WALLPAPER_OVERLAY)}
 					>
-						<Icon
-							icon="material-symbols:full-coverage-outline-rounded"
+						<LocalIcon
+							name="material-symbols:full-coverage-outline-rounded"
 							class="shrink-0 text-[1.25rem]"
 						/>
 						<span class="min-w-0 flex-1 truncate text-sm">
 							{i18n(I18nKey.wallpaperOverlay)}
 						</span>
 						{#if wallpaperMode === WALLPAPER_OVERLAY}
-							<Icon
-								icon="material-symbols:check-circle"
+							<LocalIcon
+								name="material-symbols:check-circle"
 								class="shrink-0 text-[1rem] text-(--primary)"
 							/>
 						{/if}
@@ -423,16 +423,16 @@
 							WALLPAPER_NONE}
 						onclick={() => switchWallpaperMode(WALLPAPER_NONE)}
 					>
-						<Icon
-							icon="material-symbols:hide-image-outline"
+						<LocalIcon
+							name="material-symbols:hide-image-outline"
 							class="shrink-0 text-[1.25rem]"
 						/>
 						<span class="min-w-0 flex-1 truncate text-sm">
 							{i18n(I18nKey.wallpaperNone)}
 						</span>
 						{#if wallpaperMode === WALLPAPER_NONE}
-							<Icon
-								icon="material-symbols:check-circle"
+							<LocalIcon
+								name="material-symbols:check-circle"
 								class="shrink-0 text-[1rem] text-(--primary)"
 							/>
 						{/if}
@@ -559,16 +559,16 @@
 							"list"}
 						onclick={() => setLayout("list")}
 					>
-						<Icon
-							icon="material-symbols:format-list-bulleted-rounded"
+						<LocalIcon
+							name="material-symbols:format-list-bulleted-rounded"
 							class="shrink-0 text-[1rem]"
 						/>
 						<span class="truncate text-xs font-medium">
 							{i18n(I18nKey.postListLayoutList)}
 						</span>
 						{#if currentLayout === "list"}
-							<Icon
-								icon="material-symbols:check-circle"
+							<LocalIcon
+								name="material-symbols:check-circle"
 								class="shrink-0 text-[1rem] text-(--primary)"
 							/>
 						{/if}
@@ -582,16 +582,16 @@
 							"grid"}
 						onclick={() => setLayout("grid")}
 					>
-						<Icon
-							icon="material-symbols:grid-view-rounded"
+						<LocalIcon
+							name="material-symbols:grid-view-rounded"
 							class="shrink-0 text-[1rem]"
 						/>
 						<span class="truncate text-xs font-medium">
 							{i18n(I18nKey.postListLayoutGrid)}
 						</span>
 						{#if currentLayout === "grid"}
-							<Icon
-								icon="material-symbols:check-circle"
+							<LocalIcon
+								name="material-symbols:check-circle"
 								class="shrink-0 text-[1rem] text-(--primary)"
 							/>
 						{/if}
