@@ -192,7 +192,7 @@ Response:
 - At Shell progress settlement, temporarily suppress the content layer's `top` transition, synchronize its Banner class, force layout, align `.page-main-content` with instant scrolling, then restore the transition on the next frame.
 - Publish the progress `idle` state only after this correction so tests and consumers cannot observe an intermediate coordinate.
 - Bind lifecycle callbacks to the current `window.swup` instance. A permanent boolean can silently leave callbacks attached to an obsolete instance after route scripts refresh the global instance.
-- Keep fixed Shell overlays such as the Site Notice outside the transformed `#swup-container`. A transformed ancestor becomes the fixed element's containing block during route animation, making the overlay jump between content-relative and viewport-relative coordinates.
+- Keep fixed Shell overlays outside the transformed `#swup-container`. A transformed ancestor becomes the fixed element's containing block during route animation, making the overlay jump between content-relative and viewport-relative coordinates.
 
 ## Browser Verification
 

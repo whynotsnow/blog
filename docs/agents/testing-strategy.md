@@ -68,7 +68,7 @@ tests/
   e2e/
     smoke/            small critical-route availability suite
     shell/            navigation, page entry, responsive shell
-    features/         home, post list, post detail, site notice, widgets
+    features/         home, post list, post detail, activity center, widgets
     contracts/        Design and shared rendering contracts
 ```
 

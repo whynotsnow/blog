@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | `posts` | `src/content/posts/**/*.md` | 博客文章。 |
 | `spec` | `src/content/spec/**/*.md` | 关于、友链等特殊页面。 |
+| `notifications` | `src/content/notifications/**/*.md` | Activity Center 网站通知。 |
 
 集合 schema 定义在 `src/content.config.ts`。
 
@@ -138,6 +139,28 @@ pnpm new-post -- my-post-title
 - 横幅、favicon、字体和固定 UI 资源放在 `public/assets` 或已有专用目录。
 - 大图优先使用 WebP。
 - 文章图片路径应保持稳定，因为卡片、Feed 和 OG 图片可能复用它们。
+
+## 网站通知
+
+网站通知使用 `src/content/notifications/*.md`。Frontmatter 控制列表摘要、状态、等级、可见范围和交互策略，正文 Markdown 会在 Activity Center 弹窗中展示。
+
+示例：
+
+```yaml
+---
+id: site-building-2026-07
+title: 站点施工提示
+summary: 部分功能仍在完善中。
+status: info
+level: normal
+dismissible: false
+requiresAck: false
+visibility:
+  scope: all
+---
+```
+
+`level: critical` 且未确认的通知会在进入站点时自动打开弹窗。正文应保持短小明确；需要长篇说明时使用 `action` 链接到文章或特殊页面。
 
 ## Schema 变更检查清单
 

@@ -24,7 +24,7 @@
 | `src/config/site.ts` | 站点核心配置 `siteConfig`、`SITE_LANG`、`SITE_TIMEZONE`。 |
 | `src/config/navbar.ts` | 顶部导航 `navBarConfig`。 |
 | `src/config/profile.ts` | 个人资料 `profileConfig`。 |
-| `src/config/site-notice.ts` | 网站级通知 `siteNoticeConfig`。 |
+| `src/config/site-notice.ts` | 网站级通知全局开关 `siteNoticeConfig`。 |
 | `src/config/wallpaper.ts` | 全屏壁纸 `fullscreenWallpaperConfig`。 |
 | `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
 | `src/config/music.ts` | 音乐播放器 `musicPlayerConfig`。 |
@@ -44,7 +44,7 @@
 | `licenseConfig` | 默认内容协议展示。 |
 | `commentConfig` | 评论系统配置。 |
 | `pageLayoutPolicies` | 页面 Shell Strategy 与允许的桌面布局集合；当前仅允许 `content-right`。 |
-| `siteNoticeConfig` | 主内容 Shell 顶部的网站级通知、状态、操作与可见范围。 |
+| `siteNoticeConfig` | Activity Center 网站通知入口的全局开关。通知正文来自 `src/content/notifications`。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
 ## 字体配置
@@ -63,23 +63,24 @@
 
 ## 网站通知
 
-`SiteNoticeBar` 以站点级浮层固定在 Navbar 下方，限制为阅读宽度，不参与页面流布局。
+网站通知由 Navbar 右侧的 Activity Center 统一展示。面板中只显示通知标题和摘要，点击通知后打开弹窗阅读完整 Markdown 正文；文章页上的外圈仍只显示当前阅读进度。Activity Center 不承载 Theme、Settings 等操作型工具。
 
 - `enable`：启用或关闭网站通知。
-- `autoRotate`：多条通知时是否自动轮播；用户 Hover 或将焦点移入通知区域时暂停。
-- `rotationIntervalMs`：自动轮播间隔，运行时最低为 3000ms；系统启用 `prefers-reduced-motion` 时不自动轮播。
-- `notices`：通知条目数组，按配置顺序显示并支持手动上下切换。
-- `notices[].id`：通知的稳定版本 ID；用户已读状态以 `site-notice:read:<id>` 保存，关闭状态以 `site-notice:dismissed:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
-- `title`、`content`、`icon`：通知标题、纯文本正文和可选图标。
+
+通知文件位于 `src/content/notifications/*.md`。Frontmatter 字段：
+
+- `id`：通知的稳定版本 ID；用户已读状态以 `site-notice:read:<id>` 保存，关闭状态以 `site-notice:dismissed:<id>` 保存，最高等级确认状态以 `site-notice:acknowledged:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
+- `title`：面板和弹窗标题，应短句概括通知内容。
+- `summary`：Activity Center 列表摘要，建议一行内可读。
 - `status`：支持 `info`、`success`、`warning`、`danger`，视觉由 Design Semantic status token 提供。
-- `dismissible`：是否允许用户关闭。
+- `level`：支持 `normal`、`important`、`urgent`、`critical`。`critical` 且未确认的通知会在进入站点时自动打开弹窗。
+- `dismissible`：是否允许用户忽略通知。
+- `requiresAck`：是否必须通过“我知道了”确认；确认会同时写入已读状态。
 - `action`：可选操作链接，包含 `label`、`href` 和 `external`；配置存在即显示，不需要额外 enable 字段。
 - `visibility.scope`：`all` 表示全部页面，`home` 仅首页，`content` 表示非首页。
 - `visibility.include`、`visibility.exclude`：可进一步按路径控制。路径默认精确匹配，以 `*` 结尾时匹配该路径及其子路径，例如 `/posts/*`。
 
-网站通知内容保持纯文本。较长信息应通过 `action` 链接到详情页，不在 Notice Bar 内嵌 Markdown 或 HTML。
-
-Navbar 右侧的 Activity Center 是全站信息入口。Badge 只统计未读网站通知，文章页上的外圈只显示当前阅读进度；打开 Panel 后可查看通知历史以及文章进度、当前章节、剩余阅读时间和本地续读位置。`info` / `success` 通知在右上角短暂预览后退场，仍保留在 Activity Center；`warning` / `danger` 预览不会自动消失。Activity Center 不承载 Theme、Settings 等操作型工具。
+通知正文使用 Markdown 编写，由 Astro 在构建期渲染后交给弹窗展示。通知弹窗适合短段落、列表、链接和少量代码；长篇说明应通过 `action` 链接到正式文章或 `spec` 页面。
 
 ## SettingsPanel 相关配置
 

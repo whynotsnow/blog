@@ -296,9 +296,6 @@ test("container-content compensates shared Shell type without resizing its conta
 			)!;
 			const mainContent =
 				document.querySelector<HTMLElement>(".page-main-content")!;
-			const siteNotice = document.querySelector<HTMLElement>(
-				"[data-site-notice-region]",
-			)!;
 			const rootStyle = getComputedStyle(document.documentElement);
 
 			return {
@@ -320,9 +317,6 @@ test("container-content compensates shared Shell type without resizing its conta
 				),
 				pageEntryClearance: Number.parseFloat(
 					getComputedStyle(mainContent).scrollMarginBlockStart,
-				),
-				siteNoticeTop: Number.parseFloat(
-					getComputedStyle(siteNotice).insetBlockStart,
 				),
 				footerWidth: footerMeta
 					.closest(".site-footer")!
@@ -361,7 +355,6 @@ test("container-content compensates shared Shell type without resizing its conta
 	expect(compensated.navbarHeight).toBeCloseTo(64.8, 1);
 	expect(compensated.mainContentOffset).toBeCloseTo(79.2, 1);
 	expect(compensated.pageEntryClearance).toBeCloseTo(93.6, 1);
-	expect(compensated.siteNoticeTop).toBeCloseTo(80.8, 1);
 
 	for (const pathname of ["/category/tech/", "/posts/markdown-tutorial/"]) {
 		await gotoPage(page, pathname);
@@ -420,7 +413,6 @@ test("container-content compensates shared Shell type without resizing its conta
 	expect(restored.navbarHeight).toBeCloseTo(72, 0);
 	expect(restored.mainContentOffset).toBeCloseTo(88, 1);
 	expect(restored.pageEntryClearance).toBeCloseTo(104, 1);
-	expect(restored.siteNoticeTop).toBeCloseTo(88, 1);
 	expect(restored.navbarWidth).toBeGreaterThanOrEqual(
 		compensated.navbarWidth,
 	);

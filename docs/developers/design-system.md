@@ -65,7 +65,7 @@ Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Sv
 
 Footer 不设置固定 Shell 高度，而是由内容自然撑开；外层间距、Stats 的横向与换行间距、Meta 行间距统一消费 Footer Feature-local token，并随同一 Desktop Landscape 补偿曲线变化。Banner 的容器高度仍只由 `--banner-block-size` 的 `vh`/`svh`/`dvh` 几何决定，文字补偿不得反向改变首屏比例。
 
-Navbar 外层高度由 `--navbar-shell-height` 所有；`--main-content-offset` 与 Page Entry Clearance 从该高度和 `--navbar-shell-clearance` 推导。`container-content` 在同一 Desktop Landscape 范围内将 Shell 高度从 `1536px` viewport 的约 `64.8px` 平滑恢复到 `2000px` 的 `72px`，但 Navigation Button 继续保留 `44px` 点击区域，Logo 高度也不随这轮补偿变化。Site Notice 顶部位置和 Navbar 滚动阈值必须消费同一高度契约，不得重新写入固定 `72px` 或 `88px`。
+Navbar 外层高度由 `--navbar-shell-height` 所有；`--main-content-offset` 与 Page Entry Clearance 从该高度和 `--navbar-shell-clearance` 推导。`container-content` 在同一 Desktop Landscape 范围内将 Shell 高度从 `1536px` viewport 的约 `64.8px` 平滑恢复到 `2000px` 的 `72px`，但 Navigation Button 继续保留 `44px` 点击区域，Logo 高度也不随这轮补偿变化。Navbar 滚动阈值必须消费同一高度契约，不得重新写入固定 `72px` 或 `88px`。
 
 顶部 Navigation Progress 是 Shell-local Pattern：颜色消费 `--accent`，过渡消费 `--motion-*`，固定覆盖在页面顶部且不占文档流高度。它消费 Swup 生命周期并保证快速导航仍有短暂的可见反馈，但不作为内容、图片或 Svelte hydration 的完成状态。
 
