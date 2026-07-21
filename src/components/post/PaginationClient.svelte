@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { generatePages, HIDDEN } from "@utils/pagination";
 
 	export let currentPage: number;
@@ -30,8 +30,8 @@
 		aria-disabled={currentPage <= 1}
 		tabindex={currentPage <= 1 ? -1 : 0}
 	>
-		<Icon
-			icon="material-symbols:chevron-left-rounded"
+		<LocalIcon
+			name="material-symbols:chevron-left-rounded"
 			class="text-[1.75rem]"
 		/>
 	</a>
@@ -43,7 +43,7 @@
 	>
 		{#each pages as p, index (`${p}-${index}`)}
 			{#if p === HIDDEN}
-				<Icon icon="material-symbols:more-horiz" class="mx-1" />
+				<LocalIcon name="material-symbols:more-horiz" class="mx-1" />
 			{:else if p === currentPage}
 				<div
 					class="h-11 w-11 rounded-lg bg-[var(--primary)]
@@ -73,8 +73,8 @@
 		aria-disabled={currentPage >= lastPage}
 		tabindex={currentPage >= lastPage ? -1 : 0}
 	>
-		<Icon
-			icon="material-symbols:chevron-right-rounded"
+		<LocalIcon
+			name="material-symbols:chevron-right-rounded"
 			class="text-[1.75rem]"
 		/>
 	</a>

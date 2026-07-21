@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import type { MusicPlayerLabels } from "./types";
 
 	export let cover = "";
@@ -49,7 +49,7 @@
 		/>
 		{#if isLoading}
 			<span class="orb-player__status" aria-hidden="true">
-				<Icon icon="eos-icons:loading" />
+				<span class="local-loading-icon"></span>
 			</span>
 		{:else if isPlaying}
 			<span
@@ -65,7 +65,24 @@
 			class:orb-player__fallback-icon--loading={isPlaylistLoading}
 			aria-hidden="true"
 		>
-			<Icon icon="material-symbols:music-note-rounded" />
+			<LocalIcon name="material-symbols:music-note-rounded" />
 		</span>
 	{/if}
 </div>
+
+<style>
+	.local-loading-icon {
+		width: 1em;
+		height: 1em;
+		border: 2px solid currentcolor;
+		border-right-color: transparent;
+		border-radius: 999px;
+		animation: local-icon-spin 0.75s linear infinite;
+	}
+
+	@keyframes local-icon-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

@@ -1,70 +1,136 @@
+import faChevronRight from "@/assets/icons/fa7-solid/chevron-right.svg?url";
+import mdiPin from "@/assets/icons/mdi/pin.svg?url";
 import airwaveRounded from "@/assets/icons/material-symbols/airwave-rounded.svg?url";
+import articleOutline from "@/assets/icons/material-symbols/article-outline.svg?url";
+import articleOutlineRounded from "@/assets/icons/material-symbols/article-outline-rounded.svg?url";
 import autoStoriesOutlineRounded from "@/assets/icons/material-symbols/auto-stories-outline-rounded.svg?url";
+import book2OutlineRounded from "@/assets/icons/material-symbols/book-2-outline-rounded.svg?url";
+import calendarTodayOutlineRounded from "@/assets/icons/material-symbols/calendar-today-outline-rounded.svg?url";
+import check from "@/assets/icons/material-symbols/check.svg?url";
 import checkCircle from "@/assets/icons/material-symbols/check-circle.svg?url";
 import checkCircleOutlineRounded from "@/assets/icons/material-symbols/check-circle-outline-rounded.svg?url";
+import chevronLeftRounded from "@/assets/icons/material-symbols/chevron-left-rounded.svg?url";
 import chevronRightRounded from "@/assets/icons/material-symbols/chevron-right-rounded.svg?url";
+import close from "@/assets/icons/material-symbols/close.svg?url";
+import closeRounded from "@/assets/icons/material-symbols/close-rounded.svg?url";
 import constructionRounded from "@/assets/icons/material-symbols/construction-rounded.svg?url";
 import darkModeOutlineRounded from "@/assets/icons/material-symbols/dark-mode-outline-rounded.svg?url";
 import displaySettingsRounded from "@/assets/icons/material-symbols/display-settings-rounded.svg?url";
+import download from "@/assets/icons/material-symbols/download.svg?url";
+import error from "@/assets/icons/material-symbols/error.svg?url";
 import errorOutlineRounded from "@/assets/icons/material-symbols/error-outline-rounded.svg?url";
+import expandLess from "@/assets/icons/material-symbols/expand-less.svg?url";
 import faceRetouchingNaturalRounded from "@/assets/icons/material-symbols/face-retouching-natural-rounded.svg?url";
 import faceRetouchingOffRounded from "@/assets/icons/material-symbols/face-retouching-off-rounded.svg?url";
+import formatListBulleted from "@/assets/icons/material-symbols/format-list-bulleted.svg?url";
 import formatListBulletedRounded from "@/assets/icons/material-symbols/format-list-bulleted-rounded.svg?url";
+import formatListNumberedRounded from "@/assets/icons/material-symbols/format-list-numbered-rounded.svg?url";
 import fullCoverageOutlineRounded from "@/assets/icons/material-symbols/full-coverage-outline-rounded.svg?url";
+import graphicEqRounded from "@/assets/icons/material-symbols/graphic-eq-rounded.svg?url";
 import gridViewRounded from "@/assets/icons/material-symbols/grid-view-rounded.svg?url";
 import hideImageOutline from "@/assets/icons/material-symbols/hide-image-outline.svg?url";
 import hideSourceRounded from "@/assets/icons/material-symbols/hide-source-rounded.svg?url";
 import historyRounded from "@/assets/icons/material-symbols/history-rounded.svg?url";
 import imageOutline from "@/assets/icons/material-symbols/image-outline.svg?url";
 import infoOutlineRounded from "@/assets/icons/material-symbols/info-outline-rounded.svg?url";
+import keyboardArrowDownRounded from "@/assets/icons/material-symbols/keyboard-arrow-down-rounded.svg?url";
 import keyboardArrowUpRounded from "@/assets/icons/material-symbols/keyboard-arrow-up-rounded.svg?url";
+import link from "@/assets/icons/material-symbols/link.svg?url";
+import moreHoriz from "@/assets/icons/material-symbols/more-horiz.svg?url";
 import musicNoteRounded from "@/assets/icons/material-symbols/music-note-rounded.svg?url";
 import notificationsOutlineRounded from "@/assets/icons/material-symbols/notifications-outline-rounded.svg?url";
+import pause from "@/assets/icons/material-symbols/pause.svg?url";
+import pauseRounded from "@/assets/icons/material-symbols/pause-rounded.svg?url";
 import personOffRounded from "@/assets/icons/material-symbols/person-off-rounded.svg?url";
 import personRounded from "@/assets/icons/material-symbols/person-rounded.svg?url";
+import playArrow from "@/assets/icons/material-symbols/play-arrow.svg?url";
+import playArrowRounded from "@/assets/icons/material-symbols/play-arrow-rounded.svg?url";
+import queueMusicRounded from "@/assets/icons/material-symbols/queue-music-rounded.svg?url";
 import refresh from "@/assets/icons/material-symbols/refresh.svg?url";
+import repeatOneRounded from "@/assets/icons/material-symbols/repeat-one-rounded.svg?url";
+import repeatRounded from "@/assets/icons/material-symbols/repeat-rounded.svg?url";
+import search from "@/assets/icons/material-symbols/search.svg?url";
 import settingsRounded from "@/assets/icons/material-symbols/settings-rounded.svg?url";
+import shuffleRounded from "@/assets/icons/material-symbols/shuffle-rounded.svg?url";
+import skipNextRounded from "@/assets/icons/material-symbols/skip-next-rounded.svg?url";
+import skipPreviousRounded from "@/assets/icons/material-symbols/skip-previous-rounded.svg?url";
 import smartToyOutlineRounded from "@/assets/icons/material-symbols/smart-toy-outline-rounded.svg?url";
 import spaOutlineRounded from "@/assets/icons/material-symbols/spa-outline-rounded.svg?url";
 import titlecaseRounded from "@/assets/icons/material-symbols/titlecase-rounded.svg?url";
 import tocRounded from "@/assets/icons/material-symbols/toc-rounded.svg?url";
 import tuneRounded from "@/assets/icons/material-symbols/tune-rounded.svg?url";
 import viewCarouselOutlineRounded from "@/assets/icons/material-symbols/view-carousel-outline-rounded.svg?url";
+import visibilityOff from "@/assets/icons/material-symbols/visibility-off.svg?url";
+import visibilityOffRounded from "@/assets/icons/material-symbols/visibility-off-rounded.svg?url";
+import volumeDownRounded from "@/assets/icons/material-symbols/volume-down-rounded.svg?url";
+import volumeOffRounded from "@/assets/icons/material-symbols/volume-off-rounded.svg?url";
+import volumeUpRounded from "@/assets/icons/material-symbols/volume-up-rounded.svg?url";
 import wallpaper from "@/assets/icons/material-symbols/wallpaper.svg?url";
 import warningOutlineRounded from "@/assets/icons/material-symbols/warning-outline-rounded.svg?url";
 import wbSunnyOutlineRounded from "@/assets/icons/material-symbols/wb-sunny-outline-rounded.svg?url";
 import widgetsRounded from "@/assets/icons/material-symbols/widgets-rounded.svg?url";
 
 export const localIconSources = {
+	"fa7-solid:chevron-right": faChevronRight,
+	"mdi:pin": mdiPin,
 	"material-symbols:airwave-rounded": airwaveRounded,
+	"material-symbols:article-outline": articleOutline,
+	"material-symbols:article-outline-rounded": articleOutlineRounded,
 	"material-symbols:auto-stories-outline-rounded": autoStoriesOutlineRounded,
+	"material-symbols:book-2-outline-rounded": book2OutlineRounded,
+	"material-symbols:calendar-today-outline-rounded":
+		calendarTodayOutlineRounded,
+	"material-symbols:check": check,
 	"material-symbols:check-circle": checkCircle,
 	"material-symbols:check-circle-outline-rounded": checkCircleOutlineRounded,
+	"material-symbols:chevron-left-rounded": chevronLeftRounded,
 	"material-symbols:chevron-right-rounded": chevronRightRounded,
+	"material-symbols:close": close,
+	"material-symbols:close-rounded": closeRounded,
 	"material-symbols:construction-rounded": constructionRounded,
 	"material-symbols:dark-mode-outline-rounded": darkModeOutlineRounded,
 	"material-symbols:display-settings-rounded": displaySettingsRounded,
+	"material-symbols:download": download,
+	"material-symbols:error": error,
 	"material-symbols:error-outline-rounded": errorOutlineRounded,
+	"material-symbols:expand-less": expandLess,
 	"material-symbols:face-retouching-natural-rounded":
 		faceRetouchingNaturalRounded,
 	"material-symbols:face-retouching-off-rounded": faceRetouchingOffRounded,
+	"material-symbols:format-list-bulleted": formatListBulleted,
 	"material-symbols:format-list-bulleted-rounded": formatListBulletedRounded,
+	"material-symbols:format-list-numbered-rounded": formatListNumberedRounded,
 	"material-symbols:full-coverage-outline-rounded":
 		fullCoverageOutlineRounded,
+	"material-symbols:graphic-eq-rounded": graphicEqRounded,
 	"material-symbols:grid-view-rounded": gridViewRounded,
 	"material-symbols:hide-image-outline": hideImageOutline,
 	"material-symbols:hide-source-rounded": hideSourceRounded,
 	"material-symbols:history-rounded": historyRounded,
 	"material-symbols:image-outline": imageOutline,
 	"material-symbols:info-outline-rounded": infoOutlineRounded,
+	"material-symbols:keyboard-arrow-down-rounded": keyboardArrowDownRounded,
 	"material-symbols:keyboard-arrow-up-rounded": keyboardArrowUpRounded,
+	"material-symbols:link": link,
+	"material-symbols:more-horiz": moreHoriz,
 	"material-symbols:music-note-rounded": musicNoteRounded,
 	"material-symbols:notifications-outline-rounded":
 		notificationsOutlineRounded,
+	"material-symbols:pause": pause,
+	"material-symbols:pause-rounded": pauseRounded,
 	"material-symbols:person-off-rounded": personOffRounded,
 	"material-symbols:person-rounded": personRounded,
+	"material-symbols:play-arrow": playArrow,
+	"material-symbols:play-arrow-rounded": playArrowRounded,
+	"material-symbols:queue-music-rounded": queueMusicRounded,
 	"material-symbols:refresh": refresh,
+	"material-symbols:repeat-one-rounded": repeatOneRounded,
+	"material-symbols:repeat-rounded": repeatRounded,
+	"material-symbols:search": search,
 	"material-symbols:settings-rounded": settingsRounded,
+	"material-symbols:shuffle-rounded": shuffleRounded,
+	"material-symbols:skip-next-rounded": skipNextRounded,
+	"material-symbols:skip-previous-rounded": skipPreviousRounded,
 	"material-symbols:smart-toy-outline-rounded": smartToyOutlineRounded,
 	"material-symbols:spa-outline-rounded": spaOutlineRounded,
 	"material-symbols:titlecase-rounded": titlecaseRounded,
@@ -72,6 +138,11 @@ export const localIconSources = {
 	"material-symbols:tune-rounded": tuneRounded,
 	"material-symbols:view-carousel-outline-rounded":
 		viewCarouselOutlineRounded,
+	"material-symbols:visibility-off": visibilityOff,
+	"material-symbols:visibility-off-rounded": visibilityOffRounded,
+	"material-symbols:volume-down-rounded": volumeDownRounded,
+	"material-symbols:volume-off-rounded": volumeOffRounded,
+	"material-symbols:volume-up-rounded": volumeUpRounded,
 	"material-symbols:wallpaper": wallpaper,
 	"material-symbols:warning-outline-rounded": warningOutlineRounded,
 	"material-symbols:wb-sunny-outline-rounded": wbSunnyOutlineRounded,

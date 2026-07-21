@@ -1,7 +1,7 @@
 <script lang="ts">
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { navigateToPage } from "@utils/navigation-utils";
 	import { panelManager } from "@utils/panel-manager";
 	import { url } from "@utils/url";
@@ -296,14 +296,14 @@
 			input?.focus();
 		}}
 	>
-		<Icon
-			icon="material-symbols:search"
+		<LocalIcon
+			name="material-symbols:search"
 			class="absolute text-[1.25rem] pointer-events-none {isDesktopSearchExpanded
 				? 'left-3'
 				: 'left-1/2 -translate-x-1/2'} transition top-1/2 -translate-y-1/2 {isDesktopSearchExpanded
 				? 'search-icon-color'
 				: ''}"
-		></Icon>
+		/>
 		<input
 			id="search-input-desktop"
 			placeholder={i18n(I18nKey.search)}
@@ -329,7 +329,7 @@
 	id="search-switch"
 	class="btn-plain scale-animation lg:hidden! rounded-lg w-11 h-11 active:scale-90"
 >
-	<Icon icon="material-symbols:search" class="text-[1.25rem]"></Icon>
+	<LocalIcon name="material-symbols:search" class="text-[1.25rem]" />
 </button>
 
 <!-- search panel -->
@@ -342,10 +342,10 @@
 		id="search-bar-inside"
 		class="flex relative lg:hidden transition-all items-center h-11 rounded-xl search-bar-bg"
 	>
-		<Icon
-			icon="material-symbols:search"
+		<LocalIcon
+			name="material-symbols:search"
 			class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto search-icon-color"
-		></Icon>
+		/>
 		<input
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordMobile}
@@ -364,10 +364,10 @@
 			<div
 				class="transition text-90 inline-flex font-bold group-hover:text-(--primary)"
 			>
-				{item.meta.title}<Icon
-					icon="fa7-solid:chevron-right"
+				{item.meta.title}<LocalIcon
+					name="fa7-solid:chevron-right"
 					class="transition text-[0.75rem] translate-x-1 my-auto text-(--primary)"
-				></Icon>
+				/>
 			</div>
 			<div class="transition text-sm text-50">
 				<!-- HTML is sanitized by sanitizeExcerpt; only attribute-free <mark> tags are preserved. -->

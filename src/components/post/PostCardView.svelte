@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import type { ClientPostCard } from "@/services/category-page";
 	import { siteConfig } from "@/config";
 	import I18nKey from "@/i18n/i18nKey";
@@ -44,14 +44,14 @@
 			{post.title}
 
 			<!-- 移动端箭头 -->
-			<Icon
-				icon="material-symbols:chevron-right-rounded"
+			<LocalIcon
+				name="material-symbols:chevron-right-rounded"
 				class="home-post-card__title-chevron home-post-card__title-chevron--mobile"
 			/>
 
 			<!-- 桌面 hover 箭头 -->
-			<Icon
-				icon="material-symbols:chevron-right-rounded"
+			<LocalIcon
+				name="material-symbols:chevron-right-rounded"
 				class="home-post-card__title-chevron home-post-card__title-chevron--desktop transition"
 			/>
 		</a>
@@ -105,8 +105,8 @@
 
 		<!-- 中心箭头 -->
 		<div class="home-post-card__cover-enter">
-			<Icon
-				icon="material-symbols:chevron-right-rounded"
+			<LocalIcon
+				name="material-symbols:chevron-right-rounded"
 				class="home-post-card__cover-enter-icon transition"
 			/>
 		</div>
@@ -120,8 +120,8 @@
 			/>
 		{:else}
 			<div class="home-post-card__cover-placeholder" aria-hidden="true">
-				<Icon
-					icon="material-symbols:article-outline-rounded"
+				<LocalIcon
+					name="material-symbols:article-outline-rounded"
 					class="home-post-card__cover-placeholder-icon"
 				/>
 			</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import type { SharePosterLabels } from "./types";
 
 	export let posterImage: string | null;
@@ -61,14 +61,10 @@
 				on:click={copyLink}
 			>
 				{#if copied}
-					<Icon
-						icon="material-symbols:check"
-						width="20"
-						height="20"
-					/>
+					<LocalIcon name="material-symbols:check" class="text-xl" />
 					<span>{labels.copied}</span>
 				{:else}
-					<Icon icon="material-symbols:link" width="20" height="20" />
+					<LocalIcon name="material-symbols:link" class="text-xl" />
 					<span>{labels.copyLink}</span>
 				{/if}
 			</button>
@@ -78,7 +74,7 @@
 				on:click={downloadPoster}
 				disabled={!posterImage}
 			>
-				<Icon icon="material-symbols:download" width="20" height="20" />
+				<LocalIcon name="material-symbols:download" class="text-xl" />
 				{labels.savePoster}
 			</button>
 		</div>

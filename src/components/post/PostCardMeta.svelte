@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import type { ClientPostCard } from "@/services/category-page";
 	import I18nKey from "@/i18n/i18nKey";
 	import { i18n } from "@/i18n/translation";
@@ -23,8 +23,8 @@
 
 <div class="home-post-card__meta ds-cluster">
 	<div class="home-post-card__meta-item home-post-card__meta-item--date">
-		<Icon
-			icon="material-symbols:calendar-today-outline-rounded"
+		<LocalIcon
+			name="material-symbols:calendar-today-outline-rounded"
 			class="home-post-card__meta-icon"
 		/>
 		<time datetime={post.published}>
@@ -33,8 +33,8 @@
 	</div>
 
 	<div class="home-post-card__meta-item home-post-card__meta-item--category">
-		<Icon
-			icon="material-symbols:book-2-outline-rounded"
+		<LocalIcon
+			name="material-symbols:book-2-outline-rounded"
 			class="home-post-card__meta-icon"
 		/>
 		<a
@@ -49,8 +49,8 @@
 
 	{#if wordCount}
 		<div class="home-post-card__meta-item home-post-card__meta-item--words">
-			<Icon
-				icon="material-symbols:article-outline-rounded"
+			<LocalIcon
+				name="material-symbols:article-outline-rounded"
 				class="home-post-card__meta-icon"
 			/>
 			<span title={wordCount.exact}>{wordCount.display}</span>

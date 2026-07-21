@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import type { MusicPlayerLabels, RepeatMode, Song } from "./types";
 
 	export let currentSong: Song;
@@ -59,7 +59,7 @@
 				aria-label={labels.hide}
 				title={labels.hide}
 			>
-				<Icon icon="material-symbols:visibility-off-rounded" />
+				<LocalIcon name="material-symbols:visibility-off-rounded" />
 			</button>
 			<button
 				type="button"
@@ -70,7 +70,7 @@
 				aria-pressed={showPlaylist}
 				title={labels.playlist}
 			>
-				<Icon icon="material-symbols:queue-music-rounded" />
+				<LocalIcon name="material-symbols:queue-music-rounded" />
 			</button>
 		</div>
 	</header>
@@ -110,8 +110,8 @@
 			on:click={onToggleShuffle}
 			title={isShuffled ? labels.shuffle : labels.sequential}
 		>
-			<Icon
-				icon={isShuffled
+			<LocalIcon
+				name={isShuffled
 					? "material-symbols:shuffle-rounded"
 					: "material-symbols:format-list-numbered-rounded"}
 			/>
@@ -124,7 +124,7 @@
 			aria-label={labels.previous}
 			title={labels.previous}
 		>
-			<Icon icon="material-symbols:skip-previous-rounded" />
+			<LocalIcon name="material-symbols:skip-previous-rounded" />
 		</button>
 		<button
 			type="button"
@@ -135,11 +135,11 @@
 			on:click={onTogglePlay}
 		>
 			{#if isLoading}
-				<Icon icon="eos-icons:loading" />
+				<span class="local-loading-icon" aria-hidden="true"></span>
 			{:else if isPlaying}
-				<Icon icon="material-symbols:pause-rounded" />
+				<LocalIcon name="material-symbols:pause-rounded" />
 			{:else}
-				<Icon icon="material-symbols:play-arrow-rounded" />
+				<LocalIcon name="material-symbols:play-arrow-rounded" />
 			{/if}
 		</button>
 		<button
@@ -150,7 +150,7 @@
 			aria-label={labels.next}
 			title={labels.next}
 		>
-			<Icon icon="material-symbols:skip-next-rounded" />
+			<LocalIcon name="material-symbols:skip-next-rounded" />
 		</button>
 		<button
 			type="button"
@@ -161,8 +161,8 @@
 			aria-pressed={isRepeating > 0}
 			title={isRepeating === 1 ? labels.repeatOne : labels.repeat}
 		>
-			<Icon
-				icon={isRepeating === 1
+			<LocalIcon
+				name={isRepeating === 1
 					? "material-symbols:repeat-one-rounded"
 					: "material-symbols:repeat-rounded"}
 			/>
@@ -176,8 +176,8 @@
 			on:click={onToggleMute}
 			aria-label={labels.volume}
 		>
-			<Icon
-				icon={isMuted || volume === 0
+			<LocalIcon
+				name={isMuted || volume === 0
 					? "material-symbols:volume-off-rounded"
 					: volume < 0.5
 						? "material-symbols:volume-down-rounded"
@@ -213,7 +213,7 @@
 			aria-label={labels.collapse}
 			title={labels.collapse}
 		>
-			<Icon icon="material-symbols:keyboard-arrow-down-rounded" />
+			<LocalIcon name="material-symbols:keyboard-arrow-down-rounded" />
 		</button>
 	</footer>
 </section>
@@ -222,6 +222,21 @@
 	.expanded-player {
 		width: 100%;
 		padding: 0.9rem;
+	}
+
+	.local-loading-icon {
+		width: 1em;
+		height: 1em;
+		border: 2px solid currentcolor;
+		border-right-color: transparent;
+		border-radius: 999px;
+		animation: local-icon-spin 0.75s linear infinite;
+	}
+
+	@keyframes local-icon-spin {
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.player-summary {

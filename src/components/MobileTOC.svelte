@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { onMount } from "svelte";
 	import I18nKey from "../i18n/i18nKey";
 	import { i18n } from "../i18n/translation";
@@ -122,7 +122,7 @@
 			);
 			// 查找置顶图标
 			const pinnedIcon = titleLink?.querySelector(
-				'svg[data-icon="mdi:pin"]',
+				'[data-local-icon="mdi:pin"]',
 			);
 
 			if (titleLink) {
@@ -335,7 +335,10 @@
 	id="mobile-toc-switch"
 	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 lg:hidden! theme-switch-btn"
 >
-	<Icon icon="material-symbols:format-list-bulleted" class="text-[1.25rem]" />
+	<LocalIcon
+		name="material-symbols:format-list-bulleted"
+		class="text-[1.25rem]"
+	/>
 </button>
 
 <!-- Mobile TOC Panel -->
@@ -355,15 +358,15 @@
 			aria-label="Close TOC"
 			class="btn-plain rounded-lg h-8 w-8 active:scale-90 theme-switch-btn"
 		>
-			<Icon icon="material-symbols:close" class="text-[1rem]" />
+			<LocalIcon name="material-symbols:close" class="text-[1rem]" />
 		</button>
 	</div>
 
 	{#if isHomePage}
 		{#if postItems.length === 0}
 			<div class="text-center py-8 text-black/50 dark:text-white/50">
-				<Icon
-					icon="material-symbols:article-outline"
+				<LocalIcon
+					name="material-symbols:article-outline"
 					class="text-2xl mb-2"
 				/>
 				<p>暂无文章</p>
@@ -377,7 +380,7 @@
 					>
 						<div class="post-title">
 							{#if post.pinned}
-								<Icon icon="mdi:pin" class="pinned-icon" />
+								<LocalIcon name="mdi:pin" class="pinned-icon" />
 							{/if}
 							{post.title}
 						</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { slide } from "svelte/transition";
 	import type { MusicPlayerLabels, Song } from "./types";
 
@@ -29,7 +29,7 @@
 			aria-label={`${labels.collapse} ${labels.playlist}`}
 			title={`${labels.collapse} ${labels.playlist}`}
 		>
-			<Icon icon="material-symbols:close-rounded" />
+			<LocalIcon name="material-symbols:close-rounded" />
 		</button>
 	</header>
 
@@ -62,7 +62,9 @@
 						aria-hidden="true"
 					>
 						{#if isPlaying}
-							<Icon icon="material-symbols:graphic-eq-rounded" />
+							<LocalIcon
+								name="material-symbols:graphic-eq-rounded"
+							/>
 						{:else}
 							<span></span>
 						{/if}

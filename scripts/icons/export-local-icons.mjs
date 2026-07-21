@@ -1,33 +1,78 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import fa7Solid from "@iconify-json/fa7-solid/icons.json" with { type: "json" };
 import materialSymbols from "@iconify-json/material-symbols/icons.json" with { type: "json" };
+import mdi from "@iconify-json/mdi/icons.json" with { type: "json" };
 
 const iconSets = {
+	"fa7-solid": {
+		data: fa7Solid,
+		outputDir: "src/assets/icons/fa7-solid",
+	},
 	"material-symbols": {
 		data: materialSymbols,
 		outputDir: "src/assets/icons/material-symbols",
 	},
+	mdi: {
+		data: mdi,
+		outputDir: "src/assets/icons/mdi",
+	},
 };
 
 const defaultIcons = {
+	"fa7-solid": ["chevron-right"],
 	"material-symbols": [
 		"airwave-rounded",
+		"article-outline",
+		"article-outline-rounded",
+		"book-2-outline-rounded",
+		"calendar-today-outline-rounded",
 		"check-circle",
+		"check",
+		"chevron-left-rounded",
 		"chevron-right-rounded",
+		"close",
+		"close-rounded",
 		"dark-mode-outline-rounded",
+		"download",
+		"error",
+		"expand-less",
+		"format-list-bulleted",
 		"format-list-bulleted-rounded",
+		"format-list-numbered-rounded",
 		"full-coverage-outline-rounded",
+		"graphic-eq-rounded",
 		"grid-view-rounded",
 		"hide-image-outline",
 		"image-outline",
+		"keyboard-arrow-down-rounded",
+		"link",
+		"more-horiz",
+		"pause",
+		"pause-rounded",
+		"play-arrow",
+		"play-arrow-rounded",
+		"queue-music-rounded",
 		"refresh",
+		"repeat-one-rounded",
+		"repeat-rounded",
+		"search",
+		"shuffle-rounded",
+		"skip-next-rounded",
+		"skip-previous-rounded",
 		"spa-outline-rounded",
 		"titlecase-rounded",
 		"view-carousel-outline-rounded",
+		"visibility-off",
+		"visibility-off-rounded",
+		"volume-down-rounded",
+		"volume-off-rounded",
+		"volume-up-rounded",
 		"wallpaper",
 		"wb-sunny-outline-rounded",
 	],
+	mdi: ["pin"],
 };
 
 function resolveIconData(iconSet, name) {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import type { MusicPlayerLabels, Song } from "./types";
 
 	export let currentSong: Song;
@@ -45,15 +45,18 @@
 				class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
 			>
 				{#if isLoading}
-					<Icon icon="eos-icons:loading" class="text-white text-xl" />
+					<span
+						class="local-loading-icon text-white text-xl"
+						aria-hidden="true"
+					></span>
 				{:else if isPlaying}
-					<Icon
-						icon="material-symbols:pause"
+					<LocalIcon
+						name="material-symbols:pause"
 						class="text-white text-xl"
 					/>
 				{:else}
-					<Icon
-						icon="material-symbols:play-arrow"
+					<LocalIcon
+						name="material-symbols:play-arrow"
 						class="text-white text-xl"
 					/>
 				{/if}
@@ -85,14 +88,37 @@
 				on:click|stopPropagation={onToggleHidden}
 				title={labels.collapse}
 			>
-				<Icon icon="material-symbols:visibility-off" class="text-lg" />
+				<LocalIcon
+					name="material-symbols:visibility-off"
+					class="text-lg"
+				/>
 			</button>
 			<button
 				class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
 				on:click|stopPropagation={onToggleExpanded}
 			>
-				<Icon icon="material-symbols:expand-less" class="text-lg" />
+				<LocalIcon
+					name="material-symbols:expand-less"
+					class="text-lg"
+				/>
 			</button>
 		</div>
 	</div>
 </div>
+
+<style>
+	.local-loading-icon {
+		width: 1em;
+		height: 1em;
+		border: 2px solid currentcolor;
+		border-right-color: transparent;
+		border-radius: 999px;
+		animation: local-icon-spin 0.75s linear infinite;
+	}
+
+	@keyframes local-icon-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>
