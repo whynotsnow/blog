@@ -18,6 +18,20 @@
   height: 1.3rem;
 }
 
+.activity-center__switch[data-urgent="true"] {
+  color: var(--status-danger);
+}
+
+.activity-center__switch[data-urgent="true"]::after {
+  position: absolute;
+  inset: 0.2rem;
+  border: 1px solid color-mix(in oklch, var(--status-danger) 70%, transparent);
+  border-radius: inherit;
+  animation: activity-center-pulse 1.8s var(--motion-ease-standard) 2;
+  content: "";
+  pointer-events: none;
+}
+
 .activity-center__progress {
   position: absolute;
   inset: 0;
@@ -77,6 +91,8 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-overlay);
+  transform-origin: top right;
+  animation: activity-center-panel-in 160ms var(--motion-ease-standard);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -215,6 +231,29 @@
   height: 1rem;
 }
 
+.activity-center__filters {
+  display: flex;
+  gap: var(--size-2);
+  margin-block-end: var(--size-3);
+}
+
+.activity-center__filters button {
+  min-width: 0;
+  padding: var(--size-2) var(--size-3);
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--text-small);
+}
+
+.activity-center__filters button[aria-selected="true"] {
+  color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 10%, transparent);
+  border-color: color-mix(in oklch, var(--accent) 28%, var(--border-subtle));
+}
+
 .activity-center__notice-list {
   display: grid;
   gap: var(--size-3);
@@ -224,12 +263,18 @@
   --notice-accent: var(--status-info);
 
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--size-3);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--size-2);
+  align-items: start;
   padding: var(--size-3);
   background: color-mix(in oklch, var(--notice-accent) 7%, var(--surface-card));
   border: 1px solid color-mix(in oklch, var(--notice-accent) 20%, var(--border-subtle));
   border-radius: var(--radius-md);
+  animation: activity-center-item-in 180ms var(--motion-ease-standard) both;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    border-color var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-standard);
 }
 
 .activity-center__notice[data-status="success"] {
@@ -242,34 +287,299 @@
   --notice-accent: var(--status-danger);
 }
 
+.activity-center__notice[data-level="critical"],
+.activity-center__notice[data-level="urgent"] {
+  background: color-mix(in oklch, var(--notice-accent) 12%, var(--surface-card));
+  border-color: color-mix(in oklch, var(--notice-accent) 34%, var(--border-subtle));
+}
+
+.activity-center__notice[data-read="true"] {
+  background: color-mix(in oklch, var(--surface-card) 96%, transparent);
+  border-color: var(--border-subtle);
+}
+
 .activity-center__notice > .local-icon {
   width: 1.15rem;
   height: 1.15rem;
-  margin-block-start: 0.15rem;
+  margin-block-start: 0.35rem;
   color: var(--notice-accent);
 }
 
-.activity-center__notice strong {
-  display: block;
+.activity-center__notice-main {
+  min-width: 0;
+  padding: 0;
+  color: inherit;
+  text-align: start;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.activity-center__notice-main:hover strong {
+  color: var(--accent);
+}
+
+.activity-center__notice-title {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+  min-width: 0;
   margin-block-end: var(--size-1);
+}
+
+.activity-center__notice-title strong {
+  overflow: hidden;
   color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-center__notice-title i {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: 0 0 auto;
+  background: var(--notice-accent);
+  border-radius: 999px;
 }
 
 .activity-center__notice p {
   margin: 0;
-  line-height: 1.6;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.activity-center__notice a {
-  display: inline-block;
-  margin-block-start: var(--size-2);
-  color: var(--accent);
-  font-weight: 600;
+.activity-center__notice-dismiss {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.activity-center__notice-dismiss:hover {
+  color: var(--text-primary);
+  background: color-mix(in oklch, var(--surface-raised) 70%, transparent);
+}
+
+.activity-center__notice-dismiss .local-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 .activity-center__empty {
   margin: 0;
   color: var(--text-muted);
+}
+
+.activity-center__dialog-backdrop {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(var(--space-page-x), env(safe-area-inset-top)) var(--space-page-x) max(var(--space-page-x), env(safe-area-inset-bottom));
+  background: color-mix(in oklch, var(--surface-overlay) 42%, transparent);
+  animation: activity-center-backdrop-in 160ms var(--motion-ease-standard);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.activity-center__dialog {
+  --notice-accent: var(--status-info);
+
+  display: grid;
+  width: min(36rem, 100%);
+  max-height: min(78dvh, 44rem);
+  overflow: hidden;
+  color: var(--text-secondary);
+  background: var(--surface-overlay);
+  border: 1px solid color-mix(in oklch, var(--notice-accent) 24%, var(--border-subtle));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+  transform-origin: center;
+  animation: activity-center-dialog-in 180ms var(--motion-ease-standard);
+}
+
+.activity-center__dialog[data-status="success"] {
+  --notice-accent: var(--status-success);
+}
+.activity-center__dialog[data-status="warning"] {
+  --notice-accent: var(--status-warning);
+}
+.activity-center__dialog[data-status="danger"] {
+  --notice-accent: var(--status-danger);
+}
+
+.activity-center__dialog[data-level="critical"] {
+  border-color: color-mix(in oklch, var(--status-danger) 42%, var(--border-subtle));
+}
+
+.activity-center__dialog-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--size-3);
+  align-items: center;
+  padding: var(--size-4);
+  border-block-end: 1px solid var(--border-subtle);
+}
+
+.activity-center__dialog-header > .local-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--notice-accent);
+}
+
+.activity-center__dialog-header span {
+  display: block;
+  margin-block-end: var(--size-1);
+  color: var(--text-muted);
+  font-size: var(--text-small);
+}
+
+.activity-center__dialog-header h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.activity-center__dialog-close {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.activity-center__dialog-close:hover {
+  color: var(--text-primary);
+  background: color-mix(in oklch, var(--surface-raised) 72%, transparent);
+}
+
+.activity-center__dialog-content {
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--size-4);
+  line-height: 1.75;
+}
+
+.activity-center__dialog-content :where(p, ul, ol, blockquote, pre) {
+  margin-block: 0 var(--size-3);
+}
+
+.activity-center__dialog-content :where(ul, ol) {
+  padding-inline-start: 1.35rem;
+}
+
+.activity-center__dialog-content :where(a) {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.activity-center__dialog-content :where(code) {
+  padding: 0.1rem 0.3rem;
+  background: var(--surface-raised);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.activity-center__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--size-2);
+  padding: var(--size-4);
+  border-block-start: 1px solid var(--border-subtle);
+}
+
+.activity-center__dialog-actions :where(a, button) {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-2) var(--size-3);
+  color: var(--text-primary);
+  text-decoration: none;
+  background: color-mix(in oklch, var(--surface-raised) 74%, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.activity-center__dialog-actions .activity-center__dialog-primary {
+  color: var(--text-on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+@keyframes activity-center-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes activity-center-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes activity-center-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes activity-center-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes activity-center-pulse {
+  from {
+    opacity: 0.75;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.3);
+  }
 }
 
 @media (max-width: 767px) {
@@ -281,11 +591,26 @@
     width: auto;
     max-height: min(72dvh, 40rem);
   }
+
+  .activity-center__dialog-backdrop {
+    align-items: end;
+  }
+
+  .activity-center__dialog {
+    width: 100%;
+    max-height: min(82dvh, 44rem);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .activity-center__progress-value,
-  .activity-center__meter span {
+  .activity-center__meter span,
+  .activity-center__panel,
+  .activity-center__notice,
+  .activity-center__dialog-backdrop,
+  .activity-center__dialog,
+  .activity-center__switch[data-urgent="true"]::after {
+    animation-duration: 0.01ms;
     transition-duration: 0.01ms;
   }
 }

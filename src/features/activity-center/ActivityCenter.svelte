@@ -4,8 +4,12 @@
 	import type { SiteNoticeItemViewModel } from "@/services/site-notice";
 	import { onPageLifecycle } from "@/utils/page-lifecycle";
 	import {
+		acknowledgeSiteNotice,
+		dismissSiteNotice,
 		getUnreadSiteNoticeIds,
+		isSiteNoticeAcknowledged,
 		isSiteNoticeDismissed,
+		isSiteNoticeRead,
 		markSiteNoticeRead,
 		SITE_NOTICE_STATE_EVENT,
 	} from "./notice-state";
@@ -15,11 +19,23 @@
 		type ReadingStatus,
 	} from "./reading-status";
 
+	type ClientNotice = Omit<SiteNoticeItemViewModel, "entry">;
+	type NoticeFilter = "all" | "unread" | "important";
+
 	type Labels = {
 		activityCenter: string;
 		notifications: string;
 		markAllRead: string;
 		noNotifications: string;
+		notificationDetails: string;
+		notificationAll: string;
+		notificationUnread: string;
+		notificationImportant: string;
+		notificationRead: string;
+		notificationDismiss: string;
+		notificationAcknowledge: string;
+		notificationLater: string;
+		notificationOpen: string;
 		readingStatus: string;
 		readingProgress: string;
 		remainingReading: string;
@@ -27,24 +43,55 @@
 		resumeReading: string;
 	};
 
-	let {
-		notices = [],
-		labels,
-	}: { notices?: SiteNoticeItemViewModel[]; labels: Labels } = $props();
+	let { notices = [], labels }: { notices?: ClientNotice[]; labels: Labels } =
+		$props();
 
 	let root: HTMLDivElement;
 	let button: HTMLButtonElement;
+	let dialog: HTMLDivElement;
 	let open = $state(false);
 	let unreadIds = $state<string[]>([]);
 	let noticeRevision = $state(0);
+	let filter = $state<NoticeFilter>("all");
+	let selectedNoticeId = $state<string | undefined>();
+	let dialogOpen = $state(false);
+	let contentById = $state<Record<string, string>>({});
 	let reading = $state<ReadingStatus>(collectInitialReading());
 	let frame: number | undefined;
+
+	const progressPercent = $derived(Math.round(reading.progress * 100));
+	const selectedNotice = $derived(
+		notices.find((notice) => notice.id === selectedNoticeId),
+	);
+	const selectedHtml = $derived(
+		selectedNoticeId ? contentById[selectedNoticeId] : "",
+	);
 
 	const visibleNotices = $derived.by(() => {
 		void noticeRevision;
 		return notices.filter((notice) => !isDismissed(notice.id));
 	});
-	const progressPercent = $derived(Math.round(reading.progress * 100));
+	const sortedNotices = $derived.by(() =>
+		[...visibleNotices].sort((a, b) => {
+			const rankDelta = getNoticeRank(b) - getNoticeRank(a);
+			if (rankDelta !== 0) return rankDelta;
+			const unreadDelta = Number(isUnread(b.id)) - Number(isUnread(a.id));
+			if (unreadDelta !== 0) return unreadDelta;
+			return (b.published ?? "").localeCompare(a.published ?? "");
+		}),
+	);
+	const filteredNotices = $derived.by(() =>
+		sortedNotices.filter((notice) => {
+			if (filter === "unread") return isUnread(notice.id);
+			if (filter === "important") return getNoticeRank(notice) >= 2;
+			return true;
+		}),
+	);
+	const hasUrgentUnread = $derived(
+		visibleNotices.some(
+			(notice) => isUnread(notice.id) && getNoticeRank(notice) >= 3,
+		),
+	);
 
 	function collectInitialReading(): ReadingStatus {
 		return {
@@ -58,6 +105,45 @@
 
 	function isDismissed(id: string) {
 		return typeof window !== "undefined" && isSiteNoticeDismissed(id);
+	}
+
+	function isRead(id: string) {
+		return typeof window !== "undefined" && isSiteNoticeRead(id);
+	}
+
+	function isUnread(id: string) {
+		return !isRead(id) && !isDismissed(id);
+	}
+
+	function getNoticeRank(notice: ClientNotice) {
+		if (notice.level === "critical") return 4;
+		if (notice.level === "urgent") return 3;
+		if (notice.level === "important") return 2;
+		return 1;
+	}
+
+	function getNoticeStatusIcon(notice: ClientNotice) {
+		if (notice.level === "critical") {
+			return "material-symbols:error-outline-rounded";
+		}
+		if (notice.level === "urgent") {
+			return "material-symbols:warning-outline-rounded";
+		}
+		return notice.icon;
+	}
+
+	function readRenderedNoticeContent() {
+		const nextContent: Record<string, string> = {};
+		document
+			.querySelectorAll<HTMLTemplateElement>(
+				"template[data-notification-content]",
+			)
+			.forEach((template) => {
+				const id = template.dataset.notificationContent;
+				if (!id) return;
+				nextContent[id] = template.innerHTML.trim();
+			});
+		contentById = nextContent;
 	}
 
 	function syncNotices() {
@@ -75,14 +161,70 @@
 	function markAllRead() {
 		for (const id of unreadIds) markSiteNoticeRead(id);
 		syncNotices();
+		noticeRevision += 1;
 	}
 
 	function setOpen(nextOpen: boolean) {
 		open = nextOpen;
-		if (open) {
-			markAllRead();
-			syncReading();
+		if (open) syncReading();
+	}
+
+	function openNotice(notice: ClientNotice, auto = false) {
+		selectedNoticeId = notice.id;
+		dialogOpen = true;
+		open = false;
+		if (!notice.requiresAck) markSiteNoticeRead(notice.id);
+		syncNotices();
+		noticeRevision += 1;
+		requestAnimationFrame(() => {
+			dialog?.focus();
+		});
+		if (auto) {
+			document.documentElement.dataset.notificationModal = "critical";
 		}
+	}
+
+	function closeDialog() {
+		dialogOpen = false;
+		delete document.documentElement.dataset.notificationModal;
+		requestAnimationFrame(() => button?.focus());
+	}
+
+	function acknowledgeSelected() {
+		if (!selectedNotice) return;
+		acknowledgeSiteNotice(selectedNotice.id);
+		syncNotices();
+		noticeRevision += 1;
+		closeDialog();
+	}
+
+	function dismissSelected() {
+		if (!selectedNotice || !selectedNotice.dismissible) return;
+		dismissSiteNotice(selectedNotice.id);
+		syncNotices();
+		noticeRevision += 1;
+		closeDialog();
+	}
+
+	function handleActionClick() {
+		if (!selectedNotice) return;
+		if (selectedNotice.requiresAck) {
+			acknowledgeSiteNotice(selectedNotice.id);
+		} else {
+			markSiteNoticeRead(selectedNotice.id);
+		}
+		syncNotices();
+		noticeRevision += 1;
+	}
+
+	function maybeOpenCriticalNotice() {
+		const critical = notices.find(
+			(notice) =>
+				notice.level === "critical" &&
+				!isSiteNoticeAcknowledged(notice.id) &&
+				!isSiteNoticeDismissed(notice.id),
+		);
+		if (critical) openNotice(critical, true);
 	}
 
 	function resumeReading() {
@@ -92,8 +234,11 @@
 	}
 
 	onMount(() => {
+		readRenderedNoticeContent();
 		syncNotices();
 		syncReading();
+		maybeOpenCriticalNotice();
+
 		const handleScroll = () => syncReading();
 		const handleResize = () => syncReading();
 		const handleNoticeChange = () => {
@@ -110,15 +255,19 @@
 			}
 		};
 		const handleKeydown = (event: KeyboardEvent) => {
-			if (event.key === "Escape" && open) {
-				setOpen(false);
-				button.focus();
+			if (event.key === "Escape") {
+				if (dialogOpen) closeDialog();
+				else if (open) {
+					setOpen(false);
+					button.focus();
+				}
 			}
 		};
-		const unsubscribeContent = onPageLifecycle(
-			"content-replace",
-			syncReading,
-		);
+		const unsubscribeContent = onPageLifecycle("content-replace", () => {
+			readRenderedNoticeContent();
+			syncReading();
+			maybeOpenCriticalNotice();
+		});
 		const unsubscribeView = onPageLifecycle("page-view", syncReading);
 
 		window.addEventListener("scroll", handleScroll, { passive: true });
@@ -153,6 +302,7 @@
 		aria-controls="activity-center-panel"
 		aria-expanded={open}
 		data-reading-progress={progressPercent}
+		data-urgent={hasUrgentUnread}
 		onclick={() => setOpen(!open)}
 	>
 		<svg
@@ -250,31 +400,64 @@
 				/>
 				<strong>{labels.notifications}</strong>
 			</div>
-			{#if visibleNotices.length > 0}
+			<div class="activity-center__filters" role="tablist">
+				<button
+					type="button"
+					aria-selected={filter === "all"}
+					onclick={() => (filter = "all")}
+					>{labels.notificationAll}</button
+				>
+				<button
+					type="button"
+					aria-selected={filter === "unread"}
+					onclick={() => (filter = "unread")}
+					>{labels.notificationUnread}</button
+				>
+				<button
+					type="button"
+					aria-selected={filter === "important"}
+					onclick={() => (filter = "important")}
+					>{labels.notificationImportant}</button
+				>
+			</div>
+			{#if filteredNotices.length > 0}
 				<div class="activity-center__notice-list">
-					{#each visibleNotices as notice (notice.id)}
+					{#each filteredNotices as notice (notice.id)}
 						<article
 							class="activity-center__notice"
 							data-status={notice.status}
+							data-level={notice.level}
+							data-read={!isUnread(notice.id)}
 						>
-							<LocalIcon name={notice.icon} />
-							<div>
-								{#if notice.title}<strong>{notice.title}</strong
-									>{/if}
-								<p>{notice.content}</p>
-								{#if notice.action}
-									<a
-										href={notice.action.href}
-										target={notice.action.external
-											? "_blank"
-											: undefined}
-										rel={notice.action.external
-											? "noopener noreferrer"
-											: undefined}
-										>{notice.action.label}</a
-									>
-								{/if}
-							</div>
+							<LocalIcon name={getNoticeStatusIcon(notice)} />
+							<button
+								type="button"
+								class="activity-center__notice-main"
+								aria-label={`${labels.notificationOpen}: ${notice.title}`}
+								onclick={() => openNotice(notice)}
+							>
+								<span class="activity-center__notice-title">
+									<strong>{notice.title}</strong>
+									{#if isUnread(notice.id)}
+										<i
+											aria-label={labels.notificationUnread}
+										></i>
+									{/if}
+								</span>
+								<p>{notice.summary}</p>
+							</button>
+							{#if notice.dismissible}
+								<button
+									type="button"
+									class="activity-center__notice-dismiss"
+									aria-label={`${labels.notificationDismiss}: ${notice.title}`}
+									onclick={() => dismissSiteNotice(notice.id)}
+								>
+									<LocalIcon
+										name="material-symbols:close-rounded"
+									/>
+								</button>
+							{/if}
 						</article>
 					{/each}
 				</div>
@@ -284,3 +467,78 @@
 		</section>
 	</div>
 </div>
+
+{#if dialogOpen && selectedNotice}
+	<div
+		class="activity-center__dialog-backdrop"
+		data-level={selectedNotice.level}
+		onpointerdown={(event) => {
+			if (event.target === event.currentTarget) closeDialog();
+		}}
+	>
+		<div
+			bind:this={dialog}
+			class="activity-center__dialog"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="activity-center-dialog-title"
+			tabindex="-1"
+			data-status={selectedNotice.status}
+			data-level={selectedNotice.level}
+		>
+			<header class="activity-center__dialog-header">
+				<LocalIcon name={getNoticeStatusIcon(selectedNotice)} />
+				<div>
+					<span>{labels.notificationDetails}</span>
+					<h2 id="activity-center-dialog-title">
+						{selectedNotice.title}
+					</h2>
+				</div>
+				<button
+					type="button"
+					class="activity-center__dialog-close"
+					aria-label={labels.notificationLater}
+					onclick={closeDialog}
+				>
+					<LocalIcon name="material-symbols:close-rounded" />
+				</button>
+			</header>
+			<div class="activity-center__dialog-content">
+				<!-- Notification Markdown is rendered at build time from trusted local content. -->
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html selectedHtml}
+			</div>
+			<footer class="activity-center__dialog-actions">
+				{#if selectedNotice.action}
+					<a
+						href={selectedNotice.action.href}
+						target={selectedNotice.action.external
+							? "_blank"
+							: undefined}
+						rel={selectedNotice.action.external
+							? "noopener noreferrer"
+							: undefined}
+						onclick={handleActionClick}
+						>{selectedNotice.action.label}</a
+					>
+				{/if}
+				{#if selectedNotice.dismissible}
+					<button type="button" onclick={dismissSelected}
+						>{labels.notificationDismiss}</button
+					>
+				{/if}
+				<button
+					type="button"
+					class="activity-center__dialog-primary"
+					onclick={selectedNotice.requiresAck
+						? acknowledgeSelected
+						: closeDialog}
+				>
+					{selectedNotice.requiresAck
+						? labels.notificationAcknowledge
+						: labels.notificationRead}
+				</button>
+			</footer>
+		</div>
+	</div>
+{/if}
