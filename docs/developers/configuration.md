@@ -69,7 +69,7 @@
 
 通知文件位于 `src/content/notifications/*.md`。Frontmatter 字段：
 
-- `id`：通知的稳定版本 ID；用户已读状态以 `site-notice:read:<id>` 保存，关闭状态以 `site-notice:dismissed:<id>` 保存，最高等级确认状态以 `site-notice:acknowledged:<id>` 保存。发布需要重新展示的新通知时应修改 ID。
+- 通知文件名：通知的稳定版本 ID，例如 `site-building-2026-07.md` 对应 `site-building-2026-07`；用户已读状态以 `site-notice:read:<id>` 保存，关闭状态以 `site-notice:dismissed:<id>` 保存，最高等级确认状态以 `site-notice:acknowledged:<id>` 保存。发布需要重新展示的新通知时应修改文件名。
 - `title`：面板和弹窗标题，应短句概括通知内容。
 - `summary`：Activity Center 列表摘要，建议一行内可读。
 - `status`：支持 `info`、`success`、`warning`、`danger`，视觉由 Design Semantic status token 提供。

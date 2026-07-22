@@ -84,7 +84,6 @@ const notificationsCollection = defineCollection({
 		base: "./src/content/notifications",
 	}),
 	schema: z.object({
-		id: z.string(),
 		title: z.string(),
 		summary: z.string().optional().default(""),
 		status: z.enum(["info", "success", "warning", "danger"]),

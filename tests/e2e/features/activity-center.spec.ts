@@ -59,6 +59,9 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	await toggle.click();
 	await expect(panel).toBeVisible();
 	await expect(panel.locator(".activity-center__notice")).toHaveCount(2);
+	await expect(
+		panel.locator(".activity-center__notice").first(),
+	).toHaveAttribute("data-level", "important");
 	await expect(panel).toContainText("站点施工提示");
 	await expect(panel).toContainText("内容更新说明");
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("2");
@@ -67,6 +70,22 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	await panel.getByRole("button", { name: /查看通知: 站点施工提示/ }).click();
 	const dialog = page.locator(".activity-center__dialog");
 	await expect(dialog).toBeVisible();
+	const dialogGeometry = await page
+		.locator(".activity-center__dialog-backdrop")
+		.evaluate((backdrop) => {
+			const dialog = backdrop.querySelector<HTMLElement>(
+				".activity-center__dialog",
+			)!;
+			const rect = dialog.getBoundingClientRect();
+			return {
+				parentTag: backdrop.parentElement?.tagName,
+				top: rect.top,
+				bottom: window.innerHeight - rect.bottom,
+			};
+		});
+	expect(dialogGeometry.parentTag).toBe("BODY");
+	expect(dialogGeometry.top).toBeGreaterThanOrEqual(16);
+	expect(dialogGeometry.bottom).toBeGreaterThanOrEqual(16);
 	await expect(dialog).toContainText("站点目前仍在持续建设中");
 	await expect(dialog).toContainText("页面布局会继续优化");
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("1");

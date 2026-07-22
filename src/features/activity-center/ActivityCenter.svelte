@@ -132,6 +132,15 @@
 		return notice.icon;
 	}
 
+	function portal(node: HTMLElement) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				node.remove();
+			},
+		};
+	}
+
 	function readRenderedNoticeContent() {
 		const nextContent: Record<string, string> = {};
 		document
@@ -470,6 +479,7 @@
 
 {#if dialogOpen && selectedNotice}
 	<div
+		use:portal
 		class="activity-center__dialog-backdrop"
 		data-level={selectedNotice.level}
 		onpointerdown={(event) => {

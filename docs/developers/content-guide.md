@@ -148,7 +148,6 @@ pnpm new-post -- my-post-title
 
 ```yaml
 ---
-id: site-building-2026-07
 title: 站点施工提示
 summary: 部分功能仍在完善中。
 status: info
@@ -160,7 +159,7 @@ visibility:
 ---
 ```
 
-`level: critical` 且未确认的通知会在进入站点时自动打开弹窗。正文应保持短小明确；需要长篇说明时使用 `action` 链接到文章或特殊页面。
+通知文件名是稳定 ID，例如 `site-building-2026-07.md` 对应 `site-building-2026-07`。`level: critical` 且未确认的通知会在进入站点时自动打开弹窗。正文应保持短小明确；需要长篇说明时使用 `action` 链接到文章或特殊页面。
 
 ## Schema 变更检查清单
 

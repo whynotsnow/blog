@@ -103,7 +103,7 @@ async function getMarkdownNotices(pathname: string) {
 		if (data.expires && data.expires.getTime() < Date.now()) return false;
 		return isVisible(
 			{
-				id: data.id,
+				id: "",
 				title: data.title,
 				content: data.summary,
 				status: data.status,
@@ -118,7 +118,7 @@ async function getMarkdownNotices(pathname: string) {
 		const { data } = entry;
 		const summary = data.summary || data.title;
 		return {
-			id: data.id,
+			id: entry.id,
 			title: data.title,
 			summary,
 			content: summary,

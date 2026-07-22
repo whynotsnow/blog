@@ -1,9 +1,8 @@
 ---
-id: site-building-2026-07
 title: 站点施工提示
 summary: 部分功能仍在完善中。
 status: info
-level: normal
+level: important
 dismissible: false
 requiresAck: false
 visibility:

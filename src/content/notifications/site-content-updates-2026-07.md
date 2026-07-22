@@ -1,5 +1,4 @@
 ---
-id: site-content-updates-2026-07
 title: 内容更新说明
 summary: 本站内容会持续更新。
 status: success
