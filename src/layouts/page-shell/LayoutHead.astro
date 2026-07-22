@@ -56,6 +56,11 @@ const {
 			return;
 		}
 
+		if (window.__mizukiAnalyticsLoaded) {
+			return;
+		}
+		window.__mizukiAnalyticsLoaded = true;
+
 		// 使用 requestIdleCallback 延迟加载
 		function loadAnalytics() {
 			// Google Tag Manager
