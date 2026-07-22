@@ -99,6 +99,18 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	expect(dialogGeometry.backdropFilter).toBe("none");
 	expect(dialogGeometry.top).toBeGreaterThanOrEqual(16);
 	expect(dialogGeometry.bottom).toBeGreaterThanOrEqual(16);
+	const lockedBody = await page.evaluate(() => ({
+		overflow: document.body.style.overflow,
+		position: document.body.style.position,
+		top: document.body.style.top,
+		width: document.body.style.width,
+	}));
+	expect(lockedBody).toMatchObject({
+		overflow: "hidden",
+		position: "fixed",
+		width: "100%",
+	});
+	expect(lockedBody.top).toMatch(/^-?0px$/);
 	await expect(dialog).toContainText("站点目前仍在持续建设中");
 	await expect(dialog).toContainText("页面布局会继续优化");
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("1");
@@ -112,6 +124,21 @@ test("activity center owns notice unread state in the top-right shell", async ({
 
 	await dialog.getByRole("button", { name: "已读" }).click();
 	await expect(dialog).toBeHidden();
+	await expect
+		.poll(() =>
+			page.evaluate(() => ({
+				overflow: document.body.style.overflow,
+				position: document.body.style.position,
+				top: document.body.style.top,
+				width: document.body.style.width,
+			})),
+		)
+		.toEqual({
+			overflow: "",
+			position: "",
+			top: "",
+			width: "",
+		});
 	await toggle.click();
 	await panel.getByRole("button", { name: "全部已读" }).click();
 	await expect(toggle.locator("[data-activity-unread]")).toHaveCount(0);

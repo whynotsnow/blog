@@ -59,6 +59,14 @@
 	let contentById = $state<Record<string, string>>({});
 	let reading = $state<ReadingStatus>(collectInitialReading());
 	let frame: number | undefined;
+	let lockedScrollY = 0;
+	let scrollLocked = false;
+	let previousBodyStyles:
+		| Pick<
+				CSSStyleDeclaration,
+				"overflow" | "paddingRight" | "position" | "top" | "width"
+		  >
+		| undefined;
 
 	const progressPercent = $derived(Math.round(reading.progress * 100));
 	const selectedNotice = $derived(
@@ -180,11 +188,46 @@
 		if (open) syncReading();
 	}
 
+	function lockPageScroll() {
+		if (scrollLocked) return;
+		const scrollbarWidth =
+			window.innerWidth - document.documentElement.clientWidth;
+		lockedScrollY = window.scrollY;
+		previousBodyStyles = {
+			overflow: document.body.style.overflow,
+			paddingRight: document.body.style.paddingRight,
+			position: document.body.style.position,
+			top: document.body.style.top,
+			width: document.body.style.width,
+		};
+		document.body.style.overflow = "hidden";
+		if (scrollbarWidth > 0) {
+			document.body.style.paddingRight = `${scrollbarWidth}px`;
+		}
+		document.body.style.position = "fixed";
+		document.body.style.top = `-${lockedScrollY}px`;
+		document.body.style.width = "100%";
+		scrollLocked = true;
+	}
+
+	function unlockPageScroll() {
+		if (!scrollLocked || !previousBodyStyles) return;
+		document.body.style.overflow = previousBodyStyles.overflow;
+		document.body.style.paddingRight = previousBodyStyles.paddingRight;
+		document.body.style.position = previousBodyStyles.position;
+		document.body.style.top = previousBodyStyles.top;
+		document.body.style.width = previousBodyStyles.width;
+		scrollLocked = false;
+		previousBodyStyles = undefined;
+		window.scrollTo(0, lockedScrollY);
+	}
+
 	function openNotice(notice: ClientNotice, auto = false) {
 		try {
 			selectedNoticeId = notice.id;
 			dialogOpen = true;
 			open = false;
+			lockPageScroll();
 			if (!notice.requiresAck) markSiteNoticeRead(notice.id);
 			syncNotices();
 			noticeRevision += 1;
@@ -201,12 +244,14 @@
 			);
 			dialogOpen = false;
 			selectedNoticeId = undefined;
+			unlockPageScroll();
 		}
 	}
 
 	function closeDialog() {
 		dialogOpen = false;
 		delete document.documentElement.dataset.notificationModal;
+		unlockPageScroll();
 		requestAnimationFrame(() => button?.focus());
 	}
 
@@ -300,6 +345,7 @@
 		document.addEventListener("keydown", handleKeydown);
 
 		return () => {
+			unlockPageScroll();
 			dialogHost?.remove();
 			dialogHost = undefined;
 			if (frame) cancelAnimationFrame(frame);
