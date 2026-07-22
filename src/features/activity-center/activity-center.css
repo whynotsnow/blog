@@ -388,10 +388,8 @@
   display: grid;
   place-items: center;
   padding: max(var(--space-page-x), env(safe-area-inset-top)) var(--space-page-x) max(var(--space-page-x), env(safe-area-inset-bottom));
-  background: color-mix(in oklch, var(--surface-overlay) 42%, transparent);
+  background: color-mix(in oklch, var(--surface-overlay) 18%, transparent);
   animation: activity-center-backdrop-in 160ms var(--motion-ease-standard);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .activity-center__dialog {

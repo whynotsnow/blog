@@ -228,6 +228,21 @@ Use:
 - If no Playwright-capable surface is available, give the developer the exact command to run. Use the developer-operated manual lane only when Playwright cannot express the required check, not merely because it failed to launch.
 - Continue non-browser checks such as `pnpm check`, formatting checks, and code inspection independently of the browser result.
 
+### vite-deps-dynamic-import-cache-drift
+
+Pattern:
+
+- Chrome or Playwright Chromium reports `Failed to fetch dynamically imported module` for `/node_modules/.vite/deps/...` while other browsers continue to work.
+- The missing module is a Vite-optimized dependency wrapper, often generated from a runtime `import()` in an integration such as `@swup/astro`.
+- Restarting one side of the environment may not help if an old dev server remains alive, if a browser tab keeps a stale module URL, or if the Vite dependency cache was rebuilt while the browser still references a previous URL.
+
+Use:
+
+- First check for and stop stale Astro/Vite dev servers on the local dev port before changing app code.
+- Re-run the same Playwright scenario on a fresh port to distinguish a code regression from stale dev-server or browser module state.
+- In developer-operated Chrome, use a hard reload with DevTools cache disabled, or clear site data for the localhost origin, then reload after starting a fresh dev server.
+- If the error persists on a fresh port and clean browser cache, inspect the integration that emits the dynamic import and the current `node_modules/.vite/deps/_metadata.json` before adding application-level error handling.
+
 ## Markdown
 
 ### md051-emoji-heading-fragments

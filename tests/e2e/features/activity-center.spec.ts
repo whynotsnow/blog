@@ -51,14 +51,6 @@ test("activity center owns notice unread state in the top-right shell", async ({
 			top: rect.top,
 			width: rect.width,
 			height: rect.height,
-			iconColor: getComputedStyle(
-				element.querySelector<HTMLElement>("[data-local-icon]")!,
-			).color,
-			searchIconColor: getComputedStyle(
-				document.querySelector<HTMLElement>(
-					"#search-container [data-local-icon]",
-				)!,
-			).color,
 			hasViteOverlay: Boolean(
 				document.querySelector("vite-error-overlay"),
 			),
@@ -68,8 +60,6 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	expect(geometry.top).toBeLessThan(80);
 	expect(geometry.width).toBeGreaterThanOrEqual(44);
 	expect(geometry.height).toBeGreaterThanOrEqual(44);
-	expect(geometry.iconColor).toBe("rgba(255, 255, 255, 0.92)");
-	expect(geometry.searchIconColor).toBe("rgba(255, 255, 255, 0.92)");
 	expect(geometry.hasViteOverlay).toBe(false);
 
 	await toggle.click();
@@ -99,12 +89,14 @@ test("activity center owns notice unread state in the top-right shell", async ({
 					backdrop.parentElement?.hasAttribute(
 						"data-activity-center-portal",
 					) ?? false,
+				backdropFilter: getComputedStyle(backdrop).backdropFilter,
 				top: rect.top,
 				bottom: window.innerHeight - rect.bottom,
 			};
 		});
 	expect(dialogGeometry.parentTag).toBe("DIV");
 	expect(dialogGeometry.portalHost).toBe(true);
+	expect(dialogGeometry.backdropFilter).toBe("none");
 	expect(dialogGeometry.top).toBeGreaterThanOrEqual(16);
 	expect(dialogGeometry.bottom).toBeGreaterThanOrEqual(16);
 	await expect(dialog).toContainText("站点目前仍在持续建设中");

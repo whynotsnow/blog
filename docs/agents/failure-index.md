@@ -72,6 +72,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Capability contract: [Runtime Requirements](./runtime-requirements.md#capability-resolution)
 - Routing policy: [Automated and Regression Lane](./workflow.md#automated-and-regression-lane)
 
+### vite-deps-dynamic-import-cache-drift
+
+- Symptom: Chrome or Playwright Chromium reports `Failed to fetch dynamically imported module` for `/node_modules/.vite/deps/...`, often after Vite dependency optimization or dev-server restarts.
+- Playbook: [vite-deps-dynamic-import-cache-drift](./runtime-playbook.md#vite-deps-dynamic-import-cache-drift)
+
 ## TypeScript
 
 ### tsconfig-baseurl-drift

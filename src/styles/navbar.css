@@ -50,14 +50,6 @@
   gap: var(--navbar-item-gap);
 }
 
-#navbar .navbar__actions :is(.btn-plain, .activity-center__switch) {
-  color: var(--navbar-action-color, var(--text-primary));
-}
-
-#navbar .navbar__actions :is(.btn-plain, .activity-center__switch):hover {
-  color: var(--navbar-action-hover-color, var(--accent));
-}
-
 @media (min-width: 1024px) {
   #navbar .navbar__link {
     padding-inline: var(--navbar-link-padding-inline);
@@ -95,10 +87,6 @@ body.enable-banner #navbar[data-transparent-mode="semifull"]:not(.scrolled) {
   --navbar-blur: blur(0);
   --navbar-radius: 0;
   --navbar-shadow: none;
-  --navbar-action-color: rgb(255 255 255 / 0.92);
-  --navbar-action-hover-color: rgb(255 255 255);
-  --btn-plain-bg-hover: rgb(255 255 255 / 0.14);
-  --btn-plain-bg-active: rgb(255 255 255 / 0.2);
 }
 
 /* None mode is intentionally solid and does not spend work on blur. */
