@@ -1,4 +1,5 @@
 export { CLARITY_PROJECT_ID, GTM_ID, umamiConfig } from "./analytics";
+export { bannerImageSources } from "./banner-images";
 export {
 	CATEGORY_DEFINITIONS,
 	CATEGORY_SLUGS,
