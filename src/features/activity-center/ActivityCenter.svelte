@@ -48,7 +48,8 @@
 
 	let root: HTMLDivElement;
 	let button: HTMLButtonElement;
-	let dialog: HTMLDivElement;
+	let dialog = $state<HTMLDivElement | undefined>();
+	let dialogHost: HTMLDivElement | undefined;
 	let open = $state(false);
 	let unreadIds = $state<string[]>([]);
 	let noticeRevision = $state(0);
@@ -133,7 +134,8 @@
 	}
 
 	function portal(node: HTMLElement) {
-		document.body.appendChild(node);
+		const target = dialogHost ?? document.body;
+		target.appendChild(node);
 		return {
 			destroy() {
 				node.remove();
@@ -179,17 +181,26 @@
 	}
 
 	function openNotice(notice: ClientNotice, auto = false) {
-		selectedNoticeId = notice.id;
-		dialogOpen = true;
-		open = false;
-		if (!notice.requiresAck) markSiteNoticeRead(notice.id);
-		syncNotices();
-		noticeRevision += 1;
-		requestAnimationFrame(() => {
-			dialog?.focus();
-		});
-		if (auto) {
-			document.documentElement.dataset.notificationModal = "critical";
+		try {
+			selectedNoticeId = notice.id;
+			dialogOpen = true;
+			open = false;
+			if (!notice.requiresAck) markSiteNoticeRead(notice.id);
+			syncNotices();
+			noticeRevision += 1;
+			requestAnimationFrame(() => {
+				dialog?.focus();
+			});
+			if (auto) {
+				document.documentElement.dataset.notificationModal = "critical";
+			}
+		} catch (error) {
+			console.error(
+				"Activity Center failed to open notification:",
+				error,
+			);
+			dialogOpen = false;
+			selectedNoticeId = undefined;
 		}
 	}
 
@@ -243,6 +254,9 @@
 	}
 
 	onMount(() => {
+		dialogHost = document.createElement("div");
+		dialogHost.dataset.activityCenterPortal = "";
+		document.body.appendChild(dialogHost);
 		readRenderedNoticeContent();
 		syncNotices();
 		syncReading();
@@ -286,6 +300,8 @@
 		document.addEventListener("keydown", handleKeydown);
 
 		return () => {
+			dialogHost?.remove();
+			dialogHost = undefined;
 			if (frame) cancelAnimationFrame(frame);
 			window.removeEventListener("scroll", handleScroll);
 			window.removeEventListener("resize", handleResize);
@@ -409,22 +425,22 @@
 				/>
 				<strong>{labels.notifications}</strong>
 			</div>
-			<div class="activity-center__filters" role="tablist">
+			<div class="activity-center__filters">
 				<button
 					type="button"
-					aria-selected={filter === "all"}
+					aria-pressed={filter === "all"}
 					onclick={() => (filter = "all")}
 					>{labels.notificationAll}</button
 				>
 				<button
 					type="button"
-					aria-selected={filter === "unread"}
+					aria-pressed={filter === "unread"}
 					onclick={() => (filter = "unread")}
 					>{labels.notificationUnread}</button
 				>
 				<button
 					type="button"
-					aria-selected={filter === "important"}
+					aria-pressed={filter === "important"}
 					onclick={() => (filter = "important")}
 					>{labels.notificationImportant}</button
 				>
@@ -482,6 +498,7 @@
 		use:portal
 		class="activity-center__dialog-backdrop"
 		data-level={selectedNotice.level}
+		role="presentation"
 		onpointerdown={(event) => {
 			if (event.target === event.currentTarget) closeDialog();
 		}}

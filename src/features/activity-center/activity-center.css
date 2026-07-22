@@ -248,7 +248,7 @@
   font-size: var(--text-small);
 }
 
-.activity-center__filters button[aria-selected="true"] {
+.activity-center__filters button[aria-pressed="true"] {
   color: var(--accent);
   background: color-mix(in oklch, var(--accent) 10%, transparent);
   border-color: color-mix(in oklch, var(--accent) 28%, var(--border-subtle));

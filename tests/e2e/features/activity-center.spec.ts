@@ -34,6 +34,8 @@ test("new shell icons resolve from repository assets without Iconify", async ({
 test("activity center owns notice unread state in the top-right shell", async ({
 	page,
 }) => {
+	const pageErrors: string[] = [];
+	page.on("pageerror", (error) => pageErrors.push(error.message));
 	await gotoPage(page, "/");
 
 	const toggle = page.locator("#activity-center-switch");
@@ -49,12 +51,26 @@ test("activity center owns notice unread state in the top-right shell", async ({
 			top: rect.top,
 			width: rect.width,
 			height: rect.height,
+			iconColor: getComputedStyle(
+				element.querySelector<HTMLElement>("[data-local-icon]")!,
+			).color,
+			searchIconColor: getComputedStyle(
+				document.querySelector<HTMLElement>(
+					"#search-container [data-local-icon]",
+				)!,
+			).color,
+			hasViteOverlay: Boolean(
+				document.querySelector("vite-error-overlay"),
+			),
 		};
 	});
 	expect(geometry.right).toBeGreaterThanOrEqual(12);
 	expect(geometry.top).toBeLessThan(80);
 	expect(geometry.width).toBeGreaterThanOrEqual(44);
 	expect(geometry.height).toBeGreaterThanOrEqual(44);
+	expect(geometry.iconColor).toBe("rgba(255, 255, 255, 0.92)");
+	expect(geometry.searchIconColor).toBe("rgba(255, 255, 255, 0.92)");
+	expect(geometry.hasViteOverlay).toBe(false);
 
 	await toggle.click();
 	await expect(panel).toBeVisible();
@@ -79,11 +95,16 @@ test("activity center owns notice unread state in the top-right shell", async ({
 			const rect = dialog.getBoundingClientRect();
 			return {
 				parentTag: backdrop.parentElement?.tagName,
+				portalHost:
+					backdrop.parentElement?.hasAttribute(
+						"data-activity-center-portal",
+					) ?? false,
 				top: rect.top,
 				bottom: window.innerHeight - rect.bottom,
 			};
 		});
-	expect(dialogGeometry.parentTag).toBe("BODY");
+	expect(dialogGeometry.parentTag).toBe("DIV");
+	expect(dialogGeometry.portalHost).toBe(true);
 	expect(dialogGeometry.top).toBeGreaterThanOrEqual(16);
 	expect(dialogGeometry.bottom).toBeGreaterThanOrEqual(16);
 	await expect(dialog).toContainText("站点目前仍在持续建设中");
@@ -112,6 +133,7 @@ test("activity center owns notice unread state in the top-right shell", async ({
 			]),
 		)
 		.toEqual(["true", "true"]);
+	expect(pageErrors).toEqual([]);
 });
 
 test("activity center reports live article reading status", async ({
