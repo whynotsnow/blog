@@ -1,9 +1,9 @@
 ---
 import { siteConfig } from "../../config";
-import type { FullscreenWallpaperConfig } from "../../types/config";
+import type { OverlayWallpaperConfig } from "../../types/config";
 
 interface Props {
-	config: FullscreenWallpaperConfig;
+	config: OverlayWallpaperConfig;
 	className?: string;
 }
 
@@ -84,11 +84,11 @@ const wallpaperOptions = {
 		className
 	]}
 	style={`z-index: ${zIndex}; --wallpaper-opacity: ${opacity}; --wallpaper-blur: ${defaultWallpaperBlur}; opacity: var(--wallpaper-opacity); transform: translateZ(0); perspective: 1000px;`}
-	data-fullscreen-wallpaper
-	data-wallpaper-initialized="false"
+	data-overlay-wallpaper
+	data-overlay-wallpaper-initialized="false"
 >
 	<script
-		id="fullscreen-wallpaper-options"
+		id="overlay-wallpaper-options"
 		is:inline
 		type="application/json"
 		set:html={JSON.stringify(wallpaperOptions)}
@@ -155,12 +155,12 @@ const wallpaperOptions = {
 			container.appendChild(wrapper);
 		}
 
-		function initFullscreenWallpaperCarousel(container, carouselInterval) {
+		function initOverlayWallpaperCarousel(container, carouselInterval) {
 			if (!container) return;
 
-			if (window.__wallpaper_cleanup) {
-				window.__wallpaper_cleanup();
-				window.__wallpaper_cleanup = null;
+			if (window.__overlayWallpaperCleanup) {
+				window.__overlayWallpaperCleanup();
+				window.__overlayWallpaperCleanup = null;
 			}
 
 			const STORAGE_KEY = 'mizuki_wallpaper_index';
@@ -244,20 +244,20 @@ const wallpaperOptions = {
 
 			document.addEventListener('visibilitychange', handleVisibilityChange);
 
-			window.__wallpaper_start = start;
-			window.__wallpaper_stop = stop;
-			window.__wallpaper_cleanup = () => {
+			window.__overlayWallpaperStart = start;
+			window.__overlayWallpaperStop = stop;
+			window.__overlayWallpaperCleanup = () => {
 				stop();
 				document.removeEventListener('visibilitychange', handleVisibilityChange);
 			};
 		}
 
 		function ensureWallpaperImages() {
-			const container = document.querySelector("[data-fullscreen-wallpaper]");
-			const optionsScript = document.getElementById("fullscreen-wallpaper-options");
+			const container = document.querySelector("[data-overlay-wallpaper]");
+			const optionsScript = document.getElementById("overlay-wallpaper-options");
 			if (!container || !optionsScript?.textContent) return;
-			if (container.dataset.wallpaperInitialized === "true") {
-				window.__wallpaper_start?.();
+			if (container.dataset.overlayWallpaperInitialized === "true") {
+				window.__overlayWallpaperStart?.();
 				return;
 			}
 
@@ -273,18 +273,18 @@ const wallpaperOptions = {
 					images: options.mobileImages,
 					containerClass: "block md:hidden",
 				}, options.positionClass);
-				initFullscreenWallpaperCarousel(container, options.carouselInterval);
+				initOverlayWallpaperCarousel(container, options.carouselInterval);
 			} else {
 				const desktopSrc = getRandomImage(options.desktopImages, "wallpaper_desktop_index");
 				const mobileSrc = getRandomImage(options.mobileImages, "wallpaper_mobile_index");
 				appendSingleImage(container, desktopSrc, "hidden lg:block", "desktop wallpaper", options.positionClass);
 				appendSingleImage(container, mobileSrc, "block lg:hidden", "mobile wallpaper", options.positionClass);
 			}
-			container.dataset.wallpaperInitialized = "true";
+			container.dataset.overlayWallpaperInitialized = "true";
 		}
 
-		function syncFullscreenWallpaper() {
-			const container = document.querySelector("[data-fullscreen-wallpaper]");
+		function syncOverlayWallpaper() {
+			const container = document.querySelector("[data-overlay-wallpaper]");
 			if (!container) return;
 			if (getWallpaperMode() === "overlay") {
 				container.style.display = "block";
@@ -292,16 +292,16 @@ const wallpaperOptions = {
 				return;
 			}
 			container.style.display = "none";
-			window.__wallpaper_stop?.();
+			window.__overlayWallpaperStop?.();
 		}
 
 		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", syncFullscreenWallpaper, {
+			document.addEventListener("DOMContentLoaded", syncOverlayWallpaper, {
 				once: true,
 			});
 		} else {
-			syncFullscreenWallpaper();
+			syncOverlayWallpaper();
 		}
-		window.addEventListener("wallpaper-mode-change", syncFullscreenWallpaper);
+		window.addEventListener("wallpaper-mode-change", syncOverlayWallpaper);
 	})();
 </script>

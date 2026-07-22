@@ -9,11 +9,7 @@
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
 	import { onMount } from "svelte";
-	import {
-		fullscreenWallpaperConfig,
-		sakuraConfig,
-		siteConfig,
-	} from "@/config";
+	import { overlayWallpaperConfig, sakuraConfig, siteConfig } from "@/config";
 	import {
 		getDefaultBannerTitleEnabled,
 		getDefaultHue,
@@ -61,7 +57,7 @@
 	const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 
 	const overlaySwitchable =
-		fullscreenWallpaperConfig.overlay?.switchable ?? false;
+		overlayWallpaperConfig.overlay?.switchable ?? false;
 	const isOverlayOpacitySwitchable =
 		typeof overlaySwitchable === "object"
 			? (overlaySwitchable.opacity ?? false)
@@ -99,8 +95,8 @@
 		(showModeValue === "both" ||
 			(showModeValue === "mobile" && isMobile) ||
 			(showModeValue === "desktop" && !isMobile)) &&
-			(fullscreenWallpaperConfig.enable ?? false) &&
-			(fullscreenWallpaperConfig.switchable ?? false),
+			(overlayWallpaperConfig.enable ?? false) &&
+			(overlayWallpaperConfig.switchable ?? false),
 	);
 
 	const hasAnyContent = $derived(

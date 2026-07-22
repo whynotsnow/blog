@@ -310,8 +310,6 @@ enum I18nKey {
 	overlayOpacity = "overlayOpacity",
 	overlayBlur = "overlayBlur",
 	overlayCardOpacity = "overlayCardOpacity",
-	fullscreenOpacity = "fullscreenOpacity",
-	fullscreenBlur = "fullscreenBlur",
 	wavesAnimation = "wavesAnimation",
 	bannerTitle = "bannerTitle",
 	bannerCarousel = "bannerCarousel",

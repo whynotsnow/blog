@@ -4,7 +4,7 @@ import {
 	LIGHT_MODE,
 	// WALLPAPER_BANNER,
 } from "@constants/constants";
-import { fullscreenWallpaperConfig, sakuraConfig, siteConfig } from "@/config";
+import { overlayWallpaperConfig, sakuraConfig, siteConfig } from "@/config";
 import type { LIGHT_DARK_MODE, WALLPAPER_MODE } from "@/types/config";
 
 export function getDefaultHue(): number {
@@ -178,10 +178,7 @@ function getBooleanConfigDefault(
 }
 
 export function getDefaultOverlayOpacity(): number {
-	return getNumberConfigDefault(
-		fullscreenWallpaperConfig.overlay?.opacity,
-		0.8,
-	);
+	return getNumberConfigDefault(overlayWallpaperConfig.overlay?.opacity, 0.8);
 }
 
 export function getStoredOverlayOpacity(): number {
@@ -192,7 +189,7 @@ export function getStoredOverlayOpacity(): number {
 export function setOverlayOpacity(value: number): void {
 	localStorage.setItem("overlayOpacity", String(value));
 	const wallpaper = document.querySelector(
-		"[data-fullscreen-wallpaper]",
+		"[data-overlay-wallpaper]",
 	) as HTMLElement | null;
 	if (wallpaper) {
 		wallpaper.style.setProperty("--wallpaper-opacity", String(value));
@@ -201,7 +198,7 @@ export function setOverlayOpacity(value: number): void {
 }
 
 export function getDefaultOverlayBlur(): number {
-	return getNumberConfigDefault(fullscreenWallpaperConfig.overlay?.blur, 1.5);
+	return getNumberConfigDefault(overlayWallpaperConfig.overlay?.blur, 1.5);
 }
 
 export function getStoredOverlayBlur(): number {
@@ -212,7 +209,7 @@ export function getStoredOverlayBlur(): number {
 export function setOverlayBlur(value: number): void {
 	localStorage.setItem("overlayBlur", String(value));
 	const wallpaper = document.querySelector(
-		"[data-fullscreen-wallpaper]",
+		"[data-overlay-wallpaper]",
 	) as HTMLElement | null;
 	if (wallpaper) {
 		wallpaper.style.setProperty("--wallpaper-blur", `${value}px`);
@@ -222,7 +219,7 @@ export function setOverlayBlur(value: number): void {
 
 export function getDefaultOverlayCardOpacity(): number {
 	return getNumberConfigDefault(
-		fullscreenWallpaperConfig.overlay?.cardOpacity,
+		overlayWallpaperConfig.overlay?.cardOpacity,
 		0.8,
 	);
 }
@@ -241,50 +238,10 @@ export function setOverlayCardOpacity(value: number): void {
 	window.dispatchEvent(new CustomEvent("overlay-settings-change"));
 }
 
-export function getDefaultFullscreenOpacity(): number {
-	return getNumberConfigDefault(fullscreenWallpaperConfig.opacity, 0.8);
-}
-
-export function getStoredFullscreenOpacity(): number {
-	const stored = localStorage.getItem("fullscreenOpacity");
-	return stored ? Number(stored) : getDefaultFullscreenOpacity();
-}
-
-export function setFullscreenOpacity(value: number): void {
-	localStorage.setItem("fullscreenOpacity", String(value));
-	const wallpaper = document.querySelector(
-		"[data-fullscreen-wallpaper]",
-	) as HTMLElement | null;
-	if (wallpaper) {
-		wallpaper.style.setProperty("--wallpaper-opacity", String(value));
-	}
-	window.dispatchEvent(new CustomEvent("fullscreen-settings-change"));
-}
-
-export function getDefaultFullscreenBlur(): number {
-	return getNumberConfigDefault(fullscreenWallpaperConfig.blur, 1);
-}
-
-export function getStoredFullscreenBlur(): number {
-	const stored = localStorage.getItem("fullscreenBlur");
-	return stored ? Number(stored) : getDefaultFullscreenBlur();
-}
-
-export function setFullscreenBlur(value: number): void {
-	localStorage.setItem("fullscreenBlur", String(value));
-	const wallpaper = document.querySelector(
-		"[data-fullscreen-wallpaper]",
-	) as HTMLElement | null;
-	if (wallpaper) {
-		wallpaper.style.setProperty("--wallpaper-blur", `${value}px`);
-	}
-	window.dispatchEvent(new CustomEvent("fullscreen-settings-change"));
-}
-
 export function applyWallpaperVisualSettings(mode?: WALLPAPER_MODE): void {
 	const currentMode = mode || getStoredWallpaperMode();
 	const wallpaper = document.querySelector(
-		"[data-fullscreen-wallpaper]",
+		"[data-overlay-wallpaper]",
 	) as HTMLElement | null;
 	const root = document.documentElement;
 

@@ -120,7 +120,7 @@ export type SiteConfig = {
 
 	// 壁纸模式配置
 	wallpaperMode: {
-		defaultMode: "banner" | "fullscreen" | "overlay" | "none"; // 默认壁纸模式：banner=顶部横幅，fullscreen=全屏横幅，overlay=叠加全屏壁纸，none=无壁纸
+		defaultMode: "banner" | "fullscreen" | "overlay" | "none"; // 默认壁纸模式：banner=顶部横幅，fullscreen=全屏横幅，overlay=叠加壁纸，none=无壁纸
 		showModeSwitchOnMobile?: "off" | "mobile" | "desktop" | "both"; // 整体布局方案切换按钮显示设置：off=隐藏，mobile=仅移动端，desktop=仅桌面端，both=全部显示
 	};
 
@@ -318,8 +318,8 @@ export type SakuraConfig = {
 	zIndex: number; // 层级，确保樱花在合适的层级显示
 };
 
-export type FullscreenWallpaperConfig = {
-	enable?: boolean; // 是否启用叠加全屏壁纸资源
+export type OverlayWallpaperConfig = {
+	enable?: boolean; // 是否启用叠加壁纸资源
 	src:
 		| string
 		| string[]
@@ -348,16 +348,10 @@ export type FullscreenWallpaperConfig = {
 					cardOpacity?: boolean;
 			  };
 	};
-	fullscreen?: {
-		switchable?:
-			| boolean
-			| {
-					// 预留全屏横幅设置入口，当前不作用于叠加壁纸图层
-					opacity?: boolean;
-					blur?: boolean;
-			  };
-	};
 };
+
+/** @deprecated Use OverlayWallpaperConfig for the overlay wallpaper layer. */
+export type FullscreenWallpaperConfig = OverlayWallpaperConfig;
 
 /**
  * Pio 看板娘配置

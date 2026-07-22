@@ -251,8 +251,6 @@ export const en: Translation = {
 	[Key.overlayOpacity]: "Overlay Opacity",
 	[Key.overlayBlur]: "Overlay Blur",
 	[Key.overlayCardOpacity]: "Card Opacity",
-	[Key.fullscreenOpacity]: "Fullscreen Opacity",
-	[Key.fullscreenBlur]: "Fullscreen Blur",
 	[Key.wavesAnimation]: "Waves Animation",
 	[Key.bannerTitle]: "Banner Title",
 	[Key.bannerCarousel]: "Banner Carousel",

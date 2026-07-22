@@ -1,7 +1,7 @@
-import type { FullscreenWallpaperConfig } from "../types/config";
+import type { OverlayWallpaperConfig } from "../types/config";
 import { bannerImageSources } from "./banner-images";
 
-export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
+export const overlayWallpaperConfig: OverlayWallpaperConfig = {
 	enable: true,
 	src: bannerImageSources, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
@@ -23,10 +23,7 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 			cardOpacity: true,
 		},
 	},
-	fullscreen: {
-		switchable: {
-			opacity: true,
-			blur: true,
-		},
-	},
 };
+
+/** @deprecated Use overlayWallpaperConfig for the overlay wallpaper layer. */
+export const fullscreenWallpaperConfig = overlayWallpaperConfig;

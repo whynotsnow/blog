@@ -24,7 +24,7 @@
 | `src/config/site.ts` | 站点核心配置 `siteConfig`、`SITE_LANG`、`SITE_TIMEZONE`。 |
 | `src/config/navbar.ts` | 顶部导航 `navBarConfig`。 |
 | `src/config/profile.ts` | 个人资料 `profileConfig`。 |
-| `src/config/wallpaper.ts` | 全屏壁纸 `fullscreenWallpaperConfig`。 |
+| `src/config/wallpaper.ts` | 叠加壁纸 `overlayWallpaperConfig`。 |
 | `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
 | `src/config/music.ts` | 音乐播放器 `musicPlayerConfig`。 |
 | `src/config/effects.ts` | 站点特效 `sakuraConfig`。 |
@@ -37,7 +37,7 @@
 | 配置 | 说明 |
 | --- | --- |
 | `siteConfig` | 站点信息、语言、特色页面、横幅、主题和文章列表等。 |
-| `fullscreenWallpaperConfig` | 叠加全屏壁纸资源与效果行为。 |
+| `overlayWallpaperConfig` | 叠加壁纸资源与效果行为。 |
 | `navBarConfig` | 顶部导航链接。 |
 | `profileConfig` | 首页作者资料模块内容。 |
 | `licenseConfig` | 默认内容协议展示。 |
@@ -101,9 +101,9 @@
 - `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。当前入口只保留 UI 状态预览，不会写入运行时配置。
 - `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 waves。
 - `siteConfig.banner.homeText.switchable`：控制首页 banner 文案设置入口。用户设置会写入 `localStorage.bannerTitleEnabled` 并实时显示/隐藏首页文案。
-- `fullscreenWallpaperConfig.enable` 和 `fullscreenWallpaperConfig.switchable`：控制叠加全屏壁纸资源与壁纸模式切换入口。
-- `fullscreenWallpaperConfig.overlay`：提供叠加壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。用户设置会分别写入 `localStorage.overlayOpacity`、`localStorage.overlayBlur`、`localStorage.overlayCardOpacity`。
-- `fullscreenWallpaperConfig.fullscreen.switchable`：预留全屏横幅相关设置入口；当前全屏横幅不显示 `[data-fullscreen-wallpaper]` 图层。
+- `overlayWallpaperConfig.enable` 和 `overlayWallpaperConfig.switchable`：控制叠加壁纸资源与壁纸模式切换入口。
+- `overlayWallpaperConfig.overlay`：提供叠加壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。用户设置会分别写入 `localStorage.overlayOpacity`、`localStorage.overlayBlur`、`localStorage.overlayCardOpacity`。
+- 横幅模式与全屏模式共用 `siteConfig.banner.carousel`，差异只来自 Banner 几何与页面 Shell 表现；`overlayWallpaperConfig.carousel` 只作用于 `overlay` 模式的 `[data-overlay-wallpaper]` 叠加图层。
 - `sakuraConfig.switchable`：控制樱花特效设置入口。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
 - `pioConfig.enable` 仅提供看板娘的默认页面挂载状态；即使设为 `false`，Floating Tools 的 Pio 入口仍可重新挂载组件。访客挂载偏好写入 `localStorage.pio-module-mounted`，`hiddenOnMobile` 继续作为设备限制。Pio 自带的 `pio-close` / `pio-show` 只切换组件内部的 `.pio-hidden` 状态并沿用 `localStorage.posterGirl`，不会修改外层挂载偏好；Floating Tools 关闭时才会卸载 Pio DOM、Canvas 与实例，重新开启时重新初始化。
 - `musicPlayerConfig.enable` 仅提供音乐播放器 UI 的默认页面挂载状态；即使设为 `false`，Floating Tools 的 Music 入口仍然存在并可重新显示播放器，访客选择写入 `localStorage.music-player-mounted`。播放器自身继续拥有播放、Default、Mini、Expanded 与 Playlist 状态，Floating Tools 只通过 Feature-local Event Contract 控制模块 UI 是否展示，不直接操作 Audio 或内部面板状态。

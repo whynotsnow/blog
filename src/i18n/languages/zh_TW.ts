@@ -321,8 +321,6 @@ export const zh_TW: Translation = {
 	[Key.overlayOpacity]: "疊加透明度",
 	[Key.overlayBlur]: "疊加模糊",
 	[Key.overlayCardOpacity]: "卡片透明度",
-	[Key.fullscreenOpacity]: "全屏透明度",
-	[Key.fullscreenBlur]: "全屏模糊",
 	[Key.wavesAnimation]: "波紋動畫",
 	[Key.bannerTitle]: "首頁標題",
 	[Key.bannerCarousel]: "橫幅輪播",

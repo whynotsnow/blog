@@ -253,8 +253,6 @@ export const ja: Translation = {
 	[Key.overlayOpacity]: "オーバーレイの透明度",
 	[Key.overlayBlur]: "オーバーレイのぼかし",
 	[Key.overlayCardOpacity]: "カードの透明度",
-	[Key.fullscreenOpacity]: "フルスクリーンの透明度",
-	[Key.fullscreenBlur]: "フルスクリーンのぼかし",
 	[Key.wavesAnimation]: "波のアニメーション",
 	[Key.bannerTitle]: "バナータイトル",
 	[Key.bannerCarousel]: "バナーカルーセル",

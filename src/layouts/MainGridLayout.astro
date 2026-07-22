@@ -1,10 +1,10 @@
 ---
 import type { MarkdownHeading } from "astro";
-import FullscreenWallpaper from "@components/misc/FullscreenWallpaper.astro";
+import OverlayWallpaper from "@components/misc/OverlayWallpaper.astro";
 import Navbar from "@components/Navbar.astro";
 import Banner from "@/components/layout/Banner/Banner.astro";
 import MainGridContent from "@/components/layout/MainGridContent.astro";
-import { fullscreenWallpaperConfig, siteConfig } from "@/config";
+import { overlayWallpaperConfig, siteConfig } from "@/config";
 import { buildMainGridLayoutViewModel } from "@/services/layout/main-grid";
 import type { PageLayoutPolicyName } from "@/services/layout/types";
 import Layout from "./Layout.astro";
@@ -56,7 +56,7 @@ const hasSupportContent = Astro.slots.has("support");
 		import "@/components/layout/main-grid-client";
 	</script>
 
-	<FullscreenWallpaper config={fullscreenWallpaperConfig} />
+	<OverlayWallpaper config={overlayWallpaperConfig} />
 	<div
 		id="navigation-progress"
 		class="navigation-progress"

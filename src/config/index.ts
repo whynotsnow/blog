@@ -16,4 +16,4 @@ export { pioConfig } from "./pio";
 export { profileConfig } from "./profile";
 export { shareConfig } from "./share";
 export { SITE_LANG, SITE_TIMEZONE, siteConfig } from "./site";
-export { fullscreenWallpaperConfig } from "./wallpaper";
+export { fullscreenWallpaperConfig, overlayWallpaperConfig } from "./wallpaper";

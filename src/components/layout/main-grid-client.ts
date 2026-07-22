@@ -200,7 +200,7 @@ export function applyWallpaperMode() {
 	const wallpaperMode = getWallpaperMode();
 	const bannerWrapper = document.getElementById("banner-wrapper");
 	const fullscreenWallpaper = document.querySelector(
-		"[data-fullscreen-wallpaper]",
+		"[data-overlay-wallpaper]",
 	) as HTMLElement | null;
 	const navbar = document.getElementById("navbar");
 	const body = document.body;
@@ -637,9 +637,6 @@ function bindMainGridClient() {
 	});
 	window.addEventListener("overlay-settings-change", () => {
 		applyWallpaperVisualSettings("overlay");
-	});
-	window.addEventListener("fullscreen-settings-change", () => {
-		applyWallpaperVisualSettings("fullscreen");
 	});
 	window.addEventListener("waves-toggle", (event) => {
 		const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail
