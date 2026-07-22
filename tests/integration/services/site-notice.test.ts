@@ -22,7 +22,7 @@ const config: SiteNoticeConfig = {
 			title: "Post notice",
 			content: "Post notice",
 			status: "warning",
-			dismissible: false,
+			level: "critical",
 			visibility: { scope: "content", include: ["/posts/*"] },
 		},
 	],
@@ -39,6 +39,10 @@ describe("buildSiteNoticeViewModel", () => {
 				expect.objectContaining({
 					id: "home",
 					icon: "material-symbols:info-outline-rounded",
+					level: "normal",
+					pinned: false,
+					dismissible: true,
+					requiresAck: false,
 					action: { label: "Read", href: "/about/", external: false },
 				}),
 			]),
@@ -51,7 +55,13 @@ describe("buildSiteNoticeViewModel", () => {
 				?.notices,
 		).toEqual(
 			expect.arrayContaining([
-				expect.objectContaining({ id: "post", status: "warning" }),
+				expect.objectContaining({
+					id: "post",
+					status: "warning",
+					level: "critical",
+					dismissible: false,
+					requiresAck: true,
+				}),
 			]),
 		);
 	});

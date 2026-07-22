@@ -69,18 +69,26 @@
 
 通知文件位于 `src/content/notifications/*.md`。Frontmatter 字段：
 
-- 通知文件名：通知的稳定版本 ID，例如 `site-building-2026-07.md` 对应 `site-building-2026-07`；用户已读状态以 `site-notice:read:<id>` 保存，关闭状态以 `site-notice:dismissed:<id>` 保存，最高等级确认状态以 `site-notice:acknowledged:<id>` 保存。发布需要重新展示的新通知时应修改文件名。
+- 通知文件名：通知的稳定版本 ID，例如 `site-building-2026-07.md` 对应 `site-building-2026-07`；用户已读状态以 `site-notice:read:<id>` 保存，忽略状态以 `site-notice:dismissed:<id>` 保存，确认状态以 `site-notice:acknowledged:<id>` 保存。发布需要重新展示的新通知时应修改文件名。
 - `title`：面板和弹窗标题，应短句概括通知内容。
 - `summary`：Activity Center 列表摘要，建议一行内可读。
 - `status`：支持 `info`、`success`、`warning`、`danger`，视觉由 Design Semantic status token 提供。
-- `level`：支持 `normal`、`important`、`urgent`、`critical`。`critical` 且未确认的通知会在进入站点时自动打开弹窗。
-- `dismissible`：是否允许用户忽略通知。
-- `requiresAck`：是否必须通过“我知道了”确认；确认会同时写入已读状态。
+- `level`：支持 `normal`、`important`、`urgent`、`critical`。`important` 和 `urgent` 未读时会在每个浏览器会话中自动展开一次 Activity Center；`critical` 未确认时会在每个浏览器会话中自动打开一次弹窗。
+- `pinned`：是否置顶并自动打开详情；当前内容约定最多只有一条。`pinned` 表达展示策略，`level` 表达严重程度。
+- `dismissible`：是否允许用户忽略通知。未配置时 `critical` 默认为 `false`，其他等级默认为 `true`。
+- `requiresAck`：是否必须通过“我知道了”确认；未配置时 `critical` 默认为 `true`，其他等级默认为 `false`。确认会同时写入已读状态。
 - `action`：可选操作链接，包含 `label`、`href` 和 `external`；配置存在即显示，不需要额外 enable 字段。
 - `visibility.scope`：`all` 表示全部页面，`home` 仅首页，`content` 表示非首页。
 - `visibility.include`、`visibility.exclude`：可进一步按路径控制。路径默认精确匹配，以 `*` 结尾时匹配该路径及其子路径，例如 `/posts/*`。
 
 通知正文使用 Markdown 编写，由 Astro 在构建期渲染后交给弹窗展示。通知弹窗适合短段落、列表、链接和少量代码；长篇说明应通过 `action` 链接到正式文章或 `spec` 页面。
+
+通知状态语义：
+
+- “已读”表示用户打开过详情，不再计入未读 Badge。
+- “确认”表示用户明确点击“我知道了”，主要用于 `critical` 或需要确认的置顶通知。
+- “忽略”表示用户不再希望在列表中看到该通知。
+- 用户手动关闭自动展开的 Activity Center 后，本浏览器会话不会再次自动展开；用户点击“稍后再看”关闭自动弹窗后，本浏览器会话不会再次自动弹出。
 
 ## SettingsPanel 相关配置
 

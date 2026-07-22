@@ -42,7 +42,7 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	const panel = page.locator("#activity-center-panel");
 	await expect(toggle).toBeVisible();
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("2");
-	await expect(panel).toBeHidden();
+	await expect(panel).toBeVisible();
 
 	const geometry = await toggle.evaluate((element) => {
 		const rect = element.getBoundingClientRect();
@@ -62,8 +62,6 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	expect(geometry.height).toBeGreaterThanOrEqual(44);
 	expect(geometry.hasViteOverlay).toBe(false);
 
-	await toggle.click();
-	await expect(panel).toBeVisible();
 	await expect(panel.locator(".activity-center__notice")).toHaveCount(2);
 	await expect(
 		panel.locator(".activity-center__section-heading").last(),
@@ -78,6 +76,12 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	await expect(panel).toContainText("内容更新说明");
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("2");
 	await expect(page.locator("[data-site-notice-region]")).toHaveCount(0);
+	await toggle.click();
+	await expect(panel).toBeHidden();
+	await page.reload();
+	await expect(panel).toBeHidden();
+	await toggle.click();
+	await expect(panel).toBeVisible();
 
 	await panel.getByRole("button", { name: /查看通知: 站点施工提示/ }).click();
 	const dialog = page.locator(".activity-center__dialog");
@@ -146,6 +150,7 @@ test("activity center owns notice unread state in the top-right shell", async ({
 			width: "",
 		});
 	await toggle.click();
+	await expect(panel).toBeVisible();
 	await panel.getByRole("button", { name: "全部已读" }).click();
 	await expect(toggle.locator("[data-activity-unread]")).toHaveCount(0);
 	await expect(panel.getByRole("button", { name: "未读 0" })).toBeVisible();
@@ -167,6 +172,13 @@ test("activity center owns notice unread state in the top-right shell", async ({
 test("activity center reports live article reading status", async ({
 	page,
 }) => {
+	await page.addInitScript(() => {
+		localStorage.setItem("site-notice:read:site-building-2026-07", "true");
+		localStorage.setItem(
+			"site-notice:read:site-content-updates-2026-07",
+			"true",
+		);
+	});
 	await gotoPage(page, "/posts/markdown-tutorial/");
 
 	const toggle = page.locator("#activity-center-switch");
@@ -215,6 +227,13 @@ test("activity center reports live article reading status", async ({
 
 test("activity center uses a safe mobile bottom sheet", async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
+	await page.addInitScript(() => {
+		localStorage.setItem("site-notice:read:site-building-2026-07", "true");
+		localStorage.setItem(
+			"site-notice:read:site-content-updates-2026-07",
+			"true",
+		);
+	});
 	await gotoPage(page, "/");
 	await page.locator("#activity-center-switch").click();
 

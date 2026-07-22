@@ -286,7 +286,8 @@ export type SiteNoticeItemConfig = {
 	icon?: string;
 	status: SiteNoticeStatus;
 	level?: SiteNoticeLevel;
-	dismissible: boolean;
+	pinned?: boolean;
+	dismissible?: boolean;
 	requiresAck?: boolean;
 	action?: {
 		label: string;

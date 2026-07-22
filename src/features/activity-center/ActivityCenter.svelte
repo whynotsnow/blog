@@ -9,9 +9,15 @@
 		getUnreadSiteNoticeIds,
 		isSiteNoticeAcknowledged,
 		isSiteNoticeDismissed,
+		isSiteNoticePanelSuppressedInSession,
 		isSiteNoticeRead,
+		markSiteNoticeAutoOpenedInSession,
+		markSiteNoticePanelAutoExpandedInSession,
 		markSiteNoticeRead,
 		SITE_NOTICE_STATE_EVENT,
+		suppressSiteNoticePanelInSession,
+		wasSiteNoticeAutoOpenedInSession,
+		wasSiteNoticePanelAutoExpandedInSession,
 	} from "./notice-state";
 	import {
 		collectReadingStatus,
@@ -86,10 +92,8 @@
 	});
 	const sortedNotices = $derived.by(() =>
 		[...visibleNotices].sort((a, b) => {
-			const rankDelta = getNoticeRank(b) - getNoticeRank(a);
+			const rankDelta = getNoticeSortScore(b) - getNoticeSortScore(a);
 			if (rankDelta !== 0) return rankDelta;
-			const unreadDelta = Number(isUnread(b.id)) - Number(isUnread(a.id));
-			if (unreadDelta !== 0) return unreadDelta;
 			return (b.published ?? "").localeCompare(a.published ?? "");
 		}),
 	);
@@ -158,6 +162,22 @@
 		return 1;
 	}
 
+	function needsAcknowledgement(notice: ClientNotice) {
+		return (
+			notice.requiresAck &&
+			!isSiteNoticeAcknowledged(notice.id) &&
+			!isSiteNoticeDismissed(notice.id)
+		);
+	}
+
+	function getNoticeSortScore(notice: ClientNotice) {
+		let score = getNoticeRank(notice) * 100;
+		if (notice.pinned) score += 500;
+		if (needsAcknowledgement(notice)) score += 300;
+		if (isUnread(notice.id)) score += 50;
+		return score;
+	}
+
 	function getNoticeStatusIcon(notice: ClientNotice) {
 		if (notice.level === "critical") {
 			return "material-symbols:error-outline-rounded";
@@ -211,6 +231,7 @@
 	}
 
 	function setOpen(nextOpen: boolean) {
+		if (!nextOpen && open) suppressSiteNoticePanelInSession();
 		open = nextOpen;
 		if (open) syncReading();
 	}
@@ -255,14 +276,16 @@
 			dialogOpen = true;
 			open = false;
 			lockPageScroll();
-			if (!notice.requiresAck) markSiteNoticeRead(notice.id);
+			markSiteNoticeRead(notice.id);
 			syncNotices();
 			noticeRevision += 1;
 			requestAnimationFrame(() => {
 				dialog?.focus();
 			});
 			if (auto) {
-				document.documentElement.dataset.notificationModal = "critical";
+				markSiteNoticeAutoOpenedInSession(notice.id);
+				document.documentElement.dataset.notificationModal =
+					notice.level;
 			}
 		} catch (error) {
 			console.error(
@@ -310,13 +333,38 @@
 	}
 
 	function maybeOpenCriticalNotice() {
-		const critical = notices.find(
+		const autoOpenNotice = sortedNotices.find((notice) => {
+			if (!notice.pinned && notice.level !== "critical") return false;
+			if (wasSiteNoticeAutoOpenedInSession(notice.id)) return false;
+			if (isSiteNoticeDismissed(notice.id)) return false;
+			if (notice.requiresAck) {
+				return !isSiteNoticeAcknowledged(notice.id);
+			}
+			return !isSiteNoticeRead(notice.id);
+		});
+		if (!autoOpenNotice) return false;
+		openNotice(autoOpenNotice, true);
+		return true;
+	}
+
+	function maybeAutoExpandImportantNotices() {
+		if (
+			open ||
+			dialogOpen ||
+			wasSiteNoticePanelAutoExpandedInSession() ||
+			isSiteNoticePanelSuppressedInSession()
+		) {
+			return;
+		}
+		const hasImportantUnread = sortedNotices.some(
 			(notice) =>
-				notice.level === "critical" &&
-				!isSiteNoticeAcknowledged(notice.id) &&
-				!isSiteNoticeDismissed(notice.id),
+				isUnread(notice.id) &&
+				(notice.level === "important" || notice.level === "urgent"),
 		);
-		if (critical) openNotice(critical, true);
+		if (!hasImportantUnread) return;
+		open = true;
+		markSiteNoticePanelAutoExpandedInSession();
+		syncReading();
 	}
 
 	function resumeReading() {
@@ -332,7 +380,7 @@
 		readRenderedNoticeContent();
 		syncNotices();
 		syncReading();
-		maybeOpenCriticalNotice();
+		if (!maybeOpenCriticalNotice()) maybeAutoExpandImportantNotices();
 
 		const handleScroll = () => syncReading();
 		const handleResize = () => syncReading();
@@ -361,7 +409,7 @@
 		const unsubscribeContent = onPageLifecycle("content-replace", () => {
 			readRenderedNoticeContent();
 			syncReading();
-			maybeOpenCriticalNotice();
+			if (!maybeOpenCriticalNotice()) maybeAutoExpandImportantNotices();
 		});
 		const unsubscribeView = onPageLifecycle("page-view", syncReading);
 

@@ -159,7 +159,7 @@ visibility:
 ---
 ```
 
-通知文件名是稳定 ID，例如 `site-building-2026-07.md` 对应 `site-building-2026-07`。`level: critical` 且未确认的通知会在进入站点时自动打开弹窗。正文应保持短小明确；需要长篇说明时使用 `action` 链接到文章或特殊页面。
+通知文件名是稳定 ID，例如 `site-building-2026-07.md` 对应 `site-building-2026-07`。`important` 和 `urgent` 未读通知会在每个浏览器会话中自动展开一次 Activity Center；`critical` 未确认通知会在每个浏览器会话中自动打开一次弹窗，默认需要点击“我知道了”确认且不可忽略。`pinned: true` 表示置顶并自动打开详情，当前只支持一条置顶通知。正文应保持短小明确；需要长篇说明时使用 `action` 链接到文章或特殊页面。
 
 ## Schema 变更检查清单
 

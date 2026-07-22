@@ -15,6 +15,7 @@ export type SiteNoticeItemViewModel = {
 	icon: string;
 	status: SiteNoticeStatus;
 	level: SiteNoticeLevel;
+	pinned: boolean;
 	dismissible: boolean;
 	requiresAck: boolean;
 	published?: string;
@@ -80,9 +81,28 @@ function normalizeAction(action: SiteNoticeItemConfig["action"]) {
 		: undefined;
 }
 
+function normalizeLevel(level: SiteNoticeItemConfig["level"]) {
+	return level ?? "normal";
+}
+
+function normalizeDismissible(
+	level: SiteNoticeLevel,
+	dismissible: boolean | undefined,
+) {
+	return dismissible ?? level !== "critical";
+}
+
+function normalizeRequiresAck(
+	level: SiteNoticeLevel,
+	requiresAck: boolean | undefined,
+) {
+	return requiresAck ?? level === "critical";
+}
+
 function buildConfigNotice(
 	notice: SiteNoticeItemConfig,
 ): SiteNoticeItemViewModel {
+	const level = normalizeLevel(notice.level);
 	return {
 		id: notice.id,
 		title: notice.title,
@@ -90,9 +110,10 @@ function buildConfigNotice(
 		content: notice.content,
 		icon: notice.icon || defaultIcons[notice.status],
 		status: notice.status,
-		level: notice.level ?? "normal",
-		dismissible: notice.dismissible,
-		requiresAck: notice.requiresAck ?? false,
+		level,
+		pinned: notice.pinned ?? false,
+		dismissible: normalizeDismissible(level, notice.dismissible),
+		requiresAck: normalizeRequiresAck(level, notice.requiresAck),
 		action: normalizeAction(notice.action),
 	};
 }
@@ -117,6 +138,7 @@ async function getMarkdownNotices(pathname: string) {
 	return entries.map<SiteNoticeItemViewModel>((entry) => {
 		const { data } = entry;
 		const summary = data.summary || data.title;
+		const level = normalizeLevel(data.level);
 		return {
 			id: entry.id,
 			title: data.title,
@@ -124,9 +146,10 @@ async function getMarkdownNotices(pathname: string) {
 			content: summary,
 			icon: data.icon || defaultIcons[data.status],
 			status: data.status,
-			level: data.level,
-			dismissible: data.dismissible,
-			requiresAck: data.requiresAck,
+			level,
+			pinned: data.pinned,
+			dismissible: normalizeDismissible(level, data.dismissible),
+			requiresAck: normalizeRequiresAck(level, data.requiresAck),
 			published: data.published?.toISOString(),
 			expires: data.expires?.toISOString(),
 			action: normalizeAction(data.action),

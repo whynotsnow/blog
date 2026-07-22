@@ -91,8 +91,9 @@ const notificationsCollection = defineCollection({
 			.enum(["normal", "important", "urgent", "critical"])
 			.default("normal"),
 		icon: z.string().optional(),
-		dismissible: z.boolean().optional().default(true),
-		requiresAck: z.boolean().optional().default(false),
+		pinned: z.boolean().optional().default(false),
+		dismissible: z.boolean().optional(),
+		requiresAck: z.boolean().optional(),
 		published: z.coerce.date().optional(),
 		expires: z.coerce.date().optional(),
 		action: z
