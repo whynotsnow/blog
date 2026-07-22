@@ -608,13 +608,15 @@
 @media (max-width: 767px) {
   .activity-center__panel {
     position: fixed;
-    inset: auto calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+    inset-block-start: calc(var(--navbar-shell-height) + 16px + env(safe-area-inset-top));
+    inset-block-end: auto;
+    inset-inline: calc(12px + env(safe-area-inset-left)) calc(12px + env(safe-area-inset-right));
     width: auto;
-    max-height: min(78svh, 40rem);
+    max-height: calc(100svh - var(--navbar-shell-height) - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     overscroll-behavior: contain;
-    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
-    transform-origin: bottom center;
-    animation-name: activity-center-sheet-in;
+    border-radius: var(--radius-lg);
+    transform-origin: top center;
+    animation-name: activity-center-mobile-panel-in;
   }
 
   .activity-center__header,
@@ -699,6 +701,17 @@
   from {
     opacity: 0;
     transform: translateY(0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes activity-center-mobile-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.98);
   }
   to {
     opacity: 1;

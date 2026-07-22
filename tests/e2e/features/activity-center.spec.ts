@@ -225,7 +225,9 @@ test("activity center reports live article reading status", async ({
 		.not.toBeNull();
 });
 
-test("activity center uses a safe mobile bottom sheet", async ({ page }) => {
+test("activity center anchors the mobile notice panel below navbar", async ({
+	page,
+}) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await page.addInitScript(() => {
 		localStorage.setItem("site-notice:read:site-building-2026-07", "true");
@@ -241,6 +243,9 @@ test("activity center uses a safe mobile bottom sheet", async ({ page }) => {
 		.locator("#activity-center-panel")
 		.evaluate((element) => {
 			const rect = element.getBoundingClientRect();
+			const navbarRect = document
+				.getElementById("navbar-wrapper")!
+				.getBoundingClientRect();
 			const filters = Array.from(
 				element.querySelectorAll<HTMLElement>(
 					".activity-center__filters button",
@@ -252,7 +257,8 @@ test("activity center uses a safe mobile bottom sheet", async ({ page }) => {
 			return {
 				left: rect.left,
 				right: window.innerWidth - rect.right,
-				bottom: window.innerHeight - rect.bottom,
+				top: rect.top,
+				navbarGap: rect.top - navbarRect.bottom,
 				height: rect.height,
 				filterRows: new Set(filters.map((filter) => filter.top)).size,
 				filterMinWidth: Math.min(
@@ -264,7 +270,9 @@ test("activity center uses a safe mobile bottom sheet", async ({ page }) => {
 		});
 	expect(geometry.left).toBeGreaterThanOrEqual(12);
 	expect(geometry.right).toBeGreaterThanOrEqual(12);
-	expect(geometry.bottom).toBeGreaterThanOrEqual(0);
+	expect(geometry.top).toBeGreaterThanOrEqual(56);
+	expect(geometry.navbarGap).toBeGreaterThanOrEqual(8);
+	expect(geometry.navbarGap).toBeLessThanOrEqual(24);
 	expect(geometry.height).toBeLessThan(844 * 0.8);
 	expect(geometry.filterRows).toBe(1);
 	expect(geometry.filterMinWidth).toBeGreaterThan(96);
