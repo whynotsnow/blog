@@ -27,10 +27,14 @@
 		notifications: string;
 		markAllRead: string;
 		noNotifications: string;
+		noUnreadNotifications: string;
+		noImportantNotifications: string;
 		notificationDetails: string;
+		notificationSection: string;
 		notificationAll: string;
 		notificationUnread: string;
 		notificationImportant: string;
+		notificationUnreadCount: string;
 		notificationRead: string;
 		notificationDismiss: string;
 		notificationAcknowledge: string;
@@ -96,6 +100,29 @@
 			return true;
 		}),
 	);
+	const noticeCounts = $derived.by(() => {
+		const unread = visibleNotices.filter((notice) =>
+			isUnread(notice.id),
+		).length;
+		const important = visibleNotices.filter(
+			(notice) => getNoticeRank(notice) >= 2,
+		).length;
+		return {
+			all: visibleNotices.length,
+			unread,
+			important,
+		};
+	});
+	const headerNoticeSummary = $derived(
+		noticeCounts.unread > 0
+			? `${noticeCounts.unread} ${labels.notificationUnreadCount}`
+			: `${noticeCounts.all} ${labels.notifications}`,
+	);
+	const emptyNoticeLabel = $derived.by(() => {
+		if (filter === "unread") return labels.noUnreadNotifications;
+		if (filter === "important") return labels.noImportantNotifications;
+		return labels.noNotifications;
+	});
 	const hasUrgentUnread = $derived(
 		visibleNotices.some(
 			(notice) => isUnread(notice.id) && getNoticeRank(notice) >= 3,
@@ -414,7 +441,7 @@
 		<header class="activity-center__header">
 			<div>
 				<strong>{labels.activityCenter}</strong>
-				<span>{visibleNotices.length} {labels.notifications}</span>
+				<span>{headerNoticeSummary}</span>
 			</div>
 			{#if unreadIds.length > 0}
 				<button type="button" onclick={markAllRead}
@@ -469,27 +496,33 @@
 				<LocalIcon
 					name="material-symbols:notifications-outline-rounded"
 				/>
-				<strong>{labels.notifications}</strong>
+				<strong>{labels.notificationSection}</strong>
 			</div>
 			<div class="activity-center__filters">
 				<button
 					type="button"
 					aria-pressed={filter === "all"}
 					onclick={() => (filter = "all")}
-					>{labels.notificationAll}</button
 				>
+					<span>{labels.notificationAll}</span>
+					<small>{noticeCounts.all}</small>
+				</button>
 				<button
 					type="button"
 					aria-pressed={filter === "unread"}
 					onclick={() => (filter = "unread")}
-					>{labels.notificationUnread}</button
 				>
+					<span>{labels.notificationUnread}</span>
+					<small>{noticeCounts.unread}</small>
+				</button>
 				<button
 					type="button"
 					aria-pressed={filter === "important"}
 					onclick={() => (filter = "important")}
-					>{labels.notificationImportant}</button
 				>
+					<span>{labels.notificationImportant}</span>
+					<small>{noticeCounts.important}</small>
+				</button>
 			</div>
 			{#if filteredNotices.length > 0}
 				<div class="activity-center__notice-list">
@@ -533,7 +566,7 @@
 					{/each}
 				</div>
 			{:else}
-				<p class="activity-center__empty">{labels.noNotifications}</p>
+				<p class="activity-center__empty">{emptyNoticeLabel}</p>
 			{/if}
 		</section>
 	</div>

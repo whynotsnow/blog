@@ -238,7 +238,10 @@
 }
 
 .activity-center__filters button {
+  display: inline-flex;
   min-width: 0;
+  align-items: center;
+  gap: var(--size-2);
   padding: var(--size-2) var(--size-3);
   color: var(--text-muted);
   background: transparent;
@@ -248,10 +251,30 @@
   font-size: var(--text-small);
 }
 
+.activity-center__filters small {
+  display: inline-flex;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.35rem;
+  color: var(--text-muted);
+  background: color-mix(in oklch, var(--surface-raised) 74%, transparent);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .activity-center__filters button[aria-pressed="true"] {
   color: var(--accent);
   background: color-mix(in oklch, var(--accent) 10%, transparent);
   border-color: color-mix(in oklch, var(--accent) 28%, var(--border-subtle));
+}
+
+.activity-center__filters button[aria-pressed="true"] small {
+  color: var(--text-on-accent);
+  background: var(--accent);
 }
 
 .activity-center__notice-list {

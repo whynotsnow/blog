@@ -66,6 +66,12 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	await expect(panel).toBeVisible();
 	await expect(panel.locator(".activity-center__notice")).toHaveCount(2);
 	await expect(
+		panel.locator(".activity-center__section-heading").last(),
+	).toContainText("通知");
+	await expect(panel.getByRole("button", { name: "全部 2" })).toBeVisible();
+	await expect(panel.getByRole("button", { name: "未读 2" })).toBeVisible();
+	await expect(panel.getByRole("button", { name: "重要 1" })).toBeVisible();
+	await expect(
 		panel.locator(".activity-center__notice").first(),
 	).toHaveAttribute("data-level", "important");
 	await expect(panel).toContainText("站点施工提示");
@@ -142,6 +148,9 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	await toggle.click();
 	await panel.getByRole("button", { name: "全部已读" }).click();
 	await expect(toggle.locator("[data-activity-unread]")).toHaveCount(0);
+	await expect(panel.getByRole("button", { name: "未读 0" })).toBeVisible();
+	await panel.getByRole("button", { name: "未读 0" }).click();
+	await expect(panel).toContainText("没有未读通知");
 	await expect
 		.poll(() =>
 			page.evaluate(() => [
