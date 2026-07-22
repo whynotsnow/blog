@@ -69,20 +69,13 @@ const positionClass = (() => {
 	}
 })();
 
-const renderGroups = [
-	{
-		key: 'desktop',
-		images: imageSources.desktop,
-		containerClass: "hidden md:block",
-		hasImages: hasDesktopImages
-	},
-	{
-		key: 'mobile',
-		images: imageSources.mobile,
-		containerClass: "block md:hidden",
-		hasImages: hasMobileImages
-	}
-];
+const wallpaperOptions = {
+	desktopImages: imageSources.desktop,
+	mobileImages: imageSources.mobile,
+	positionClass,
+	isCarouselEnabled,
+	carouselInterval,
+};
 ---
 
 <div 
@@ -92,100 +85,77 @@ const renderGroups = [
 	]}
 	style={`z-index: ${zIndex}; --wallpaper-opacity: ${opacity}; --wallpaper-blur: ${defaultWallpaperBlur}; opacity: var(--wallpaper-opacity); transform: translateZ(0); perspective: 1000px;`}
 	data-fullscreen-wallpaper
+	data-wallpaper-initialized="false"
 >
-	<script is:inline>
-	// 立即执行脚本：防止闪烁
-	(function() {
-		const mode = localStorage.getItem('wallpaperMode') || 'banner';
-		if (mode !== 'overlay') {
-			document.currentScript.parentElement.style.display = 'none';
-		}
-	})();
-	</script>
-
-	{isCarouselEnabled ? (
-		renderGroups.map(group => group.hasImages && (
-			<div class={`${group.containerClass} w-full h-full relative`} style="transform: translateZ(0);">
-				{group.images.map((src, index) => (
-					<img
-						src={src}
-						alt={`${group.key} wallpaper ${index + 1}`}
-						class={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`}
-						data-carousel-item={index}
-						style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--wallpaper-blur)); opacity: ${index === 0 ? 1 : 0};`}
-						decoding="async"
-						loading={index === 0 ? "eager" : "lazy"} 
-					/>
-				))}
-			</div>
-		))
-	) : (
-		<div id="wallpaper-single-container" class="w-full h-full relative">
-			<script is:inline define:vars={{ desktopImages: imageSources.desktop, mobileImages: imageSources.mobile, positionClass }}>
-				(function() {
-					const getRandomImage = (images, storageKey) => {
-						if (images.length === 0) return null;
-						if (images.length === 1) return images[0];
-						
-						const lastIndex = sessionStorage.getItem(storageKey);
-						let newIndex;
-						
-						do {
-							newIndex = Math.floor(Math.random() * images.length);
-						} while (newIndex === parseInt(lastIndex || '-1'));
-						
-						sessionStorage.setItem(storageKey, newIndex.toString());
-						return images[newIndex];
-					};
-					
-					const desktopSrc = getRandomImage(desktopImages, 'wallpaper_desktop_index');
-					const mobileSrc = getRandomImage(mobileImages, 'wallpaper_mobile_index');
-					
-					const container = document.getElementById('wallpaper-single-container');
-					
-					if (desktopSrc) {
-						const desktopDiv = document.createElement('div');
-						desktopDiv.className = 'hidden lg:block w-full h-full relative';
-						desktopDiv.style.transform = 'translateZ(0)';
-						desktopDiv.innerHTML = `
-							<img
-								src="${desktopSrc}"
-								alt="desktop wallpaper"
-								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--wallpaper-blur)); opacity: 1;"
-								decoding="async"
-								loading="eager"
-							/>
-						`;
-						container.appendChild(desktopDiv);
-					}
-					
-					if (mobileSrc) {
-						const mobileDiv = document.createElement('div');
-						mobileDiv.className = 'block lg:hidden w-full h-full relative';
-						mobileDiv.style.transform = 'translateZ(0)';
-						mobileDiv.innerHTML = `
-							<img
-								src="${mobileSrc}"
-								alt="mobile wallpaper"
-								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--wallpaper-blur)); opacity: 1;"
-								decoding="async"
-								loading="eager"
-							/>
-						`;
-						container.appendChild(mobileDiv);
-					}
-				})();
-			</script>
-		</div>
-	)}
+	<script
+		id="fullscreen-wallpaper-options"
+		is:inline
+		type="application/json"
+		set:html={JSON.stringify(wallpaperOptions)}
+	></script>
 </div>
 
-{isCarouselEnabled && (
-	<script is:inline define:vars={{ carouselInterval }}>
-		function initFullscreenWallpaperCarousel() {
-			const container = document.querySelector('[data-fullscreen-wallpaper]');
+<script is:inline define:vars={{ defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode }}>
+	(function () {
+		function getWallpaperMode() {
+			return localStorage.getItem("wallpaperMode") || defaultWallpaperMode;
+		}
+
+		function getRandomImage(images, storageKey) {
+			if (images.length === 0) return null;
+			if (images.length === 1) return images[0];
+
+			const lastIndex = sessionStorage.getItem(storageKey);
+			let newIndex;
+
+			do {
+				newIndex = Math.floor(Math.random() * images.length);
+			} while (newIndex === parseInt(lastIndex || "-1"));
+
+			sessionStorage.setItem(storageKey, newIndex.toString());
+			return images[newIndex];
+		}
+
+		function createImage(src, alt, positionClass, index) {
+			const image = document.createElement("img");
+			image.src = src;
+			image.alt = alt;
+			image.className = `absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`;
+			image.dataset.carouselItem = String(index);
+			image.style.cssText = `transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--wallpaper-blur)); opacity: ${index === 0 ? 1 : 0};`;
+			image.decoding = "async";
+			image.loading = index === 0 ? "eager" : "lazy";
+			return image;
+		}
+
+		function appendGroup(container, group, positionClass) {
+			if (!group.images.length) return;
+			const wrapper = document.createElement("div");
+			wrapper.className = `${group.containerClass} w-full h-full relative`;
+			wrapper.style.transform = "translateZ(0)";
+			group.images.forEach((src, index) => {
+				wrapper.appendChild(
+					createImage(
+						src,
+						`${group.key} wallpaper ${index + 1}`,
+						positionClass,
+						index,
+					),
+				);
+			});
+			container.appendChild(wrapper);
+		}
+
+		function appendSingleImage(container, src, className, alt, positionClass) {
+			if (!src) return;
+			const wrapper = document.createElement("div");
+			wrapper.className = `${className} w-full h-full relative`;
+			wrapper.style.transform = "translateZ(0)";
+			wrapper.appendChild(createImage(src, alt, positionClass, 0));
+			container.appendChild(wrapper);
+		}
+
+		function initFullscreenWallpaperCarousel(container, carouselInterval) {
 			if (!container) return;
 
 			if (window.__wallpaper_cleanup) {
@@ -274,17 +244,64 @@ const renderGroups = [
 
 			document.addEventListener('visibilitychange', handleVisibilityChange);
 
+			window.__wallpaper_start = start;
+			window.__wallpaper_stop = stop;
 			window.__wallpaper_cleanup = () => {
 				stop();
 				document.removeEventListener('visibilitychange', handleVisibilityChange);
 			};
 		}
 
-		// 页面加载完成后初始化轮播
-		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', initFullscreenWallpaperCarousel);
-		} else {
-			initFullscreenWallpaperCarousel();
+		function ensureWallpaperImages() {
+			const container = document.querySelector("[data-fullscreen-wallpaper]");
+			const optionsScript = document.getElementById("fullscreen-wallpaper-options");
+			if (!container || !optionsScript?.textContent) return;
+			if (container.dataset.wallpaperInitialized === "true") {
+				window.__wallpaper_start?.();
+				return;
+			}
+
+			const options = JSON.parse(optionsScript.textContent);
+			if (options.isCarouselEnabled) {
+				appendGroup(container, {
+					key: "desktop",
+					images: options.desktopImages,
+					containerClass: "hidden md:block",
+				}, options.positionClass);
+				appendGroup(container, {
+					key: "mobile",
+					images: options.mobileImages,
+					containerClass: "block md:hidden",
+				}, options.positionClass);
+				initFullscreenWallpaperCarousel(container, options.carouselInterval);
+			} else {
+				const desktopSrc = getRandomImage(options.desktopImages, "wallpaper_desktop_index");
+				const mobileSrc = getRandomImage(options.mobileImages, "wallpaper_mobile_index");
+				appendSingleImage(container, desktopSrc, "hidden lg:block", "desktop wallpaper", options.positionClass);
+				appendSingleImage(container, mobileSrc, "block lg:hidden", "mobile wallpaper", options.positionClass);
+			}
+			container.dataset.wallpaperInitialized = "true";
 		}
-	</script>
-)}
+
+		function syncFullscreenWallpaper() {
+			const container = document.querySelector("[data-fullscreen-wallpaper]");
+			if (!container) return;
+			if (getWallpaperMode() === "overlay") {
+				container.style.display = "block";
+				ensureWallpaperImages();
+				return;
+			}
+			container.style.display = "none";
+			window.__wallpaper_stop?.();
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", syncFullscreenWallpaper, {
+				once: true,
+			});
+		} else {
+			syncFullscreenWallpaper();
+		}
+		window.addEventListener("wallpaper-mode-change", syncFullscreenWallpaper);
+	})();
+</script>
