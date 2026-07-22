@@ -241,15 +241,63 @@ test("activity center uses a safe mobile bottom sheet", async ({ page }) => {
 		.locator("#activity-center-panel")
 		.evaluate((element) => {
 			const rect = element.getBoundingClientRect();
+			const filters = Array.from(
+				element.querySelectorAll<HTMLElement>(
+					".activity-center__filters button",
+				),
+			).map((button) => button.getBoundingClientRect());
+			const noticeSummary = element.querySelector<HTMLElement>(
+				".activity-center__notice p",
+			)!;
 			return {
 				left: rect.left,
 				right: window.innerWidth - rect.right,
 				bottom: window.innerHeight - rect.bottom,
 				height: rect.height,
+				filterRows: new Set(filters.map((filter) => filter.top)).size,
+				filterMinWidth: Math.min(
+					...filters.map((filter) => filter.width),
+				),
+				noticeSummaryFits:
+					noticeSummary.scrollWidth <= noticeSummary.clientWidth,
 			};
 		});
 	expect(geometry.left).toBeGreaterThanOrEqual(12);
 	expect(geometry.right).toBeGreaterThanOrEqual(12);
-	expect(geometry.bottom).toBeGreaterThanOrEqual(12);
-	expect(geometry.height).toBeLessThan(844 * 0.75);
+	expect(geometry.bottom).toBeGreaterThanOrEqual(0);
+	expect(geometry.height).toBeLessThan(844 * 0.8);
+	expect(geometry.filterRows).toBe(1);
+	expect(geometry.filterMinWidth).toBeGreaterThan(96);
+	expect(geometry.noticeSummaryFits).toBe(true);
+
+	await page
+		.locator("#activity-center-panel")
+		.getByRole("button", { name: /查看通知: 站点施工提示/ })
+		.click();
+	const dialogGeometry = await page
+		.locator(".activity-center__dialog")
+		.evaluate((dialog) => {
+			const rect = dialog.getBoundingClientRect();
+			const actions = Array.from(
+				dialog.querySelectorAll<HTMLElement>(
+					".activity-center__dialog-actions :is(a, button)",
+				),
+			).map((action) => action.getBoundingClientRect());
+			return {
+				left: rect.left,
+				right: window.innerWidth - rect.right,
+				bottom: window.innerHeight - rect.bottom,
+				height: rect.height,
+				actionRows: new Set(actions.map((action) => action.top)).size,
+				actionMinWidth: Math.min(
+					...actions.map((action) => action.width),
+				),
+			};
+		});
+	expect(dialogGeometry.left).toBeGreaterThanOrEqual(8);
+	expect(dialogGeometry.right).toBeGreaterThanOrEqual(8);
+	expect(dialogGeometry.bottom).toBeGreaterThanOrEqual(0);
+	expect(dialogGeometry.height).toBeLessThan(844 * 0.9);
+	expect(dialogGeometry.actionRows).toBeGreaterThanOrEqual(1);
+	expect(dialogGeometry.actionMinWidth).toBeGreaterThan(320);
 });

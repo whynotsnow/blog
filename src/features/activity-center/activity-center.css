@@ -608,20 +608,101 @@
 @media (max-width: 767px) {
   .activity-center__panel {
     position: fixed;
-    inset-block-start: auto;
-    inset-block-end: max(var(--size-3), env(safe-area-inset-bottom));
-    inset-inline: var(--space-page-x);
+    inset: auto calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
     width: auto;
-    max-height: min(72dvh, 40rem);
+    max-height: min(78svh, 40rem);
+    overscroll-behavior: contain;
+    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
+    transform-origin: bottom center;
+    animation-name: activity-center-sheet-in;
+  }
+
+  .activity-center__header,
+  .activity-center__section {
+    padding: var(--size-3);
+  }
+
+  .activity-center__header {
+    align-items: flex-start;
+  }
+
+  .activity-center__header button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .activity-center__filters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .activity-center__filters button {
+    justify-content: center;
+    padding-inline: var(--size-2);
+  }
+
+  .activity-center__notice {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--size-2);
+    padding: var(--size-3);
+  }
+
+  .activity-center__notice > .local-icon {
+    display: none;
+  }
+
+  .activity-center__notice p {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .activity-center__dialog-backdrop {
     align-items: end;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
 
   .activity-center__dialog {
     width: 100%;
-    max-height: min(82dvh, 44rem);
+    max-height: min(86svh, 44rem);
+    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
+    transform-origin: bottom center;
+    animation-name: activity-center-sheet-in;
+  }
+
+  .activity-center__dialog-header,
+  .activity-center__dialog-content,
+  .activity-center__dialog-actions {
+    padding: var(--size-3);
+  }
+
+  .activity-center__dialog-header {
+    gap: var(--size-2);
+  }
+
+  .activity-center__dialog-header h2 {
+    font-size: 1rem;
+  }
+
+  .activity-center__dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .activity-center__dialog-actions :where(a, button) {
+    width: 100%;
+  }
+}
+
+@keyframes activity-center-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

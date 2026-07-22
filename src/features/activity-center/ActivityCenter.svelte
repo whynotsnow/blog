@@ -58,6 +58,7 @@
 
 	let root: HTMLDivElement;
 	let button: HTMLButtonElement;
+	let panel: HTMLDivElement;
 	let dialog = $state<HTMLDivElement | undefined>();
 	let dialogHost: HTMLDivElement | undefined;
 	let open = $state(false);
@@ -194,6 +195,39 @@
 		return {
 			destroy() {
 				node.remove();
+			},
+		};
+	}
+
+	function mobilePanelPortal(node: HTMLElement) {
+		const placeholder = document.createComment("activity-center-panel");
+		const parent = node.parentNode;
+		const media = window.matchMedia("(max-width: 767px)");
+
+		function syncPortal() {
+			if (media.matches) {
+				if (node.parentNode !== document.body) {
+					node.before(placeholder);
+					document.body.appendChild(node);
+				}
+				return;
+			}
+			if (node.parentNode === document.body && placeholder.parentNode) {
+				placeholder.parentNode.insertBefore(node, placeholder);
+				placeholder.remove();
+			}
+		}
+
+		syncPortal();
+		media.addEventListener("change", syncPortal);
+
+		return {
+			destroy() {
+				media.removeEventListener("change", syncPortal);
+				if (node.parentNode === document.body && parent) {
+					parent.appendChild(node);
+				}
+				placeholder.remove();
 			},
 		};
 	}
@@ -392,7 +426,8 @@
 			if (
 				open &&
 				event.target instanceof Node &&
-				!root.contains(event.target)
+				!root.contains(event.target) &&
+				!panel?.contains(event.target)
 			) {
 				setOpen(false);
 			}
@@ -480,6 +515,8 @@
 	</button>
 
 	<div
+		bind:this={panel}
+		use:mobilePanelPortal
 		id="activity-center-panel"
 		class="activity-center__panel"
 		role="dialog"
