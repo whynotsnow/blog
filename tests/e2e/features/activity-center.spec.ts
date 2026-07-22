@@ -286,6 +286,9 @@ test("activity center anchors the mobile notice panel below navbar", async ({
 		.locator(".activity-center__dialog")
 		.evaluate((dialog) => {
 			const rect = dialog.getBoundingClientRect();
+			const navbarRect = document
+				.getElementById("navbar-wrapper")!
+				.getBoundingClientRect();
 			const actions = Array.from(
 				dialog.querySelectorAll<HTMLElement>(
 					".activity-center__dialog-actions :is(a, button)",
@@ -294,6 +297,8 @@ test("activity center anchors the mobile notice panel below navbar", async ({
 			return {
 				left: rect.left,
 				right: window.innerWidth - rect.right,
+				top: rect.top,
+				navbarGap: rect.top - navbarRect.bottom,
 				bottom: window.innerHeight - rect.bottom,
 				height: rect.height,
 				actionRows: new Set(actions.map((action) => action.top)).size,
@@ -304,6 +309,9 @@ test("activity center anchors the mobile notice panel below navbar", async ({
 		});
 	expect(dialogGeometry.left).toBeGreaterThanOrEqual(8);
 	expect(dialogGeometry.right).toBeGreaterThanOrEqual(8);
+	expect(dialogGeometry.top).toBeGreaterThanOrEqual(72);
+	expect(dialogGeometry.navbarGap).toBeGreaterThanOrEqual(16);
+	expect(dialogGeometry.navbarGap).toBeLessThanOrEqual(40);
 	expect(dialogGeometry.bottom).toBeGreaterThanOrEqual(0);
 	expect(dialogGeometry.height).toBeLessThan(844 * 0.9);
 	expect(dialogGeometry.actionRows).toBeGreaterThanOrEqual(1);

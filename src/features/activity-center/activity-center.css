@@ -661,16 +661,16 @@
   }
 
   .activity-center__dialog-backdrop {
-    align-items: end;
-    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    align-items: start;
+    padding: calc(var(--navbar-shell-height) + 24px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
 
   .activity-center__dialog {
     width: 100%;
-    max-height: min(86svh, 44rem);
-    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
-    transform-origin: bottom center;
-    animation-name: activity-center-sheet-in;
+    max-height: calc(100svh - var(--navbar-shell-height) - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius: var(--radius-lg);
+    transform-origin: top center;
+    animation-name: activity-center-mobile-dialog-in;
   }
 
   .activity-center__dialog-header,
@@ -709,6 +709,17 @@
 }
 
 @keyframes activity-center-mobile-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes activity-center-mobile-dialog-in {
   from {
     opacity: 0;
     transform: translateY(-0.5rem) scale(0.98);
