@@ -161,7 +161,6 @@
 		{
 			"patterns": [
 				"src/services/site-notice.ts",
-				"src/config/site-notice.ts",
 				"src/content/notifications/**",
 				"src/features/activity-center/**"
 			],

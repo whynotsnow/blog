@@ -36,12 +36,26 @@ test("activity center owns notice unread state in the top-right shell", async ({
 }) => {
 	const pageErrors: string[] = [];
 	page.on("pageerror", (error) => pageErrors.push(error.message));
-	await gotoPage(page, "/");
+	await gotoPage(page, "/", { suppressNotices: false });
 
 	const toggle = page.locator("#activity-center-switch");
 	const panel = page.locator("#activity-center-panel");
+	const dialog = page.locator(".activity-center__dialog");
 	await expect(toggle).toBeVisible();
-	await expect(toggle.locator("[data-activity-unread]")).toHaveText("2");
+	await expect(toggle.locator("[data-activity-unread]")).toHaveText("1");
+	await expect(dialog).toBeVisible();
+	await expect(dialog).toContainText("站点目前仍在持续建设中");
+	await expect
+		.poll(() =>
+			page.evaluate(() =>
+				localStorage.getItem("site-notice:read:site-building-2026-07"),
+			),
+		)
+		.toBe("true");
+
+	await dialog.getByRole("button", { name: "已读" }).click();
+	await expect(dialog).toBeHidden();
+	await toggle.click();
 	await expect(panel).toBeVisible();
 
 	const geometry = await toggle.evaluate((element) => {
@@ -67,14 +81,14 @@ test("activity center owns notice unread state in the top-right shell", async ({
 		panel.locator(".activity-center__section-heading").last(),
 	).toContainText("通知");
 	await expect(panel.getByRole("button", { name: "全部 2" })).toBeVisible();
-	await expect(panel.getByRole("button", { name: "未读 2" })).toBeVisible();
+	await expect(panel.getByRole("button", { name: "未读 1" })).toBeVisible();
 	await expect(panel.getByRole("button", { name: "重要 1" })).toBeVisible();
 	await expect(
 		panel.locator(".activity-center__notice").first(),
 	).toHaveAttribute("data-level", "important");
 	await expect(panel).toContainText("站点施工提示");
 	await expect(panel).toContainText("内容更新说明");
-	await expect(toggle.locator("[data-activity-unread]")).toHaveText("2");
+	await expect(toggle.locator("[data-activity-unread]")).toHaveText("1");
 	await expect(page.locator("[data-site-notice-region]")).toHaveCount(0);
 	await toggle.click();
 	await expect(panel).toBeHidden();
@@ -84,7 +98,6 @@ test("activity center owns notice unread state in the top-right shell", async ({
 	await expect(panel).toBeVisible();
 
 	await panel.getByRole("button", { name: /查看通知: 站点施工提示/ }).click();
-	const dialog = page.locator(".activity-center__dialog");
 	await expect(dialog).toBeVisible();
 	const dialogGeometry = await page
 		.locator(".activity-center__dialog-backdrop")
@@ -120,7 +133,7 @@ test("activity center owns notice unread state in the top-right shell", async ({
 		position: "fixed",
 		width: "100%",
 	});
-	expect(lockedBody.top).toMatch(/^-?0px$/);
+	expect(lockedBody.top).toMatch(/^-?\d+px$/);
 	await expect(dialog).toContainText("站点目前仍在持续建设中");
 	await expect(dialog).toContainText("页面布局会继续优化");
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("1");

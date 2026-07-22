@@ -1,16 +1,11 @@
 ---
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import type { SiteNoticeViewModel } from "@/services/site-notice";
+import { getSiteNotices } from "@/services/site-notice";
 import ActivityCenterClient from "./ActivityCenter.svelte";
 import "./activity-center.css";
 import { render } from "astro:content";
 
-interface Props {
-	notice?: SiteNoticeViewModel;
-}
-
-const { notice } = Astro.props;
 const labels = {
 	activityCenter: i18n(I18nKey.activityCenter),
 	notifications: i18n(I18nKey.notifications),
@@ -35,7 +30,7 @@ const labels = {
 	currentSection: i18n(I18nKey.currentSection),
 	resumeReading: i18n(I18nKey.resumeReading),
 };
-const noticeItems = notice?.notices ?? [];
+const noticeItems = await getSiteNotices(Astro.url.pathname);
 const renderedNotices = await Promise.all(
 	noticeItems.map(async (item) => {
 		const { entry, ...clientNotice } = item;

@@ -3,6 +3,7 @@ title: 站点施工提示
 summary: 部分功能仍在完善中。
 status: info
 level: important
+pinned: true
 dismissible: false
 requiresAck: false
 visibility:

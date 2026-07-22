@@ -9,11 +9,9 @@ import Search from "./Search.svelte";
 import DropdownMenu from "./navigation/DropdownMenu.astro";
 import NavMenuPanel from "./navigation/NavMenuPanel.astro";
 import ActivityCenter from "@/features/activity-center/ActivityCenter.astro";
-import type { SiteNoticeViewModel } from "@/services/site-notice";
 
 const className = Astro.props.class;
 const containerContent = Astro.props.containerContent === true;
-const notice = Astro.props.notice as SiteNoticeViewModel | undefined;
 
 // 获取导航栏透明模式配置
 const navbarTransparentMode =
@@ -73,7 +71,7 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
             <div id="search-container">
                 <Search client:only="svelte"></Search>
             </div>
-            <ActivityCenter {notice} />
+            <ActivityCenter />
             {siteConfig.toc.enable && <MobileTOC client:only="svelte"></MobileTOC>}
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
                 <Icon name="material-symbols:unfold-more" class="text-[1.25rem]"></Icon>

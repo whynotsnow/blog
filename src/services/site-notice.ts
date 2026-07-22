@@ -1,11 +1,33 @@
-import type {
-	SiteNoticeConfig,
-	SiteNoticeItemConfig,
-	SiteNoticeLevel,
-	SiteNoticeStatus,
-} from "@/types/config";
 import { url } from "@/utils/url";
 import type { CollectionEntry } from "astro:content";
+
+export type SiteNoticeStatus = "info" | "success" | "warning" | "danger";
+export type SiteNoticeLevel = "normal" | "important" | "urgent" | "critical";
+
+export type SiteNoticeVisibility = {
+	scope: "all" | "home" | "content";
+	include?: string[];
+	exclude?: string[];
+};
+
+export type SiteNoticeSourceData = {
+	title: string;
+	summary?: string;
+	status: SiteNoticeStatus;
+	level?: SiteNoticeLevel;
+	icon?: string;
+	pinned?: boolean;
+	dismissible?: boolean;
+	requiresAck?: boolean;
+	published?: Date;
+	expires?: Date;
+	action?: {
+		label: string;
+		href: string;
+		external?: boolean;
+	};
+	visibility?: SiteNoticeVisibility;
+};
 
 export type SiteNoticeItemViewModel = {
 	id: string;
@@ -26,12 +48,6 @@ export type SiteNoticeItemViewModel = {
 		external: boolean;
 	};
 	entry?: CollectionEntry<"notifications">;
-};
-
-export type SiteNoticeViewModel = {
-	autoRotate: boolean;
-	rotationIntervalMs: number;
-	notices: SiteNoticeItemViewModel[];
 };
 
 const defaultIcons: Record<SiteNoticeStatus, string> = {
@@ -57,9 +73,11 @@ function matchesRoute(pathname: string, routes: string[] | undefined) {
 	});
 }
 
-function isVisible(config: SiteNoticeItemConfig, pathname: string) {
+export function isSiteNoticeVisible(
+	visibility: SiteNoticeVisibility | undefined,
+	pathname: string,
+) {
 	const normalizedPathname = normalizePathname(pathname);
-	const visibility = config.visibility;
 	if (!visibility) return true;
 	if (matchesRoute(normalizedPathname, visibility.exclude)) return false;
 	if (visibility.include?.length) {
@@ -71,7 +89,7 @@ function isVisible(config: SiteNoticeItemConfig, pathname: string) {
 	return true;
 }
 
-function normalizeAction(action: SiteNoticeItemConfig["action"]) {
+function normalizeAction(action: SiteNoticeSourceData["action"]) {
 	return action
 		? {
 				label: action.label,
@@ -81,7 +99,7 @@ function normalizeAction(action: SiteNoticeItemConfig["action"]) {
 		: undefined;
 }
 
-function normalizeLevel(level: SiteNoticeItemConfig["level"]) {
+function normalizeLevel(level: SiteNoticeSourceData["level"]) {
 	return level ?? "normal";
 }
 
@@ -99,84 +117,39 @@ function normalizeRequiresAck(
 	return requiresAck ?? level === "critical";
 }
 
-function buildConfigNotice(
-	notice: SiteNoticeItemConfig,
+export function buildSiteNoticeItemViewModel(
+	id: string,
+	data: SiteNoticeSourceData,
+	entry?: CollectionEntry<"notifications">,
 ): SiteNoticeItemViewModel {
-	const level = normalizeLevel(notice.level);
+	const summary = data.summary || data.title;
+	const level = normalizeLevel(data.level);
 	return {
-		id: notice.id,
-		title: notice.title,
-		summary: notice.summary || notice.content,
-		content: notice.content,
-		icon: notice.icon || defaultIcons[notice.status],
-		status: notice.status,
+		id,
+		title: data.title,
+		summary,
+		content: summary,
+		icon: data.icon || defaultIcons[data.status],
+		status: data.status,
 		level,
-		pinned: notice.pinned ?? false,
-		dismissible: normalizeDismissible(level, notice.dismissible),
-		requiresAck: normalizeRequiresAck(level, notice.requiresAck),
-		action: normalizeAction(notice.action),
+		pinned: data.pinned ?? false,
+		dismissible: normalizeDismissible(level, data.dismissible),
+		requiresAck: normalizeRequiresAck(level, data.requiresAck),
+		published: data.published?.toISOString(),
+		expires: data.expires?.toISOString(),
+		action: normalizeAction(data.action),
+		entry,
 	};
 }
 
-async function getMarkdownNotices(pathname: string) {
+export async function getSiteNotices(pathname: string) {
 	const { getCollection } = await import("astro:content");
 	const entries = await getCollection("notifications", ({ data }) => {
 		if (data.expires && data.expires.getTime() < Date.now()) return false;
-		return isVisible(
-			{
-				id: "",
-				title: data.title,
-				content: data.summary,
-				status: data.status,
-				dismissible: data.dismissible,
-				visibility: data.visibility,
-			},
-			pathname,
-		);
+		return isSiteNoticeVisible(data.visibility, pathname);
 	});
 
-	return entries.map<SiteNoticeItemViewModel>((entry) => {
-		const { data } = entry;
-		const summary = data.summary || data.title;
-		const level = normalizeLevel(data.level);
-		return {
-			id: entry.id,
-			title: data.title,
-			summary,
-			content: summary,
-			icon: data.icon || defaultIcons[data.status],
-			status: data.status,
-			level,
-			pinned: data.pinned,
-			dismissible: normalizeDismissible(level, data.dismissible),
-			requiresAck: normalizeRequiresAck(level, data.requiresAck),
-			published: data.published?.toISOString(),
-			expires: data.expires?.toISOString(),
-			action: normalizeAction(data.action),
-			entry,
-		};
-	});
-}
-
-export async function buildSiteNoticeViewModel(
-	config: SiteNoticeConfig,
-	pathname: string,
-): Promise<SiteNoticeViewModel | undefined> {
-	if (!config.enable) return;
-
-	const configNotices = (config.notices ?? [])
-		.filter((notice) => isVisible(notice, pathname))
-		.map(buildConfigNotice);
-	const markdownNotices = config.notices?.length
-		? []
-		: await getMarkdownNotices(pathname);
-	const notices = [...markdownNotices, ...configNotices];
-
-	if (!notices.length) return;
-
-	return {
-		autoRotate: config.autoRotate ?? true,
-		rotationIntervalMs: Math.max(config.rotationIntervalMs ?? 6000, 3000),
-		notices,
-	};
+	return entries.map((entry) =>
+		buildSiteNoticeItemViewModel(entry.id, entry.data, entry),
+	);
 }

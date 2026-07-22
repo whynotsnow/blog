@@ -4,9 +4,8 @@ import FullscreenWallpaper from "@components/misc/FullscreenWallpaper.astro";
 import Navbar from "@components/Navbar.astro";
 import Banner from "@/components/layout/Banner/Banner.astro";
 import MainGridContent from "@/components/layout/MainGridContent.astro";
-import { fullscreenWallpaperConfig, siteConfig, siteNoticeConfig } from "@/config";
+import { fullscreenWallpaperConfig, siteConfig } from "@/config";
 import { buildMainGridLayoutViewModel } from "@/services/layout/main-grid";
-import { buildSiteNoticeViewModel } from "@/services/site-notice";
 import type { PageLayoutPolicyName } from "@/services/layout/types";
 import Layout from "./Layout.astro";
 import "@/styles/main-grid-layout.css";
@@ -39,10 +38,6 @@ const viewModel = await buildMainGridLayoutViewModel({
 	layoutPolicy,
 	pathname: Astro.url.pathname,
 });
-const siteNotice = await buildSiteNoticeViewModel(
-	siteNoticeConfig,
-	Astro.url.pathname,
-);
 const hasSupportContent = Astro.slots.has("support");
 ---
 
@@ -88,7 +83,6 @@ const hasSupportContent = Astro.slots.has("support");
 			class="pointer-events-auto sticky top-0 transition-all"
 		>
 			<Navbar
-				notice={siteNotice}
 				containerContent={viewModel.pageLayout.shellStrategy === "container-content"}
 				class={viewModel.pageLayout.shellStrategy === "container-content"
 					? "navbar__inner--container-content"

@@ -275,39 +275,6 @@ export type ExpressiveCodeConfig = {
 	hideDuringThemeTransition?: boolean; // 是否在主题切换时隐藏代码块
 };
 
-export type SiteNoticeStatus = "info" | "success" | "warning" | "danger";
-export type SiteNoticeLevel = "normal" | "important" | "urgent" | "critical";
-
-export type SiteNoticeItemConfig = {
-	id: string;
-	title: string;
-	summary?: string;
-	content: string;
-	icon?: string;
-	status: SiteNoticeStatus;
-	level?: SiteNoticeLevel;
-	pinned?: boolean;
-	dismissible?: boolean;
-	requiresAck?: boolean;
-	action?: {
-		label: string;
-		href: string;
-		external?: boolean;
-	};
-	visibility?: {
-		scope: "all" | "home" | "content";
-		include?: string[];
-		exclude?: string[];
-	};
-};
-
-export type SiteNoticeConfig = {
-	enable: boolean;
-	autoRotate?: boolean;
-	rotationIntervalMs?: number;
-	notices?: SiteNoticeItemConfig[];
-};
-
 export type MusicPlayerConfig = {
 	enable: boolean; // 是否默认挂载音乐播放器
 	mode: "meting" | "local"; // 音乐播放器模式

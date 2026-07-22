@@ -24,7 +24,6 @@
 | `src/config/site.ts` | 站点核心配置 `siteConfig`、`SITE_LANG`、`SITE_TIMEZONE`。 |
 | `src/config/navbar.ts` | 顶部导航 `navBarConfig`。 |
 | `src/config/profile.ts` | 个人资料 `profileConfig`。 |
-| `src/config/site-notice.ts` | 网站级通知全局开关 `siteNoticeConfig`。 |
 | `src/config/wallpaper.ts` | 全屏壁纸 `fullscreenWallpaperConfig`。 |
 | `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
 | `src/config/music.ts` | 音乐播放器 `musicPlayerConfig`。 |
@@ -44,7 +43,6 @@
 | `licenseConfig` | 默认内容协议展示。 |
 | `commentConfig` | 评论系统配置。 |
 | `pageLayoutPolicies` | 页面 Shell Strategy 与允许的桌面布局集合；当前仅允许 `content-right`。 |
-| `siteNoticeConfig` | Activity Center 网站通知入口的全局开关。通知正文来自 `src/content/notifications`。 |
 | `expressiveCodeConfig` | 代码块渲染行为。 |
 
 ## 字体配置
@@ -63,9 +61,7 @@
 
 ## 网站通知
 
-网站通知由 Navbar 右侧的 Activity Center 统一展示。面板中只显示通知标题和摘要，点击通知后打开弹窗阅读完整 Markdown 正文；文章页上的外圈仍只显示当前阅读进度。Activity Center 不承载 Theme、Settings 等操作型工具。
-
-- `enable`：启用或关闭网站通知。
+网站通知由 Navbar 右侧的 Activity Center 统一展示。Activity Center 是站点基础设施，始终渲染；没有任何通知内容时只保留阅读状态与空通知状态，不再通过配置项控制是否挂载。面板中只显示通知标题和摘要，点击通知后打开弹窗阅读完整 Markdown 正文；文章页上的外圈仍只显示当前阅读进度。Activity Center 不承载 Theme、Settings 等操作型工具。
 
 通知文件位于 `src/content/notifications/*.md`。Frontmatter 字段：
 
