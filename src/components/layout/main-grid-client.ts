@@ -24,6 +24,7 @@ let navigationProgressRun = 0;
 let pageEntryAnimationFrame: number | undefined;
 let pageEntryAnimationCleanup: (() => void) | undefined;
 let pageEntryAnimationExpectedScrollTop: number | undefined;
+let pageEntryAnimationComplete: (() => void) | undefined;
 let activeVisitIsHistory = false;
 let activeVisitUsesHeightGuard = false;
 let previousPageScrollHeight = 0;
@@ -32,6 +33,7 @@ let heightGuardReleaseTimer: number | undefined;
 const NAVIGATION_PROGRESS_MIN_VISIBLE_MS = 260;
 const PAGE_ENTRY_NAVIGATION_SCROLL_DURATION_MS = 620;
 const PAGE_ENTRY_INITIAL_SCROLL_DURATION_MS = 620;
+const PAGE_ENTRY_HISTORY_SCROLL_DURATION_MS = 520;
 const HOME_INITIAL_ENTRANCE_DURATION_MS = 1320;
 
 function getWallpaperMode(): WALLPAPER_MODE {
@@ -462,13 +464,18 @@ function cancelPageEntryAnimation() {
 	pageEntryAnimationCleanup = undefined;
 	pageEntryAnimationExpectedScrollTop = undefined;
 	releasePageHeightGuard();
+	const complete = pageEntryAnimationComplete;
+	pageEntryAnimationComplete = undefined;
+	complete?.();
 }
 
 function animatePageEntry(
 	durationMs = PAGE_ENTRY_NAVIGATION_SCROLL_DURATION_MS,
 	cancelOnExternalScroll = false,
+	onComplete?: () => void,
 ) {
 	cancelPageEntryAnimation();
+	pageEntryAnimationComplete = onComplete;
 	const mainContent = getMainContent();
 	const previousTransition = mainContent?.style.transition ?? "";
 	if (mainContent) mainContent.style.transition = "none";
@@ -479,6 +486,9 @@ function animatePageEntry(
 	if (mainContent) mainContent.style.transition = previousTransition;
 	if (targetScrollTop === null) {
 		releasePageHeightGuard();
+		const complete = pageEntryAnimationComplete;
+		pageEntryAnimationComplete = undefined;
+		complete?.();
 		return;
 	}
 
@@ -490,6 +500,9 @@ function animatePageEntry(
 	if (prefersReducedMotion || Math.abs(distance) < 1) {
 		alignPageEntry("instant");
 		releasePageHeightGuard();
+		const complete = pageEntryAnimationComplete;
+		pageEntryAnimationComplete = undefined;
+		complete?.();
 		return;
 	}
 
@@ -572,25 +585,12 @@ function animatePageEntry(
 		pageEntryAnimationCleanup = undefined;
 		pageEntryAnimationExpectedScrollTop = undefined;
 		releasePageHeightGuard();
+		const complete = pageEntryAnimationComplete;
+		pageEntryAnimationComplete = undefined;
+		complete?.();
 	};
 
 	pageEntryAnimationFrame = requestAnimationFrame(tick);
-}
-
-function settlePageEntry(behavior: PageEntryScrollBehavior = "instant") {
-	const mainContent = getMainContent();
-	const previousTransition = mainContent?.style.transition ?? "";
-	if (mainContent) mainContent.style.transition = "none";
-
-	syncMainContentPosition(getWallpaperMode());
-	forceReflow();
-	alignPageEntry(behavior);
-
-	requestAnimationFrame(() => {
-		if (mainContent) mainContent.style.transition = previousTransition;
-		if (behavior === "instant") alignPageEntry("instant");
-		releasePageHeightGuard();
-	});
 }
 
 function applyPageEntryScrollPolicy(visit?: {
@@ -648,7 +648,9 @@ function advanceNavigationProgress() {
 	setNavigationProgress(92);
 }
 
-function finishNavigationProgress(onSettled?: () => void) {
+function finishNavigationProgress(
+	onSettled?: (complete: () => void) => boolean | void,
+) {
 	const progress = getNavigationProgress();
 	if (!progress || progress.dataset.state !== "active") return;
 
@@ -663,9 +665,13 @@ function finishNavigationProgress(onSettled?: () => void) {
 		progress.dataset.state = "complete";
 		window.setTimeout(() => {
 			if (run !== navigationProgressRun) return;
-			onSettled?.();
-			progress.dataset.state = "idle";
-			setNavigationProgress(0);
+			const complete = () => {
+				if (run !== navigationProgressRun) return;
+				progress.dataset.state = "idle";
+				setNavigationProgress(0);
+			};
+			const defersIdle = onSettled?.(complete) === true;
+			if (!defersIdle) complete();
 		}, 180);
 	}, delay);
 }
@@ -725,7 +731,14 @@ function bindMainGridClient() {
 	});
 	onPageLifecycle("visit-end", ({ visit }) => {
 		if (visit?.history?.popstate) {
-			finishNavigationProgress(() => settlePageEntry("instant"));
+			finishNavigationProgress((complete) => {
+				animatePageEntry(
+					PAGE_ENTRY_HISTORY_SCROLL_DURATION_MS,
+					false,
+					complete,
+				);
+				return true;
+			});
 			return;
 		}
 

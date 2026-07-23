@@ -313,12 +313,44 @@ test("browser history realigns the category and post main regions", async ({
 	const normalEntry = await readEntryGeometry();
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
 
-	await page.evaluate(() => window.history.back());
+	await page.evaluate(() => {
+		const state = window as typeof window & {
+			__historyEntryScrollCalls?: number[];
+		};
+		const nativeScrollTo = window.scrollTo.bind(window);
+		state.__historyEntryScrollCalls = [];
+		window.scrollTo = ((
+			optionsOrX?: ScrollToOptions | number,
+			y?: number,
+		) => {
+			const top = typeof optionsOrX === "object" ? optionsOrX.top : y;
+			if (typeof top === "number") {
+				state.__historyEntryScrollCalls?.push(top);
+			}
+
+			if (typeof optionsOrX === "object") {
+				nativeScrollTo(optionsOrX);
+				return;
+			}
+
+			nativeScrollTo(optionsOrX ?? 0, y ?? 0);
+		}) as typeof window.scrollTo;
+		window.history.back();
+	});
 	await expect(page).toHaveURL(/\/category\/tech\/$/);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
 	);
+	const backScrollCalls = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__historyEntryScrollCalls?: number[];
+				}
+			).__historyEntryScrollCalls ?? [],
+	);
+	expect(backScrollCalls.length).toBeGreaterThan(3);
 	await expect
 		.poll(async () => {
 			const geometry = await readEntryGeometry();

@@ -180,6 +180,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 - Added a short-lived `home-initial-enter` state for direct home loads so Banner title, subtitle, waves, and the Main Content layer enter on one timeline without changing final Shell geometry.
 - Deferred the home Banner Typewriter during that initial entrance and preserved immediate settlement for reduced-motion users.
+
+### Animated history content-page entry alignment
+
+- Changed browser history category/post visits from settled instant page-entry correction to a Shell-owned eased entry animation that starts only after Banner geometry has been synchronized.
+- Deferred Navigation Progress `idle` publication until the history entry animation completes or is cancelled, preserving one owner for the final coordinate.
 - Restored fullscreen Banner flow geometry by starting Main Content at `100dvh` and removing the transient `top` interpolation that exposed content over the Banner.
 
 ## 2026-07-15
