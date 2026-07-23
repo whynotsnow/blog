@@ -40,11 +40,12 @@ test("activity center owns notice unread state in the top-right shell", async ({
 
 	const toggle = page.locator("#activity-center-switch");
 	const panel = page.locator("#activity-center-panel");
-	const dialog = page.locator(".activity-center__dialog");
+	const dialog = page.getByRole("dialog", { name: "站点施工提示" });
+	const dialogContent = dialog.locator(".activity-center__dialog-content");
 	await expect(toggle).toBeVisible();
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("1");
 	await expect(dialog).toBeVisible();
-	await expect(dialog).toContainText("站点目前仍在持续建设中");
+	await expect(dialogContent).toContainText("站点目前仍在持续建设中");
 	await expect
 		.poll(() =>
 			page.evaluate(() =>
@@ -134,8 +135,8 @@ test("activity center owns notice unread state in the top-right shell", async ({
 		width: "100%",
 	});
 	expect(lockedBody.top).toMatch(/^-?\d+px$/);
-	await expect(dialog).toContainText("站点目前仍在持续建设中");
-	await expect(dialog).toContainText("页面布局会继续优化");
+	await expect(dialogContent).toContainText("站点目前仍在持续建设中");
+	await expect(dialogContent).toContainText("页面布局会继续优化");
 	await expect(toggle.locator("[data-activity-unread]")).toHaveText("1");
 	await expect
 		.poll(() =>

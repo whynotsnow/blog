@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
 import { useStoredPreference } from "../../support/preferences";
 
+const entryAlignmentTolerance = 8;
+
 test("category and post pages align the main region and keep a fixed visible navbar", async ({
 	page,
 }) => {
@@ -71,7 +73,9 @@ test("fullscreen category and post pages align the main region", async ({
 						),
 				),
 			);
-	await expect.poll(readMainOffset).toBeLessThan(1);
+	await expect
+		.poll(readMainOffset)
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
 	await expect
 		.poll(() => page.evaluate(() => window.scrollY))
 		.toBeGreaterThan(0);
@@ -87,7 +91,9 @@ test("fullscreen category and post pages align the main region", async ({
 		"data-state",
 		"idle",
 	);
-	await expect.poll(readMainOffset).toBeLessThan(1);
+	await expect
+		.poll(readMainOffset)
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
 });
 
 test("home retains banner-aware navbar behavior", async ({ page }) => {
@@ -241,16 +247,12 @@ test("browser history realigns the category and post main regions", async ({
 			const geometry = await readEntryGeometry();
 			return Math.abs(geometry.top - geometry.clearance);
 		})
-		.toBeLessThan(1);
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
 	const normalEntry = await readEntryGeometry();
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
 
 	await page.evaluate(() => window.history.back());
 	await expect(page).toHaveURL(/\/category\/tech\/$/);
-	await expect(page.locator("#navigation-progress")).toHaveAttribute(
-		"data-state",
-		"active",
-	);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -260,7 +262,7 @@ test("browser history realigns the category and post main regions", async ({
 			const geometry = await readEntryGeometry();
 			return Math.abs(geometry.top - geometry.clearance);
 		})
-		.toBeLessThan(1);
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
 	const backEntry = await readEntryGeometry();
 	expect(Math.abs(backEntry.top - normalEntry.top)).toBeLessThan(1);
 

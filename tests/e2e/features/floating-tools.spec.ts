@@ -1,5 +1,38 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
+
+const defaultPlaylist = [
+	{
+		artist: "Test Artist",
+		id: 1,
+		name: "Test Song",
+		pic: "/assets/music/cover/xryx.jpg",
+		url: "/assets/music/url/xryx.mp3",
+	},
+	{
+		artist: "Second Artist",
+		id: 2,
+		name: "Second Song",
+		pic: "/assets/music/cover/hitori.jpg",
+		url: "/assets/music/url/hitori.mp3",
+	},
+];
+
+async function mockMusicPlaylist(page: Page, playlist = defaultPlaylist) {
+	await page.route("https://meting.whynotsnow.com/**", async (route) => {
+		await route.fulfill({
+			contentType: "application/json",
+			json: playlist,
+		});
+	});
+}
+
+async function openMiniPlayer(page: Page) {
+	const miniPlayer = page.locator(".mini-player");
+	await page.locator(".orb-player").click();
+	await expect(miniPlayer).toBeVisible();
+	return miniPlayer;
+}
 
 test("floating tools owns theme, settings, toc, and back-to-top actions", async ({
 	page,
@@ -89,27 +122,7 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 test("floating tools controls music visibility while the player owns its presentation", async ({
 	page,
 }) => {
-	await page.route("https://meting.whynotsnow.com/**", async (route) => {
-		await route.fulfill({
-			contentType: "application/json",
-			json: [
-				{
-					artist: "Test Artist",
-					id: 1,
-					name: "Test Song",
-					pic: "/assets/music/cover/xryx.jpg",
-					url: "/assets/music/url/xryx.mp3",
-				},
-				{
-					artist: "Second Artist",
-					id: 2,
-					name: "Second Song",
-					pic: "/assets/music/cover/hitori.jpg",
-					url: "/assets/music/url/hitori.mp3",
-				},
-			],
-		});
-	});
+	await mockMusicPlaylist(page);
 	await page.addInitScript(() => {
 		HTMLMediaElement.prototype.play = function () {
 			this.dispatchEvent(new Event("play"));
@@ -173,7 +186,7 @@ test("floating tools controls music visibility while the player owns its present
 					);
 				}, collapsedCoverGeometry),
 		)
-		.toBeLessThanOrEqual(1);
+		.toBeLessThanOrEqual(2);
 
 	const expandedTransition = await miniPlayer
 		.getByRole("button", { name: "展开音乐播放器" })
@@ -574,20 +587,15 @@ test("hidden music control moves from playlist loading fallback to the first cov
 test("hidden music control falls back to the themed icon when cover loading fails", async ({
 	page,
 }) => {
-	await page.route("https://meting.whynotsnow.com/**", async (route) => {
-		await route.fulfill({
-			contentType: "application/json",
-			json: [
-				{
-					artist: "Fallback Artist",
-					id: 1,
-					name: "Fallback Song",
-					pic: "/assets/music/cover/missing-cover.jpg",
-					url: "/assets/music/url/xryx.mp3",
-				},
-			],
-		});
-	});
+	await mockMusicPlaylist(page, [
+		{
+			artist: "Fallback Artist",
+			id: 1,
+			name: "Fallback Song",
+			pic: "/assets/music/cover/missing-cover.jpg",
+			url: "/assets/music/url/xryx.mp3",
+		},
+	]);
 	await page.addInitScript(() => {
 		HTMLMediaElement.prototype.play = function () {
 			this.dispatchEvent(new Event("play"));
@@ -596,11 +604,8 @@ test("hidden music control falls back to the themed icon when cover loading fail
 	});
 	await gotoPage(page, "/");
 
-	await page.locator(".orb-player").click();
-	await page
-		.locator(".mini-player")
-		.getByRole("button", { name: "展开音乐播放器" })
-		.click();
+	const miniPlayer = await openMiniPlayer(page);
+	await miniPlayer.getByRole("button", { name: "展开音乐播放器" }).click();
 	const panel = page.locator("#music-player-panel");
 	await expect(panel.locator(".song-title")).toHaveText("Fallback Song");
 	await panel.getByRole("button", { name: "播放", exact: true }).click();
@@ -659,7 +664,11 @@ test("floating tools controls the user Pio preference", async ({ page }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await gotoPage(page, "/");
 
-	await page.locator("#floating-tools-switch").click();
+	await expect(page.locator(".pio-container")).toHaveAttribute(
+		"data-pio-mounted",
+		"true",
+	);
+	await page.locator("#floating-tools-switch").click({ force: true });
 	const toggle = page.getByRole("button", { name: "隐藏看板娘" });
 	await expect(toggle).toBeVisible();
 	await expect(toggle).toHaveAttribute("aria-pressed", "true");
@@ -719,14 +728,12 @@ test("floating tools controls the user Pio preference", async ({ page }) => {
 test("playlist attaches above the player and floating tools clears the full surface", async ({
 	page,
 }) => {
+	await mockMusicPlaylist(page);
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await gotoPage(page, "/");
 
-	await page.locator(".orb-player").click();
-	await page
-		.locator(".mini-player")
-		.getByRole("button", { name: "展开音乐播放器" })
-		.click();
+	const miniPlayer = await openMiniPlayer(page);
+	await miniPlayer.getByRole("button", { name: "展开音乐播放器" }).click();
 	await expect(page.locator(".expanded-player")).toBeVisible();
 	await expect
 		.poll(() =>

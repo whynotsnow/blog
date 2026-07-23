@@ -73,13 +73,13 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v4
-              with:
-                  run_install: false
             - uses: actions/setup-node@v6
               with:
                   node-version: lts/*
-                  cache: pnpm
+            - name: Enable pnpm
+              run: |
+                  corepack enable
+                  corepack prepare pnpm@10.22.0 --activate
             - run: pnpm install --frozen-lockfile
             - name: Validate Agent Workspace
               if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"workspace"')
@@ -113,13 +113,13 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v4
-              with:
-                  run_install: false
             - uses: actions/setup-node@v6
               with:
                   node-version: lts/*
-                  cache: pnpm
+            - name: Enable pnpm
+              run: |
+                  corepack enable
+                  corepack prepare pnpm@10.22.0 --activate
             - run: pnpm install --frozen-lockfile
             - name: Run all fast tests
               if: contains(needs.plan.outputs.groups, '"full"')
@@ -149,13 +149,13 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v4
-              with:
-                  run_install: false
             - uses: actions/setup-node@v6
               with:
                   node-version: lts/*
-                  cache: pnpm
+            - name: Enable pnpm
+              run: |
+                  corepack enable
+                  corepack prepare pnpm@10.22.0 --activate
             - run: pnpm install --frozen-lockfile
             - run: pnpm exec playwright install --with-deps chromium
             - name: Run full browser regression
@@ -199,13 +199,13 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v4
-              with:
-                  run_install: false
             - uses: actions/setup-node@v6
               with:
                   node-version: lts/*
-                  cache: pnpm
+            - name: Enable pnpm
+              run: |
+                  corepack enable
+                  corepack prepare pnpm@10.22.0 --activate
             - run: pnpm install --frozen-lockfile
             - name: Run complete production build
               if: contains(needs.plan.outputs.groups, '"full"')
