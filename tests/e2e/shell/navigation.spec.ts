@@ -96,6 +96,68 @@ test("fullscreen category and post pages align the main region", async ({
 		.toBeLessThanOrEqual(entryAlignmentTolerance);
 });
 
+test("direct post URLs animate to the page entry on first load", async ({
+	page,
+}) => {
+	await useStoredPreference(page, "wallpaperMode", "banner");
+	await page.setViewportSize({ width: 1024, height: 900 });
+	await page.addInitScript(() => {
+		const nativeScrollTo = window.scrollTo.bind(window);
+		const state = window as typeof window & {
+			__firstLoadEntryScrollCalls?: number[];
+		};
+		state.__firstLoadEntryScrollCalls = [];
+		window.scrollTo = ((
+			optionsOrX?: ScrollToOptions | number,
+			y?: number,
+		) => {
+			const top = typeof optionsOrX === "object" ? optionsOrX.top : y;
+			if (typeof top === "number") {
+				state.__firstLoadEntryScrollCalls?.push(top);
+			}
+
+			if (typeof optionsOrX === "object") {
+				nativeScrollTo(optionsOrX);
+				return;
+			}
+
+			nativeScrollTo(optionsOrX ?? 0, y ?? 0);
+		}) as typeof window.scrollTo;
+	});
+
+	await gotoPage(page, "/posts/markdown-tutorial/");
+
+	const pageMain = page.locator(".page-main-content");
+	await expect
+		.poll(() =>
+			pageMain.evaluate((node) =>
+				Math.abs(
+					node.getBoundingClientRect().top -
+						Number.parseFloat(
+							getComputedStyle(node).scrollMarginBlockStart,
+						),
+				),
+			),
+		)
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
+
+	const scrollCalls = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__firstLoadEntryScrollCalls?: number[];
+				}
+			).__firstLoadEntryScrollCalls ?? [],
+	);
+	expect(scrollCalls.length).toBeGreaterThan(3);
+	expect(scrollCalls[0]).toBeLessThan(scrollCalls.at(-1) ?? 0);
+	expect(
+		scrollCalls.every(
+			(value, index) => index === 0 || value >= scrollCalls[index - 1],
+		),
+	).toBe(true);
+});
+
 test("home retains banner-aware navbar behavior", async ({ page }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
 	await gotoPage(page, "/");
@@ -247,7 +309,7 @@ test("browser history realigns the category and post main regions", async ({
 			const geometry = await readEntryGeometry();
 			return Math.abs(geometry.top - geometry.clearance);
 		})
-		.toBeLessThanOrEqual(entryAlignmentTolerance);
+		.toBeLessThan(1);
 	const normalEntry = await readEntryGeometry();
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
 

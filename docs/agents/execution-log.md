@@ -170,6 +170,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Stabilized the fixed Site Notice viewport so notice rotation no longer performs post-load height writes; confirmed that the fixed notice does not change document scroll height.
 - Moved the fixed Site Notice into its own non-animated Swup replacement container so route transforms cannot change its containing block or loading position.
 - Repositioned the Site Notice as a viewport-right, single-line status card below interactive overlay layers, with safe full-width margins on Mobile.
+
+### Softened direct content-page entry scrolling
+
+- Reused the Shell-owned cancellable page-entry animation for first-load direct category/post URLs so direct article visits visibly glide from the top to the fixed content entry position instead of applying an instant scroll jump.
+- Split page-entry timing between normal Swup content links and first-load direct visits, keeping browser history on the settled instant correction path and preserving Hash, Overlay, None, and reduced-motion behavior.
 - Restored fullscreen Banner flow geometry by starting Main Content at `100dvh` and removing the transient `top` interpolation that exposed content over the Banner.
 
 ## 2026-07-15

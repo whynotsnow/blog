@@ -23,13 +23,15 @@ let navigationProgressTimer: number | undefined;
 let navigationProgressRun = 0;
 let pageEntryAnimationFrame: number | undefined;
 let pageEntryAnimationCleanup: (() => void) | undefined;
+let pageEntryAnimationExpectedScrollTop: number | undefined;
 let activeVisitIsHistory = false;
 let activeVisitUsesHeightGuard = false;
 let previousPageScrollHeight = 0;
 let heightGuardReleaseTimer: number | undefined;
 
 const NAVIGATION_PROGRESS_MIN_VISIBLE_MS = 260;
-const PAGE_ENTRY_SCROLL_DURATION_MS = 380;
+const PAGE_ENTRY_NAVIGATION_SCROLL_DURATION_MS = 620;
+const PAGE_ENTRY_INITIAL_SCROLL_DURATION_MS = 620;
 
 function getWallpaperMode(): WALLPAPER_MODE {
 	const stored = localStorage.getItem("wallpaperMode");
@@ -441,10 +443,14 @@ function cancelPageEntryAnimation() {
 	}
 	pageEntryAnimationCleanup?.();
 	pageEntryAnimationCleanup = undefined;
+	pageEntryAnimationExpectedScrollTop = undefined;
 	releasePageHeightGuard();
 }
 
-function animatePageEntry() {
+function animatePageEntry(
+	durationMs = PAGE_ENTRY_NAVIGATION_SCROLL_DURATION_MS,
+	cancelOnExternalScroll = false,
+) {
 	cancelPageEntryAnimation();
 	const mainContent = getMainContent();
 	const previousTransition = mainContent?.style.transition ?? "";
@@ -474,7 +480,18 @@ function animatePageEntry() {
 	const previousScrollBehavior = root.style.scrollBehavior;
 	root.style.scrollBehavior = "auto";
 	const startedAt = performance.now();
+	pageEntryAnimationExpectedScrollTop = cancelOnExternalScroll
+		? startScrollTop
+		: undefined;
 	const interrupt = () => cancelPageEntryAnimation();
+	const interruptOnScroll = () => {
+		if (pageEntryAnimationExpectedScrollTop === undefined) return;
+		if (
+			Math.abs(window.scrollY - pageEntryAnimationExpectedScrollTop) > 2
+		) {
+			interrupt();
+		}
+	};
 	const interruptOnKeydown = (event: KeyboardEvent) => {
 		if (
 			[
@@ -494,23 +511,30 @@ function animatePageEntry() {
 	window.addEventListener("wheel", interrupt, { passive: true });
 	window.addEventListener("touchstart", interrupt, { passive: true });
 	window.addEventListener("pointerdown", interrupt, { passive: true });
+	if (cancelOnExternalScroll) {
+		window.addEventListener("scroll", interruptOnScroll, { passive: true });
+	}
 	window.addEventListener("keydown", interruptOnKeydown);
 	pageEntryAnimationCleanup = () => {
 		root.style.scrollBehavior = previousScrollBehavior;
 		window.removeEventListener("wheel", interrupt);
 		window.removeEventListener("touchstart", interrupt);
 		window.removeEventListener("pointerdown", interrupt);
+		if (cancelOnExternalScroll) {
+			window.removeEventListener("scroll", interruptOnScroll);
+		}
 		window.removeEventListener("keydown", interruptOnKeydown);
 	};
 
 	const tick = (now: number) => {
-		const progress = Math.min(
-			1,
-			(now - startedAt) / PAGE_ENTRY_SCROLL_DURATION_MS,
-		);
+		const progress = Math.min(1, (now - startedAt) / durationMs);
 		const easedProgress = 1 - Math.pow(1 - progress, 4);
+		const nextScrollTop = startScrollTop + distance * easedProgress;
+		if (cancelOnExternalScroll) {
+			pageEntryAnimationExpectedScrollTop = nextScrollTop;
+		}
 		window.scrollTo({
-			top: startScrollTop + distance * easedProgress,
+			top: nextScrollTop,
 			behavior: "auto",
 		});
 
@@ -521,11 +545,15 @@ function animatePageEntry() {
 
 		const finalTargetScrollTop = getPageEntryTarget();
 		if (finalTargetScrollTop !== null) {
+			if (cancelOnExternalScroll) {
+				pageEntryAnimationExpectedScrollTop = finalTargetScrollTop;
+			}
 			window.scrollTo({ top: finalTargetScrollTop, behavior: "auto" });
 		}
 		pageEntryAnimationFrame = undefined;
 		pageEntryAnimationCleanup?.();
 		pageEntryAnimationCleanup = undefined;
+		pageEntryAnimationExpectedScrollTop = undefined;
 		releasePageHeightGuard();
 	};
 
@@ -660,7 +688,11 @@ function bindMainGridClient() {
 	onPageLifecycle("first-load", syncPageShell);
 	onPageLifecycle("content-replace", syncPageShell);
 	onPageLifecycle("page-view", syncPageShell);
-	onPageLifecycle("first-load", () => alignPageEntry());
+	onPageLifecycle("first-load", () => {
+		requestAnimationFrame(() =>
+			animatePageEntry(PAGE_ENTRY_INITIAL_SCROLL_DURATION_MS, true),
+		);
+	});
 	onPageLifecycle("visit-start", ({ visit }) => {
 		cancelPageEntryAnimation();
 		activeVisitIsHistory = Boolean(visit?.history?.popstate);
