@@ -175,6 +175,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 - Reused the Shell-owned cancellable page-entry animation for first-load direct category/post URLs so direct article visits visibly glide from the top to the fixed content entry position instead of applying an instant scroll jump.
 - Split page-entry timing between normal Swup content links and first-load direct visits, keeping browser history on the settled instant correction path and preserving Hash, Overlay, None, and reduced-motion behavior.
+
+### Coordinated home first-load entrance
+
+- Added a short-lived `home-initial-enter` state for direct home loads so Banner title, subtitle, waves, and the Main Content layer enter on one timeline without changing final Shell geometry.
+- Deferred the home Banner Typewriter during that initial entrance and preserved immediate settlement for reduced-motion users.
 - Restored fullscreen Banner flow geometry by starting Main Content at `100dvh` and removing the transient `top` interpolation that exposed content over the Banner.
 
 ## 2026-07-15

@@ -124,9 +124,26 @@ import { onPageLifecycle } from "@/utils/page-lifecycle";
 function initTypewriters() {
     const typewriterElements = document.querySelectorAll('.typewriter');
     typewriterElements.forEach((element) => {
-        if ((element as HTMLElement).dataset.typewriterInitialized === "true") return;
-        (element as HTMLElement).dataset.typewriterInitialized = "true";
-        new TypewriterEffect(element as HTMLElement);
+        const typewriter = element as HTMLElement;
+        if (typewriter.dataset.typewriterInitialized === "true") return;
+
+        const shouldDeferHomeBanner =
+            document.body.classList.contains("home-initial-enter") &&
+            typewriter.closest('[data-setting-target="banner-home-text"]') !== null;
+        if (shouldDeferHomeBanner) {
+            if (typewriter.dataset.typewriterDeferred === "true") return;
+            typewriter.dataset.typewriterDeferred = "true";
+            window.setTimeout(() => {
+                typewriter.dataset.typewriterDeferred = "false";
+                if (typewriter.dataset.typewriterInitialized === "true") return;
+                typewriter.dataset.typewriterInitialized = "true";
+                new TypewriterEffect(typewriter);
+            }, 620);
+            return;
+        }
+
+        typewriter.dataset.typewriterInitialized = "true";
+        new TypewriterEffect(typewriter);
     });
 }
 

@@ -32,6 +32,7 @@ let heightGuardReleaseTimer: number | undefined;
 const NAVIGATION_PROGRESS_MIN_VISIBLE_MS = 260;
 const PAGE_ENTRY_NAVIGATION_SCROLL_DURATION_MS = 620;
 const PAGE_ENTRY_INITIAL_SCROLL_DURATION_MS = 620;
+const HOME_INITIAL_ENTRANCE_DURATION_MS = 1320;
 
 function getWallpaperMode(): WALLPAPER_MODE {
 	const stored = localStorage.getItem("wallpaperMode");
@@ -337,6 +338,22 @@ function syncPageInteraction() {
 	const fixedNavbar = container?.dataset.navbarBehavior === "fixed-visible";
 	document.body.classList.toggle("navbar-fixed-visible", fixedNavbar);
 	window.initSemifullScrollDetection?.();
+}
+
+function settleHomeInitialEntrance() {
+	if (!document.body.classList.contains("home-initial-enter")) return;
+
+	const prefersReducedMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+	const settle = () => document.body.classList.remove("home-initial-enter");
+
+	if (prefersReducedMotion) {
+		settle();
+		return;
+	}
+
+	window.setTimeout(settle, HOME_INITIAL_ENTRANCE_DURATION_MS);
 }
 
 type PageEntryScrollBehavior = "instant" | "smooth";
@@ -686,6 +703,7 @@ function bindMainGridClient() {
 
 	window.applyWallpaperMode = applyWallpaperMode;
 	onPageLifecycle("first-load", syncPageShell);
+	onPageLifecycle("first-load", settleHomeInitialEntrance);
 	onPageLifecycle("content-replace", syncPageShell);
 	onPageLifecycle("page-view", syncPageShell);
 	onPageLifecycle("first-load", () => {

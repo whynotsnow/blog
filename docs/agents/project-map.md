@@ -101,6 +101,8 @@ Post detail routes remain thin: `src/pages/posts/[...slug].astro` owns static pa
 
 Route motion has one owner: `#swup-container` uses `.transition-swup-layout` for page changes. Navbar and page modules may keep meaningful feature-specific entrance effects, and post-list items keep their intentional sequence; post-detail sections must not add nested generic entrance animations. A persistent Shell progress element consumes Swup lifecycle events and guarantees brief feedback even for cached navigation. `src/utils/page-lifecycle.ts` tracks the actual global Swup instance rather than a one-time boolean so replacement instances are rebound before later history visits.
 
+Home first-load motion is a separate Banner choreography, not a page-entry scroll. SSR adds `home-initial-enter` for the home route; the Shell runtime removes it after the entrance window or immediately for reduced motion. During that state, Banner title/subtitle/waves and the Main Content layer animate only opacity/transform while final geometry remains stable, and the home Banner Typewriter waits until the entrance is underway.
+
 ## Design Layer Boundary
 
 `src/design/` owns cross-feature visual decisions. Components consume Semantic tokens and `ds-` Pattern classes; route pages must not create new global color, typography, spacing, width, radius, shadow, or Surface systems. Primitive `--color-*` tokens are Design-only. Feature-local tokens may remain beside their component but should reference Semantic tokens. Detailed rules are owned by [Design System](../developers/design-system.md).
