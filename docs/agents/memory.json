@@ -49,6 +49,16 @@
 			"playbook": "docs/agents/runtime-playbook.md#zsh-glob-expansion"
 		},
 		{
+			"id": "bash-groups-special-variable",
+			"cluster": "cli",
+			"symptoms": [
+				"GitHub Actions Bash step prints valid test plan JSON and then exits with code 1",
+				"workflow assigns to GROUPS before writing GITHUB_OUTPUT",
+				"no JSON parse or coverage error appears before Process completed with exit code 1"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#bash-groups-special-variable"
+		},
+		{
 			"id": "astro-telemetry-side-effects",
 			"cluster": "framework",
 			"symptoms": [

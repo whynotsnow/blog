@@ -36,6 +36,20 @@ Example:
 sed -n '1,220p' 'src/pages/posts/[...slug].astro'
 ```
 
+### bash-groups-special-variable
+
+Pattern:
+
+- A GitHub Actions Bash step exits with code 1 immediately after an otherwise valid JSON plan is printed.
+- The step assigns to `GROUPS`, for example `GROUPS=$(...)`, then writes a job output.
+- No JSON parse error or coverage error appears in the log, only `Process completed with exit code 1`.
+
+Use:
+
+- Do not use `GROUPS` as a shell variable name in Bash-backed workflow steps. Bash exposes `GROUPS` as a special array containing the current user's group IDs.
+- Use a neutral name such as `SELECTED_GROUPS`, `VALIDATION_GROUPS`, or `PLAN_GROUPS` before writing to `$GITHUB_OUTPUT`.
+- When diagnosing CI plan failures, distinguish the successful `cat test-plan.json` output from the later output-write step. A valid printed JSON document means the failure may be shell assignment, not malformed JSON.
+
 ### generated-font-dev-drift
 
 Pattern:

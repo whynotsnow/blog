@@ -14,6 +14,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: `zsh: no matches found` for Astro route files or glob-like paths.
 - Playbook: [zsh-glob-expansion](./runtime-playbook.md#zsh-glob-expansion)
 
+### bash-groups-special-variable
+
+- Symptom: a GitHub Actions Bash step prints a valid validation plan JSON, then exits with code 1 after assigning to `GROUPS`.
+- Playbook: [bash-groups-special-variable](./runtime-playbook.md#bash-groups-special-variable)
+
 ### pnpm-version-config-drift
 
 - Symptom: pnpm warns that `package.json#pnpm` is ignored, then reports lockfile config mismatch.

@@ -219,6 +219,13 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Replaced the invalid Astro-style `class:list` usage in the Svelte Settings Panel with a real feature class binding; this restored the viewport-bounded desktop popover and mobile bottom sheet styles.
 - Added browser contracts for initial music visibility, first playback, persistent paused controls, viewport-safe Settings geometry, panel avoidance, and local Shell icons.
 
+## 2026-07-23
+
+### Fixed validation-plan output variable collision
+
+- Renamed the GitHub Actions validation-plan shell variable from `GROUPS` to `SELECTED_GROUPS`.
+- Recorded `bash-groups-special-variable`: Bash treats `GROUPS` as a special array, so assigning to it can make a workflow step exit with code 1 after printing a valid JSON plan.
+
 ### Refined hidden Music Player feedback
 
 - Made the hidden control use the first loaded playlist cover and reserve its Theme-aware gradient icon treatment for missing playlists or failed cover requests.

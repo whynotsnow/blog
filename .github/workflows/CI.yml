@@ -55,8 +55,8 @@ jobs:
                       ;;
                   esac
                   cat test-plan.json
-                  GROUPS=$(node -e 'const fs=require("node:fs");const plan=JSON.parse(fs.readFileSync("test-plan.json","utf8"));process.stdout.write(JSON.stringify(plan.groups))')
-                  echo "groups=$GROUPS" >> "$GITHUB_OUTPUT"
+                  SELECTED_GROUPS=$(node -e 'const fs=require("node:fs");const plan=JSON.parse(fs.readFileSync("test-plan.json","utf8"));process.stdout.write(JSON.stringify(plan.groups))')
+                  echo "groups=$SELECTED_GROUPS" >> "$GITHUB_OUTPUT"
 
     quality:
         name: Quality Checks
