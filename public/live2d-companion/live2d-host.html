@@ -165,6 +165,9 @@
 			var currentModelIndex = 0;
 			var modelStorageKey = "live2d-companion-model-index";
 			var expressionPanelOpen = false;
+			var pointerInsideCompanion = false;
+			var idlePlaybackTimer = null;
+			var lastIdlePlaybackExpression = "";
 			var maxExpressionActions = 5;
 			var maxExpressionPanelItems = 24;
 			var nativeFetch = window.fetch.bind(window);
@@ -476,6 +479,14 @@
 				return profile.defaultParameters || {};
 			}
 
+			function getActiveIdlePlayback() {
+				var globalPlayback =
+					(lastInitConfig && lastInitConfig._idlePlayback) || {};
+				var modelPlayback =
+					getActiveModelProfile(lastInitConfig).idlePlayback || {};
+				return Object.assign({}, globalPlayback, modelPlayback);
+			}
+
 			function clampPositiveInteger(value, fallback, ceiling) {
 				var number = Number(value);
 				if (!Number.isFinite(number) || number <= 0) return fallback;
@@ -513,6 +524,112 @@
 				});
 			}
 
+			function uniqueNames(names) {
+				var seen = {};
+				return names.filter(function (name) {
+					if (!name || seen[name]) return false;
+					seen[name] = true;
+					return true;
+				});
+			}
+
+			function getIdlePlaybackPool() {
+				var settings = getActiveIdlePlayback();
+				if (settings.enable !== true) return [];
+				var available = getAvailableExpressions();
+				if (!available.length) return [];
+
+				var configuredExpressions = Array.isArray(settings.expressions)
+					? settings.expressions
+					: [];
+				var menu = getActiveExpressionMenu();
+				var names = [];
+
+				if (configuredExpressions.length) {
+					names = configuredExpressions;
+				} else {
+					if (settings.includeActions !== false) {
+						names = names.concat(
+							(menu.shortcuts || [])
+								.slice(0, menu.maxActions)
+								.map(function (item) {
+									return item.name;
+								}),
+						);
+					}
+					if (settings.includePanel === true && menu.enablePanel) {
+						names = names.concat(
+							available.slice(0, menu.maxPanelItems),
+						);
+					}
+				}
+
+				return uniqueNames(names).filter(function (name) {
+					return available.indexOf(name) !== -1;
+				});
+			}
+
+			function getIdlePlaybackInterval() {
+				var settings = getActiveIdlePlayback();
+				var interval = Number(settings.interval);
+				if (!Number.isFinite(interval) || interval < 10000) {
+					return 45000;
+				}
+				return interval;
+			}
+
+			function isCompanionInteractionActive() {
+				return pointerInsideCompanion || expressionPanelOpen;
+			}
+
+			function pickIdlePlaybackExpression(pool) {
+				if (pool.length === 1) return pool[0];
+				var candidates = pool.filter(function (name) {
+					return name !== lastIdlePlaybackExpression;
+				});
+				var targetPool = candidates.length ? candidates : pool;
+				return targetPool[
+					Math.floor(Math.random() * targetPool.length)
+				];
+			}
+
+			function stopIdlePlayback() {
+				if (idlePlaybackTimer) {
+					clearTimeout(idlePlaybackTimer);
+					idlePlaybackTimer = null;
+				}
+			}
+
+			function scheduleIdlePlayback() {
+				stopIdlePlayback();
+				var pool = getIdlePlaybackPool();
+				if (!pool.length) return;
+				idlePlaybackTimer = setTimeout(function () {
+					var nextPool = getIdlePlaybackPool();
+					if (
+						nextPool.length &&
+						!isCompanionInteractionActive() &&
+						widgetInstance &&
+						widgetInstance.l2d
+					) {
+						var expression = pickIdlePlaybackExpression(nextPool);
+						setCompanionExpression(expression, {
+							resetIdleTimer: false,
+						});
+						lastIdlePlaybackExpression = expression;
+					}
+					scheduleIdlePlayback();
+				}, getIdlePlaybackInterval());
+			}
+
+			document.addEventListener("pointerenter", function () {
+				pointerInsideCompanion = true;
+			});
+
+			document.addEventListener("pointerleave", function () {
+				pointerInsideCompanion = false;
+			});
+
 			function getAvailableExpressions() {
 				if (!widgetInstance || !widgetInstance.l2d) return [];
 				return widgetInstance.l2d.getExpressions() || [];
@@ -539,6 +656,7 @@
 				var models = getModelList(lastInitConfig);
 				if (models.length <= 1) return;
 				currentModelIndex = (currentModelIndex + 1) % models.length;
+				lastIdlePlaybackExpression = "";
 				saveModelIndex(currentModelIndex);
 				hideExpressionPanel();
 				if (widgetInstance && widgetInstance.switchModel) {
@@ -548,6 +666,7 @@
 					);
 					mountCompanionControls();
 					postAvailableExpressions();
+					scheduleIdlePlayback();
 					notifyLoaded();
 				}
 			}
@@ -743,6 +862,7 @@
 
 			async function destroyWidget() {
 				if (!widgetInstance) return;
+				stopIdlePlayback();
 				var instance = widgetInstance;
 				widgetInstance = null;
 				try {
@@ -771,9 +891,13 @@
 				}, 3500);
 			}
 
-			function setCompanionExpression(name) {
+			function setCompanionExpression(name, options) {
 				if (!name || !widgetInstance || !widgetInstance.l2d) return;
 				widgetInstance.l2d.setExpression(String(name));
+				if (!options || options.resetIdleTimer !== false) {
+					lastIdlePlaybackExpression = String(name);
+					scheduleIdlePlayback();
+				}
 			}
 
 			function setCompanionParameters(parameters) {
@@ -815,6 +939,7 @@
 				delete widgetConfig._modelProfiles;
 				delete widgetConfig._modelSwitch;
 				delete widgetConfig._expressionMenu;
+				delete widgetConfig._idlePlayback;
 				return widgetConfig;
 			}
 
@@ -834,6 +959,7 @@
 					mountCompanionControls();
 					await applyDefaultParametersBeforeReveal(config);
 					postAvailableExpressions();
+					scheduleIdlePlayback();
 					notifyLoaded();
 					return;
 				}
@@ -886,6 +1012,7 @@
 									function () {
 										mountCompanionControls();
 										postAvailableExpressions();
+										scheduleIdlePlayback();
 										notifyLoaded();
 									},
 								);
@@ -897,6 +1024,7 @@
 						function () {
 							mountCompanionControls();
 							postAvailableExpressions();
+							scheduleIdlePlayback();
 							notifyLoaded();
 						},
 					);

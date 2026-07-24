@@ -370,6 +370,14 @@ export type Live2DExpressionMenuConfig = {
 	}>;
 };
 
+export type Live2DIdlePlaybackConfig = {
+	enable?: boolean; // 是否启用空闲随机播放
+	interval?: number; // 每轮随机播放间隔（ms）
+	includeActions?: boolean; // 是否把 action shortcut 纳入随机池
+	includePanel?: boolean; // 是否把完整表情面板中的表情纳入随机池
+	expressions?: string[]; // 显式指定随机播放的 expression 名称；配置后优先使用
+};
+
 export type Live2DCompanionModelConfig = {
 	path: string; // 模型文件路径
 	label?: string; // 模型切换菜单中的名称
@@ -378,6 +386,7 @@ export type Live2DCompanionModelConfig = {
 	offset?: [number, number]; // 覆盖全局模型绘制偏移 [x, y]
 	defaultParameters?: Record<string, number>; // 当前模型加载完成后的默认参数
 	expressionMenu?: Live2DExpressionMenuConfig; // 当前模型的 action 与表情轮盘配置
+	idlePlayback?: Live2DIdlePlaybackConfig; // 当前模型空闲时随机播放的表情或动作配置
 };
 
 export type Live2DCompanionConfig = {
@@ -398,6 +407,7 @@ export type Live2DCompanionConfig = {
 		label?: string; // 模型切换按钮文案
 	};
 	expressionMenu?: Live2DExpressionMenuConfig;
+	idlePlayback?: Live2DIdlePlaybackConfig;
 	ui?: {
 		themeMode?: "site" | "custom"; // UI 主题来源
 		messageOffset?: {

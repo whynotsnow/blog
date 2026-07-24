@@ -31,6 +31,14 @@
 		}>;
 	};
 
+	type Live2DIdlePlaybackConfig = {
+		enable?: boolean;
+		interval?: number;
+		includeActions?: boolean;
+		includePanel?: boolean;
+		expressions?: string[];
+	};
+
 	type Live2DWidgetConfig = {
 		model: Live2DCompanionModelConfig | Live2DCompanionModelConfig[];
 		position: "bottom-left" | "bottom-right";
@@ -53,12 +61,14 @@
 			avatar?: string;
 			defaultParameters?: Record<string, number>;
 			expressionMenu?: Live2DExpressionMenuConfig;
+			idlePlayback?: Live2DIdlePlaybackConfig;
 		}>;
 		_modelSwitch?: {
 			icon?: string;
 			label?: string;
 		};
 		_expressionMenu?: Live2DExpressionMenuConfig;
+		_idlePlayback?: Live2DIdlePlaybackConfig;
 		ui?: {
 			themeMode?: "site" | "custom";
 			messageOffset?: {
@@ -148,6 +158,9 @@
 			...(model.expressionMenu && {
 				expressionMenu: model.expressionMenu,
 			}),
+			...(model.idlePlayback && {
+				idlePlayback: model.idlePlayback,
+			}),
 			...((model.defaultParameters ??
 				live2dCompanionConfig.defaultParameters) && {
 				defaultParameters:
@@ -198,6 +211,9 @@
 			}),
 			...(live2dCompanionConfig.expressionMenu && {
 				_expressionMenu: live2dCompanionConfig.expressionMenu,
+			}),
+			...(live2dCompanionConfig.idlePlayback && {
+				_idlePlayback: live2dCompanionConfig.idlePlayback,
 			}),
 		};
 

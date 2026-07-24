@@ -40,6 +40,12 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 					},
 				],
 			},
+			idlePlayback: {
+				enable: true,
+				interval: 12000,
+				includeActions: true,
+				includePanel: true,
+			},
 		},
 		{
 			path: "/live2d-companion/models/NOIR/noir.model3.json",
@@ -70,6 +76,12 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 						icon: "material-symbols:wb-sunny-outline-rounded",
 					},
 				],
+			},
+			idlePlayback: {
+				enable: true,
+				interval: 14000,
+				includeActions: true,
+				includePanel: false,
 			},
 		},
 	], // 默认模型路径
@@ -119,6 +131,12 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 			tears: "眼泪",
 			white: "变白",
 		},
+	},
+	idlePlayback: {
+		enable: false,
+		interval: 12000,
+		includeActions: true,
+		includePanel: false,
 	},
 	ui: {
 		themeMode: "site", // 使用站点语义色同步 iframe 内 UI
