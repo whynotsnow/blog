@@ -785,6 +785,7 @@ test("floating tools controls the Live2D companion preference", async ({
 		.getByRole("button", { name: "收起看板娘" })
 		.evaluate((element) => {
 			const buttonRect = element.getBoundingClientRect();
+			const buttonStyle = getComputedStyle(element);
 			const canvas = document.querySelector("canvas");
 			const root = canvas?.parentElement;
 			const rootDivs = root
@@ -795,6 +796,8 @@ test("floating tools controls the Live2D companion preference", async ({
 			return {
 				buttonHeight: buttonRect.height,
 				buttonWidth: buttonRect.width,
+				borderWidth: buttonStyle.borderTopWidth,
+				backgroundColor: buttonStyle.backgroundColor,
 				iconName: element.getAttribute("data-local-icon"),
 				isInWidgetMenu: rootDivs[1] === element.parentElement,
 				menuChildCount: element.parentElement?.children.length ?? 0,
@@ -807,17 +810,43 @@ test("floating tools controls the Live2D companion preference", async ({
 	expect(collapseButtonGeometry.iconName).toBe(
 		"material-symbols:visibility-off-rounded",
 	);
+	expect(collapseButtonGeometry.borderWidth).toBe("1px");
+	expect(collapseButtonGeometry.backgroundColor).not.toContain(
+		"96, 165, 250",
+	);
 	expect(collapseButtonGeometry.isInWidgetMenu).toBe(true);
 	expect(collapseButtonGeometry.menuChildCount).toBeGreaterThan(0);
 	expect(collapseButtonGeometry.svgCount).toBe(1);
 	expect(collapseButtonGeometry.text).toBe("");
+	const widgetTipChrome = await page
+		.frameLocator("#l2d-iframe")
+		.locator(".live2d-companion-widget-tip")
+		.first()
+		.evaluate((element) => {
+			const style = getComputedStyle(element);
+			const rgb = style.backgroundColor.match(/\d+(\.\d+)?/g) ?? [];
+			const [red = 0, green = 0, blue = 0] = rgb.map(Number);
+			return {
+				backgroundColor: style.backgroundColor,
+				isNeutralBackground:
+					Math.abs(red - green) <= 8 && Math.abs(green - blue) <= 8,
+				maxWidth: style.maxWidth,
+				textAlign: style.textAlign,
+				whiteSpace: style.whiteSpace,
+			};
+		});
+	expect(widgetTipChrome.backgroundColor).not.toContain("96, 165, 250");
+	expect(widgetTipChrome.isNeutralBackground).toBe(true);
+	expect(widgetTipChrome.whiteSpace).toBe("normal");
+	expect(widgetTipChrome.textAlign).toBe("left");
+	expect(widgetTipChrome.maxWidth).not.toBe("200px");
 	await page.evaluate(() => {
 		window.dispatchEvent(
 			new CustomEvent("live2d-companion-command", {
 				detail: {
 					command: {
 						type: "message",
-						text: "组件交互测试",
+						text: "组件交互测试：这是一段用于验证长文本换行和高度限制的消息内容，应该在气泡内部自然换行，而不是继续使用蓝色背景或把 iframe 撑得过高。",
 					},
 				},
 			}),
@@ -825,7 +854,36 @@ test("floating tools controls the Live2D companion preference", async ({
 	});
 	await expect(
 		page.frameLocator("#l2d-iframe").locator("#live2d-companion-message"),
-	).toHaveText("组件交互测试");
+	).toContainText("组件交互测试");
+	const messageChrome = await page
+		.frameLocator("#l2d-iframe")
+		.locator("#live2d-companion-message")
+		.evaluate((element) => {
+			const style = getComputedStyle(element);
+			const rgb = style.backgroundColor.match(/\d+(\.\d+)?/g) ?? [];
+			const [red = 0, green = 0, blue = 0] = rgb.map(Number);
+			return {
+				backgroundColor: style.backgroundColor,
+				borderWidth: style.borderTopWidth,
+				height: element.getBoundingClientRect().height,
+				isNeutralBackground:
+					Math.abs(red - green) <= 8 && Math.abs(green - blue) <= 8,
+				overflowY: style.overflowY,
+				textAlign: style.textAlign,
+				top: style.top,
+				whiteSpace: style.whiteSpace,
+				width: element.getBoundingClientRect().width,
+			};
+		});
+	expect(messageChrome.top).toBe("32px");
+	expect(messageChrome.borderWidth).toBe("1px");
+	expect(messageChrome.backgroundColor).not.toContain("96, 165, 250");
+	expect(messageChrome.isNeutralBackground).toBe(true);
+	expect(messageChrome.textAlign).toBe("left");
+	expect(messageChrome.whiteSpace).toBe("normal");
+	expect(messageChrome.overflowY).toBe("auto");
+	expect(messageChrome.width).toBeLessThanOrEqual(256);
+	expect(messageChrome.height).toBeLessThanOrEqual(108);
 
 	await page.locator("#l2d-iframe").evaluate((iframe) => {
 		const frame = iframe as HTMLIFrameElement;

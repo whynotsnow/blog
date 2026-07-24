@@ -11,6 +11,13 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 	mode: "draggable", // 默认为可拖拽模式
 	hiddenOnMobile: true, // 默认在移动设备上隐藏
 	hideAboutMenu: false, // 是否隐藏内置 About 菜单按钮
+	ui: {
+		themeMode: "site", // 使用站点语义色同步 iframe 内 UI
+		messageOffset: { top: 32 }, // 只调整壳层气泡，不依赖具体模型
+		collapseIcon: "material-symbols:visibility-off-rounded", // 使用本地图标
+		collapseLabel: "收起看板娘",
+		hideWidgetStatusPanel: true,
+	},
 	dialog: {
 		welcome: "欢迎来到 Snow 的博客！希望你能找到有用的内容～", // 欢迎词
 		touch: [

@@ -24,8 +24,18 @@
 			width: number;
 			height: number;
 		};
+		theme?: Record<string, string>;
 		transitionDuration: number;
 		transitionType: "slide";
+		ui?: {
+			themeMode?: "site" | "custom";
+			messageOffset?: {
+				top?: number;
+			};
+			collapseIcon?: string;
+			collapseLabel?: string;
+			hideWidgetStatusPanel?: boolean;
+		};
 		_hideAbout: boolean;
 		menus?: {
 			items: Array<{
@@ -45,6 +55,7 @@
 	let pendingInit: number | undefined;
 	let pendingFrameMount: number | undefined;
 	let pendingCollapse: number | undefined;
+	let themeObserver: MutationObserver | undefined;
 	let disposed = false;
 
 	function normalizeMessages(value?: string | string[]) {
@@ -111,6 +122,21 @@
 			},
 			transitionDuration: 0,
 			transitionType: "slide",
+			ui: {
+				themeMode: live2dCompanionConfig.ui?.themeMode ?? "site",
+				messageOffset: {
+					top: live2dCompanionConfig.ui?.messageOffset?.top ?? 32,
+				},
+				collapseIcon:
+					live2dCompanionConfig.ui?.collapseIcon ??
+					"material-symbols:visibility-off-rounded",
+				collapseLabel:
+					live2dCompanionConfig.ui?.collapseLabel ??
+					live2dCompanionConfig.dialog?.close ??
+					"Collapse companion",
+				hideWidgetStatusPanel:
+					live2dCompanionConfig.ui?.hideWidgetStatusPanel ?? true,
+			},
 			_hideAbout: live2dCompanionConfig.hideAboutMenu ?? true,
 		};
 
@@ -152,9 +178,41 @@
 		iframeEl.contentWindow.postMessage(message, "*");
 	}
 
+	function readThemeTokens() {
+		if (live2dCompanionConfig.ui?.themeMode === "custom") return {};
+		const styles = window.getComputedStyle(document.documentElement);
+		const read = (name: string) => styles.getPropertyValue(name).trim();
+		const isDark = document.documentElement.classList.contains("dark");
+		return {
+			accent: read("--accent"),
+			border: read("--border-default"),
+			controlSurface: isDark
+				? "rgb(30 30 30 / 86%)"
+				: "rgb(255 255 255 / 88%)",
+			messageSurface: isDark
+				? "rgb(24 24 24 / 88%)"
+				: "rgb(255 255 255 / 90%)",
+			shadow: read("--shadow-raised"),
+			text: read("--text-primary"),
+		};
+	}
+
+	function postTheme() {
+		postToFrame({
+			type: "live2d-companion-theme",
+			theme: readThemeTokens(),
+		});
+	}
+
 	function postInit() {
 		if (!iframeEl?.contentWindow) return;
-		postToFrame({ type: "l2d-init", config: widgetConfig });
+		postToFrame({
+			type: "l2d-init",
+			config: {
+				...widgetConfig,
+				theme: readThemeTokens(),
+			},
+		});
 	}
 
 	function scheduleInit() {
@@ -273,6 +331,11 @@
 		collapsed = getLive2DCompanionCollapsed(false);
 		window.addEventListener("message", handleMessage);
 		window.addEventListener(LIVE2D_COMPANION_COMMAND_EVENT, handleCommand);
+		themeObserver = new MutationObserver(postTheme);
+		themeObserver.observe(document.documentElement, {
+			attributeFilter: ["class", "data-theme", "style"],
+			attributes: true,
+		});
 		if (document.readyState === "complete") {
 			queueFrameMount();
 		} else {
@@ -291,6 +354,8 @@
 			);
 			window.removeEventListener("load", queueFrameMount);
 			iframeEl?.removeEventListener("load", scheduleInit);
+			themeObserver?.disconnect();
+			themeObserver = undefined;
 		};
 	});
 
@@ -299,6 +364,7 @@
 		window.clearTimeout(pendingInit);
 		window.clearTimeout(pendingFrameMount);
 		window.clearTimeout(pendingCollapse);
+		themeObserver?.disconnect();
 	});
 </script>
 

@@ -368,6 +368,15 @@ export type Live2DCompanionConfig = {
 	mode?: "static" | "fixed" | "draggable"; // 展现模式
 	hiddenOnMobile?: boolean; // 是否在移动设备上隐藏
 	hideAboutMenu?: boolean; // 是否隐藏内置 About 菜单按钮
+	ui?: {
+		themeMode?: "site" | "custom"; // UI 主题来源
+		messageOffset?: {
+			top?: number; // 消息气泡距离 iframe 顶部的偏移
+		};
+		collapseIcon?: string; // 本地图标名称
+		collapseLabel?: string; // 收起按钮无障碍文案
+		hideWidgetStatusPanel?: boolean; // 是否隐藏 widget 自带加载/休息侧栏
+	};
 	dialog?: {
 		welcome?: string | string[]; // 欢迎词
 		touch?: string | string[]; // 触摸提示

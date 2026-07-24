@@ -2,6 +2,16 @@
 <html>
 	<head>
 		<style>
+			:root {
+				--live2d-companion-control-surface: rgb(255 255 255 / 88%);
+				--live2d-companion-message-surface: rgb(255 255 255 / 90%);
+				--live2d-companion-surface-hover: rgb(255 255 255 / 96%);
+				--live2d-companion-text: rgba(24, 24, 24, 0.9);
+				--live2d-companion-border: rgba(24, 24, 24, 0.1);
+				--live2d-companion-accent: rgba(120, 120, 120, 0.9);
+				--live2d-companion-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+				--live2d-companion-message-top: 32px;
+			}
 			* {
 				margin: 0;
 				padding: 0;
@@ -15,33 +25,71 @@
 			}
 			.live2d-companion-message {
 				position: absolute;
-				inset-inline: 12px;
-				top: 32px;
+				left: 50%;
+				top: var(--live2d-companion-message-top);
 				z-index: 10000;
 				box-sizing: border-box;
+				width: max-content;
 				max-width: calc(100% - 24px);
+				max-height: min(108px, calc(100% - 48px));
+				overflow-y: auto;
 				padding: 8px 12px;
+				border: 1px solid var(--live2d-companion-border);
 				border-radius: 8px;
-				background: rgba(54, 54, 54, 0.78);
-				color: rgba(255, 255, 255, 0.96);
+				background: var(--live2d-companion-message-surface);
+				box-shadow: var(--live2d-companion-shadow);
+				color: var(--live2d-companion-text);
 				font:
 					13px/1.5 system-ui,
 					-apple-system,
 					BlinkMacSystemFont,
 					"Segoe UI",
 					sans-serif;
-				text-align: center;
-				word-break: break-word;
+				text-align: left;
 				pointer-events: none;
 				opacity: 0;
-				transform: translateY(6px);
+				transform: translate(-50%, 6px);
+				backdrop-filter: blur(12px);
 				transition:
 					opacity 0.18s ease,
 					transform 0.18s ease;
 			}
+			.live2d-companion-message,
+			.live2d-companion-widget-tip {
+				overflow-wrap: anywhere;
+				hyphens: auto;
+			}
 			.live2d-companion-message.is-visible {
 				opacity: 1;
-				transform: translateY(0);
+				transform: translate(-50%, 0);
+			}
+			.live2d-companion-widget-tip {
+				box-sizing: border-box !important;
+				width: max-content !important;
+				max-width: min(232px, calc(100vw - 32px)) !important;
+				padding: 8px 12px !important;
+				border: 1px solid var(--live2d-companion-border) !important;
+				border-radius: 8px !important;
+				background: var(--live2d-companion-message-surface) !important;
+				box-shadow: var(--live2d-companion-shadow) !important;
+				color: var(--live2d-companion-text) !important;
+				font:
+					13px/1.5 system-ui,
+					-apple-system,
+					BlinkMacSystemFont,
+					"Segoe UI",
+					sans-serif !important;
+				text-align: left !important;
+				white-space: normal !important;
+				backdrop-filter: blur(12px);
+			}
+			.live2d-companion-widget-tip span {
+				display: block;
+			}
+			.live2d-companion-widget-tip-caret {
+				border-top-color: var(
+					--live2d-companion-message-surface
+				) !important;
 			}
 			.live2d-companion-collapse {
 				display: flex;
@@ -50,10 +98,11 @@
 				align-items: center;
 				justify-content: center;
 				padding: 0;
-				border: 0;
+				border: 1px solid var(--live2d-companion-border);
 				border-radius: 999px;
-				background: rgba(96, 165, 250, 0.9);
-				color: rgba(255, 255, 255, 0.88);
+				background: var(--live2d-companion-control-surface);
+				box-shadow: var(--live2d-companion-shadow);
+				color: var(--live2d-companion-text);
 				font:
 					700 16px/1 system-ui,
 					-apple-system,
@@ -61,8 +110,13 @@
 					"Segoe UI",
 					sans-serif;
 				cursor: pointer;
-				transition: color 0.15s ease;
 				flex-shrink: 0;
+				backdrop-filter: blur(12px);
+				transition:
+					background 0.15s ease,
+					box-shadow 0.15s ease,
+					color 0.15s ease,
+					transform 0.15s ease;
 			}
 			.live2d-companion-collapse svg {
 				width: 1.05rem;
@@ -70,7 +124,17 @@
 				pointer-events: none;
 			}
 			.live2d-companion-collapse:hover {
-				color: rgb(255, 255, 255);
+				background: var(--live2d-companion-surface-hover);
+				box-shadow:
+					var(--live2d-companion-shadow),
+					0 0 0 3px
+						color-mix(
+							in srgb,
+							var(--live2d-companion-accent) 12%,
+							transparent
+						);
+				color: var(--live2d-companion-accent);
+				transform: translateY(-1px);
 			}
 		</style>
 	</head>
@@ -83,6 +147,14 @@
 			var lastContentHeight = 500;
 			var messageTimer = null;
 			var widgetUiObserver = null;
+			var live2dCompanionUi = {};
+
+			var localIcons = {
+				"material-symbols:visibility-off-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="m19.1 21.9l-3.5-3.45q-.875.275-1.775.413T12 19q-3.35 0-6.125-1.8t-4.35-4.75q-.125-.225-.187-.462t-.063-.488t.063-.488t.187-.462q.55-.975 1.175-1.9T4.15 7L2.075 4.9Q1.8 4.625 1.8 4.213t.3-.713q.275-.275.7-.275t.7.275l17 17q.275.275.288.688t-.288.712q-.275.275-.7.275t-.7-.275M12 16q.275 0 .525-.025t.5-.1l-5.4-5.4q-.075.25-.1.5T7.5 11.5q0 1.875 1.313 3.188T12 16m0-12q3.35 0 6.138 1.813t4.362 4.762q.125.2.188.438t.062.487t-.05.488t-.175.437q-.475.925-1.062 1.75t-1.313 1.55q-.35.35-.825.325t-.825-.375l-2-2q-.175-.175-.225-.413t.025-.487q.1-.325.15-.625t.05-.65q0-1.875-1.312-3.187T12 7q-.35 0-.65.05t-.625.15q-.25.075-.5.025T9.8 7l-.825-.825q-.475-.475-.312-1.1t.787-.8q.625-.125 1.263-.2T12 4m1.975 5.65q.275.325.462.713t.238.812q.025.2-.15.275t-.325-.075l-2.05-2.05Q12 9.175 12.088 9t.287-.175q.475.05.875.263t.725.562"/></svg>',
+				"material-symbols:close-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 13.4l-4.9 4.9q-.275.275-.7.275t-.7-.275q-.275-.275-.275-.7t.275-.7l4.9-4.9l-4.9-4.9q-.275-.275-.275-.7t.275-.7q.275-.275.7-.275t.7.275l4.9 4.9l4.9-4.9q.275-.275.7-.275t.7.275q.275.275.275.7t-.275.7L13.4 12l4.9 4.9q.275.275.275.7t-.275.7q-.275.275-.7.275t-.7-.275z"/></svg>',
+			};
 
 			var menuActions = {
 				home: function () {
@@ -98,6 +170,93 @@
 					);
 				},
 			};
+
+			function getLocalIcon(name) {
+				return (
+					localIcons[name] ||
+					localIcons["material-symbols:visibility-off-rounded"]
+				);
+			}
+
+			function applyTheme(theme) {
+				if (!theme) return;
+				var root = document.documentElement;
+				if (theme.surface) {
+					root.style.setProperty(
+						"--live2d-companion-surface-hover",
+						theme.surface,
+					);
+				}
+				if (theme.controlSurface) {
+					root.style.setProperty(
+						"--live2d-companion-control-surface",
+						theme.controlSurface,
+					);
+					root.style.setProperty(
+						"--live2d-companion-surface-hover",
+						theme.controlSurface,
+					);
+				}
+				if (theme.messageSurface) {
+					root.style.setProperty(
+						"--live2d-companion-message-surface",
+						theme.messageSurface,
+					);
+				}
+				if (theme.text) {
+					root.style.setProperty(
+						"--live2d-companion-text",
+						theme.text,
+					);
+				}
+				if (theme.accent) {
+					root.style.setProperty(
+						"--live2d-companion-accent",
+						theme.accent,
+					);
+				}
+				if (theme.border) {
+					root.style.setProperty(
+						"--live2d-companion-border",
+						theme.border,
+					);
+				}
+				if (theme.shadow) {
+					root.style.setProperty(
+						"--live2d-companion-shadow",
+						theme.shadow,
+					);
+				}
+			}
+
+			function configureCollapseButton(button) {
+				var iconName =
+					live2dCompanionUi.collapseIcon ||
+					"material-symbols:visibility-off-rounded";
+				var label =
+					live2dCompanionUi.collapseLabel || "Collapse companion";
+				button.title = label;
+				button.setAttribute("aria-label", label);
+				button.setAttribute("data-local-icon", iconName);
+				button.innerHTML = getLocalIcon(iconName);
+			}
+
+			function applyUi(ui) {
+				live2dCompanionUi = ui || {};
+				var top =
+					live2dCompanionUi.messageOffset &&
+					live2dCompanionUi.messageOffset.top;
+				if (typeof top === "number") {
+					document.documentElement.style.setProperty(
+						"--live2d-companion-message-top",
+						top + "px",
+					);
+				}
+				var button = document.getElementById(
+					"live2d-companion-collapse",
+				);
+				if (button) configureCollapseButton(button);
+			}
 
 			function notifyLoaded() {
 				var maxBottom = 0;
@@ -132,6 +291,7 @@
 			}
 
 			function hideWidgetStatusPanel() {
+				if (live2dCompanionUi.hideWidgetStatusPanel === false) return;
 				Array.prototype.forEach.call(
 					document.body.children,
 					function (el) {
@@ -157,13 +317,57 @@
 
 			function observeWidgetUi() {
 				hideWidgetStatusPanel();
+				tuneWidgetTips();
 				if (widgetUiObserver) return;
-				widgetUiObserver = new MutationObserver(hideWidgetStatusPanel);
+				widgetUiObserver = new MutationObserver(function () {
+					hideWidgetStatusPanel();
+					tuneWidgetTips();
+				});
 				widgetUiObserver.observe(document.body, {
 					childList: true,
 					subtree: true,
 					characterData: true,
 				});
+			}
+
+			function tuneWidgetTips() {
+				var canvas = document.querySelector("canvas");
+				var root = canvas && canvas.parentElement;
+				if (!root) return;
+				Array.prototype.forEach.call(
+					root.querySelectorAll("div"),
+					function (el) {
+						if (
+							el.id === "live2d-companion-message" ||
+							el.id === "live2d-companion-collapse"
+						) {
+							return;
+						}
+						var style = window.getComputedStyle(el);
+						var isTipBubble =
+							style.pointerEvents === "none" &&
+							style.position === "relative" &&
+							(style.whiteSpace === "nowrap" ||
+								style.maxWidth === "200px");
+						if (!isTipBubble) return;
+						el.classList.add("live2d-companion-widget-tip");
+						Array.prototype.forEach.call(
+							el.children,
+							function (child) {
+								var childStyle = window.getComputedStyle(child);
+								if (
+									childStyle.position === "absolute" &&
+									childStyle.width === "0px" &&
+									childStyle.height === "0px"
+								) {
+									child.classList.add(
+										"live2d-companion-widget-tip-caret",
+									);
+								}
+							},
+						);
+					},
+				);
 			}
 
 			function getWidgetMenu() {
@@ -200,20 +404,14 @@
 					if (existing.parentElement !== menu) {
 						menu.appendChild(existing);
 					}
+					configureCollapseButton(existing);
 					return;
 				}
 				var button = document.createElement("button");
 				button.id = "live2d-companion-collapse";
 				button.className = "live2d-companion-collapse";
 				button.type = "button";
-				button.title = "收起看板娘";
-				button.setAttribute("aria-label", "收起看板娘");
-				button.setAttribute(
-					"data-local-icon",
-					"material-symbols:visibility-off-rounded",
-				);
-				button.innerHTML =
-					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="m19.1 21.9l-3.5-3.45q-.875.275-1.775.413T12 19q-3.35 0-6.125-1.8t-4.35-4.75q-.125-.225-.187-.462t-.063-.488t.063-.488t.187-.462q.55-.975 1.175-1.9T4.15 7L2.075 4.9Q1.8 4.625 1.8 4.213t.3-.713q.275-.275.7-.275t.7.275l17 17q.275.275.288.688t-.288.712q-.275.275-.7.275t-.7-.275M12 16q.275 0 .525-.025t.5-.1l-5.4-5.4q-.075.25-.1.5T7.5 11.5q0 1.875 1.313 3.188T12 16m0-12q3.35 0 6.138 1.813t4.362 4.762q.125.2.188.438t.062.487t-.05.488t-.175.437q-.475.925-1.062 1.75t-1.313 1.55q-.35.35-.825.325t-.825-.375l-2-2q-.175-.175-.225-.413t.025-.487q.1-.325.15-.625t.05-.65q0-1.875-1.312-3.187T12 7q-.35 0-.65.05t-.625.15q-.25.075-.5.025T9.8 7l-.825-.825q-.475-.475-.312-1.1t.787-.8q.625-.125 1.263-.2T12 4m1.975 5.65q.275.325.462.713t.238.812q.025.2-.15.275t-.325-.075l-2.05-2.05Q12 9.175 12.088 9t.287-.175q.475.05.875.263t.725.562"/></svg>';
+				configureCollapseButton(button);
 				button.addEventListener("click", function () {
 					parent.postMessage(
 						{ type: "l2d-action", action: "collapse" },
@@ -253,6 +451,11 @@
 			}
 
 			window.addEventListener("message", function (e) {
+				if (e.data.type === "live2d-companion-theme") {
+					applyTheme(e.data.theme);
+					return;
+				}
+
 				if (e.data.type === "live2d-companion-command") {
 					var command = e.data.command;
 					if (!command) return;
@@ -264,7 +467,12 @@
 
 				if (e.data.type !== "l2d-init") return;
 				var config = e.data.config;
-				var configKey = JSON.stringify(config);
+				applyUi(config.ui);
+				applyTheme(config.theme);
+				var widgetConfig = Object.assign({}, config);
+				delete widgetConfig.ui;
+				delete widgetConfig.theme;
+				var configKey = JSON.stringify(widgetConfig);
 
 				if (widgetInstance && activeConfigKey === configKey) {
 					observeWidgetUi();
@@ -282,8 +490,8 @@
 					destroyWidget();
 				}
 
-				if (config.menus && config.menus.items) {
-					config.menus.items = config.menus.items.map(
+				if (widgetConfig.menus && widgetConfig.menus.items) {
+					widgetConfig.menus.items = widgetConfig.menus.items.map(
 						function (item) {
 							return {
 								icon: item.icon,
@@ -294,9 +502,11 @@
 						},
 					);
 				}
+				widgetConfig.primaryColor =
+					"var(--live2d-companion-message-surface)";
 
 				try {
-					widgetInstance = L2D_WIDGET.createWidget(config);
+					widgetInstance = L2D_WIDGET.createWidget(widgetConfig);
 					activeConfigKey = configKey;
 				} catch (err) {
 					loadingConfigKey = "";
