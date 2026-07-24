@@ -1,4 +1,7 @@
-import { HOME_SECTION_SIZE } from "@constants/constants";
+import {
+	HOME_FEATURED_SECTION_SIZE,
+	HOME_TECHNOLOGY_SECTION_SIZE,
+} from "@constants/constants";
 import { CATEGORY_SLUGS } from "@/config";
 import { getCategoryPageUrl } from "@/utils/url";
 import { toPostCardViewModel } from "./core/inject";
@@ -21,7 +24,7 @@ export interface HomePageViewModel {
 export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 	const store = await getContentStore();
 	const recommended = store.posts
-		.slice(0, HOME_SECTION_SIZE)
+		.slice(0, HOME_FEATURED_SECTION_SIZE)
 		.map(toPostCardViewModel);
 	const recent = [...store.posts]
 		.sort(
@@ -29,12 +32,12 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 				(b.updated ?? b.published).getTime() -
 				(a.updated ?? a.published).getTime(),
 		)
-		.slice(0, HOME_SECTION_SIZE)
+		.slice(0, HOME_FEATURED_SECTION_SIZE)
 		.map(toPostCardViewModel);
 	const technology = sortByScore(
 		store.categoryMap.get(CATEGORY_SLUGS.technology)?.posts ?? [],
 	)
-		.slice(0, HOME_SECTION_SIZE)
+		.slice(0, HOME_TECHNOLOGY_SECTION_SIZE)
 		.map(toPostCardViewModel);
 	const technologySection: HomePostSection[] = technology.length
 		? [

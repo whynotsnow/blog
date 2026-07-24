@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
 
-test("home sections expose six-card guide destinations", async ({ page }) => {
+test("home sections expose configured guide destinations", async ({ page }) => {
 	await page.setViewportSize({ width: 1536, height: 900 });
 	await gotoPage(page, "/");
 
@@ -18,10 +18,12 @@ test("home sections expose six-card guide destinations", async ({ page }) => {
 		sections.nth(2).locator('a[href="/category/tech/"]'),
 	).toBeVisible();
 
-	for (let index = 0; index < 3; index += 1) {
+	for (const [index, expectedCount] of [3, 3, 6].entries()) {
 		const cards = sections.nth(index).locator(".post-list__item");
-		await expect(cards).toHaveCount(6);
-		await expect(cards.locator(".home-post-card__cover")).toHaveCount(6);
+		await expect(cards).toHaveCount(expectedCount);
+		await expect(cards.locator(".home-post-card__cover")).toHaveCount(
+			expectedCount,
+		);
 		const heights = await cards.evaluateAll((items) =>
 			items.map((item) => getComputedStyle(item).height),
 		);

@@ -70,6 +70,29 @@ describe("home page content selection", () => {
 		).toHaveLength(1);
 	});
 
+	it("limits recent and recommended sections separately from technology", async () => {
+		const technologyPosts = Array.from({ length: 7 }, (_, index) =>
+			post(`tech-${index}`, "tech", index),
+		);
+		getContentStore.mockResolvedValue({
+			posts: technologyPosts,
+			categoryMap: new Map([["tech", { posts: technologyPosts }]]),
+		});
+
+		const page = await getHomePageViewModel();
+
+		expect(
+			page.sections.find((section) => section.id === "recent")?.posts,
+		).toHaveLength(3);
+		expect(
+			page.sections.find((section) => section.id === "recommended")
+				?.posts,
+		).toHaveLength(3);
+		expect(
+			page.sections.find((section) => section.id === "technology")?.posts,
+		).toHaveLength(6);
+	});
+
 	it("omits the technology section when the category is empty", async () => {
 		getContentStore.mockResolvedValue({
 			posts: [post("other", "notes", 100)],
