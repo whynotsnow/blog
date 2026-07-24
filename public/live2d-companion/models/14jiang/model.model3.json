@@ -1,0 +1,120 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "model.moc3",
+    "Textures": [
+      "textures/texture_00.png",
+      "textures/texture_01.png"
+    ],
+    "Physics": "physics.physics3.json",
+    "DisplayInfo": "display.cdi3.json",
+    "Expressions": [
+      {
+        "Name": "x-mouth",
+        "File": "x-mouth.exp3.json"
+      },
+      {
+        "Name": "drool",
+        "File": "drool.exp3.json"
+      },
+      {
+        "Name": "tongue",
+        "File": "tongue.exp3.json"
+      },
+      {
+        "Name": "default-expression",
+        "File": "default-expression.exp3.json"
+      },
+      {
+        "Name": "dizzy-eyes",
+        "File": "dizzy-eyes.exp3.json"
+      },
+      {
+        "Name": "crooked-mouth",
+        "File": "crooked-mouth.exp3.json"
+      },
+      {
+        "Name": "v-sign",
+        "File": "v-sign.exp3.json"
+      },
+      {
+        "Name": "sweat",
+        "File": "sweat.exp3.json"
+      },
+      {
+        "Name": "heart-eyes",
+        "File": "heart-eyes.exp3.json"
+      },
+      {
+        "Name": "angry-brows",
+        "File": "angry-brows.exp3.json"
+      },
+      {
+        "Name": "tear-1",
+        "File": "tear-1.exp3.json"
+      },
+      {
+        "Name": "tear-2",
+        "File": "tear-2.exp3.json"
+      },
+      {
+        "Name": "smile",
+        "File": "smile.exp3.json"
+      },
+      {
+        "Name": "angry-combo",
+        "File": "angry-combo.exp3.json"
+      },
+      {
+        "Name": "heart-combo",
+        "File": "heart-combo.exp3.json"
+      },
+      {
+        "Name": "dizzy-combo",
+        "File": "dizzy-combo.exp3.json"
+      },
+      {
+        "Name": "v-dizzy-combo",
+        "File": "v-dizzy-combo.exp3.json"
+      },
+      {
+        "Name": "combo-5",
+        "File": "combo-5.exp3.json"
+      },
+      {
+        "Name": "blush",
+        "File": "blush.exp3.json"
+      },
+      {
+        "Name": "tremble-mouth",
+        "File": "tremble-mouth.exp3.json"
+      },
+      {
+        "Name": "dark-circles",
+        "File": "dark-circles.exp3.json"
+      },
+      {
+        "Name": "dark-face",
+        "File": "dark-face.exp3.json"
+      }
+    ]
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
+      ]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": [
+        "ParamMouthForm",
+        "ParamMouthOpenY"
+      ]
+    }
+  ]
+}
