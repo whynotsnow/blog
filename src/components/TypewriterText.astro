@@ -4,6 +4,7 @@ export interface Props {
 	speed?: number;
 	deleteSpeed?: number;
 	pauseTime?: number;
+	startDelay?: number;
 	class?: string;
 }
 
@@ -12,12 +13,13 @@ const {
 	speed = 100,
 	deleteSpeed = 50,
 	pauseTime = 2000,
+	startDelay = 0,
 	class: className = "",
 } = Astro.props;
 const textData = Array.isArray(text) ? JSON.stringify(text) : text;
 ---
 
-<span class={`typewriter ${className}`} data-text={textData} data-speed={speed} data-delete-speed={deleteSpeed} data-pause-time={pauseTime}></span>
+<span class={`typewriter ${className}`} data-text={textData} data-speed={speed} data-delete-speed={deleteSpeed} data-pause-time={pauseTime} data-start-delay={startDelay}></span>
 
 <script>
 class TypewriterEffect {
@@ -46,10 +48,13 @@ class TypewriterEffect {
         this.speed = parseInt(element.dataset.speed || '100');
         this.deleteSpeed = parseInt(element.dataset.deleteSpeed || '50');
         this.pauseTime = parseInt(element.dataset.pauseTime || '2000');
+        const startDelay = parseInt(element.dataset.startDelay || '0');
         
         // 如果有多条文本且未启用打字机效果，随机显示一条
         if (this.texts.length > 1 && !this.isTypewriterEnabled()) {
             this.showRandomText();
+        } else if (startDelay > 0) {
+            this.timeoutId = window.setTimeout(() => this.start(), startDelay);
         } else {
             this.start();
         }
@@ -59,7 +64,8 @@ class TypewriterEffect {
         // 检查是否有打字机相关的数据属性
         return this.element.dataset.speed !== undefined || 
                this.element.dataset.deleteSpeed !== undefined || 
-               this.element.dataset.pauseTime !== undefined;
+               this.element.dataset.pauseTime !== undefined ||
+               this.element.dataset.startDelay !== undefined;
     }
 
     private showRandomText() {
@@ -126,21 +132,6 @@ function initTypewriters() {
     typewriterElements.forEach((element) => {
         const typewriter = element as HTMLElement;
         if (typewriter.dataset.typewriterInitialized === "true") return;
-
-        const shouldDeferHomeBanner =
-            document.body.classList.contains("home-initial-enter") &&
-            typewriter.closest('[data-setting-target="banner-home-text"]') !== null;
-        if (shouldDeferHomeBanner) {
-            if (typewriter.dataset.typewriterDeferred === "true") return;
-            typewriter.dataset.typewriterDeferred = "true";
-            window.setTimeout(() => {
-                typewriter.dataset.typewriterDeferred = "false";
-                if (typewriter.dataset.typewriterInitialized === "true") return;
-                typewriter.dataset.typewriterInitialized = "true";
-                new TypewriterEffect(typewriter);
-            }, 620);
-            return;
-        }
 
         typewriter.dataset.typewriterInitialized = "true";
         new TypewriterEffect(typewriter);

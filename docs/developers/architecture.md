@@ -88,7 +88,7 @@ src/features/music-player/
 
 Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion token 表达 Swup 请求和替换状态。它从 `visit:start` 开始、在 `content:replace` 推进并于 `visit:end` 完成，快速导航也保留最短可见时间。历史访问禁用 Swup 的缓存位置恢复，并在 settled 阶段临时关闭内容层 `top` transition、同步 Banner class、完成语义入口定位后才发布 `idle`。进度条不占布局高度，也不等待图片、统计、搜索或 Svelte hydration 完成。
 
-首页首次直达使用 `home-initial-enter` 作为短生命周期首屏编排 class。它不改变 Banner 或 Main Content 的最终几何，只协调 Banner 标题、字幕、waves 与 Main Content 的 opacity/transform 入场，并延后首页 Banner 内的 Typewriter 初始化；`prefers-reduced-motion` 下立即移除该状态。普通 Swup 页面切换仍由 `transition-swup-layout` 和 page-entry runtime 所有。
+首页首次直达使用 `home-initial-enter` 作为短生命周期首屏编排 class。它不改变 Banner 或 Main Content 的最终几何，只协调 Banner 标题、字幕、waves 与 Main Content 的 opacity/transform 入场；标题与字幕使用同一套首屏动画。首页 Banner 的 subtitle 只在 `homeText.typewriter.enable` 为 `true` 时渲染，并通过 Typewriter 的 `startDelay` 在首屏编排之后启动；完成后进入 `home-initial-enter-done`，避免标题和字幕在 class 切换时重播默认动画；`prefers-reduced-motion` 下立即结算该状态。普通 Swup 页面切换仍由 `transition-swup-layout` 和 page-entry runtime 所有。
 
 文章详情路由保持轻量：`src/pages/posts/[...slug].astro` 负责 static paths 并把页面模型转交给 `src/components/post-detail/PostDetailPage.astro`。Header、最后修改时间、上下篇导航和页面级样式与展示组件放在同一 feature 目录；TOC 等运行时消费者继续使用稳定的 `#post-container` 与 `.markdown-content` hook。
 

@@ -180,6 +180,8 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 - Added a short-lived `home-initial-enter` state for direct home loads so Banner title, subtitle, waves, and the Main Content layer enter on one timeline without changing final Shell geometry.
 - Deferred the home Banner Typewriter during that initial entrance and preserved immediate settlement for reduced-motion users.
+- Settled the home entrance into `home-initial-enter-done` and reused the default Banner title animation during the first-load choreography so the title does not replay when the initial class is removed.
+- Unified home Banner title/subtitle first-load keyframes, removed static subtitle rendering when Typewriter is disabled, and moved the home Banner Typewriter delay into an explicit component prop.
 
 ### Animated history content-page entry alignment
 

@@ -348,7 +348,10 @@ function settleHomeInitialEntrance() {
 	const prefersReducedMotion = window.matchMedia(
 		"(prefers-reduced-motion: reduce)",
 	).matches;
-	const settle = () => document.body.classList.remove("home-initial-enter");
+	const settle = () => {
+		document.body.classList.add("home-initial-enter-done");
+		document.body.classList.remove("home-initial-enter");
+	};
 
 	if (prefersReducedMotion) {
 		settle();

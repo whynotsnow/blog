@@ -9,6 +9,8 @@ interface Props {
 
 const { homeText, showHomeText } = Astro.props;
 const subtitle = homeText?.subtitle;
+const typewriterSubtitle =
+	subtitle && homeText?.typewriter?.enable ? subtitle : undefined;
 ---
 
 {
@@ -24,21 +26,16 @@ const subtitle = homeText?.subtitle;
 							{homeText.title}
 						</h1>
 					)}
-					{subtitle && (
+					{typewriterSubtitle && (
 						<h2 class="banner-subtitle">
 							<span class="inline-block min-h-[1.2em]">
-								{homeText.typewriter?.enable ? (
-									<TypewriterText
-										text={subtitle}
-										speed={homeText.typewriter.speed}
-										deleteSpeed={homeText.typewriter.deleteSpeed}
-										pauseTime={homeText.typewriter.pauseTime}
-									/>
-								) : Array.isArray(subtitle) ? (
-									subtitle[0]
-								) : (
-									subtitle
-								)}
+								<TypewriterText
+									text={typewriterSubtitle}
+									speed={homeText.typewriter?.speed}
+									deleteSpeed={homeText.typewriter?.deleteSpeed}
+									pauseTime={homeText.typewriter?.pauseTime}
+									startDelay={1500}
+								/>
 							</span>
 						</h2>
 					)}
