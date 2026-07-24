@@ -782,6 +782,26 @@
 				widgetInstance.l2d.setParams(parameters);
 			}
 
+			function waitForRenderFrames(count) {
+				return new Promise(function (resolve) {
+					var remaining = Math.max(1, count || 1);
+					function tick() {
+						remaining -= 1;
+						if (remaining <= 0) {
+							resolve();
+							return;
+						}
+						requestAnimationFrame(tick);
+					}
+					requestAnimationFrame(tick);
+				});
+			}
+
+			async function applyDefaultParametersBeforeReveal(config) {
+				setCompanionParameters(getActiveDefaultParameters(config));
+				await waitForRenderFrames(2);
+			}
+
 			function buildRuntimeWidgetConfig(config) {
 				var widgetConfig = Object.assign({}, config);
 				var models = getModelList(config);
@@ -812,6 +832,7 @@
 				) {
 					observeWidgetUi();
 					mountCompanionControls();
+					await applyDefaultParametersBeforeReveal(config);
 					postAvailableExpressions();
 					notifyLoaded();
 					return;
@@ -861,20 +882,24 @@
 						widgetInstance
 							.switchModel(currentModelIndex)
 							.then(function () {
-								setCompanionParameters(
-									getActiveDefaultParameters(config),
+								applyDefaultParametersBeforeReveal(config).then(
+									function () {
+										mountCompanionControls();
+										postAvailableExpressions();
+										notifyLoaded();
+									},
 								);
-								mountCompanionControls();
-								postAvailableExpressions();
-								notifyLoaded();
 							});
 						return;
 					}
 					notified = true;
-					setCompanionParameters(getActiveDefaultParameters(config));
-					mountCompanionControls();
-					postAvailableExpressions();
-					notifyLoaded();
+					applyDefaultParametersBeforeReveal(config).then(
+						function () {
+							mountCompanionControls();
+							postAvailableExpressions();
+							notifyLoaded();
+						},
+					);
 				}
 
 				var checkInterval = setInterval(function () {
