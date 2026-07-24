@@ -90,9 +90,8 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 	width: 280, // 默认宽度
 	height: 280, // 默认高度
 	modelScale: 1, // 保持 canvas 尺寸不变，提高模型绘制密度
-	mode: "draggable", // 默认为可拖拽模式
 	hiddenOnMobile: false, // 中小屏仍展示看板娘，避免 Floating Tools 入口与组件消失
-	hideAboutMenu: false, // 是否隐藏内置 About 菜单按钮
+	hideAboutMenu: true, // 隐藏 widget 内置 About/休眠/Switch，统一使用本地菜单按钮
 	modelSwitch: {
 		icon: "material-symbols:view-carousel-outline-rounded",
 		label: "切换模型",
@@ -153,9 +152,6 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 			"喂喂，这样有点奇怪哦！",
 			"再点我就要生气啦！",
 		], // 触摸提示
-		home: "点击这里可以回到博客首页～", // 首页提示
-		skin: ["想看看我的新装扮吗？", "新衣服是不是很好看～"], // 换装提示
 		close: "那我先收起来啦，下次再见～", // 收起提示
-		link: "https://github.com/whynotsnow/blog", // 关于链接
 	},
 };

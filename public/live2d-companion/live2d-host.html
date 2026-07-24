@@ -165,6 +165,9 @@
 			var currentModelIndex = 0;
 			var modelStorageKey = "live2d-companion-model-index";
 			var expressionPanelOpen = false;
+			var modelLoaded = false;
+			var expressionsReady = false;
+			var availableExpressionsCache = [];
 			var pointerInsideCompanion = false;
 			var idlePlaybackTimer = null;
 			var lastIdlePlaybackExpression = "";
@@ -332,7 +335,12 @@
 			}
 
 			function hideAboutMenu() {
-				if (document.getElementById("l2d-hide-about")) return;
+				var existing = document.getElementById("l2d-hide-about");
+				if (lastInitConfig && lastInitConfig._hideAbout === false) {
+					if (existing) existing.remove();
+					return;
+				}
+				if (existing) return;
 				var style = document.createElement("style");
 				style.id = "l2d-hide-about";
 				style.textContent =
@@ -631,8 +639,21 @@
 			});
 
 			function getAvailableExpressions() {
-				if (!widgetInstance || !widgetInstance.l2d) return [];
-				return widgetInstance.l2d.getExpressions() || [];
+				return availableExpressionsCache;
+			}
+
+			function refreshAvailableExpressions() {
+				if (
+					!expressionsReady ||
+					!widgetInstance ||
+					!widgetInstance.l2d
+				) {
+					availableExpressionsCache = [];
+					return availableExpressionsCache;
+				}
+				availableExpressionsCache =
+					widgetInstance.l2d.getExpressions() || [];
+				return availableExpressionsCache;
 			}
 
 			function createMenuButton(id, label, icon, onClick) {
@@ -660,10 +681,17 @@
 				saveModelIndex(currentModelIndex);
 				hideExpressionPanel();
 				if (widgetInstance && widgetInstance.switchModel) {
+					modelLoaded = false;
+					expressionsReady = false;
+					availableExpressionsCache = [];
 					await widgetInstance.switchModel(currentModelIndex);
+					modelLoaded = true;
 					setCompanionParameters(
 						getActiveDefaultParameters(lastInitConfig),
 					);
+					await waitForRenderFrames(2);
+					expressionsReady = true;
+					refreshAvailableExpressions();
 					mountCompanionControls();
 					postAvailableExpressions();
 					scheduleIdlePlayback();
@@ -738,13 +766,11 @@
 
 			function postAvailableExpressions() {
 				var menu = getActiveExpressionMenu();
+				var expressions = refreshAvailableExpressions();
 				parent.postMessage(
 					{
 						type: "l2d-expressions",
-						expressions: getAvailableExpressions().slice(
-							0,
-							menu.maxPanelItems,
-						),
+						expressions: expressions.slice(0, menu.maxPanelItems),
 					},
 					"*",
 				);
@@ -856,13 +882,18 @@
 					menu.appendChild(button);
 				}
 				mountModelSwitchButton(menu);
-				mountExpressionButtons(menu);
+				if (expressionsReady) {
+					mountExpressionButtons(menu);
+				}
 				syncExpressionPanelState(expressionPanelOpen);
 			}
 
 			async function destroyWidget() {
 				if (!widgetInstance) return;
 				stopIdlePlayback();
+				modelLoaded = false;
+				expressionsReady = false;
+				availableExpressionsCache = [];
 				var instance = widgetInstance;
 				widgetInstance = null;
 				try {
@@ -955,9 +986,17 @@
 					widgetInstance &&
 					activeConfigKey === configKey
 				) {
+					if (!modelLoaded) {
+						observeWidgetUi();
+						mountCompanionControls();
+						hideAboutMenu();
+						return;
+					}
 					observeWidgetUi();
 					mountCompanionControls();
 					await applyDefaultParametersBeforeReveal(config);
+					expressionsReady = true;
+					refreshAvailableExpressions();
 					postAvailableExpressions();
 					scheduleIdlePlayback();
 					notifyLoaded();
@@ -968,6 +1007,9 @@
 					return;
 				}
 
+				modelLoaded = false;
+				expressionsReady = false;
+				availableExpressionsCache = [];
 				loadingConfigKey = configKey;
 				if (widgetInstance) {
 					await destroyWidget();
@@ -998,6 +1040,7 @@
 				var initialModelSwitchApplied = false;
 				function notifyOnce() {
 					if (notified) return;
+					modelLoaded = true;
 					if (
 						!initialModelSwitchApplied &&
 						currentModelIndex > 0 &&
@@ -1010,6 +1053,8 @@
 							.then(function () {
 								applyDefaultParametersBeforeReveal(config).then(
 									function () {
+										expressionsReady = true;
+										refreshAvailableExpressions();
 										mountCompanionControls();
 										postAvailableExpressions();
 										scheduleIdlePlayback();
@@ -1022,6 +1067,8 @@
 					notified = true;
 					applyDefaultParametersBeforeReveal(config).then(
 						function () {
+							expressionsReady = true;
+							refreshAvailableExpressions();
 							mountCompanionControls();
 							postAvailableExpressions();
 							scheduleIdlePlayback();
@@ -1035,14 +1082,28 @@
 					if (canvas && canvas.width > 0 && canvas.height > 0) {
 						mountCompanionControls();
 						clearInterval(checkInterval);
-						setTimeout(notifyOnce, 300);
 					}
 				}, 200);
+
+				if (
+					widgetInstance &&
+					widgetInstance.l2d &&
+					typeof widgetInstance.l2d.on === "function"
+				) {
+					widgetInstance.l2d.on("loaded", function () {
+						setTimeout(notifyOnce, 0);
+					});
+				}
 
 				setTimeout(function () {
 					clearInterval(checkInterval);
 					loadingConfigKey = "";
-					notifyOnce();
+					if (!notified) {
+						console.warn(
+							"Live2D model loaded event did not fire before timeout.",
+						);
+						notifyLoaded();
+					}
 				}, 15000);
 			}
 

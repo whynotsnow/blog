@@ -80,12 +80,7 @@
 		};
 		_hideAbout: boolean;
 		menus?: {
-			items: Array<{
-				icon?: string;
-				label: string;
-				action: string;
-			}>;
-			align?: "left" | "right";
+			items: [];
 		};
 	};
 
@@ -217,19 +212,7 @@
 			}),
 		};
 
-		widgetConfig.menus = {
-			items:
-				live2dCompanionConfig.menus?.items?.map(
-					({ icon, label, action }) => ({
-						icon,
-						label,
-						action,
-					}),
-				) ?? [],
-			...(live2dCompanionConfig.menus?.align && {
-				align: live2dCompanionConfig.menus.align,
-			}),
-		};
+		widgetConfig.menus = { items: [] };
 
 		return widgetConfig;
 	}

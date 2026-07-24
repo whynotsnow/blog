@@ -384,7 +384,7 @@ export type Live2DCompanionModelConfig = {
 	avatar?: string; // 收起与加载状态头像
 	scale?: number; // 覆盖全局模型绘制缩放
 	offset?: [number, number]; // 覆盖全局模型绘制偏移 [x, y]
-	defaultParameters?: Record<string, number>; // 当前模型加载完成后的默认参数
+	defaultParameters?: Record<string, number>; // 当前模型显示前应用的默认 Live2D 参数
 	expressionMenu?: Live2DExpressionMenuConfig; // 当前模型的 action 与表情轮盘配置
 	idlePlayback?: Live2DIdlePlaybackConfig; // 当前模型空闲时随机播放的表情或动作配置
 };
@@ -398,10 +398,9 @@ export type Live2DCompanionConfig = {
 	height?: number; // 看板娘高度
 	modelScale?: number; // 模型在 canvas 内的绘制缩放
 	modelOffset?: [number, number]; // 模型在 canvas 内的绘制偏移 [x, y]
-	defaultParameters?: Record<string, number>; // 模型加载完成后的默认参数
-	mode?: "static" | "fixed" | "draggable"; // 展现模式
+	defaultParameters?: Record<string, number>; // 模型显示前应用的默认 Live2D 参数
 	hiddenOnMobile?: boolean; // 是否在移动设备上隐藏
-	hideAboutMenu?: boolean; // 是否隐藏内置 About 菜单按钮
+	hideAboutMenu?: boolean; // 是否隐藏 widget 内置 About/休眠/Switch 菜单按钮
 	modelSwitch?: {
 		icon?: string; // 本地图标名称
 		label?: string; // 模型切换按钮文案
@@ -420,29 +419,13 @@ export type Live2DCompanionConfig = {
 	dialog?: {
 		welcome?: string | string[]; // 欢迎词
 		touch?: string | string[]; // 触摸提示
-		home?: string; // 首页提示
-		skin?: [string, string]; // 换装提示 [切换前, 切换后]
 		close?: string; // 关闭提示
-		link?: string; // 关于链接
-		custom?: Array<{
-			selector: string; // CSS选择器
-			type: "read" | "link"; // 类型
-			text?: string; // 自定义文本
-		}>;
 	};
 	tips?: {
 		welcomeMessage?: string[]; // 欢迎语
 		messages?: string[]; // 循环提示内容
 		duration?: number; // 每条 tips 展示时长（ms）
 		interval?: number; // tips 循环间隔（ms）
-	};
-	menus?: {
-		items?: Array<{
-			icon?: string; // Iconify 图标名称
-			label: string; // 无障碍标题
-			action: string; // 预定义动作名称
-		}>;
-		align?: "left" | "right"; // 菜单对齐方式
 	};
 };
 
