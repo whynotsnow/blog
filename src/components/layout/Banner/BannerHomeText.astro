@@ -11,6 +11,12 @@ const { homeText, showHomeText } = Astro.props;
 const subtitle = homeText?.subtitle;
 const typewriterSubtitle =
 	subtitle && homeText?.typewriter?.enable ? subtitle : undefined;
+const staticSubtitle =
+	subtitle && !homeText?.typewriter?.enable
+		? Array.isArray(subtitle)
+			? subtitle[0]
+			: subtitle
+		: undefined;
 ---
 
 {
@@ -36,6 +42,13 @@ const typewriterSubtitle =
 									pauseTime={homeText.typewriter?.pauseTime}
 									startDelay={1500}
 								/>
+							</span>
+						</h2>
+					)}
+					{staticSubtitle && (
+						<h2 class="banner-subtitle">
+							<span class="inline-block min-h-[1.2em]">
+								{staticSubtitle}
 							</span>
 						</h2>
 					)}
