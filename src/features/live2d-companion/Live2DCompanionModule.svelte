@@ -17,6 +17,20 @@
 		tips?: Record<string, unknown>;
 	};
 
+	type Live2DExpressionMenuConfig = {
+		panelIcon?: string;
+		panelLabel?: string;
+		enablePanel?: boolean;
+		maxActions?: number;
+		maxPanelItems?: number;
+		labels?: Record<string, string>;
+		shortcuts?: Array<{
+			name: string;
+			label: string;
+			icon?: string;
+		}>;
+	};
+
 	type Live2DWidgetConfig = {
 		model: Live2DCompanionModelConfig | Live2DCompanionModelConfig[];
 		position: "bottom-left" | "bottom-right";
@@ -27,6 +41,24 @@
 		theme?: Record<string, string>;
 		transitionDuration: number;
 		transitionType: "slide";
+		_models?: Array<{
+			path: string;
+			scale?: number;
+			offset?: [number, number];
+			tips?: Record<string, unknown>;
+		}>;
+		_modelProfiles?: Array<{
+			path: string;
+			label?: string;
+			avatar?: string;
+			defaultParameters?: Record<string, number>;
+			expressionMenu?: Live2DExpressionMenuConfig;
+		}>;
+		_modelSwitch?: {
+			icon?: string;
+			label?: string;
+		};
+		_expressionMenu?: Live2DExpressionMenuConfig;
 		ui?: {
 			themeMode?: "site" | "custom";
 			messageOffset?: {
@@ -57,6 +89,10 @@
 	let pendingCollapse: number | undefined;
 	let themeObserver: MutationObserver | undefined;
 	let disposed = false;
+	let expressionPanelOpen = false;
+	let availableExpressions: string[] = [];
+	let expressionPanelAnchor: { x: number; y: number } | undefined;
+	let expressionPanelEl: HTMLDivElement | undefined;
 
 	function normalizeMessages(value?: string | string[]) {
 		if (!value) return undefined;
@@ -90,16 +126,33 @@
 	}
 
 	function buildWidgetConfig(): Live2DWidgetConfig {
-		const modelPaths = live2dCompanionConfig.models ?? [
-			"/live2d-companion/models/NOIR/noir.model3.json",
-		];
-		const modelConfigs = modelPaths.map((path) => ({
-			path,
-			...(typeof live2dCompanionConfig.modelScale === "number" && {
-				scale: live2dCompanionConfig.modelScale,
+		const modelEntries = (
+			live2dCompanionConfig.models ?? [
+				"/live2d-companion/models/NOIR/noir.model3.json",
+			]
+		).map((model) => (typeof model === "string" ? { path: model } : model));
+		const modelConfigs = modelEntries.map((model) => ({
+			path: model.path,
+			...(typeof (model.scale ?? live2dCompanionConfig.modelScale) ===
+				"number" && {
+				scale: model.scale ?? live2dCompanionConfig.modelScale,
 			}),
-			...(live2dCompanionConfig.modelOffset && {
-				offset: live2dCompanionConfig.modelOffset,
+			...((model.offset ?? live2dCompanionConfig.modelOffset) && {
+				offset: model.offset ?? live2dCompanionConfig.modelOffset,
+			}),
+		}));
+		const modelProfiles = modelEntries.map((model) => ({
+			path: model.path,
+			...(model.label && { label: model.label }),
+			...(model.avatar && { avatar: model.avatar }),
+			...(model.expressionMenu && {
+				expressionMenu: model.expressionMenu,
+			}),
+			...((model.defaultParameters ??
+				live2dCompanionConfig.defaultParameters) && {
+				defaultParameters:
+					model.defaultParameters ??
+					live2dCompanionConfig.defaultParameters,
 			}),
 		}));
 		const tipsData = buildTipsData();
@@ -111,7 +164,9 @@
 		}
 
 		const widgetConfig: Live2DWidgetConfig = {
-			model: modelConfigs.length === 1 ? modelConfigs[0] : modelConfigs,
+			model: modelConfigs[0],
+			_models: modelConfigs,
+			_modelProfiles: modelProfiles,
 			position:
 				live2dCompanionConfig.position === "right"
 					? "bottom-right"
@@ -138,6 +193,12 @@
 					live2dCompanionConfig.ui?.hideWidgetStatusPanel ?? true,
 			},
 			_hideAbout: live2dCompanionConfig.hideAboutMenu ?? true,
+			...(live2dCompanionConfig.modelSwitch && {
+				_modelSwitch: live2dCompanionConfig.modelSwitch,
+			}),
+			...(live2dCompanionConfig.expressionMenu && {
+				_expressionMenu: live2dCompanionConfig.expressionMenu,
+			}),
 		};
 
 		widgetConfig.menus = {
@@ -161,6 +222,7 @@
 	const widgetWidth = live2dCompanionConfig.width ?? 280;
 	const widgetHeight = live2dCompanionConfig.height ?? widgetWidth;
 	const frameHeight = Math.min(widgetHeight + 72, 360);
+	const expressionLabels = live2dCompanionConfig.expressionMenu?.labels ?? {};
 	const avatarSrc =
 		live2dCompanionConfig.avatar ??
 		"/live2d-companion/models/NOIR/avatar.png";
@@ -202,6 +264,53 @@
 			type: "live2d-companion-theme",
 			theme: readThemeTokens(),
 		});
+	}
+
+	function getExpressionLabel(name: string) {
+		return expressionLabels[name] ?? name;
+	}
+
+	function postExpressionPanelState(open = expressionPanelOpen) {
+		postToFrame({
+			type: "live2d-companion-expression-panel-state",
+			open,
+		});
+	}
+
+	function setExpressionPanelOpen(open: boolean) {
+		expressionPanelOpen = open;
+		postExpressionPanelState(open);
+	}
+
+	function closeExpressionPanel() {
+		setExpressionPanelOpen(false);
+	}
+
+	function toggleExpressionPanel(anchor?: { x: number; y: number }) {
+		if (availableExpressions.length === 0) return;
+		if (anchor) expressionPanelAnchor = anchor;
+		setExpressionPanelOpen(!expressionPanelOpen);
+	}
+
+	function handleExpressionControlMouseLeave(event: MouseEvent) {
+		if (!expressionPanelOpen) return;
+		const relatedTarget = event.relatedTarget;
+		if (
+			relatedTarget instanceof Node &&
+			(relatedTarget === iframeEl ||
+				expressionPanelEl?.contains(relatedTarget))
+		) {
+			return;
+		}
+		closeExpressionPanel();
+	}
+
+	function selectExpression(name: string) {
+		postToFrame({
+			type: "live2d-companion-command",
+			command: { type: "expression", name },
+		});
+		closeExpressionPanel();
 	}
 
 	function postInit() {
@@ -264,6 +373,15 @@
 			iframeEl.style.height = `${Math.min(height, frameHeight)}px`;
 			loaded = true;
 		}
+		if (event.data?.type === "l2d-expressions") {
+			availableExpressions = Array.isArray(event.data.expressions)
+				? event.data.expressions.filter(
+						(name: unknown): name is string =>
+							typeof name === "string",
+					)
+				: [];
+			closeExpressionPanel();
+		}
 		if (event.data?.type === "l2d-action") {
 			if (event.data.action === "home") {
 				window.location.href = "/";
@@ -274,11 +392,23 @@
 			if (event.data.action === "collapse") {
 				collapseCompanion();
 			}
+			if (event.data.action === "toggleExpressionPanel") {
+				const anchor =
+					typeof event.data.anchor?.x === "number" &&
+					typeof event.data.anchor?.y === "number"
+						? {
+								x: event.data.anchor.x,
+								y: event.data.anchor.y,
+							}
+						: undefined;
+				toggleExpressionPanel(anchor);
+			}
 		}
 	}
 
 	function collapseCompanion() {
 		if (collapsed || collapsing) return;
+		closeExpressionPanel();
 		collapsing = true;
 		window.clearTimeout(pendingCollapse);
 		pendingCollapse = window.setTimeout(() => {
@@ -324,6 +454,10 @@
 		if (command.type === "message") {
 			postToFrame({ type: "live2d-companion-command", command });
 		}
+		if (command.type === "expression") {
+			closeExpressionPanel();
+			postToFrame({ type: "live2d-companion-command", command });
+		}
 	}
 
 	onMount(() => {
@@ -356,6 +490,7 @@
 			iframeEl?.removeEventListener("load", scheduleInit);
 			themeObserver?.disconnect();
 			themeObserver = undefined;
+			closeExpressionPanel();
 		};
 	});
 
@@ -365,6 +500,7 @@
 		window.clearTimeout(pendingFrameMount);
 		window.clearTimeout(pendingCollapse);
 		themeObserver?.disconnect();
+		closeExpressionPanel();
 	});
 </script>
 
@@ -383,10 +519,10 @@
 			title="Live2D companion"
 			src="/live2d-companion/live2d-host.html"
 			allowtransparency="true"
-			data-config={JSON.stringify(widgetConfig)}
 			data-width={widgetWidth}
 			style={`height: ${frameHeight}px;`}
 			bind:this={iframeEl}
+			onmouseleave={handleExpressionControlMouseLeave}
 		></iframe>
 	{/if}
 	<button
@@ -399,6 +535,28 @@
 	>
 		<img src={avatarSrc} alt="" decoding="async" loading="eager" />
 	</button>
+	{#if expressionPanelOpen && availableExpressions.length > 0}
+		<div
+			class="live2d-companion__expression-panel"
+			role="group"
+			aria-label="全部表情"
+			style={`--expression-panel-anchor-x: ${expressionPanelAnchor?.x ?? widgetWidth}px; --expression-panel-anchor-y: ${expressionPanelAnchor?.y ?? frameHeight}px;`}
+			bind:this={expressionPanelEl}
+			onmouseleave={handleExpressionControlMouseLeave}
+		>
+			{#each availableExpressions as expression (expression)}
+				<button
+					type="button"
+					class="live2d-companion__expression-option"
+					title={getExpressionLabel(expression)}
+					aria-label={getExpressionLabel(expression)}
+					onclick={() => selectExpression(expression)}
+				>
+					{getExpressionLabel(expression)}
+				</button>
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -488,6 +646,71 @@
 		height: 100%;
 		object-fit: cover;
 		display: block;
+	}
+
+	.live2d-companion__expression-panel {
+		position: absolute;
+		z-index: 3;
+		left: calc(var(--expression-panel-anchor-x, 0px) + 0.5rem);
+		top: var(--expression-panel-anchor-y, 0px);
+		display: grid;
+		grid-template-columns: repeat(4, 2.15rem);
+		gap: 0.25rem;
+		width: max-content;
+		max-width: calc(100vw - 2rem);
+		padding: 0.35rem;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: var(--surface-overlay);
+		box-shadow: var(--shadow-raised);
+		backdrop-filter: blur(12px);
+		pointer-events: auto;
+	}
+
+	.live2d-companion.left .live2d-companion__expression-panel {
+		left: calc(var(--expression-panel-anchor-x, 0px) + 0.5rem);
+	}
+
+	.live2d-companion.right .live2d-companion__expression-panel {
+		right: calc(
+			var(--live2d-companion-width, 280px) -
+				var(--expression-panel-anchor-x, 0px) + 0.5rem
+		);
+		left: auto;
+	}
+
+	.live2d-companion__expression-option {
+		box-sizing: border-box;
+		width: 2.15rem;
+		height: 1.65rem;
+		min-width: 0;
+		padding: 0 0.2rem;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		background: color-mix(in srgb, var(--surface-overlay) 88%, transparent);
+		color: var(--text);
+		font:
+			600 0.68rem/1 system-ui,
+			-apple-system,
+			BlinkMacSystemFont,
+			"Segoe UI",
+			sans-serif;
+		letter-spacing: 0;
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			transform 0.15s ease;
+	}
+
+	.live2d-companion__expression-option:hover {
+		background: var(--surface);
+		color: var(--accent);
+		transform: translateY(-1px);
 	}
 
 	.live2d-companion__avatar.is-loading::after {

@@ -664,8 +664,14 @@ test("floating tools controls the Live2D companion preference", async ({
 	page,
 }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
+	const iconifyRequests: string[] = [];
+	page.on("request", (request) => {
+		if (request.url().startsWith("https://api.iconify.design/")) {
+			iconifyRequests.push(request.url());
+		}
+	});
 	await page.route(
-		"**/live2d-companion/models/NOIR/noir.moc3",
+		"**/live2d-companion/models/14jiang/model.moc3",
 		async (route) => {
 			await new Promise((resolve) => setTimeout(resolve, 500));
 			await route.continue();
@@ -676,6 +682,7 @@ test("floating tools controls the Live2D companion preference", async ({
 		if (window.top !== window) return;
 		localStorage.removeItem("live2d-companion-mounted");
 		localStorage.removeItem("live2d-companion-collapsed");
+		localStorage.removeItem("live2d-companion-model-index");
 	});
 	await gotoPage(page, "/");
 
@@ -726,7 +733,7 @@ test("floating tools controls the Live2D companion preference", async ({
 				hitClass: hit?.className.toString() ?? "",
 			};
 		});
-	expect(companionGeometry.height).toBeLessThanOrEqual(272);
+	expect(companionGeometry.height).toBeLessThanOrEqual(352);
 	expect(companionGeometry.hitId).not.toBe("l2d-iframe");
 	expect(companionGeometry.hitClass).not.toContain("live2d-companion");
 	await toggle.click();
@@ -760,6 +767,13 @@ test("floating tools controls the Live2D companion preference", async ({
 		"true",
 	);
 	await expect(page.locator("#l2d-iframe")).toHaveCount(1);
+	await expect(page.locator("#l2d-iframe")).not.toHaveAttribute(
+		"data-config",
+	);
+	await expect(page.locator("#l2d-iframe")).toHaveAttribute(
+		"data-width",
+		"280",
+	);
 	await expect(page.locator(".live2d-companion")).toHaveClass(
 		/live2d-companion--loaded/,
 	);
@@ -779,7 +793,171 @@ test("floating tools controls the Live2D companion preference", async ({
 			return { height: rect.height, width: rect.width };
 		});
 	expect(canvasGeometry.width).toBeCloseTo(280, 0);
-	expect(canvasGeometry.height).toBeCloseTo(200, 0);
+	expect(canvasGeometry.height).toBeCloseTo(280, 0);
+	const expressions = await page
+		.frameLocator("#l2d-iframe")
+		.locator("canvas")
+		.evaluate(() => {
+			const frameWindow = window as Window & {
+				widgetInstance?: {
+					l2d?: {
+						getExpressions: () => string[];
+						getParams: () => Array<{ id: string; value: number }>;
+						setExpression: (name: string) => void;
+					};
+				};
+				__lastLive2DExpression?: string;
+			};
+			const l2d = frameWindow.widgetInstance?.l2d;
+			const originalSetExpression = l2d?.setExpression.bind(l2d);
+			if (l2d && originalSetExpression) {
+				l2d.setExpression = (name: string) => {
+					frameWindow.__lastLive2DExpression = name;
+					originalSetExpression(name);
+				};
+			}
+			return l2d?.getExpressions() ?? [];
+		});
+	expect(expressions).toContain("smile");
+	expect(expressions).toContain("heart-combo");
+	expect(expressions).not.toContain("hide-watermark");
+	expect(expressions).toHaveLength(22);
+	await expect(
+		page
+			.frameLocator("#l2d-iframe")
+			.getByRole("button", { name: "切换模型" }),
+	).toBeVisible();
+	await expect(
+		page
+			.frameLocator("#l2d-iframe")
+			.getByRole("button", { name: "全部表情" }),
+	).toBeVisible();
+	await expect(
+		page
+			.frameLocator("#l2d-iframe")
+			.getByRole("button", { name: "全部表情" }),
+	).toHaveAttribute("title", "全部表情");
+	await expect(
+		page.frameLocator("#l2d-iframe").getByRole("button", {
+			name: "微笑",
+		}),
+	).toBeVisible();
+	await expect(
+		page.frameLocator("#l2d-iframe").getByRole("button", {
+			name: "微笑",
+		}),
+	).toHaveAttribute("title", "微笑");
+	await expect(
+		page.frameLocator("#l2d-iframe").getByRole("button", {
+			name: "冒汗",
+		}),
+	).toHaveCount(0);
+	await page
+		.frameLocator("#l2d-iframe")
+		.getByRole("button", { name: "全部表情" })
+		.click();
+	await expect(
+		page
+			.locator(".live2d-companion__expression-panel")
+			.getByRole("button", { name: "X 嘴" }),
+	).toBeVisible();
+	const expressionPanelGeometry = await page
+		.locator(".live2d-companion__expression-panel")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			const style = getComputedStyle(element);
+			const iframe =
+				document.querySelector<HTMLIFrameElement>("#l2d-iframe");
+			const iframeRect = iframe?.getBoundingClientRect();
+			const canvas = iframe?.contentDocument?.querySelector("canvas");
+			const canvasRect = canvas?.getBoundingClientRect();
+			const canvasRight =
+				iframeRect && canvasRect
+					? iframeRect.left + canvasRect.right
+					: undefined;
+			const buttonRect = iframe?.contentDocument
+				?.querySelector<HTMLElement>(
+					"#live2d-companion-expression-panel-toggle",
+				)
+				?.getBoundingClientRect();
+			const panelTopGap =
+				iframeRect && buttonRect
+					? rect.top - (iframeRect.top + buttonRect.top)
+					: Number.POSITIVE_INFINITY;
+			return {
+				buttonTop: buttonRect?.top ?? Number.POSITIVE_INFINITY,
+				buttonCount: element.querySelectorAll("button").length,
+				hasVerticalOverflow:
+					element.scrollHeight > element.clientHeight,
+				overflowY: style.overflowY,
+				panelTopGap,
+				rightOfCanvas: canvasRight ? rect.left >= canvasRight : true,
+			};
+		});
+	expect(expressionPanelGeometry.buttonCount).toBe(22);
+	expect(expressionPanelGeometry.hasVerticalOverflow).toBe(false);
+	expect(expressionPanelGeometry.overflowY).toBe("visible");
+	expect(Math.abs(expressionPanelGeometry.panelTopGap)).toBeLessThanOrEqual(
+		2,
+	);
+	expect(expressionPanelGeometry.rightOfCanvas).toBe(true);
+	await expect(
+		page
+			.locator(".live2d-companion__expression-panel")
+			.getByRole("button", { name: "X 嘴" }),
+	).toHaveAttribute("title", "X 嘴");
+	await expect(
+		page
+			.locator(".live2d-companion__expression-panel")
+			.getByRole("button", { name: "冒汗" }),
+	).toBeVisible();
+	await page
+		.frameLocator("#l2d-iframe")
+		.getByRole("button", { name: "全部表情" })
+		.click();
+	const watermarkParameter = await page
+		.frameLocator("#l2d-iframe")
+		.locator("canvas")
+		.evaluate(() => {
+			const frameWindow = window as Window & {
+				widgetInstance?: {
+					l2d?: {
+						getParams: () => Array<{ id: string; value: number }>;
+					};
+				};
+			};
+			return frameWindow.widgetInstance?.l2d
+				?.getParams()
+				.find((parameter) => parameter.id === "CheekPuff2");
+		});
+	expect(watermarkParameter?.value).toBeCloseTo(1, 2);
+	await page.evaluate(() => {
+		window.dispatchEvent(
+			new CustomEvent("live2d-companion-command", {
+				detail: {
+					command: {
+						type: "expression",
+						name: "smile",
+					},
+				},
+			}),
+		);
+	});
+	await expect
+		.poll(() =>
+			page
+				.frameLocator("#l2d-iframe")
+				.locator("body")
+				.evaluate(
+					() =>
+						(
+							window as Window & {
+								__lastLive2DExpression?: string;
+							}
+						).__lastLive2DExpression,
+				),
+		)
+		.toBe("smile");
 	const collapseButtonGeometry = await page
 		.frameLocator("#l2d-iframe")
 		.getByRole("button", { name: "收起看板娘" })
@@ -803,6 +981,7 @@ test("floating tools controls the Live2D companion preference", async ({
 				menuChildCount: element.parentElement?.children.length ?? 0,
 				svgCount: element.querySelectorAll("svg").length,
 				text: element.textContent?.trim() ?? "",
+				transform: buttonStyle.transform,
 			};
 		});
 	expect(collapseButtonGeometry.buttonWidth).toBeCloseTo(28, 0);
@@ -815,9 +994,11 @@ test("floating tools controls the Live2D companion preference", async ({
 		"96, 165, 250",
 	);
 	expect(collapseButtonGeometry.isInWidgetMenu).toBe(true);
-	expect(collapseButtonGeometry.menuChildCount).toBeGreaterThan(0);
+	expect(collapseButtonGeometry.menuChildCount).toBe(8);
 	expect(collapseButtonGeometry.svgCount).toBe(1);
 	expect(collapseButtonGeometry.text).toBe("");
+	expect(collapseButtonGeometry.transform).toBe("none");
+	expect(iconifyRequests).toHaveLength(0);
 	const widgetTipChrome = await page
 		.frameLocator("#l2d-iframe")
 		.locator(".live2d-companion-widget-tip")
@@ -840,6 +1021,73 @@ test("floating tools controls the Live2D companion preference", async ({
 	expect(widgetTipChrome.whiteSpace).toBe("normal");
 	expect(widgetTipChrome.textAlign).toBe("left");
 	expect(widgetTipChrome.maxWidth).not.toBe("200px");
+	await page.route(
+		"**/live2d-companion/models/NOIR/noir.moc3",
+		async (route) => {
+			await new Promise((resolve) => setTimeout(resolve, 200));
+			await route.continue();
+		},
+		{ times: 1 },
+	);
+	await page
+		.frameLocator("#l2d-iframe")
+		.getByRole("button", { name: "切换模型" })
+		.click();
+	await expect
+		.poll(
+			() =>
+				page
+					.frameLocator("#l2d-iframe")
+					.locator("canvas")
+					.evaluate(
+						() =>
+							(
+								window as Window & {
+									widgetInstance?: {
+										l2d?: {
+											getExpressions: () => string[];
+										};
+									};
+								}
+							).widgetInstance?.l2d?.getExpressions() ?? [],
+					),
+			{ timeout: 15_000 },
+		)
+		.toEqual(["eyeclose", "quanquan", "tears", "white"]);
+	await expect(
+		page.frameLocator("#l2d-iframe").getByRole("button", { name: "闭眼" }),
+	).toBeVisible();
+	await expect(
+		page.frameLocator("#l2d-iframe").getByRole("button", { name: "变白" }),
+	).toHaveAttribute("title", "变白");
+	await expect(
+		page
+			.frameLocator("#l2d-iframe")
+			.getByRole("button", { name: "全部表情" }),
+	).toHaveCount(0);
+	await expect(
+		page.locator(".live2d-companion__expression-panel"),
+	).toHaveCount(0);
+	const noirActionGeometry = await page
+		.frameLocator("#l2d-iframe")
+		.getByRole("button", { name: "变白" })
+		.evaluate((element) => {
+			const menu = element.parentElement;
+			const menuStyle = menu ? getComputedStyle(menu) : undefined;
+			return {
+				menuChildCount: menu?.children.length ?? 0,
+				menuTop: menuStyle?.top ?? "",
+				transform: getComputedStyle(element).transform,
+			};
+		});
+	expect(noirActionGeometry.menuChildCount).toBe(6);
+	expect(noirActionGeometry.menuTop).toBe("14px");
+	expect(noirActionGeometry.transform).toBe("none");
+	await page.mouse.move(720, 120);
+	await expect(
+		page.locator(".live2d-companion__expression-panel"),
+	).toHaveCount(0);
+	expect(iconifyRequests).toHaveLength(0);
 	await page.evaluate(() => {
 		window.dispatchEvent(
 			new CustomEvent("live2d-companion-command", {
@@ -939,6 +1187,36 @@ test("floating tools controls the Live2D companion preference", async ({
 			),
 		)
 		.toBe("0");
+});
+
+test("Live2D companion remains available on medium and small viewports", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1024, height: 768 });
+	await page.addInitScript(() => {
+		if (window.top !== window) return;
+		localStorage.removeItem("live2d-companion-mounted");
+		localStorage.removeItem("live2d-companion-collapsed");
+		localStorage.removeItem("live2d-companion-model-index");
+	});
+	await gotoPage(page, "/");
+
+	await expect(page.locator("#floating-tools-switch")).toBeVisible({
+		timeout: 15_000,
+	});
+	await page.locator("#floating-tools-switch").click({ force: true });
+	await expect(
+		page.getByRole("button", { name: "隐藏看板娘" }),
+	).toBeVisible();
+	await expect(page.locator(".live2d-companion")).toHaveCount(1);
+	await expect(page.locator("#l2d-iframe")).toHaveCount(1);
+
+	await page.setViewportSize({ width: 390, height: 844 });
+	await expect(
+		page.getByRole("button", { name: "隐藏看板娘" }),
+	).toBeVisible();
+	await expect(page.locator(".live2d-companion")).toHaveCount(1);
+	await expect(page.locator("#l2d-iframe")).toHaveCount(1);
 });
 
 test("playlist attaches above the player and floating tools clears the full surface", async ({

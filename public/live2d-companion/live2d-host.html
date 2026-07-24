@@ -91,7 +91,8 @@
 					--live2d-companion-message-surface
 				) !important;
 			}
-			.live2d-companion-collapse {
+			.live2d-companion-collapse,
+			.live2d-companion-menu-button {
 				display: flex;
 				width: 28px;
 				height: 28px;
@@ -111,19 +112,23 @@
 					sans-serif;
 				cursor: pointer;
 				flex-shrink: 0;
+				position: relative;
+				z-index: 10002;
 				backdrop-filter: blur(12px);
 				transition:
 					background 0.15s ease,
 					box-shadow 0.15s ease,
-					color 0.15s ease,
-					transform 0.15s ease;
+					color 0.15s ease;
 			}
-			.live2d-companion-collapse svg {
+			.live2d-companion-collapse svg,
+			.live2d-companion-menu-button svg {
 				width: 1.05rem;
 				height: 1.05rem;
 				pointer-events: none;
 			}
-			.live2d-companion-collapse:hover {
+			.live2d-companion-collapse:hover,
+			.live2d-companion-menu-button:hover,
+			.live2d-companion-menu-button.is-active {
 				background: var(--live2d-companion-surface-hover);
 				box-shadow:
 					var(--live2d-companion-shadow),
@@ -134,7 +139,15 @@
 							transparent
 						);
 				color: var(--live2d-companion-accent);
-				transform: translateY(-1px);
+			}
+			.live2d-companion-menu {
+				top: 14px !important;
+				bottom: auto !important;
+				transform: none !important;
+			}
+			body.live2d-companion-expression-panel-open .live2d-companion-menu {
+				opacity: 1 !important;
+				pointer-events: auto !important;
 			}
 		</style>
 	</head>
@@ -148,12 +161,46 @@
 			var messageTimer = null;
 			var widgetUiObserver = null;
 			var live2dCompanionUi = {};
+			var lastInitConfig = null;
+			var currentModelIndex = 0;
+			var modelStorageKey = "live2d-companion-model-index";
+			var expressionPanelOpen = false;
+			var maxExpressionActions = 5;
+			var maxExpressionPanelItems = 24;
+			var nativeFetch = window.fetch.bind(window);
+			window.fetch = function (input, init) {
+				var url =
+					typeof input === "string" ? input : input && input.url;
+				if (
+					typeof url === "string" &&
+					url.indexOf("https://api.iconify.design/") === 0
+				) {
+					return Promise.resolve(new Response("", { status: 404 }));
+				}
+				return nativeFetch(input, init);
+			};
 
 			var localIcons = {
 				"material-symbols:visibility-off-rounded":
 					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="m19.1 21.9l-3.5-3.45q-.875.275-1.775.413T12 19q-3.35 0-6.125-1.8t-4.35-4.75q-.125-.225-.187-.462t-.063-.488t.063-.488t.187-.462q.55-.975 1.175-1.9T4.15 7L2.075 4.9Q1.8 4.625 1.8 4.213t.3-.713q.275-.275.7-.275t.7.275l17 17q.275.275.288.688t-.288.712q-.275.275-.7.275t-.7-.275M12 16q.275 0 .525-.025t.5-.1l-5.4-5.4q-.075.25-.1.5T7.5 11.5q0 1.875 1.313 3.188T12 16m0-12q3.35 0 6.138 1.813t4.362 4.762q.125.2.188.438t.062.487t-.05.488t-.175.437q-.475.925-1.062 1.75t-1.313 1.55q-.35.35-.825.325t-.825-.375l-2-2q-.175-.175-.225-.413t.025-.487q.1-.325.15-.625t.05-.65q0-1.875-1.312-3.187T12 7q-.35 0-.65.05t-.625.15q-.25.075-.5.025T9.8 7l-.825-.825q-.475-.475-.312-1.1t.787-.8q.625-.125 1.263-.2T12 4m1.975 5.65q.275.325.462.713t.238.812q.025.2-.15.275t-.325-.075l-2.05-2.05Q12 9.175 12.088 9t.287-.175q.475.05.875.263t.725.562"/></svg>',
 				"material-symbols:close-rounded":
 					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 13.4l-4.9 4.9q-.275.275-.7.275t-.7-.275q-.275-.275-.275-.7t.275-.7l4.9-4.9l-4.9-4.9q-.275-.275-.275-.7t.275-.7q.275-.275.7-.275t.7.275l4.9 4.9l4.9-4.9q.275-.275.7-.275t.7.275q.275.275.275.7t-.275.7L13.4 12l4.9 4.9q.275.275.275.7t-.275.7q-.275.275-.7.275t-.7-.275z"/></svg>',
+				"material-symbols:view-carousel-outline-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3 17q-.425 0-.712-.288T2 16V8q0-.425.288-.712T3 7h2q.425 0 .713.288T6 8v8q0 .425-.288.713T5 17H3Zm5 2q-.425 0-.712-.288T7 18V6q0-.425.288-.712T8 5h8q.425 0 .713.288T17 6v12q0 .425-.288.713T16 19H8ZM9 7v10h6V7H9Zm10 10q-.425 0-.712-.288T18 16V8q0-.425.288-.712T19 7h2q.425 0 .713.288T22 8v8q0 .425-.288.713T21 17h-2Z"/></svg>',
+				"material-symbols:grid-view-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M5 11q-.825 0-1.412-.587T3 9V5q0-.825.588-1.412T5 3h4q.825 0 1.413.588T11 5v4q0 .825-.587 1.413T9 11H5Zm0 10q-.825 0-1.412-.587T3 19v-4q0-.825.588-1.412T5 13h4q.825 0 1.413.588T11 15v4q0 .825-.587 1.413T9 21H5Zm10-10q-.825 0-1.412-.587T13 9V5q0-.825.588-1.412T15 3h4q.825 0 1.413.588T21 5v4q0 .825-.587 1.413T19 11h-4Zm0 10q-.825 0-1.412-.587T13 19v-4q0-.825.588-1.412T15 13h4q.825 0 1.413.588T21 15v4q0 .825-.587 1.413T19 21h-4Z"/></svg>',
+				"material-symbols:face-retouching-natural-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9 14.25q-.525 0-.888-.363T7.75 13q0-.525.363-.888T9 11.75q.525 0 .888.363t.362.887q0 .525-.363.888T9 14.25Zm6 0q-.525 0-.888-.363T13.75 13q0-.525.363-.888T15 11.75q.525 0 .888.363t.362.887q0 .525-.363.888T15 14.25Zm4.5-6.95q-.125 0-.25-.075T19.05 7l-.65-1.4l-1.4-.65q-.15-.075-.225-.2T16.7 4.5q0-.125.075-.25t.225-.2l1.4-.65l.65-1.4q.075-.15.2-.225t.25-.075q.125 0 .25.075t.2.225l.65 1.4l1.4.65q.15.075.225.2t.075.25q0 .125-.075.25t-.225.2l-1.4.65l-.65 1.4q-.075.15-.2.225t-.25.075ZM12 20q3.4 0 5.725-2.4T20 12q0-.575-.088-1.137t-.237-1.138q-2.8.65-5.45-.275T9.75 6.3q-.875 2.125-2.388 3.5T4 11.85q0 3.475 2.337 5.813T12 20Zm0 2q-2.05 0-3.875-.788t-3.188-2.15q-1.362-1.362-2.15-3.187T2 12q0-2.15.825-3.988t2.213-3.187q1.387-1.35 3.187-2.1T12 2q1.025 0 2.025.188t2.025.687q-.375.275-.613.675t-.237.95q0 .5.3 1.025t.875.8l.9.4l.4.9q.275.575.8.875t1.025.3q.5 0 .937-.25t.688-.6q.45 1.05.662 2.038T22 12q0 2-.763 3.813T19.137 19q-1.337 1.375-3.162 2.188T12 22Z"/></svg>',
+				"material-symbols:spa-outline-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 21q-3.75 0-6.375-2.625T3 12q0-2.55 1.325-4.687T7.9 4.075q.35-.175.725-.012T9.1 4.65q.125.375-.05.725t-.55.525Q6.9 6.65 5.95 8.275T5 12q0 2.925 2.038 4.963T12 19q2.925 0 4.963-2.037T19 12q0-2.1-1.05-3.725T15.5 5.9q-.375-.175-.55-.525t-.05-.725q.1-.425.475-.587t.725.012q2.25 1.1 3.575 3.238T21 12q0 3.75-2.625 6.375T12 21Zm0-4q-1.65 0-2.825-1.175T8 13q0-1.65 1.175-2.825T12 9q1.65 0 2.825 1.175T16 13q0 1.65-1.175 2.825T12 17Z"/></svg>',
+				"material-symbols:error-outline-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 17q.425 0 .713-.288T13 16q0-.425-.288-.712T12 15q-.425 0-.712.288T11 16q0 .425.288.713T12 17Zm0-4q.425 0 .713-.288T13 12V8q0-.425-.288-.712T12 7q-.425 0-.712.288T11 8v4q0 .425.288.713T12 13Zm0 9q-2.075 0-3.9-.788T4.925 19.075q-1.35-1.35-2.137-3.175T2 12q0-2.075.788-3.9t2.137-3.175Q6.275 3.575 8.1 2.788T12 2q2.075 0 3.9.788t3.175 2.137q1.35 1.35 2.138 3.175T22 12q0 2.075-.787 3.9t-2.138 3.175q-1.35 1.35-3.175 2.138T12 22Z"/></svg>',
+				"material-symbols:airwave-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3 15q-.425 0-.712-.288T2 14q0-.425.288-.712T3 13h18q.425 0 .713.288T22 14q0 .425-.288.713T21 15H3Zm1-4q-.425 0-.712-.288T3 10q0-.425.288-.712T4 9h16q.425 0 .713.288T21 10q0 .425-.288.713T20 11H4Zm3-4q-.425 0-.712-.288T6 6q0-.425.288-.712T7 5h10q.425 0 .713.288T18 6q0 .425-.288.713T17 7H7Zm0 12q-.425 0-.712-.288T6 18q0-.425.288-.712T7 17h10q.425 0 .713.288T18 18q0 .425-.288.713T17 19H7Z"/></svg>',
+				"material-symbols:wb-sunny-outline-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 18q-2.5 0-4.25-1.75T6 12q0-2.5 1.75-4.25T12 6q2.5 0 4.25 1.75T18 12q0 2.5-1.75 4.25T12 18Zm0 4q-.425 0-.712-.288T11 21v-1q0-.425.288-.712T12 19q.425 0 .713.288T13 20v1q0 .425-.288.713T12 22Zm0-17q-.425 0-.712-.288T11 4V3q0-.425.288-.712T12 2q.425 0 .713.288T13 3v1q0 .425-.288.713T12 5Zm9 8h-1q-.425 0-.712-.288T19 12q0-.425.288-.712T20 11h1q.425 0 .713.288T22 12q0 .425-.288.713T21 13ZM4 13H3q-.425 0-.712-.288T2 12q0-.425.288-.712T3 11h1q.425 0 .713.288T5 12q0 .425-.288.713T4 13Z"/></svg>',
+				"material-symbols:warning-outline-rounded":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M2.725 21q-.275 0-.5-.137t-.35-.363q-.125-.225-.125-.488t.15-.512l9.25-16q.15-.25.375-.375T12 3q.25 0 .475.125t.375.375l9.25 16q.15.25.15.512t-.125.488q-.125.225-.35.363t-.5.137H2.725ZM12 18q.425 0 .713-.288T13 17q0-.425-.288-.712T12 16q-.425 0-.712.288T11 17q0 .425.288.713T12 18Zm0-3q.425 0 .713-.288T13 14v-4q0-.425-.288-.712T12 9q-.425 0-.712.288T11 10v4q0 .425.288.713T12 15Z"/></svg>',
 			};
 
 			var menuActions = {
@@ -286,7 +333,7 @@
 				var style = document.createElement("style");
 				style.id = "l2d-hide-about";
 				style.textContent =
-					'button[title="About"] { display: none !important; }';
+					'button[title="About"], button[title="休眠"], button[title="Switch model"] { display: none !important; }';
 				document.head.appendChild(style);
 			}
 
@@ -394,9 +441,279 @@
 				);
 			}
 
-			function mountCollapseButton() {
+			function getModelList(config) {
+				if (config && Array.isArray(config._models)) {
+					return config._models;
+				}
+				return config && config.model ? [config.model] : [];
+			}
+
+			function getModelProfiles(config) {
+				if (config && Array.isArray(config._modelProfiles)) {
+					return config._modelProfiles;
+				}
+				return [];
+			}
+
+			function getStoredModelIndex(config) {
+				var models = getModelList(config);
+				if (models.length <= 1) return 0;
+				var index = Number(localStorage.getItem(modelStorageKey));
+				if (!Number.isFinite(index)) return 0;
+				return Math.max(0, Math.min(models.length - 1, index));
+			}
+
+			function saveModelIndex(index) {
+				localStorage.setItem(modelStorageKey, String(index));
+			}
+
+			function getActiveModelProfile(config) {
+				return getModelProfiles(config)[currentModelIndex] || {};
+			}
+
+			function getActiveDefaultParameters(config) {
+				var profile = getActiveModelProfile(config);
+				return profile.defaultParameters || {};
+			}
+
+			function clampPositiveInteger(value, fallback, ceiling) {
+				var number = Number(value);
+				if (!Number.isFinite(number) || number <= 0) return fallback;
+				return Math.min(Math.floor(number), ceiling);
+			}
+
+			function getActiveExpressionMenu() {
+				var globalMenu =
+					(lastInitConfig && lastInitConfig._expressionMenu) || {};
+				var modelMenu =
+					getActiveModelProfile(lastInitConfig).expressionMenu || {};
+				return Object.assign({}, globalMenu, modelMenu, {
+					labels: Object.assign(
+						{},
+						globalMenu.labels || {},
+						modelMenu.labels || {},
+					),
+					shortcuts: Array.isArray(modelMenu.shortcuts)
+						? modelMenu.shortcuts
+						: globalMenu.shortcuts || [],
+					enablePanel:
+						typeof modelMenu.enablePanel === "boolean"
+							? modelMenu.enablePanel
+							: globalMenu.enablePanel !== false,
+					maxActions: clampPositiveInteger(
+						modelMenu.maxActions || globalMenu.maxActions,
+						maxExpressionActions,
+						maxExpressionActions,
+					),
+					maxPanelItems: clampPositiveInteger(
+						modelMenu.maxPanelItems || globalMenu.maxPanelItems,
+						maxExpressionPanelItems,
+						maxExpressionPanelItems,
+					),
+				});
+			}
+
+			function getAvailableExpressions() {
+				if (!widgetInstance || !widgetInstance.l2d) return [];
+				return widgetInstance.l2d.getExpressions() || [];
+			}
+
+			function createMenuButton(id, label, icon, onClick) {
+				var button = document.getElementById(id);
+				if (!button) {
+					button = document.createElement("button");
+					button.id = id;
+					button.className = "live2d-companion-menu-button";
+					button.type = "button";
+					button.addEventListener("click", onClick);
+				}
+				button.title = label;
+				button.setAttribute("aria-label", label);
+				button.setAttribute("data-local-icon", icon);
+				button.innerHTML = getLocalIcon(icon);
+				return button;
+			}
+
+			async function switchCompanionModel() {
+				if (!lastInitConfig) return;
+				var models = getModelList(lastInitConfig);
+				if (models.length <= 1) return;
+				currentModelIndex = (currentModelIndex + 1) % models.length;
+				saveModelIndex(currentModelIndex);
+				hideExpressionPanel();
+				if (widgetInstance && widgetInstance.switchModel) {
+					await widgetInstance.switchModel(currentModelIndex);
+					setCompanionParameters(
+						getActiveDefaultParameters(lastInitConfig),
+					);
+					mountCompanionControls();
+					postAvailableExpressions();
+					notifyLoaded();
+				}
+			}
+
+			function mountModelSwitchButton(menu) {
+				var models = getModelList(lastInitConfig);
+				var existing = document.getElementById(
+					"live2d-companion-model-switch",
+				);
+				if (models.length <= 1) {
+					if (existing) existing.remove();
+					return;
+				}
+				var settings = lastInitConfig._modelSwitch || {};
+				var button = createMenuButton(
+					"live2d-companion-model-switch",
+					settings.label || "切换模型",
+					settings.icon ||
+						"material-symbols:view-carousel-outline-rounded",
+					switchCompanionModel,
+				);
+				if (button.parentElement !== menu) menu.appendChild(button);
+			}
+
+			function hideExpressionPanel() {
+				var button = document.getElementById(
+					"live2d-companion-expression-panel-toggle",
+				);
+				if (button) button.classList.remove("is-active");
+			}
+
+			function syncExpressionPanelState(open) {
+				expressionPanelOpen = Boolean(open);
+				document.body.classList.toggle(
+					"live2d-companion-expression-panel-open",
+					expressionPanelOpen,
+				);
+				var button = document.getElementById(
+					"live2d-companion-expression-panel-toggle",
+				);
+				if (button) {
+					button.classList.toggle("is-active", expressionPanelOpen);
+				}
+				var menu = document.querySelector(".live2d-companion-menu");
+				if (!menu) return;
+				if (expressionPanelOpen) {
+					menu.style.setProperty("opacity", "1", "important");
+					menu.style.setProperty(
+						"pointer-events",
+						"auto",
+						"important",
+					);
+				} else {
+					menu.style.removeProperty("opacity");
+					menu.style.setProperty("pointer-events", "auto");
+				}
+			}
+
+			function getExpressionLabel(name) {
+				var menu = getActiveExpressionMenu();
+				var labels = menu.labels || {};
+				if (labels[name]) return labels[name];
+				var shortcuts = menu.shortcuts || [];
+				var shortcut = shortcuts.find(function (item) {
+					return item.name === name;
+				});
+				return (shortcut && shortcut.label) || name;
+			}
+
+			function postAvailableExpressions() {
+				var menu = getActiveExpressionMenu();
+				parent.postMessage(
+					{
+						type: "l2d-expressions",
+						expressions: getAvailableExpressions().slice(
+							0,
+							menu.maxPanelItems,
+						),
+					},
+					"*",
+				);
+			}
+
+			function toggleExpressionPanel() {
+				if (!getAvailableExpressions().length) return;
+				var button = document.getElementById(
+					"live2d-companion-expression-panel-toggle",
+				);
+				var rect = button && button.getBoundingClientRect();
+				parent.postMessage(
+					{
+						type: "l2d-action",
+						action: "toggleExpressionPanel",
+						anchor: rect
+							? {
+									x: rect.right,
+									y: rect.top,
+								}
+							: undefined,
+					},
+					"*",
+				);
+			}
+
+			function mountExpressionButtons(menu) {
+				Array.prototype.forEach.call(
+					document.querySelectorAll(
+						".live2d-companion-expression-shortcut",
+					),
+					function (button) {
+						button.remove();
+					},
+				);
+				var panelToggle = document.getElementById(
+					"live2d-companion-expression-panel-toggle",
+				);
+				var expressions = getAvailableExpressions();
+				if (!expressions.length) {
+					if (panelToggle) panelToggle.remove();
+					hideExpressionPanel();
+					return;
+				}
+				var menuConfig = getActiveExpressionMenu();
+				if (menuConfig.enablePanel) {
+					var button = createMenuButton(
+						"live2d-companion-expression-panel-toggle",
+						menuConfig.panelLabel || "全部表情",
+						menuConfig.panelIcon ||
+							"material-symbols:grid-view-rounded",
+						toggleExpressionPanel,
+					);
+					if (button.parentElement !== menu) menu.appendChild(button);
+				} else {
+					if (panelToggle) panelToggle.remove();
+					hideExpressionPanel();
+				}
+				var shortcuts = (menuConfig.shortcuts || []).slice(
+					0,
+					menuConfig.maxActions,
+				);
+				shortcuts.forEach(function (shortcut) {
+					if (expressions.indexOf(shortcut.name) === -1) return;
+					var button = createMenuButton(
+						"live2d-companion-expression-" + shortcut.name,
+						shortcut.label,
+						shortcut.icon ||
+							"material-symbols:face-retouching-natural-rounded",
+						function () {
+							setCompanionExpression(shortcut.name);
+						},
+					);
+					button.classList.add(
+						"live2d-companion-expression-shortcut",
+					);
+					if (button.parentElement !== menu) {
+						menu.appendChild(button);
+					}
+				});
+			}
+
+			function mountCompanionControls() {
 				var menu = getWidgetMenu();
 				if (!menu) return;
+				menu.classList.add("live2d-companion-menu");
+				menu.style.zIndex = "10002";
+				menu.style.pointerEvents = "auto";
 				var existing = document.getElementById(
 					"live2d-companion-collapse",
 				);
@@ -405,30 +722,34 @@
 						menu.appendChild(existing);
 					}
 					configureCollapseButton(existing);
-					return;
+				} else {
+					var button = document.createElement("button");
+					button.id = "live2d-companion-collapse";
+					button.className = "live2d-companion-collapse";
+					button.type = "button";
+					configureCollapseButton(button);
+					button.addEventListener("click", function () {
+						parent.postMessage(
+							{ type: "l2d-action", action: "collapse" },
+							"*",
+						);
+					});
+					menu.appendChild(button);
 				}
-				var button = document.createElement("button");
-				button.id = "live2d-companion-collapse";
-				button.className = "live2d-companion-collapse";
-				button.type = "button";
-				configureCollapseButton(button);
-				button.addEventListener("click", function () {
-					parent.postMessage(
-						{ type: "l2d-action", action: "collapse" },
-						"*",
-					);
-				});
-				menu.appendChild(button);
+				mountModelSwitchButton(menu);
+				mountExpressionButtons(menu);
+				syncExpressionPanelState(expressionPanelOpen);
 			}
 
-			function destroyWidget() {
+			async function destroyWidget() {
 				if (!widgetInstance) return;
+				var instance = widgetInstance;
+				widgetInstance = null;
 				try {
-					widgetInstance.destroy();
+					await instance.destroy();
 				} catch (err) {
 					console.error("Failed to destroy Live2D widget:", err);
 				}
-				widgetInstance = null;
 			}
 
 			function showCompanionMessage(text) {
@@ -450,57 +771,63 @@
 				}, 3500);
 			}
 
-			window.addEventListener("message", function (e) {
-				if (e.data.type === "live2d-companion-theme") {
-					applyTheme(e.data.theme);
-					return;
-				}
+			function setCompanionExpression(name) {
+				if (!name || !widgetInstance || !widgetInstance.l2d) return;
+				widgetInstance.l2d.setExpression(String(name));
+			}
 
-				if (e.data.type === "live2d-companion-command") {
-					var command = e.data.command;
-					if (!command) return;
-					if (command.type === "message") {
-						showCompanionMessage(command.text);
-					}
+			function setCompanionParameters(parameters) {
+				if (!parameters || !widgetInstance || !widgetInstance.l2d)
 					return;
-				}
+				widgetInstance.l2d.setParams(parameters);
+			}
 
-				if (e.data.type !== "l2d-init") return;
-				var config = e.data.config;
-				applyUi(config.ui);
-				applyTheme(config.theme);
+			function buildRuntimeWidgetConfig(config) {
 				var widgetConfig = Object.assign({}, config);
+				var models = getModelList(config);
+				currentModelIndex = getStoredModelIndex(config);
+				if (models.length) {
+					widgetConfig.model = models.length > 1 ? models : models[0];
+				}
 				delete widgetConfig.ui;
 				delete widgetConfig.theme;
+				delete widgetConfig._models;
+				delete widgetConfig._modelProfiles;
+				delete widgetConfig._modelSwitch;
+				delete widgetConfig._expressionMenu;
+				return widgetConfig;
+			}
+
+			async function initializeCompanion(config, forceReload) {
+				lastInitConfig = config;
+				applyUi(config.ui);
+				applyTheme(config.theme);
+				var widgetConfig = buildRuntimeWidgetConfig(config);
 				var configKey = JSON.stringify(widgetConfig);
 
-				if (widgetInstance && activeConfigKey === configKey) {
+				if (
+					!forceReload &&
+					widgetInstance &&
+					activeConfigKey === configKey
+				) {
 					observeWidgetUi();
-					mountCollapseButton();
+					mountCompanionControls();
+					postAvailableExpressions();
 					notifyLoaded();
 					return;
 				}
 
-				if (loadingConfigKey === configKey) {
+				if (!forceReload && loadingConfigKey === configKey) {
 					return;
 				}
 
 				loadingConfigKey = configKey;
 				if (widgetInstance) {
-					destroyWidget();
+					await destroyWidget();
 				}
 
-				if (widgetConfig.menus && widgetConfig.menus.items) {
-					widgetConfig.menus.items = widgetConfig.menus.items.map(
-						function (item) {
-							return {
-								icon: item.icon,
-								label: item.label,
-								onClick:
-									menuActions[item.action] || function () {},
-							};
-						},
-					);
+				if (widgetConfig.menus) {
+					widgetConfig.menus.items = [];
 				}
 				widgetConfig.primaryColor =
 					"var(--live2d-companion-message-surface)";
@@ -516,23 +843,44 @@
 				}
 				loadingConfigKey = "";
 				observeWidgetUi();
-				mountCollapseButton();
+				mountCompanionControls();
 
-				if (config._hideAbout) {
-					hideAboutMenu();
-				}
+				hideAboutMenu();
 
 				var notified = false;
+				var initialModelSwitchApplied = false;
 				function notifyOnce() {
 					if (notified) return;
+					if (
+						!initialModelSwitchApplied &&
+						currentModelIndex > 0 &&
+						widgetInstance &&
+						widgetInstance.switchModel
+					) {
+						initialModelSwitchApplied = true;
+						widgetInstance
+							.switchModel(currentModelIndex)
+							.then(function () {
+								setCompanionParameters(
+									getActiveDefaultParameters(config),
+								);
+								mountCompanionControls();
+								postAvailableExpressions();
+								notifyLoaded();
+							});
+						return;
+					}
 					notified = true;
+					setCompanionParameters(getActiveDefaultParameters(config));
+					mountCompanionControls();
+					postAvailableExpressions();
 					notifyLoaded();
 				}
 
 				var checkInterval = setInterval(function () {
 					var canvas = document.querySelector("canvas");
 					if (canvas && canvas.width > 0 && canvas.height > 0) {
-						mountCollapseButton();
+						mountCompanionControls();
 						clearInterval(checkInterval);
 						setTimeout(notifyOnce, 300);
 					}
@@ -543,6 +891,33 @@
 					loadingConfigKey = "";
 					notifyOnce();
 				}, 15000);
+			}
+
+			window.addEventListener("message", function (e) {
+				if (e.data.type === "live2d-companion-theme") {
+					applyTheme(e.data.theme);
+					return;
+				}
+
+				if (e.data.type === "live2d-companion-command") {
+					var command = e.data.command;
+					if (!command) return;
+					if (command.type === "message") {
+						showCompanionMessage(command.text);
+					}
+					if (command.type === "expression") {
+						setCompanionExpression(command.name);
+					}
+					return;
+				}
+
+				if (e.data.type === "live2d-companion-expression-panel-state") {
+					syncExpressionPanelState(e.data.open);
+					return;
+				}
+
+				if (e.data.type !== "l2d-init") return;
+				initializeCompanion(e.data.config, false);
 			});
 		</script>
 	</body>
