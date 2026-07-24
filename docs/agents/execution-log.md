@@ -93,7 +93,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 - Replaced the mutable global `WidgetManager` with explicit viewport/region Widget placement presets and pure resolvers.
 - Added page layout policies: ordinary pages default to switchable `three-column`, while post detail pages are fixed to `content-right`.
-- Moved the complete Main Grid, page Widgets, Footer, and page TOC into the Swup replacement boundary while preserving the existing Banner and persistent Music Player/Pio boundary.
+- Moved the complete Main Grid, page Widgets, Footer, and page TOC into the Swup replacement boundary while preserving the existing Banner and persistent Music Player/Live2D Companion boundary.
 - Removed cross-viewport Widget migration and the historical mobile `drawer` abstraction; empty regions remain valid configuration outcomes.
 - Updated the Swup container selector from the inner `main` element to `#swup-container`, ensuring route-specific Main Grid policies and Widget regions are replaced together during navigation.
 - Made `#swup-container` the route-level crossfade owner and reduced nested content/Widget movement so three-column to two-column navigation no longer exposes an abrupt grid swap.
@@ -194,7 +194,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 ### Replaced the generic Widget system with page-owned modules
 
 - Moved site statistics into the Footer and derived totals from content-store metadata instead of rescanning post bodies.
-- Grouped Calendar, taxonomy, Profile, navigation, music, Pio, and post TOC components under their owning domains; retained `PanelCard` only as a visual container.
+- Grouped Calendar, taxonomy, Profile, navigation, music, Live2D Companion, and post TOC components under their owning domains; retained `PanelCard` only as a visual container.
 - Removed the Widget registry, placement presets, region resolver, duplicate responsive instances, and obsolete configuration aggregation.
 - Made Archive own Calendar and taxonomy panels in its main flow, and made Home the only page that supplies one Profile support node.
 - Changed category and post-detail layouts to content-only compositions while preserving Container Query feed widths and Swup replacement behavior.
@@ -256,7 +256,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Added coordinated Floating Tools position, loading, playing, and persistent-state transitions with a reduced-motion fallback.
 - Placed Floating Tools and Music Player in one fixed Flex layout so browser layout preserves their gap during panel and Playlist transitions without timing-sensitive position interpolation or observation.
 - Made the hidden fallback the initial Music Player state, with a rotating note for Playlist loading, first-cover promotion on success, and a static fallback on failure.
-- Increased the no-Playlist panel clearance and replaced generic Floating Tools glyphs with local icons that represent Widgets, Display Settings, TOC, and Pio visibility.
+- Increased the no-Playlist panel clearance and replaced generic Floating Tools glyphs with local icons that represent Widgets, Display Settings, TOC, and Live2D Companion visibility.
 - Consolidated Music visibility into Hidden, Expanded, and Mini states with one Fly/Fade transition contract and outside-click/default-state recovery, eliminating empty bottom-right UI states.
 - Restricted the first Display Settings entrance to opacity and subtle vertical transform so runtime positioning variables never animate across the viewport.
 - Gave the Hidden and Mini Music states stable outer dimensions and one bottom-right shared-container anchor; fixed-size content is clipped through synchronized width, height, and radius interpolation so it never reflows into a staged reveal.
@@ -360,3 +360,12 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Preserved the ASCII-first/CJK-fallback behavior by physically limiting Zen Maru Gothic to ASCII, while collecting the Lolita V2 subset from prepared Content, local UI sources, and a fixed safelist without network or random inputs.
 - Kept concrete Astro font variables below Design Typography semantics, preloaded only the small Latin subset, and reserved Locale plus `unicode-range` metadata for future language packages.
 - Learned that generated assets referenced by global CSS must be prepared before every runtime that consumes them; postbuild generation cannot satisfy Dev Server requests, and missing build configuration must fail rather than silently select fallback fonts.
+
+## 2026-07-24
+
+### Generalized the Live2D companion boundary
+
+- Replaced the model-specific companion feature with `src/features/live2d-companion`, keeping the iframe renderer as an isolation boundary instead of a cross-component API surface.
+- Added a feature-local command contract for show, collapse, toggle, and message interactions so other pages and components do not reach into the iframe DOM.
+- Store outer mount state in `live2d-companion-mounted` and internal collapsed state in `live2d-companion-collapsed`.
+- Removed legacy selectors and config/type aliases; new code should use `Live2DCompanion`, `live2dCompanionConfig`, and the feature-local event helpers.

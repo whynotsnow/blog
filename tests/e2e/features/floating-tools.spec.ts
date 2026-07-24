@@ -660,14 +660,45 @@ test("floating tools keeps a safe mobile touch target", async ({ page }) => {
 	expect(panelGeometry.height).toBeLessThanOrEqual(844 - 16);
 });
 
-test("floating tools controls the user Pio preference", async ({ page }) => {
+test("floating tools controls the Live2D companion preference", async ({
+	page,
+}) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.route(
+		"**/live2d-companion/models/NOIR/noir.moc3",
+		async (route) => {
+			await new Promise((resolve) => setTimeout(resolve, 500));
+			await route.continue();
+		},
+		{ times: 1 },
+	);
+	await page.addInitScript(() => {
+		if (window.top !== window) return;
+		localStorage.removeItem("live2d-companion-mounted");
+		localStorage.removeItem("live2d-companion-collapsed");
+	});
 	await gotoPage(page, "/");
 
-	await expect(page.locator(".pio-container")).toHaveAttribute(
-		"data-pio-mounted",
+	await expect(page.locator("#floating-tools-switch")).toBeVisible({
+		timeout: 15_000,
+	});
+	await expect(page.locator(".live2d-companion")).toHaveAttribute(
+		"data-live2d-companion-mounted",
 		"true",
+		{ timeout: 15_000 },
 	);
+	await expect(page.locator(".live2d-companion")).toHaveClass(
+		/live2d-companion--loading/,
+	);
+	await expect(page.locator(".live2d-companion__avatar")).toBeVisible();
+	const loadingAvatarGeometry = await page
+		.locator(".live2d-companion__avatar")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { height: rect.height, width: rect.width };
+		});
+	expect(loadingAvatarGeometry.width).toBeCloseTo(48, 0);
+	expect(loadingAvatarGeometry.height).toBeCloseTo(48, 0);
 	await page.locator("#floating-tools-switch").click({ force: true });
 	const toggle = page.getByRole("button", { name: "隐藏看板娘" });
 	await expect(toggle).toBeVisible();
@@ -676,16 +707,39 @@ test("floating tools controls the user Pio preference", async ({ page }) => {
 		"data-local-icon",
 		"material-symbols:face-retouching-natural-rounded",
 	);
-	await expect(page.locator(".pio-container .pio-dialog")).toHaveCount(1);
+	await expect(page.locator("#l2d-iframe")).toHaveCount(1);
+	const companionGeometry = await page
+		.locator(".live2d-companion")
+		.evaluate((el) => {
+			const rect = el.getBoundingClientRect();
+			const oldTransparentLayerPoint = {
+				x: rect.left + 8,
+				y: rect.bottom - 500,
+			};
+			const hit = document.elementFromPoint(
+				oldTransparentLayerPoint.x,
+				oldTransparentLayerPoint.y,
+			) as HTMLElement | null;
+			return {
+				height: rect.height,
+				hitId: hit?.id ?? "",
+				hitClass: hit?.className.toString() ?? "",
+			};
+		});
+	expect(companionGeometry.height).toBeLessThanOrEqual(272);
+	expect(companionGeometry.hitId).not.toBe("l2d-iframe");
+	expect(companionGeometry.hitClass).not.toContain("live2d-companion");
 	await toggle.click();
 
 	await expect
 		.poll(() =>
-			page.evaluate(() => localStorage.getItem("pio-module-mounted")),
+			page.evaluate(() =>
+				localStorage.getItem("live2d-companion-mounted"),
+			),
 		)
 		.toBe("0");
-	await expect(page.locator(".pio-container")).toHaveCount(0);
-	await expect(page.locator("#pio")).toHaveCount(0);
+	await expect(page.locator(".live2d-companion")).toHaveCount(0);
+	await expect(page.locator("#l2d-iframe")).toHaveCount(0);
 
 	const showToggle = page.getByRole("button", { name: "显示看板娘" });
 	await expect(showToggle).toHaveAttribute("aria-pressed", "false");
@@ -696,33 +750,137 @@ test("floating tools controls the user Pio preference", async ({ page }) => {
 	await showToggle.click();
 	await expect
 		.poll(() =>
-			page.evaluate(() => localStorage.getItem("pio-module-mounted")),
+			page.evaluate(() =>
+				localStorage.getItem("live2d-companion-mounted"),
+			),
 		)
 		.toBe("1");
-	await expect(page.locator(".pio-container")).toHaveAttribute(
-		"data-pio-mounted",
+	await expect(page.locator(".live2d-companion")).toHaveAttribute(
+		"data-live2d-companion-mounted",
 		"true",
 	);
-	await expect(page.locator("#pio")).toHaveCount(1);
-	await expect(page.locator(".pio-container .pio-dialog")).toHaveCount(1);
+	await expect(page.locator("#l2d-iframe")).toHaveCount(1);
+	await expect(page.locator(".live2d-companion")).toHaveClass(
+		/live2d-companion--loaded/,
+	);
+	await expect(
+		page.frameLocator("#l2d-iframe").getByRole("button", {
+			name: "休眠",
+		}),
+	).toHaveCount(0);
+	await expect(
+		page.frameLocator("#l2d-iframe").getByText("正在加载"),
+	).toHaveCount(0);
+	const canvasGeometry = await page
+		.frameLocator("#l2d-iframe")
+		.locator("canvas")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { height: rect.height, width: rect.width };
+		});
+	expect(canvasGeometry.width).toBeCloseTo(280, 0);
+	expect(canvasGeometry.height).toBeCloseTo(200, 0);
+	const collapseButtonGeometry = await page
+		.frameLocator("#l2d-iframe")
+		.getByRole("button", { name: "收起看板娘" })
+		.evaluate((element) => {
+			const buttonRect = element.getBoundingClientRect();
+			const canvas = document.querySelector("canvas");
+			const root = canvas?.parentElement;
+			const rootDivs = root
+				? Array.from(root.children).filter(
+						(child) => child.tagName === "DIV",
+					)
+				: [];
+			return {
+				buttonHeight: buttonRect.height,
+				buttonWidth: buttonRect.width,
+				iconName: element.getAttribute("data-local-icon"),
+				isInWidgetMenu: rootDivs[1] === element.parentElement,
+				menuChildCount: element.parentElement?.children.length ?? 0,
+				svgCount: element.querySelectorAll("svg").length,
+				text: element.textContent?.trim() ?? "",
+			};
+		});
+	expect(collapseButtonGeometry.buttonWidth).toBeCloseTo(28, 0);
+	expect(collapseButtonGeometry.buttonHeight).toBeCloseTo(28, 0);
+	expect(collapseButtonGeometry.iconName).toBe(
+		"material-symbols:visibility-off-rounded",
+	);
+	expect(collapseButtonGeometry.isInWidgetMenu).toBe(true);
+	expect(collapseButtonGeometry.menuChildCount).toBeGreaterThan(0);
+	expect(collapseButtonGeometry.svgCount).toBe(1);
+	expect(collapseButtonGeometry.text).toBe("");
+	await page.evaluate(() => {
+		window.dispatchEvent(
+			new CustomEvent("live2d-companion-command", {
+				detail: {
+					command: {
+						type: "message",
+						text: "组件交互测试",
+					},
+				},
+			}),
+		);
+	});
+	await expect(
+		page.frameLocator("#l2d-iframe").locator("#live2d-companion-message"),
+	).toHaveText("组件交互测试");
 
-	await page.locator(".pio-close").click({ force: true });
-	await expect(page.locator(".pio-container")).toHaveCount(1);
-	await expect(page.locator(".pio-container")).toHaveClass(/pio-hidden/);
-	await expect
-		.poll(() => page.evaluate(() => localStorage.getItem("posterGirl")))
-		.toBe("0");
+	await page.locator("#l2d-iframe").evaluate((iframe) => {
+		const frame = iframe as HTMLIFrameElement;
+		frame.contentDocument
+			?.querySelector<HTMLButtonElement>("#live2d-companion-collapse")
+			?.click();
+	});
+	await expect(page.locator(".live2d-companion")).toHaveCount(1);
+	await expect(page.locator(".live2d-companion")).toHaveClass(
+		/live2d-companion--collapsed/,
+	);
+	await expect(page.locator(".live2d-companion__avatar")).toBeVisible();
+	const collapsedIframeGeometry = await page
+		.locator("#l2d-iframe")
+		.evaluate((iframe) => {
+			const rect = iframe.getBoundingClientRect();
+			return {
+				display: window.getComputedStyle(iframe).display,
+				height: rect.height,
+				width: rect.width,
+			};
+		});
+	expect(collapsedIframeGeometry.display).toBe("none");
+	expect(collapsedIframeGeometry.height).toBe(0);
+	expect(collapsedIframeGeometry.width).toBe(0);
+	await expect(page.getByText("正在休息")).toHaveCount(0);
+	await expect(
+		page.frameLocator("#l2d-iframe").getByText("正在休眠"),
+	).toHaveCount(0);
 	await expect
 		.poll(() =>
-			page.evaluate(() => localStorage.getItem("pio-module-mounted")),
+			page.evaluate(() =>
+				localStorage.getItem("live2d-companion-collapsed"),
+			),
+		)
+		.toBe("1");
+	await expect
+		.poll(() =>
+			page.evaluate(() =>
+				localStorage.getItem("live2d-companion-mounted"),
+			),
 		)
 		.toBe("1");
 
-	await page.locator(".pio-show").click();
-	await expect(page.locator(".pio-container")).not.toHaveClass(/pio-hidden/);
+	await page.locator(".live2d-companion__avatar").click();
+	await expect(page.locator(".live2d-companion")).not.toHaveClass(
+		/live2d-companion--collapsed/,
+	);
 	await expect
-		.poll(() => page.evaluate(() => localStorage.getItem("posterGirl")))
-		.toBe("1");
+		.poll(() =>
+			page.evaluate(() =>
+				localStorage.getItem("live2d-companion-collapsed"),
+			),
+		)
+		.toBe("0");
 });
 
 test("playlist attaches above the player and floating tools clears the full surface", async ({
