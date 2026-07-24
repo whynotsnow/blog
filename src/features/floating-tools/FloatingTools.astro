@@ -8,7 +8,7 @@ import BackToTop from "@components/control/BackToTop.astro";
 import FloatingTOC from "@components/control/FloatingTOC.astro";
 import MusicPlayer from "@/features/music-player/MusicPlayer.svelte";
 import { musicPlayerConfig } from "@/config";
-import PioToggle from "./PioToggle.svelte";
+import Live2DCompanionToggle from "./Live2DCompanionToggle.svelte";
 import "./floating-tools.css";
 ---
 
@@ -30,7 +30,7 @@ import "./floating-tools.css";
 		</div>
 
 		<div class="floating-tools__item floating-tools__item--expandable floating-tools__item--optional">
-			<PioToggle client:idle />
+			<Live2DCompanionToggle client:idle />
 		</div>
 
 		<div class="floating-tools__item floating-tools__item--expandable">

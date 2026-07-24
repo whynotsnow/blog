@@ -27,5 +27,3 @@ export const sakuraConfig: SakuraConfig = {
 	},
 	zIndex: 100, // 层级，确保樱花在合适的层级显示
 };
-
-// Pio 看板娘配置

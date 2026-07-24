@@ -22,8 +22,8 @@ export const ja: Translation = {
 	[Key.tocEmpty]: "目次はありません",
 	[Key.floatingTools]: "クイックツール",
 	[Key.displaySettings]: "表示設定",
-	[Key.pioShow]: "看板娘を表示",
-	[Key.pioHide]: "看板娘を非表示",
+	[Key.companionShow]: "看板娘を表示",
+	[Key.companionHide]: "看板娘を非表示",
 
 	// お知らせ
 	[Key.siteNotice]: "サイトのお知らせ",

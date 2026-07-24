@@ -97,6 +97,10 @@ function isUnder(file, directory) {
 	return file === directory || file.startsWith(`${directory}/`);
 }
 
+function isVendorStaticAsset(file) {
+	return file === "public/live2d-companion/l2d-widget.min.js";
+}
+
 function localBin(name) {
 	const path = `node_modules/.bin/${name}`;
 	if (!existsSync(path)) {
@@ -155,7 +159,10 @@ if (markdownTargets.length > 0) {
 }
 
 const eslintTargets = stagedFiles.filter(
-	(file) => ESLINT_EXTENSIONS.has(extname(file)) && isExistingFile(file),
+	(file) =>
+		ESLINT_EXTENSIONS.has(extname(file)) &&
+		isExistingFile(file) &&
+		!isVendorStaticAsset(file),
 );
 if (eslintTargets.length > 0) {
 	console.log("[pre-commit] Running ESLint for staged code...");

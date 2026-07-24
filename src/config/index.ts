@@ -12,7 +12,7 @@ export { footerConfig } from "./footer";
 export { licenseConfig } from "./license";
 export { musicPlayerConfig } from "./music";
 export { navBarConfig } from "./navbar";
-export { pioConfig } from "./pio";
+export { live2dCompanionConfig } from "./live2d-companion";
 export { profileConfig } from "./profile";
 export { shareConfig } from "./share";
 export { SITE_LANG, SITE_TIMEZONE, siteConfig } from "./site";

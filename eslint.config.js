@@ -107,7 +107,13 @@ export default [
 	 * Ignore generated files
 	 */
 	{
-		ignores: ["dist/**", "node_modules/**", ".astro/**", ".vercel/**"],
+		ignores: [
+			"dist/**",
+			"node_modules/**",
+			".astro/**",
+			".vercel/**",
+			"public/live2d-companion/l2d-widget.min.js",
+		],
 	},
 
 	/**

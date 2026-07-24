@@ -22,8 +22,8 @@ export const zh_CN: Translation = {
 	[Key.tocEmpty]: "当前页面没有目录",
 	[Key.floatingTools]: "快捷工具",
 	[Key.displaySettings]: "显示设置",
-	[Key.pioShow]: "显示看板娘",
-	[Key.pioHide]: "隐藏看板娘",
+	[Key.companionShow]: "显示看板娘",
+	[Key.companionHide]: "隐藏看板娘",
 
 	// 网站通知
 	[Key.siteNotice]: "网站通知",

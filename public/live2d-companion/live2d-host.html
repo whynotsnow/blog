@@ -1,0 +1,339 @@
+<!doctype html>
+<html>
+	<head>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				background: transparent;
+			}
+			.live2d-companion-message {
+				position: absolute;
+				inset-inline: 12px;
+				top: 32px;
+				z-index: 10000;
+				box-sizing: border-box;
+				max-width: calc(100% - 24px);
+				padding: 8px 12px;
+				border-radius: 8px;
+				background: rgba(54, 54, 54, 0.78);
+				color: rgba(255, 255, 255, 0.96);
+				font:
+					13px/1.5 system-ui,
+					-apple-system,
+					BlinkMacSystemFont,
+					"Segoe UI",
+					sans-serif;
+				text-align: center;
+				word-break: break-word;
+				pointer-events: none;
+				opacity: 0;
+				transform: translateY(6px);
+				transition:
+					opacity 0.18s ease,
+					transform 0.18s ease;
+			}
+			.live2d-companion-message.is-visible {
+				opacity: 1;
+				transform: translateY(0);
+			}
+			.live2d-companion-collapse {
+				display: flex;
+				width: 28px;
+				height: 28px;
+				align-items: center;
+				justify-content: center;
+				padding: 0;
+				border: 0;
+				border-radius: 999px;
+				background: rgba(96, 165, 250, 0.9);
+				color: rgba(255, 255, 255, 0.88);
+				font:
+					700 16px/1 system-ui,
+					-apple-system,
+					BlinkMacSystemFont,
+					"Segoe UI",
+					sans-serif;
+				cursor: pointer;
+				transition: color 0.15s ease;
+				flex-shrink: 0;
+			}
+			.live2d-companion-collapse svg {
+				width: 1.05rem;
+				height: 1.05rem;
+				pointer-events: none;
+			}
+			.live2d-companion-collapse:hover {
+				color: rgb(255, 255, 255);
+			}
+		</style>
+	</head>
+	<body>
+		<script src="/live2d-companion/l2d-widget.min.js"></script>
+		<script>
+			var widgetInstance = null;
+			var activeConfigKey = "";
+			var loadingConfigKey = "";
+			var lastContentHeight = 500;
+			var messageTimer = null;
+			var widgetUiObserver = null;
+
+			var menuActions = {
+				home: function () {
+					parent.postMessage(
+						{ type: "l2d-action", action: "home" },
+						"*",
+					);
+				},
+				scrollToTop: function () {
+					parent.postMessage(
+						{ type: "l2d-action", action: "scrollToTop" },
+						"*",
+					);
+				},
+			};
+
+			function notifyLoaded() {
+				var maxBottom = 0;
+				document.querySelectorAll("*").forEach(function (el) {
+					if (el.getBoundingClientRect) {
+						var r = el.getBoundingClientRect();
+						if (
+							r.width > 0 &&
+							r.height > 0 &&
+							r.bottom > maxBottom
+						) {
+							maxBottom = r.bottom;
+						}
+					}
+				});
+
+				lastContentHeight =
+					Math.ceil(maxBottom) || lastContentHeight || 500;
+				parent.postMessage(
+					{ type: "l2d-loaded", contentHeight: lastContentHeight },
+					"*",
+				);
+			}
+
+			function hideAboutMenu() {
+				if (document.getElementById("l2d-hide-about")) return;
+				var style = document.createElement("style");
+				style.id = "l2d-hide-about";
+				style.textContent =
+					'button[title="About"] { display: none !important; }';
+				document.head.appendChild(style);
+			}
+
+			function hideWidgetStatusPanel() {
+				Array.prototype.forEach.call(
+					document.body.children,
+					function (el) {
+						if (
+							el.id === "live2d-companion-collapse" ||
+							el.id === "live2d-companion-message"
+						) {
+							return;
+						}
+						var text = (el.textContent || "").trim();
+						if (
+							text.indexOf("正在加载") !== -1 ||
+							text.indexOf("正在休息") !== -1 ||
+							text.indexOf("正在休眠") !== -1
+						) {
+							el.style.display = "none";
+							el.style.pointerEvents = "none";
+							el.textContent = "";
+						}
+					},
+				);
+			}
+
+			function observeWidgetUi() {
+				hideWidgetStatusPanel();
+				if (widgetUiObserver) return;
+				widgetUiObserver = new MutationObserver(hideWidgetStatusPanel);
+				widgetUiObserver.observe(document.body, {
+					childList: true,
+					subtree: true,
+					characterData: true,
+				});
+			}
+
+			function getWidgetMenu() {
+				var canvas = document.querySelector("canvas");
+				var root = canvas && canvas.parentElement;
+				if (!root) return null;
+				var divs = Array.prototype.filter.call(
+					root.children,
+					function (child) {
+						return child.tagName === "DIV";
+					},
+				);
+				return (
+					divs.find(function (child) {
+						var style = window.getComputedStyle(child);
+						return (
+							style.position === "absolute" &&
+							style.display === "flex" &&
+							style.flexDirection === "column"
+						);
+					}) ||
+					divs[1] ||
+					null
+				);
+			}
+
+			function mountCollapseButton() {
+				var menu = getWidgetMenu();
+				if (!menu) return;
+				var existing = document.getElementById(
+					"live2d-companion-collapse",
+				);
+				if (existing) {
+					if (existing.parentElement !== menu) {
+						menu.appendChild(existing);
+					}
+					return;
+				}
+				var button = document.createElement("button");
+				button.id = "live2d-companion-collapse";
+				button.className = "live2d-companion-collapse";
+				button.type = "button";
+				button.title = "收起看板娘";
+				button.setAttribute("aria-label", "收起看板娘");
+				button.setAttribute(
+					"data-local-icon",
+					"material-symbols:visibility-off-rounded",
+				);
+				button.innerHTML =
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="m19.1 21.9l-3.5-3.45q-.875.275-1.775.413T12 19q-3.35 0-6.125-1.8t-4.35-4.75q-.125-.225-.187-.462t-.063-.488t.063-.488t.187-.462q.55-.975 1.175-1.9T4.15 7L2.075 4.9Q1.8 4.625 1.8 4.213t.3-.713q.275-.275.7-.275t.7.275l17 17q.275.275.288.688t-.288.712q-.275.275-.7.275t-.7-.275M12 16q.275 0 .525-.025t.5-.1l-5.4-5.4q-.075.25-.1.5T7.5 11.5q0 1.875 1.313 3.188T12 16m0-12q3.35 0 6.138 1.813t4.362 4.762q.125.2.188.438t.062.487t-.05.488t-.175.437q-.475.925-1.062 1.75t-1.313 1.55q-.35.35-.825.325t-.825-.375l-2-2q-.175-.175-.225-.413t.025-.487q.1-.325.15-.625t.05-.65q0-1.875-1.312-3.187T12 7q-.35 0-.65.05t-.625.15q-.25.075-.5.025T9.8 7l-.825-.825q-.475-.475-.312-1.1t.787-.8q.625-.125 1.263-.2T12 4m1.975 5.65q.275.325.462.713t.238.812q.025.2-.15.275t-.325-.075l-2.05-2.05Q12 9.175 12.088 9t.287-.175q.475.05.875.263t.725.562"/></svg>';
+				button.addEventListener("click", function () {
+					parent.postMessage(
+						{ type: "l2d-action", action: "collapse" },
+						"*",
+					);
+				});
+				menu.appendChild(button);
+			}
+
+			function destroyWidget() {
+				if (!widgetInstance) return;
+				try {
+					widgetInstance.destroy();
+				} catch (err) {
+					console.error("Failed to destroy Live2D widget:", err);
+				}
+				widgetInstance = null;
+			}
+
+			function showCompanionMessage(text) {
+				if (!text) return;
+				var message = document.getElementById(
+					"live2d-companion-message",
+				);
+				if (!message) {
+					message = document.createElement("div");
+					message.id = "live2d-companion-message";
+					message.className = "live2d-companion-message";
+					document.body.appendChild(message);
+				}
+				message.textContent = String(text);
+				message.classList.add("is-visible");
+				clearTimeout(messageTimer);
+				messageTimer = setTimeout(function () {
+					message.classList.remove("is-visible");
+				}, 3500);
+			}
+
+			window.addEventListener("message", function (e) {
+				if (e.data.type === "live2d-companion-command") {
+					var command = e.data.command;
+					if (!command) return;
+					if (command.type === "message") {
+						showCompanionMessage(command.text);
+					}
+					return;
+				}
+
+				if (e.data.type !== "l2d-init") return;
+				var config = e.data.config;
+				var configKey = JSON.stringify(config);
+
+				if (widgetInstance && activeConfigKey === configKey) {
+					observeWidgetUi();
+					mountCollapseButton();
+					notifyLoaded();
+					return;
+				}
+
+				if (loadingConfigKey === configKey) {
+					return;
+				}
+
+				loadingConfigKey = configKey;
+				if (widgetInstance) {
+					destroyWidget();
+				}
+
+				if (config.menus && config.menus.items) {
+					config.menus.items = config.menus.items.map(
+						function (item) {
+							return {
+								icon: item.icon,
+								label: item.label,
+								onClick:
+									menuActions[item.action] || function () {},
+							};
+						},
+					);
+				}
+
+				try {
+					widgetInstance = L2D_WIDGET.createWidget(config);
+					activeConfigKey = configKey;
+				} catch (err) {
+					loadingConfigKey = "";
+					activeConfigKey = "";
+					console.error("Failed to initialize Live2D widget:", err);
+					return;
+				}
+				loadingConfigKey = "";
+				observeWidgetUi();
+				mountCollapseButton();
+
+				if (config._hideAbout) {
+					hideAboutMenu();
+				}
+
+				var notified = false;
+				function notifyOnce() {
+					if (notified) return;
+					notified = true;
+					notifyLoaded();
+				}
+
+				var checkInterval = setInterval(function () {
+					var canvas = document.querySelector("canvas");
+					if (canvas && canvas.width > 0 && canvas.height > 0) {
+						mountCollapseButton();
+						clearInterval(checkInterval);
+						setTimeout(notifyOnce, 300);
+					}
+				}, 200);
+
+				setTimeout(function () {
+					clearInterval(checkInterval);
+					loadingConfigKey = "";
+					notifyOnce();
+				}, 15000);
+			});
+		</script>
+	</body>
+</html>

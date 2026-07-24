@@ -354,16 +354,20 @@ export type OverlayWallpaperConfig = {
 export type FullscreenWallpaperConfig = OverlayWallpaperConfig;
 
 /**
- * Pio 看板娘配置
+ * Live2D 看板娘配置
  */
-export type PioConfig = {
+export type Live2DCompanionConfig = {
 	enable: boolean; // 是否默认挂载看板娘
-	models?: string[]; // 模型文件路径数组
+	models?: string[]; // 模型文件路径数组（支持 .model.json 和 .model3.json）
+	avatar?: string; // 收起与加载状态头像
 	position?: "left" | "right"; // 看板娘位置
 	width?: number; // 看板娘宽度
 	height?: number; // 看板娘高度
+	modelScale?: number; // 模型在 canvas 内的绘制缩放
+	modelOffset?: [number, number]; // 模型在 canvas 内的绘制偏移 [x, y]
 	mode?: "static" | "fixed" | "draggable"; // 展现模式
 	hiddenOnMobile?: boolean; // 是否在移动设备上隐藏
+	hideAboutMenu?: boolean; // 是否隐藏内置 About 菜单按钮
 	dialog?: {
 		welcome?: string | string[]; // 欢迎词
 		touch?: string | string[]; // 触摸提示
@@ -376,6 +380,20 @@ export type PioConfig = {
 			type: "read" | "link"; // 类型
 			text?: string; // 自定义文本
 		}>;
+	};
+	tips?: {
+		welcomeMessage?: string[]; // 欢迎语
+		messages?: string[]; // 循环提示内容
+		duration?: number; // 每条 tips 展示时长（ms）
+		interval?: number; // tips 循环间隔（ms）
+	};
+	menus?: {
+		items?: Array<{
+			icon?: string; // Iconify 图标名称
+			label: string; // 无障碍标题
+			action: string; // 预定义动作名称
+		}>;
+		align?: "left" | "right"; // 菜单对齐方式
 	};
 };
 

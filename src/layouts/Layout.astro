@@ -1,7 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import Pio from "@/features/pio/Pio.svelte";
+import Live2DCompanion from "@/features/live2d-companion/Live2DCompanion.svelte";
 import LayoutBannerStyles from "./page-shell/LayoutBannerStyles.astro";
 import LayoutHead from "./page-shell/LayoutHead.astro";
 import {
@@ -101,8 +101,8 @@ const pageShell = buildLayoutPageShellModel({
 		<ConfigCarrier />
 		<slot />
 
-		<!-- Pio controller stays available; config only supplies its default mount state. -->
-		<Pio client:idle />
+		<!-- Live2D Companion controller stays available; config only supplies its default mount state. -->
+		<Live2DCompanion client:idle />
 
 		<!-- Dynamic route-height compensation; the Shell runtime owns its exact size. -->
 		<div id="page-height-guard" class="page-height-guard" data-state="idle" aria-hidden="true"></div>

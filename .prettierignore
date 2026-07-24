@@ -23,6 +23,8 @@ Thumbs.db
 # Third-party/minified static assets
 public/assets/js/*.min.js
 public/assets/css/*.min.css
+public/live2d-companion/l2d-widget.min.js
+public/live2d-companion/models/
 
 # Environment
 .env
