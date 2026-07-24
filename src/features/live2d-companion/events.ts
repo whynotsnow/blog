@@ -4,7 +4,8 @@ export type Live2DCompanionCommand =
 	| { type: "show" }
 	| { type: "collapse" }
 	| { type: "toggle" }
-	| { type: "message"; text: string };
+	| { type: "message"; text: string }
+	| { type: "expression"; name: string };
 
 export type Live2DCompanionCommandDetail = {
 	command: Live2DCompanionCommand;
@@ -37,4 +38,8 @@ export function toggleLive2DCompanion() {
 
 export function sendLive2DCompanionMessage(text: string) {
 	dispatchLive2DCompanionCommand({ type: "message", text });
+}
+
+export function setLive2DCompanionExpression(name: string) {
+	dispatchLive2DCompanionCommand({ type: "expression", name });
 }

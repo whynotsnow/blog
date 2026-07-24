@@ -356,18 +356,48 @@ export type FullscreenWallpaperConfig = OverlayWallpaperConfig;
 /**
  * Live2D 看板娘配置
  */
+export type Live2DExpressionMenuConfig = {
+	panelIcon?: string; // 完整表情面板按钮的本地图标名称
+	panelLabel?: string; // 完整表情面板按钮文案
+	enablePanel?: boolean; // 是否启用完整表情面板入口
+	maxActions?: number; // iframe action 区最多展示数量，当前支持上限为 5
+	maxPanelItems?: number; // 完整表情面板最多展示数量，当前支持上限为 24
+	labels?: Record<string, string>; // 完整表情面板中的中文名称
+	shortcuts?: Array<{
+		name: string; // Live2D expression 名称
+		label: string; // 表情按钮文案
+		icon?: string; // 本地图标名称
+	}>;
+};
+
+export type Live2DCompanionModelConfig = {
+	path: string; // 模型文件路径
+	label?: string; // 模型切换菜单中的名称
+	avatar?: string; // 收起与加载状态头像
+	scale?: number; // 覆盖全局模型绘制缩放
+	offset?: [number, number]; // 覆盖全局模型绘制偏移 [x, y]
+	defaultParameters?: Record<string, number>; // 当前模型加载完成后的默认参数
+	expressionMenu?: Live2DExpressionMenuConfig; // 当前模型的 action 与表情轮盘配置
+};
+
 export type Live2DCompanionConfig = {
 	enable: boolean; // 是否默认挂载看板娘
-	models?: string[]; // 模型文件路径数组（支持 .model.json 和 .model3.json）
+	models?: Array<string | Live2DCompanionModelConfig>; // 模型路径或模型配置数组
 	avatar?: string; // 收起与加载状态头像
 	position?: "left" | "right"; // 看板娘位置
 	width?: number; // 看板娘宽度
 	height?: number; // 看板娘高度
 	modelScale?: number; // 模型在 canvas 内的绘制缩放
 	modelOffset?: [number, number]; // 模型在 canvas 内的绘制偏移 [x, y]
+	defaultParameters?: Record<string, number>; // 模型加载完成后的默认参数
 	mode?: "static" | "fixed" | "draggable"; // 展现模式
 	hiddenOnMobile?: boolean; // 是否在移动设备上隐藏
 	hideAboutMenu?: boolean; // 是否隐藏内置 About 菜单按钮
+	modelSwitch?: {
+		icon?: string; // 本地图标名称
+		label?: string; // 模型切换按钮文案
+	};
+	expressionMenu?: Live2DExpressionMenuConfig;
 	ui?: {
 		themeMode?: "site" | "custom"; // UI 主题来源
 		messageOffset?: {
