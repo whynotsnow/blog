@@ -116,8 +116,8 @@ Markdown 规范检查由 `markdownlint-cli2` 单独处理，不会自动重写�
 2. 如果已暂存文件同时存在未暂存改动，hook 会停止提交，避免自动格式化时把未准备提交的内容一起加入 commit。
 3. 运行 `git diff --cached --check` 检查暂存内容的空白错误。
 4. Markdown 文件运行 markdownlint；代码文件只对 staged 目标运行 ESLint。
-5. Design、Astro/Svelte/内容和 source TypeScript 门禁仅在对应范围变化时运行。
-6. 测试和测试配置变化时运行独立的 `tsconfig.tests.json` 检查。
+5. Design、Astro/Svelte/内容和 source TypeScript 门禁仅在对应范围变化时运行；Astro/Svelte 检查会把 `hint` 级诊断也作为提交阻塞项。
+6. 测试和测试配置变化时运行独立的 `tsconfig.tests.json` 检查；`tests/tsconfig.json` 只服务编辑器项目发现，继承同一套测试类型配置。
 
 GitHub Pull Request 与普通 `main` Push CI 都使用 `tests/impact-map.json`，按 Git Diff 选择 Quality、Fast Tests、Browser Tests 和 Astro Build。依赖、测试基础设施、跨模块基础设施、未分类路径等高风险改动仍会升级为全量验证；每周定时任务和手动 Workflow Dispatch 固定运行全部门禁，作为影响映射的兜底。
 
