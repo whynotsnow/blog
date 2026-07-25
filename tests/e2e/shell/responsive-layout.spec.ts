@@ -122,7 +122,7 @@ test("responsive width budgets preserve Card and support module stability", asyn
 	).toBe(true);
 });
 
-test("container-content pages distinguish supported and content-only widths", async ({
+test("container-content pages keep supported widths and reading measures", async ({
 	page,
 }) => {
 	await page.setViewportSize({ width: 1536, height: 900 });
@@ -151,10 +151,17 @@ test("container-content pages distinguish supported and content-only widths", as
 	for (const pathname of ["/category/tech/", "/posts/markdown-tutorial/"]) {
 		await gotoPage(page, pathname);
 		const geometry = await readGeometry();
-		expect(geometry.supportWidth).toBe(0);
-		expect(geometry.gridWidth).toBeLessThanOrEqual(992 + 1);
+		expect(geometry.supportWidth).toBeGreaterThanOrEqual(248 - 1);
+		expect(geometry.supportWidth).toBeLessThanOrEqual(272 + 1);
+		expect(geometry.gridWidth).toBeLessThanOrEqual(1280 + 1);
 		expect(geometry.navbarWidth).toBeCloseTo(home.navbarWidth, 0);
 	}
+
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	const readingWidth = await page
+		.locator(".post-detail__content")
+		.evaluate((node) => node.getBoundingClientRect().width);
+	expect(readingWidth).toBeLessThanOrEqual(768 + 1);
 });
 
 test("container breakpoints retain minimum safe budgets after Shell contraction", async ({
@@ -437,28 +444,45 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	await expect(mobileFilter).toBeHidden();
 	await expect(filterOptions).toBeVisible();
 
-	await page.setViewportSize({ width: 1767, height: 900 });
+	await page.setViewportSize({ width: 1280, height: 900 });
 	await gotoPage(page, "/posts/markdown-tutorial/");
-	const tocRegion = page.locator(".sidebar-toc-region--container");
-	await expect(tocRegion).toHaveCSS("display", "none");
+	await expect(page.locator(".sidebar-toc-region--container")).toHaveCount(0);
+	await expect(page.locator(".post-support__toc")).toBeVisible();
+	await expect(
+		page.locator(".post-support__toc table-of-contents#toc a").first(),
+	).toBeVisible();
 
-	await page.setViewportSize({ width: 1768, height: 900 });
-	await expect(tocRegion).toHaveCSS("display", "block");
-	const tocGeometry = await page.evaluate(() => {
-		const shell = document.querySelector<HTMLElement>(".main-grid-shell")!;
-		const rail = document.querySelector<HTMLElement>(
-			".sidebar-toc-region__rail",
+	const supportTocGeometry = await page.evaluate(() => {
+		const grid = document.querySelector<HTMLElement>("#main-grid")!;
+		const main = document.querySelector<HTMLElement>(".page-main-content")!;
+		const support = document.querySelector<HTMLElement>(
+			".page-support-region",
 		)!;
-		const shellRect = shell.getBoundingClientRect();
-		const railRect = rail.getBoundingClientRect();
+		const article = document.querySelector<HTMLElement>(
+			".post-detail__content",
+		)!;
+		const gridRect = grid.getBoundingClientRect();
+		const mainRect = main.getBoundingClientRect();
+		const supportRect = support.getBoundingClientRect();
+		const articleRect = article.getBoundingClientRect();
 		return {
-			shellRight: shellRect.right,
-			railLeft: railRect.left,
-			railRight: railRect.right,
+			gridRight: gridRect.right,
+			mainRight: mainRect.right,
+			supportLeft: supportRect.left,
+			supportRight: supportRect.right,
+			supportWidth: supportRect.width,
+			articleWidth: articleRect.width,
 		};
 	});
-	expect(tocGeometry.railLeft).toBeGreaterThan(tocGeometry.shellRight);
-	expect(tocGeometry.railRight).toBeLessThanOrEqual(1768 + 1);
+	expect(supportTocGeometry.supportLeft).toBeGreaterThanOrEqual(
+		supportTocGeometry.mainRight,
+	);
+	expect(supportTocGeometry.supportRight).toBeLessThanOrEqual(
+		supportTocGeometry.gridRight + 1,
+	);
+	expect(supportTocGeometry.supportWidth).toBeGreaterThanOrEqual(248 - 1);
+	expect(supportTocGeometry.supportWidth).toBeLessThanOrEqual(272 + 1);
+	expect(supportTocGeometry.articleWidth).toBeLessThanOrEqual(768 + 1);
 });
 
 test("layout breakpoint boundaries do not overlap", async ({ page }) => {

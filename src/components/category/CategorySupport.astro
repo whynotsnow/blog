@@ -1,0 +1,210 @@
+---
+import { Icon } from "astro-icon/components";
+import ButtonLink from "@components/control/ButtonLink.astro";
+import type { CategoryPageProps } from "@/services/category-page";
+import { url } from "@utils/url";
+
+type Props = Pick<
+	CategoryPageProps,
+	"categories" | "categorySlug" | "pagination"
+>;
+
+const { categories, categorySlug, pagination } = Astro.props as Props;
+const activeCategory = categories.find(
+	(category) => category.slug === categorySlug,
+);
+const relatedCategories = categories.filter(
+	(category) => category.slug !== categorySlug,
+);
+const visibleTags = activeCategory?.tags.slice(0, 12) ?? [];
+---
+
+<aside class="category-support ds-stack" aria-label="分类上下文">
+	<section class="category-support__panel ds-surface-card">
+		<div class="category-support__eyebrow">当前分类</div>
+		<h2 class="category-support__title">
+			{activeCategory?.name ?? "文章分类"}
+		</h2>
+		<div class="category-support__stats">
+			<div>
+				<span>{pagination.total}</span>
+				<small>篇文章</small>
+			</div>
+			<div>
+				<span>{activeCategory?.tags.length ?? 0}</span>
+				<small>个标签</small>
+			</div>
+		</div>
+	</section>
+
+	{
+		visibleTags.length > 0 && (
+			<section class="category-support__panel ds-surface-card">
+				<h2 class="category-support__heading">
+					<Icon name="material-symbols:tag-rounded" />
+					标签索引
+				</h2>
+				<div class="category-support__tags">
+					<a
+						href={url(`/category/${categorySlug}/`)}
+						class="category-support__tag category-support__tag--all"
+					>
+						全部
+					</a>
+					{visibleTags.map((tag) => (
+						<a
+							href={url(`/category/${categorySlug}/?tag=${tag.slug}`)}
+							class="category-support__tag"
+						>
+							<span>{tag.name}</span>
+							<small>{tag.count}</small>
+						</a>
+					))}
+				</div>
+			</section>
+		)
+	}
+
+	{
+		relatedCategories.length > 0 && (
+			<section class="category-support__panel ds-surface-card">
+				<h2 class="category-support__heading">
+					<Icon name="material-symbols:category-outline-rounded" />
+					其他分类
+				</h2>
+				<div class="category-support__links">
+					{relatedCategories.slice(0, 8).map((category) => (
+						<ButtonLink
+							url={category.url ?? url(`/category/${category.slug}/`)}
+							badge={String(category.count)}
+							label={`View all posts in the ${category.name.trim()} category`}
+						>
+							{category.name.trim()}
+						</ButtonLink>
+					))}
+				</div>
+			</section>
+		)
+	}
+</aside>
+
+<style>
+	.category-support {
+		--stack-space: var(--space-grid-gap);
+	}
+
+	.category-support__panel {
+		padding: var(--space-card);
+	}
+
+	.category-support__eyebrow {
+		color: var(--text-muted);
+		font-size: var(--text-meta);
+		font-weight: 700;
+	}
+
+	.category-support__title {
+		margin-top: var(--size-1);
+		color: var(--text-primary);
+		font-family: var(--font-heading);
+		font-size: 1.35rem;
+		font-weight: 800;
+		line-height: 1.2;
+	}
+
+	.category-support__stats {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--size-2);
+		margin-top: var(--space-card);
+	}
+
+	.category-support__stats div {
+		padding: var(--size-3);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-md);
+	}
+
+	.category-support__stats span,
+	.category-support__stats small {
+		display: block;
+	}
+
+	.category-support__stats span {
+		color: var(--text-primary);
+		font-size: 1.25rem;
+		font-weight: 800;
+		line-height: 1;
+	}
+
+	.category-support__stats small {
+		margin-top: var(--size-1);
+		color: var(--text-secondary);
+		font-size: var(--text-meta);
+	}
+
+	.category-support__heading {
+		display: flex;
+		align-items: center;
+		gap: var(--size-2);
+		margin-bottom: var(--size-3);
+		color: var(--text-primary);
+		font-size: 0.95rem;
+		font-weight: 800;
+	}
+
+	.category-support__heading :global(svg) {
+		color: var(--accent);
+		font-size: 1.25rem;
+	}
+
+	.category-support__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--size-2);
+	}
+
+	.category-support__tag {
+		display: inline-flex;
+		max-width: 100%;
+		align-items: center;
+		gap: var(--size-1);
+		padding: 0.4rem 0.55rem;
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-md);
+		color: var(--text-secondary);
+		font-size: var(--text-meta);
+		font-weight: 700;
+		line-height: 1;
+		transition:
+			color var(--motion-fast) var(--motion-ease-standard),
+			border-color var(--motion-fast) var(--motion-ease-standard);
+	}
+
+	.category-support__tag:hover {
+		border-color: var(--border-strong);
+		color: var(--accent);
+	}
+
+	.category-support__tag--all {
+		border-color: var(--accent);
+		background: var(--accent);
+		color: var(--text-on-accent);
+	}
+
+	.category-support__tag span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.category-support__tag small {
+		color: inherit;
+		opacity: 0.7;
+	}
+
+	.category-support__links {
+		display: grid;
+		gap: var(--size-2);
+	}
+</style>

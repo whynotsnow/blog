@@ -17,6 +17,7 @@ interface Props {
 const { headings, viewModel, footer, hasSupportContent } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
 const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-content";
+const supportOwnsToc = hasSupportContent && headings.length > 0;
 ---
 
 	<div
@@ -73,7 +74,9 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 				/>
 			</div>
 		</div>
-		<SidebarTocRegion headings={headings} viewModel={viewModel} />
+		{!supportOwnsToc && (
+			<SidebarTocRegion headings={headings} viewModel={viewModel} />
+		)}
 		</div>
 
 	</div>

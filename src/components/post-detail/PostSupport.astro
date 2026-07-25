@@ -1,0 +1,242 @@
+---
+import type { MarkdownHeading } from "astro";
+import { Icon } from "astro-icon/components";
+import TOC from "@components/post-toc/TableOfContents.astro";
+import type { PostNavigationLink } from "@/services/core/types";
+import type { PostDetailHeaderViewModel } from "@/services/post-detail/types";
+import { formatDateToYYYYMMDD } from "@utils/date-utils";
+
+interface Props {
+	header: PostDetailHeaderViewModel;
+	headings: MarkdownHeading[];
+	navigation: {
+		prev?: PostNavigationLink;
+		next?: PostNavigationLink;
+	};
+}
+
+const { header, headings, navigation } = Astro.props;
+const hasHeadings = headings.length > 0;
+---
+
+<aside class="post-support ds-stack" aria-label="文章上下文">
+	<section class="post-support__panel ds-surface-card">
+		<h2 class="post-support__heading">
+			<Icon name="material-symbols:article-outline-rounded" />
+			阅读信息
+		</h2>
+		<dl class="post-support__meta">
+			<div>
+				<dt>发布</dt>
+				<dd>{formatDateToYYYYMMDD(header.published)}</dd>
+			</div>
+			{
+				header.updated && header.updated.getTime() !== header.published.getTime() && (
+					<div>
+						<dt>更新</dt>
+						<dd>{formatDateToYYYYMMDD(header.updated)}</dd>
+					</div>
+				)
+			}
+			<div>
+				<dt>字数</dt>
+				<dd>{header.words}</dd>
+			</div>
+			<div>
+				<dt>阅读</dt>
+				<dd>{header.minutes} 分钟</dd>
+			</div>
+		</dl>
+		<div class="post-support__taxonomy">
+			<a href={header.category.url} class="post-support__category">
+				{header.category.name}
+			</a>
+			{
+				header.tags.map((tag) => (
+					<a href={tag.url} class="post-support__tag">
+						# {tag.name}
+					</a>
+				))
+			}
+		</div>
+	</section>
+
+	{
+		hasHeadings && (
+			<section class="post-support__panel post-support__toc ds-surface-card">
+				<h2 class="post-support__heading">
+					<Icon name="material-symbols:format-list-bulleted-rounded" />
+					文章目录
+				</h2>
+				<div class="post-support__toc-body">
+					<TOC headings={headings} />
+				</div>
+			</section>
+		)
+	}
+
+	{
+		(navigation.next || navigation.prev) && (
+			<section class="post-support__panel ds-surface-card">
+				<h2 class="post-support__heading">
+					<Icon name="material-symbols:swap-horiz-rounded" />
+					相邻文章
+				</h2>
+				<div class="post-support__nav">
+					{navigation.next && (
+						<a href={navigation.next.url} class="post-support__nav-link">
+							<span>上一篇</span>
+							<strong>{navigation.next.title}</strong>
+						</a>
+					)}
+					{navigation.prev && (
+						<a href={navigation.prev.url} class="post-support__nav-link">
+							<span>下一篇</span>
+							<strong>{navigation.prev.title}</strong>
+						</a>
+					)}
+				</div>
+			</section>
+		)
+	}
+</aside>
+
+<style>
+	.post-support {
+		--stack-space: var(--space-grid-gap);
+	}
+
+	.post-support__panel {
+		padding: var(--space-card);
+	}
+
+	.post-support__toc {
+		position: sticky;
+		top: var(--page-entry-clearance);
+	}
+
+	.post-support__heading {
+		display: flex;
+		align-items: center;
+		gap: var(--size-2);
+		margin-bottom: var(--size-3);
+		color: var(--text-primary);
+		font-size: 0.95rem;
+		font-weight: 800;
+	}
+
+	.post-support__heading :global(svg) {
+		color: var(--accent);
+		font-size: 1.25rem;
+	}
+
+	.post-support__meta {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--size-2);
+		margin: 0;
+	}
+
+	.post-support__meta div {
+		min-width: 0;
+		padding: var(--size-3);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-md);
+	}
+
+	.post-support__meta dt {
+		color: var(--text-muted);
+		font-size: var(--text-meta);
+		font-weight: 700;
+	}
+
+	.post-support__meta dd {
+		margin: var(--size-1) 0 0;
+		overflow: hidden;
+		color: var(--text-primary);
+		font-size: 0.9rem;
+		font-weight: 800;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.post-support__taxonomy {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--size-2);
+		margin-top: var(--space-card);
+	}
+
+	.post-support__category,
+	.post-support__tag {
+		display: inline-flex;
+		max-width: 100%;
+		padding: 0.4rem 0.55rem;
+		border-radius: var(--radius-md);
+		font-size: var(--text-meta);
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.post-support__category {
+		background: var(--accent);
+		color: var(--text-on-accent);
+	}
+
+	.post-support__tag {
+		border: 1px solid var(--border-subtle);
+		color: var(--text-secondary);
+	}
+
+	.post-support__tag:hover {
+		border-color: var(--border-strong);
+		color: var(--accent);
+	}
+
+	.post-support__toc-body {
+		max-height: calc(100dvh - var(--page-entry-clearance) - 8rem);
+		overflow: hidden;
+	}
+
+	.post-support__toc :global(table-of-contents#toc) {
+		max-height: calc(100dvh - var(--page-entry-clearance) - 11rem);
+	}
+
+	.post-support__nav {
+		display: grid;
+		gap: var(--size-2);
+	}
+
+	.post-support__nav-link {
+		display: grid;
+		gap: var(--size-1);
+		min-width: 0;
+		padding: var(--size-3);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-md);
+		color: var(--text-secondary);
+		transition:
+			color var(--motion-fast) var(--motion-ease-standard),
+			border-color var(--motion-fast) var(--motion-ease-standard);
+	}
+
+	.post-support__nav-link:hover {
+		border-color: var(--border-strong);
+		color: var(--accent);
+	}
+
+	.post-support__nav-link span {
+		font-size: var(--text-meta);
+		font-weight: 700;
+	}
+
+	.post-support__nav-link strong {
+		overflow: hidden;
+		color: var(--text-primary);
+		font-size: 0.9rem;
+		font-weight: 800;
+		line-height: 1.35;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+</style>
