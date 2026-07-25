@@ -19,6 +19,9 @@ export async function copyShareLink(url: string) {
 	textarea.style.left = "-9999px";
 	document.body.appendChild(textarea);
 	textarea.select();
-	document.execCommand("copy");
+	const copy = (
+		document as Document & { execCommand?: (command: string) => boolean }
+	).execCommand;
+	copy?.call(document, "copy");
 	document.body.removeChild(textarea);
 }

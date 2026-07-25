@@ -12,7 +12,7 @@
 		"dev": "pnpm content:prepare && pnpm font:prepare && astro dev --host",
 		"start": "pnpm content:prepare && pnpm font:prepare && astro dev",
 		"precheck": "node scripts/check-env.mjs && pnpm content:prepare && pnpm font:prepare",
-		"check": "astro check",
+		"check": "astro check --minimumFailingSeverity hint",
 		"update-anime": "node scripts/update-anime.mjs",
 		"update-bangumi": "node scripts/update-bangumi.mjs",
 		"update-bilibili": "node scripts/update-bilibili.mjs",

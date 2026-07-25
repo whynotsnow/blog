@@ -194,7 +194,7 @@ const affectsAstro = stagedFiles.some(
 );
 if (affectsAstro) {
 	console.log("[pre-commit] Running Astro type/content diagnostics...");
-	run(localBin("astro"), ["check"], {
+	run(localBin("astro"), ["check", "--minimumFailingSeverity", "hint"], {
 		failureAdvice:
 			"Astro diagnostics failed. Review the file and line diagnostics above, then run `pnpm check` to verify the fix.",
 	});

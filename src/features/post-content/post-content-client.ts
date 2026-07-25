@@ -39,7 +39,12 @@ async function copyWithTextarea(text: string): Promise<void> {
 	textArea.select();
 
 	try {
-		if (!document.execCommand("copy")) {
+		const copy = (
+			document as Document & {
+				execCommand?: (command: string) => boolean;
+			}
+		).execCommand;
+		if (!copy?.call(document, "copy")) {
 			throw new Error("document.execCommand returned false");
 		}
 	} finally {

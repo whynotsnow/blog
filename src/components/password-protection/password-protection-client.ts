@@ -282,7 +282,12 @@ async function copyToClipboard(text: string) {
 		textArea.focus();
 		textArea.select();
 		try {
-			document.execCommand("copy");
+			const copy = (
+				document as Document & {
+					execCommand?: (command: string) => boolean;
+				}
+			).execCommand;
+			copy?.call(document, "copy");
 		} catch (execErr) {
 			console.error("execCommand failed:", execErr);
 		} finally {

@@ -75,6 +75,7 @@ const wallpaperOptions = {
 	positionClass,
 	isCarouselEnabled,
 	carouselInterval,
+	defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode,
 };
 ---
 
@@ -95,10 +96,24 @@ const wallpaperOptions = {
 	></script>
 </div>
 
-<script is:inline define:vars={{ defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode }}>
+<script is:inline>
 	(function () {
+		let wallpaperOptions;
+
+		function readWallpaperOptions() {
+			if (wallpaperOptions) return wallpaperOptions;
+			const optionsScript = document.getElementById("overlay-wallpaper-options");
+			wallpaperOptions = optionsScript?.textContent
+				? JSON.parse(optionsScript.textContent)
+				: null;
+			return wallpaperOptions;
+		}
+
 		function getWallpaperMode() {
-			return localStorage.getItem("wallpaperMode") || defaultWallpaperMode;
+			return (
+				localStorage.getItem("wallpaperMode") ||
+				readWallpaperOptions()?.defaultWallpaperMode
+			);
 		}
 
 		function getRandomImage(images, storageKey) {
@@ -254,14 +269,13 @@ const wallpaperOptions = {
 
 		function ensureWallpaperImages() {
 			const container = document.querySelector("[data-overlay-wallpaper]");
-			const optionsScript = document.getElementById("overlay-wallpaper-options");
-			if (!container || !optionsScript?.textContent) return;
+			const options = readWallpaperOptions();
+			if (!container || !options) return;
 			if (container.dataset.overlayWallpaperInitialized === "true") {
 				window.__overlayWallpaperStart?.();
 				return;
 			}
 
-			const options = JSON.parse(optionsScript.textContent);
 			if (options.isCarouselEnabled) {
 				appendGroup(container, {
 					key: "desktop",

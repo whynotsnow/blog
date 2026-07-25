@@ -166,7 +166,12 @@ const {
 	<!-- 访问量 -->
 	{
 		!isHome && id && (
-			<div class="flex items-center umami-page-views" data-id={id}>
+			<div
+				class="flex items-center umami-page-views"
+				data-id={id}
+				data-page-views-label={i18n(I18nKey.profileStatsPageViews)}
+				data-visits-label={i18n(I18nKey.profileStatsVisits)}
+			>
 				<div class="meta-icon">
 					<Icon
 						name="material-symbols:visibility-outline-rounded"
@@ -181,38 +186,36 @@ const {
 	}
 </div>
 
-<script
-	is:inline
-	define:vars={{
-		isHome,
-		id,
-		pageViewsText: i18n(I18nKey.profileStatsPageViews),
-		visitsText: i18n(I18nKey.profileStatsVisits),
-	}}
->
-	if (!id || !isHome) return;
+<script is:inline>
+	const container = document.querySelector(".umami-page-views");
 
-	function generateStatsText(pageViews, visits) {
+	function generateStatsText(container, pageViews, visits) {
+		const pageViewsText = container.dataset.pageViewsLabel ?? "";
+		const visitsText = container.dataset.visitsLabel ?? "";
 		return `${pageViewsText} ${pageViews} · ${visitsText} ${visits}`;
 	}
 
 	async function fetchPageViews() {
-		const container = document.querySelector(".umami-page-views");
-
-		if (!window.oddmisc || container) {
+		if (!container) return;
+		if (!window.oddmisc) {
 			container?.classList.add("hidden");
-			console.warn("warn no find key >>:", { oddmisc, container });
+			console.warn("warn no find key >>:", {
+				oddmisc: window.oddmisc,
+				container,
+			});
 			return;
 		}
 
 		try {
-			const stats = await window.oddmisc.getStats(`/posts/${id}/`);
+			const stats = await window.oddmisc.getStats(
+				`/posts/${container.dataset.id}/`,
+			);
 			const pageViews = stats.pageviews || 0;
 			const visits = stats.visits || 0;
 
 			container?.classList.remove("hidden");
 			container.querySelector(".page-views-display").textContent =
-				generateStatsText(pageViews, visits);
+				generateStatsText(container, pageViews, visits);
 		} catch (error) {
 			console.error("Error fetching page views:", error);
 			container?.classList.add("hidden");
