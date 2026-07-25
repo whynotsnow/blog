@@ -30,3 +30,16 @@ export function getTagUrl(tag: string): string {
 export function getCategoryPageUrl(slug: string): string {
 	return url(`/category/${encodeURIComponent(slug.trim())}/`);
 }
+
+export function getCategoryTagUrl(
+	categorySlug: string,
+	tagSlug: string,
+): string {
+	const normalizedCategory = categorySlug.trim();
+	const normalizedTag = tagSlug.trim();
+	if (!normalizedCategory) return getTagUrl(normalizedTag);
+	if (!normalizedTag) return getCategoryPageUrl(normalizedCategory);
+	return url(
+		`/category/${encodeURIComponent(normalizedCategory)}/?tag=${encodeURIComponent(normalizedTag)}`,
+	);
+}

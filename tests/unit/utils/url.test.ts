@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { getTagUrl, pathsEqual, toSlug, url } from "@/utils/url";
+import {
+	getCategoryPageUrl,
+	getCategoryTagUrl,
+	getTagUrl,
+	pathsEqual,
+	toSlug,
+	url,
+} from "@/utils/url";
 
 describe("universal URL utilities", () => {
 	it("joins paths against root and nested base paths", () => {
@@ -21,5 +28,16 @@ describe("universal URL utilities", () => {
 			"/archive/?tag=Astro%20%E6%8A%80%E5%B7%A7%20%26%20Notes",
 		);
 		expect(getTagUrl("  ")).toBe("/archive/");
+	});
+
+	it("builds category and category-scoped tag URLs", () => {
+		expect(getCategoryPageUrl("tech")).toBe("/category/tech/");
+		expect(getCategoryTagUrl("tech", "astro")).toBe(
+			"/category/tech/?tag=astro",
+		);
+		expect(getCategoryTagUrl("技术", "Astro 技巧")).toBe(
+			"/category/%E6%8A%80%E6%9C%AF/?tag=Astro%20%E6%8A%80%E5%B7%A7",
+		);
+		expect(getCategoryTagUrl("tech", "  ")).toBe("/category/tech/");
 	});
 });

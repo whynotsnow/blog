@@ -30,7 +30,9 @@ function buildPost(
 		description: "",
 		published: new Date("2026-01-01T00:00:00.000Z"),
 		category: { slug: "tech", name: "Tech", url: "/category/tech/" },
-		tags: [{ slug: "astro", name: "Astro", url: "/archive/?tag=astro" }],
+		tags: [
+			{ slug: "astro", name: "Astro", url: "/category/tech/?tag=astro" },
+		],
 		score: 1,
 		words: 100,
 		minutes: 1,

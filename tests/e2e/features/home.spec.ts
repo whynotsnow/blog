@@ -11,11 +11,15 @@ test("home sections expose configured guide destinations", async ({ page }) => {
 	await expect(sections.nth(1).locator("h2")).toHaveText("推荐阅读");
 	await expect(sections.nth(2).locator("h2")).toHaveText("技术文章");
 	await expect(
-		sections.nth(0).locator('a[href="/archive/?sort=updated"]'),
+		sections
+			.nth(0)
+			.locator('.home-section__link[href="/archive/?sort=updated"]'),
 	).toBeVisible();
-	await expect(sections.nth(1).locator('a[href="/archive/"]')).toBeVisible();
 	await expect(
-		sections.nth(2).locator('a[href="/category/tech/"]'),
+		sections.nth(1).locator('.home-section__link[href="/archive/"]'),
+	).toBeVisible();
+	await expect(
+		sections.nth(2).locator('.home-section__link[href="/category/tech/"]'),
 	).toBeVisible();
 
 	for (const [index, expectedCount] of [3, 3, 6].entries()) {

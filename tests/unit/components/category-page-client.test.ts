@@ -16,7 +16,9 @@ const posts: ClientPostCard[] = [
 		summary: "Summary",
 		published: "2026-01-01T00:00:00.000Z",
 		category: { name: "Tech", url: "/category/tech/" },
-		tags: [{ slug: "astro", name: "Astro", url: "/archive/?tag=astro" }],
+		tags: [
+			{ slug: "astro", name: "Astro", url: "/category/tech/?tag=astro" },
+		],
 		words: 100,
 		pinned: false,
 	},

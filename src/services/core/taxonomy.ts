@@ -1,7 +1,5 @@
-import I18nKey from "@i18n/i18nKey";
-import { i18n } from "@i18n/translation";
 import { CATEGORY_DEFINITIONS, type CategoryDefinition } from "@/config";
-import { toSlug, url } from "@/utils/url";
+import { getCategoryPageUrl, toSlug } from "@/utils/url";
 
 export type CanonicalCategory = {
 	name: string;
@@ -75,14 +73,5 @@ export function generateTagSlug(name: string): string {
 }
 
 export function getCategoryUrl(category: string | null): string {
-	if (
-		!category ||
-		category.trim() === "" ||
-		normalizeCategoryKey(category) ===
-			normalizeCategoryKey(i18n(I18nKey.uncategorized))
-	) {
-		return url("/archive/?uncategorized=true");
-	}
-
-	return url(`/archive/?category=${encodeURIComponent(category.trim())}`);
+	return getCategoryPageUrl(category?.trim() || "uncategorized");
 }

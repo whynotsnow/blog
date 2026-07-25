@@ -6,7 +6,7 @@ import type {
 	TagItem,
 } from "./types";
 import { buildPostIndex } from "./source";
-import { getTagUrl } from "@utils/url";
+import { getCategoryTagUrl } from "@utils/url";
 import { generateTagSlug, getCategoryUrl } from "./taxonomy";
 import { UNCATEGORIZED } from "@constants/constants";
 
@@ -100,7 +100,7 @@ function buildCategoryTaxonomy(posts: PostIndexEntry[]): {
 					slug: tag.slug,
 					name: tag.name,
 					count: tag.count,
-					url: getTagUrl(tag.name),
+					url: getCategoryTagUrl(entry.category.slug, tag.slug),
 				}))
 				.sort((a, b) => a.name.localeCompare(b.name, "zh-CN")), // 按标签名排序
 		}))

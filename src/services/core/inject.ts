@@ -1,4 +1,4 @@
-import { getTagUrl } from "@/utils/url";
+import { getCategoryTagUrl } from "@/utils/url";
 import { generateTagSlug, getCategoryUrl, resolveCategory } from "./taxonomy";
 import { resolveImageUrl } from "./content-assets";
 import { UNCATEGORIZED } from "@constants/constants";
@@ -43,7 +43,7 @@ export function buildCategoryItems(category: string): UIMeta {
 	};
 }
 
-export function buildTagItems(tags: string[]): UIMeta[] {
+export function buildTagItems(tags: string[], categorySlug: string): UIMeta[] {
 	return (tags ?? [])
 		.map((tag) => {
 			const name = tag.trim();
@@ -51,7 +51,7 @@ export function buildTagItems(tags: string[]): UIMeta[] {
 			return {
 				name,
 				slug,
-				url: getTagUrl(slug),
+				url: getCategoryTagUrl(categorySlug, slug),
 			};
 		})
 		.filter((tag) => tag.name.length > 0)
@@ -91,6 +91,7 @@ export function buildPostIndexEntries(
 		if (!route) throw new Error(`Missing post route for ${post.id}`);
 
 		const contentMeta = getContentMeta(post);
+		const category = buildCategoryItems(post.data.category);
 		return {
 			id: post.id,
 			postId: index + 1,
@@ -99,8 +100,8 @@ export function buildPostIndexEntries(
 			description: post.data.description,
 			published: post.data.published,
 			updated: post.data.updated,
-			category: buildCategoryItems(post.data.category),
-			tags: buildTagItems(post.data.tags),
+			category,
+			tags: buildTagItems(post.data.tags, category.slug),
 			score: calculateRecommendScore(post),
 			...contentMeta,
 			pinned: post.data.pinned,

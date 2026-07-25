@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { CategoryDefinition } from "@/config";
 import {
 	buildCategoryDefinitionIndex,
+	getCategoryUrl,
 	resolveCategory,
 } from "@/services/core/taxonomy";
 
@@ -21,6 +22,11 @@ describe("category taxonomy", () => {
 			name: "Café Notes",
 			slug: "café-notes",
 		});
+	});
+
+	it("routes canonical categories to category pages", () => {
+		expect(getCategoryUrl("tech")).toBe("/category/tech/");
+		expect(getCategoryUrl(null)).toBe("/category/uncategorized/");
 	});
 
 	it("rejects duplicate canonical slugs", () => {

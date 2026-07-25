@@ -37,8 +37,12 @@ function buildPost(
 		published: new Date("2026-01-02T00:00:00.000Z"),
 		category: { slug: "tech", name: "Tech", url: "/category/tech/" },
 		tags: [
-			{ slug: "astro", name: "Astro", url: "/archive/?tag=astro" },
-			{ slug: "svelte", name: "Svelte", url: "/archive/?tag=svelte" },
+			{ slug: "astro", name: "Astro", url: "/category/tech/?tag=astro" },
+			{
+				slug: "svelte",
+				name: "Svelte",
+				url: "/category/tech/?tag=svelte",
+			},
 		],
 		score: 1,
 		words: 1200,
@@ -74,8 +78,16 @@ describe("category tag index", () => {
 			published: "2026-01-02T00:00:00.000Z",
 			category: { name: "Tech", url: "/category/tech/" },
 			tags: [
-				{ slug: "astro", name: "Astro", url: "/archive/?tag=astro" },
-				{ slug: "svelte", name: "Svelte", url: "/archive/?tag=svelte" },
+				{
+					slug: "astro",
+					name: "Astro",
+					url: "/category/tech/?tag=astro",
+				},
+				{
+					slug: "svelte",
+					name: "Svelte",
+					url: "/category/tech/?tag=svelte",
+				},
 			],
 			words: 1200,
 			pinned: false,

@@ -22,7 +22,9 @@ function post(id: string, category: string): PostIndexEntry {
 		description: "",
 		published: new Date("2026-01-01T00:00:00.000Z"),
 		category: buildCategoryItems(category),
-		tags: [{ name: "Astro", slug: "astro", url: "/archive/?tag=Astro" }],
+		tags: [
+			{ name: "Astro", slug: "astro", url: "/category/tech/?tag=astro" },
+		],
 		score: 0,
 		words: 0,
 		minutes: 0,
@@ -46,5 +48,9 @@ describe("content store taxonomy", () => {
 			count: 2,
 		});
 		expect(store.categoryMap.get("tech")?.tags.get("astro")?.count).toBe(2);
+		expect(store.categories[0]?.url).toBe("/category/tech/");
+		expect(store.categories[0]?.tags[0]?.url).toBe(
+			"/category/tech/?tag=astro",
+		);
 	});
 });

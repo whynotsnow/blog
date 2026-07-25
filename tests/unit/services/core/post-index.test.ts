@@ -65,7 +65,14 @@ describe("post index", () => {
 		expect(index).toMatchObject({
 			id: "indexed",
 			title: "Indexed post",
-			category: { name: "技术", slug: "tech" },
+			category: { name: "技术", slug: "tech", url: "/category/tech/" },
+			tags: [
+				{
+					name: "Astro",
+					slug: "astro",
+					url: "/category/tech/?tag=astro",
+				},
+			],
 			words: 42,
 			minutes: 2,
 			excerpt: "Index excerpt",

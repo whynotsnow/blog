@@ -1,9 +1,4 @@
-import type {
-	BaseSlug,
-	ContentStore,
-	PostIndexEntry,
-	PostNavigatorCategory,
-} from "./core/types";
+import type { ContentStore, PostIndexEntry } from "./core/types";
 
 import { buildCalendarPosts } from "./calendar";
 import {
@@ -35,11 +30,8 @@ export interface ArchiveGroup {
 }
 
 export type ArchivePageData = {
-	// 默认 archive
 	groups: ArchiveGroup[];
 	calendar: ArchiveCalendarData;
-	categories: PostNavigatorCategory[];
-	tags: BaseSlug[];
 };
 
 function toArchivePost(post: PostIndexEntry): ArchivePost {
@@ -94,21 +86,12 @@ function buildArchiveGroups(posts: ArchivePost[]): ArchiveGroup[] {
 export async function buildArchivePageData(
 	store: ContentStore,
 ): Promise<ArchivePageData> {
-	const { posts, categories } = store;
+	const { posts } = store;
 	const archivePosts = posts.map(toArchivePost);
 	const groups = buildArchiveGroups(archivePosts);
-	const tags = Array.from(
-		new Map(
-			categories
-				.flatMap((category) => category.tags)
-				.map((tag) => [tag.slug, tag]),
-		).values(),
-	);
 
 	return {
 		groups,
 		calendar: buildArchiveCalendarData(buildCalendarPosts(posts)),
-		categories,
-		tags,
 	};
 }
