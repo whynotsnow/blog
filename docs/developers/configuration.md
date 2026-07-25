@@ -55,7 +55,7 @@
 
 ## 页面模块与布局
 
-项目不再提供通用 Widget registry、placement preset 或跨端点 resolver。业务模块由页面显式拥有：首页通过 `MainGridLayout` 的 `support` slot 传入一份 Profile；归档页在主内容流中组合 Calendar、Categories 与 Tags；站点统计由 Footer service 和 Footer component 持有；文章 TOC 属于 post detail feature。
+项目不再提供通用 Widget registry、placement preset 或跨端点 resolver。业务模块由页面显式拥有：首页通过 `MainGridLayout` 的 `support` slot 传入一份 Profile；归档页在主内容流中组合 Calendar 与 Timeline，只负责时间维度浏览；分类与 Tag 浏览由分类页持有；站点统计由 Footer service 和 Footer component 持有；文章 TOC 属于 post detail feature。
 
 `shellStrategy` 选择页面级响应式几何：`container-content` 使用 Page Shell Container Query，`viewport-legacy` 保留尚未迁移页面的 viewport Grid。`pageLayoutPolicies` 只声明 Shell Strategy 和允许的 Desktop Page Layout Preference，不再描述业务模块 inventory。新增模块时应在所属页面或 layout 中显式组合，不要向配置层添加通用 placement 描述。
 
@@ -148,4 +148,4 @@
 
 浏览器与构建阶段共用的纯 URL 工具位于 `src/utils/url.ts`，分页 URL 展示算法位于 `src/utils/pagination.ts`。分类与标签规范化由 `src/services/core/taxonomy.ts` 负责，文章 canonical URL 由 `src/services/core/post-routes.ts` 负责；包含 Astro Content 或 Node API 的图片解析只允许放在 `src/services/core/content-assets.ts`。
 
-新增代码不要硬编码分类、标签、文章 URL，也不要让客户端模块导入构建期工具。文章详情页使用 `/posts/{slug}/`，可选 `alias` 会生成 `/posts/{alias}/`。
+新增代码不要硬编码分类、标签、文章 URL，也不要让客户端模块导入构建期工具。分类链接应使用分类页 `/category/{slug}/`；Tag 链接应带所属分类上下文，例如 `/category/{slug}/?tag={tagSlug}`。文章详情页使用 `/posts/{slug}/`，可选 `alias` 会生成 `/posts/{alias}/`。
