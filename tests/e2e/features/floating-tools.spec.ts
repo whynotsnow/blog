@@ -827,6 +827,26 @@ test("floating tools controls the Live2D companion preference", async ({
 			.frameLocator("#l2d-iframe")
 			.getByRole("button", { name: "切换模型" }),
 	).toBeVisible();
+	const getCompanionMenuState = () =>
+		page
+			.frameLocator("#l2d-iframe")
+			.locator(".live2d-companion-menu")
+			.evaluate((element) => {
+				const style = getComputedStyle(element);
+				return {
+					opacity: style.opacity,
+					pointerEvents: style.pointerEvents,
+				};
+			});
+	await expect.poll(getCompanionMenuState).toEqual({
+		opacity: "0",
+		pointerEvents: "none",
+	});
+	await page.frameLocator("#l2d-iframe").locator("canvas").hover();
+	await expect.poll(getCompanionMenuState).toEqual({
+		opacity: "1",
+		pointerEvents: "auto",
+	});
 	await expect(
 		page
 			.frameLocator("#l2d-iframe")
@@ -911,6 +931,10 @@ test("floating tools controls the Live2D companion preference", async ({
 			.locator(".live2d-companion__expression-panel")
 			.getByRole("button", { name: "冒汗" }),
 	).toBeVisible();
+	await expect.poll(getCompanionMenuState).toEqual({
+		opacity: "1",
+		pointerEvents: "auto",
+	});
 	await page
 		.frameLocator("#l2d-iframe")
 		.getByRole("button", { name: "全部表情" })
