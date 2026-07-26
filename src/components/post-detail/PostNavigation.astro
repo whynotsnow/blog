@@ -6,7 +6,7 @@ interface Props { next?: PostNavigationLink; prev?: PostNavigationLink }
 const { next, prev } = Astro.props;
 ---
 
-<nav class="post-detail__navigation flex flex-col justify-between mb-4 gap-4 overflow-hidden w-full">
-	{next && <a href={next.url} class="w-full font-bold overflow-hidden active:scale-95"><div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4"><Icon name="material-symbols:chevron-left-rounded" class="text-[2rem] text-(--primary)" /><div class="overflow-hidden transition overflow-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-75">{next.title}</div></div></a>}
-	{prev && <a href={prev.url} class="w-full font-bold overflow-hidden active:scale-95"><div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-end! gap-4"><div class="overflow-hidden transition overflow-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-75">{prev.title}</div><Icon name="material-symbols:chevron-right-rounded" class="text-[2rem] text-(--primary)" /></div></a>}
+<nav class="post-detail__navigation mb-4 w-full">
+	{next && <a href={next.url} class="post-detail__navigation-link post-detail__navigation-link--next font-bold active:scale-95"><div class="btn-card rounded-2xl h-15 px-4 flex items-center justify-start! gap-4"><Icon name="material-symbols:chevron-left-rounded" class="text-[2rem] text-(--primary)" /><div class="post-detail__navigation-title text-75">{next.title}</div></div></a>}
+	{prev && <a href={prev.url} class="post-detail__navigation-link post-detail__navigation-link--prev font-bold active:scale-95"><div class="btn-card rounded-2xl h-15 px-4 flex items-center justify-end! gap-4"><div class="post-detail__navigation-title text-75">{prev.title}</div><Icon name="material-symbols:chevron-right-rounded" class="text-[2rem] text-(--primary)" /></div></a>}
 </nav>

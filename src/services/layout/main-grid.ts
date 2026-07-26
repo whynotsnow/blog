@@ -13,13 +13,6 @@ export type MainGridLayoutViewModel = {
 	pageLayout: ResolvedPageLayout;
 	interaction: PageInteractionPolicy;
 	footer: FooterViewModel;
-	toc: {
-		mode: "float" | "sidebar";
-		enable: boolean;
-		isFloat: boolean;
-		isSidebar: boolean;
-		hideSidebarOnLoad: boolean;
-	};
 	banner: {
 		hasCredit: boolean;
 		hasCreditLink: boolean;
@@ -46,7 +39,6 @@ export async function buildMainGridLayoutViewModel({
 	layoutPolicy,
 	pathname,
 }: BuildMainGridLayoutViewModelOptions): Promise<MainGridLayoutViewModel> {
-	const tocMode = config.toc.mode || "float";
 	const isHomePage = pathname === "/" || pathname === "";
 	const isCategoryPage = pathname.startsWith("/category/");
 	const isPostPage = pathname.startsWith("/posts/");
@@ -70,13 +62,6 @@ export async function buildMainGridLayoutViewModel({
 		interaction: {
 			navbar: isHomePage ? "banner-aware" : "fixed-visible",
 			entryScroll: isCategoryPage || isPostPage ? "content-start" : "top",
-		},
-		toc: {
-			mode: tocMode,
-			enable: config.toc.enable,
-			isFloat: tocMode === "float",
-			isSidebar: tocMode === "sidebar",
-			hideSidebarOnLoad: config.wallpaperMode.defaultMode === "banner",
 		},
 		banner: {
 			hasCredit: config.banner.credit.enable,

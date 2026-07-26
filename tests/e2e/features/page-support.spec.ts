@@ -1,9 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
 
-test("page support modules follow page intent without widget placement", async ({
-	page,
-}) => {
+test("page support modules follow page-specific intent", async ({ page }) => {
 	test.setTimeout(60_000);
 	await page.setViewportSize({ width: 1536, height: 900 });
 	await gotoPage(page, "/");
@@ -13,6 +11,10 @@ test("page support modules follow page intent without widget placement", async (
 	);
 	await expect(
 		page.locator(".page-support-region .profile-card"),
+	).toBeVisible();
+	await expect(page.locator(".home-support__panel")).toHaveCount(4);
+	await expect(
+		page.locator(".home-support__heading", { hasText: "站点概览" }),
 	).toBeVisible();
 	await expect(page.locator(".profile-card")).toHaveCount(1);
 	await expect(page.locator(".footer-stats")).toHaveCount(1);
@@ -33,15 +35,45 @@ test("page support modules follow page intent without widget placement", async (
 	await gotoPage(page, "/category/tech/");
 	await expect(page.locator("#main-grid")).toHaveAttribute(
 		"data-has-support",
-		"false",
+		"true",
 	);
+	await expect(page.locator(".category-support")).toBeHidden();
 	await expect(page.locator(".profile-card")).toHaveCount(0);
 
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await gotoPage(page, "/category/tech/");
+	await expect(page.locator(".category-support")).toBeVisible();
+	await expect(
+		page.locator(".category-support__heading", { hasText: "最近更新" }),
+	).toBeVisible();
+	await expect(
+		page.locator(".category-support__heading", { hasText: "热门标签" }),
+	).toBeVisible();
+	await expect(
+		page.locator(".category-support__heading", { hasText: "其他分类" }),
+	).toBeVisible();
+	await expect(
+		page.locator(".category-support__heading", { hasText: "当前分类" }),
+	).toHaveCount(0);
 	await expect(page.locator(".profile-card")).toHaveCount(0);
 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(page.locator(".post-support")).toBeHidden();
 	await expect(page.locator(".profile-card")).toHaveCount(0);
+
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(page.locator(".post-support")).toBeVisible();
+	await expect(page.locator(".post-support__toc")).toBeVisible();
+	await expect(
+		page.locator(".post-support__heading", { hasText: "继续阅读" }),
+	).toBeVisible();
+	await expect(
+		page.locator(".post-support__heading", { hasText: "推荐阅读" }),
+	).toBeVisible();
+	await expect(
+		page.locator(".post-support__heading", { hasText: "阅读信息" }),
+	).toHaveCount(0);
+	await expect(page.locator(".sidebar-toc-region--container")).toHaveCount(0);
 });

@@ -8,6 +8,14 @@ import { toPostCardViewModel } from "./core/inject";
 import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
+import {
+	sortByRecentActivity,
+	toSupportCategoryLink,
+	toSupportPostLink,
+	toSupportTagLink,
+	type SupportPostLink,
+	type SupportTaxonomyLink,
+} from "./support";
 
 export interface HomePostSection {
 	id: string;
@@ -19,6 +27,19 @@ export interface HomePostSection {
 
 export interface HomePageViewModel {
 	sections: HomePostSection[];
+	support: HomeSupportViewModel;
+}
+
+export interface HomeSupportViewModel {
+	stats: {
+		postCount: number;
+		categoryCount: number;
+		tagCount: number;
+		totalWords: number;
+	};
+	recentPosts: SupportPostLink[];
+	categories: SupportTaxonomyLink[];
+	tags: SupportTaxonomyLink[];
 }
 
 export async function getHomePageViewModel(): Promise<HomePageViewModel> {
@@ -50,6 +71,16 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 				},
 			]
 		: [];
+	const allTagLinks = Array.from(store.categoryMap.values()).flatMap(
+		(entry) =>
+			Array.from(entry.tags.values()).map((tag) =>
+				toSupportTagLink(tag, entry.category.slug),
+			),
+	);
+	const tagLinks = allTagLinks
+		.slice()
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 10);
 
 	return {
 		sections: [
@@ -69,5 +100,18 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 			},
 			...technologySection,
 		],
+		support: {
+			stats: {
+				postCount: store.stats.postCount,
+				categoryCount: store.categories.length,
+				tagCount: allTagLinks.length,
+				totalWords: store.stats.totalWords,
+			},
+			recentPosts: sortByRecentActivity(store.posts)
+				.slice(0, 4)
+				.map(toSupportPostLink),
+			categories: store.categories.slice(0, 8).map(toSupportCategoryLink),
+			tags: tagLinks,
+		},
 	};
 }

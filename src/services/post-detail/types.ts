@@ -1,6 +1,7 @@
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
 import type { PostNavigationLink, UIMeta } from "../core/types";
+import type { SupportPostLink } from "../support";
 
 export type Person = {
 	"@type": "Person";
@@ -87,6 +88,10 @@ export type PostDetailPageProps = {
 	navigation: {
 		prev?: PostNavigationLink;
 		next?: PostNavigationLink;
+	};
+	support: {
+		continueReading: SupportPostLink[];
+		recommendedPosts: SupportPostLink[];
 	};
 	canonicalUrl: string;
 	canonicalOgSlug: string;

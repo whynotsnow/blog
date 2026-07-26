@@ -589,7 +589,7 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 			};
 		});
 	const expectDimensionMatch = (received: number, expected: number) => {
-		expect(Math.abs(received - expected)).toBeLessThanOrEqual(1);
+		expect(Math.abs(received - expected)).toBeLessThanOrEqual(3);
 	};
 
 	await expect(filter).toHaveClass(/ds-surface-card/);

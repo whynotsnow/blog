@@ -15,7 +15,7 @@ export const getStaticPaths =
  * params & props
  */
 const { slug } = Astro.params;
-const { posts, pagination, categorySlug, categories, tagIndexUrl } =
+const { posts, pagination, categorySlug, categories, tagIndexUrl, support } =
 	Astro.props as CategoryPageProps;
 
 if (!slug) return Astro.redirect("/404");
@@ -24,9 +24,7 @@ if (!slug) return Astro.redirect("/404");
 <MainGridLayout layoutPolicy="listing">
 	<CategorySupport
 		slot="support"
-		{categories}
-		{categorySlug}
-		{pagination}
+		support={support}
 	/>
 	<CategoryPage {posts} {pagination} {categories} {categorySlug} {tagIndexUrl} />
 </MainGridLayout>

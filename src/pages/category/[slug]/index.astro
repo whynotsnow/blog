@@ -9,16 +9,14 @@ import {
 
 export const getStaticPaths = getCategoryIndexStaticPaths;
 
-const { posts, pagination, categories, categorySlug, tagIndexUrl } =
+const { posts, pagination, categories, categorySlug, tagIndexUrl, support } =
 	Astro.props as CategoryPageProps;
 ---
 
 <MainGridLayout layoutPolicy="listing">
 	<CategorySupport
 		slot="support"
-		{categories}
-		{categorySlug}
-		{pagination}
+		support={support}
 	/>
 	<CategoryPage {posts} {pagination} {categories} {categorySlug} {tagIndexUrl} />
 </MainGridLayout>

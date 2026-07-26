@@ -1,0 +1,233 @@
+---
+import { Icon } from "astro-icon/components";
+import ProfileCard from "@components/profile/ProfileCard.astro";
+import type { HomeSupportViewModel } from "@/services/home";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+
+interface Props {
+	model: HomeSupportViewModel;
+	class?: string;
+}
+
+const { model, class: className } = Astro.props;
+const formattedWords = new Intl.NumberFormat("zh-CN", {
+	notation: "compact",
+	maximumFractionDigits: 1,
+}).format(model.stats.totalWords);
+---
+
+<aside class:list={["home-support ds-stack", className]} aria-label="首页侧栏">
+	<ProfileCard />
+
+	<section class="home-support__panel ds-surface-card">
+		<h2 class="home-support__heading">
+			<Icon name="material-symbols:bar-chart-rounded" />
+			站点概览
+		</h2>
+		<div class="home-support__stats">
+			<div>
+				<span>{model.stats.postCount}</span>
+				<small>文章</small>
+			</div>
+			<div>
+				<span>{model.stats.categoryCount}</span>
+				<small>分类</small>
+			</div>
+			<div>
+				<span>{model.stats.tagCount}</span>
+				<small>标签</small>
+			</div>
+			<div>
+				<span>{formattedWords}</span>
+				<small>字数</small>
+			</div>
+		</div>
+	</section>
+
+	<section class="home-support__panel ds-surface-card">
+		<h2 class="home-support__heading">
+			<Icon name="material-symbols:update-rounded" />
+			最近更新
+		</h2>
+		<div class="home-support__post-list">
+			{
+				model.recentPosts.map((post) => (
+					<a href={post.url} class="home-support__post">
+						<strong>{post.title}</strong>
+						<span>{formatDateToYYYYMMDD(post.published)}</span>
+					</a>
+				))
+			}
+		</div>
+	</section>
+
+	<section class="home-support__panel ds-surface-card">
+		<h2 class="home-support__heading">
+			<Icon name="material-symbols:category-outline-rounded" />
+			分类入口
+		</h2>
+		<div class="home-support__taxonomy">
+			{
+				model.categories.map((category) => (
+					<a href={category.url} class="home-support__taxonomy-link">
+						<span>{category.name}</span>
+						<small>{category.count}</small>
+					</a>
+				))
+			}
+		</div>
+	</section>
+
+	{
+		model.tags.length > 0 && (
+			<section class="home-support__panel ds-surface-card">
+				<h2 class="home-support__heading">
+					<Icon name="material-symbols:tag-rounded" />
+					热门标签
+				</h2>
+				<div class="home-support__tags">
+					{model.tags.map((tag) => (
+						<a href={tag.url} class="home-support__tag">
+							<span>{tag.name}</span>
+							<small>{tag.count}</small>
+						</a>
+					))}
+				</div>
+			</section>
+		)
+	}
+</aside>
+
+<style>
+	.home-support {
+		--stack-space: var(--space-grid-gap);
+	}
+
+	.home-support__panel {
+		padding: var(--space-card);
+	}
+
+	.home-support__heading {
+		display: flex;
+		align-items: center;
+		gap: var(--size-2);
+		margin-bottom: var(--size-3);
+		color: var(--text-primary);
+		font-size: 0.95rem;
+		font-weight: 800;
+	}
+
+	.home-support__heading :global(svg) {
+		color: var(--accent);
+		font-size: 1.25rem;
+	}
+
+	.home-support__stats {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--size-2);
+	}
+
+	.home-support__stats div,
+	.home-support__taxonomy-link {
+		min-width: 0;
+		padding: var(--size-3);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-md);
+	}
+
+	.home-support__stats span,
+	.home-support__stats small {
+		display: block;
+	}
+
+	.home-support__stats span {
+		overflow: hidden;
+		color: var(--text-primary);
+		font-size: 1.15rem;
+		font-weight: 800;
+		line-height: 1;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.home-support__stats small,
+	.home-support__post span,
+	.home-support__taxonomy-link small {
+		color: var(--text-muted);
+		font-size: var(--text-meta);
+	}
+
+	.home-support__stats small {
+		margin-top: var(--size-1);
+	}
+
+	.home-support__post-list,
+	.home-support__taxonomy,
+	.home-support__tags {
+		display: grid;
+		gap: var(--size-2);
+	}
+
+	.home-support__post,
+	.home-support__taxonomy-link {
+		display: grid;
+		gap: var(--size-1);
+		color: var(--text-secondary);
+	}
+
+	.home-support__post strong,
+	.home-support__taxonomy-link span {
+		overflow: hidden;
+		color: var(--text-primary);
+		font-size: 0.9rem;
+		font-weight: 800;
+		line-height: 1.35;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.home-support__post:hover strong,
+	.home-support__taxonomy-link:hover span {
+		color: var(--accent);
+	}
+
+	.home-support__taxonomy-link {
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+	}
+
+	.home-support__tags {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.home-support__tag {
+		display: inline-flex;
+		max-width: 100%;
+		align-items: center;
+		gap: var(--size-1);
+		padding: 0.4rem 0.55rem;
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-md);
+		color: var(--text-secondary);
+		font-size: var(--text-meta);
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.home-support__tag:hover {
+		border-color: var(--border-strong);
+		color: var(--accent);
+	}
+
+	.home-support__tag span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.home-support__tag small {
+		color: var(--text-muted);
+	}
+</style>

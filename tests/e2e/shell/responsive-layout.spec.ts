@@ -451,6 +451,16 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	await expect(
 		page.locator(".post-support__toc table-of-contents#toc a").first(),
 	).toBeVisible();
+	await page.evaluate(() => window.scrollBy({ top: 900, behavior: "auto" }));
+	await expect
+		.poll(() =>
+			page.locator(".post-support__toc").evaluate((node) => {
+				const rect = node.getBoundingClientRect();
+				const top = Number.parseFloat(getComputedStyle(node).top);
+				return Math.abs(rect.top - top);
+			}),
+		)
+		.toBeLessThanOrEqual(2);
 
 	const supportTocGeometry = await page.evaluate(() => {
 		const grid = document.querySelector<HTMLElement>("#main-grid")!;

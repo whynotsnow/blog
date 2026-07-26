@@ -152,9 +152,18 @@
 				"src/components/profile/**",
 				"src/components/layout/MainGridContent.astro",
 				"src/services/footer.ts",
+				"src/services/support.ts",
 				"src/services/layout/presets.ts"
 			],
-			"groups": ["lint", "type", "astro", "page-support"]
+			"groups": [
+				"lint",
+				"type",
+				"astro",
+				"home",
+				"post-list",
+				"post-detail",
+				"page-support"
+			]
 		},
 		{
 			"patterns": [

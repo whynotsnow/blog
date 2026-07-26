@@ -9,6 +9,14 @@ import type {
 	PostIndexEntry,
 	PostNavigatorCategory,
 } from "./core/types";
+import {
+	sortByRecentActivity,
+	toSupportCategoryLink,
+	toSupportPostLink,
+	toSupportTagLink,
+	type SupportPostLink,
+	type SupportTaxonomyLink,
+} from "./support";
 
 export type CategoryPageProps = {
 	posts: PostCardViewModel[];
@@ -16,6 +24,13 @@ export type CategoryPageProps = {
 	categorySlug: string;
 	categories: PostNavigatorCategory[];
 	tagIndexUrl: string;
+	support: CategorySupportViewModel;
+};
+
+export type CategorySupportViewModel = {
+	recentPosts: SupportPostLink[];
+	categories: SupportTaxonomyLink[];
+	tags: SupportTaxonomyLink[];
 };
 
 export type CategoryPaginationViewModel = {
@@ -149,6 +164,9 @@ function buildCategoryPageProps(params: {
 		slug,
 		currentPage,
 	);
+	const activeCategory = categories.find(
+		(category) => category.slug === slug,
+	);
 
 	return {
 		posts,
@@ -156,6 +174,20 @@ function buildCategoryPageProps(params: {
 		categorySlug: slug,
 		categories,
 		tagIndexUrl: url(`/api/categories/${slug}.json/`),
+		support: {
+			recentPosts: sortByRecentActivity(sortedPosts)
+				.slice(0, 5)
+				.map(toSupportPostLink),
+			categories: categories
+				.filter((category) => category.slug !== slug)
+				.slice(0, 8)
+				.map(toSupportCategoryLink),
+			tags: (activeCategory?.tags ?? [])
+				.slice()
+				.sort((a, b) => b.count - a.count)
+				.slice(0, 8)
+				.map((tag) => toSupportTagLink(tag, slug)),
+		},
 	};
 }
 

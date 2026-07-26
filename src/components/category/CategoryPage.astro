@@ -4,7 +4,10 @@ import PostGrid from "@components/post/PostGrid.astro";
 import type { CategoryPageProps } from "@/services/category-page";
 import CategoryPostListClient from "./CategoryPostListClient.svelte";
 
-type Props = CategoryPageProps;
+type Props = Pick<
+	CategoryPageProps,
+	"posts" | "pagination" | "categories" | "categorySlug" | "tagIndexUrl"
+>;
 
 const { posts, pagination, categories, categorySlug, tagIndexUrl } =
 	Astro.props;

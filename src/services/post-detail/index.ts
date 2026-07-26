@@ -13,6 +13,7 @@ import { getRawPostById } from "../core/source";
 import { getRenderedPost } from "../core/post-renderer";
 import { runPostBuildTask } from "../core/concurrency";
 import { buildPostDetailStaticPathItems } from "./static-paths";
+import { buildRecommendedPostLinks, toSupportPostLink } from "../support";
 
 dayjs.extend(utc);
 
@@ -64,6 +65,24 @@ export async function getPostDetailPageData(
 			? raw.data.lang.replace("_", "-")
 			: siteConfig.lang.replace("_", "-"),
 	};
+	const continueReading = [index.prev, index.next]
+		.map((link) =>
+			link
+				? store.posts.find(
+						(post) => post.route.canonicalUrl === link.url,
+					)
+				: undefined,
+		)
+		.filter((post): post is NonNullable<typeof post> => Boolean(post))
+		.map(toSupportPostLink);
+	const recommendedPosts = buildRecommendedPostLinks({
+		current: index,
+		posts: store.posts,
+		limit: 4,
+	}).filter(
+		(post) =>
+			!continueReading.some((continued) => continued.id === post.id),
+	);
 
 	return {
 		id: index.id,
@@ -105,6 +124,10 @@ export async function getPostDetailPageData(
 			licenseUrl: raw.data.licenseUrl,
 		},
 		navigation: { prev: index.prev, next: index.next },
+		support: {
+			continueReading,
+			recommendedPosts: recommendedPosts.slice(0, 3),
+		},
 		canonicalUrl,
 		canonicalOgSlug: index.route.canonicalSlug,
 		Content,

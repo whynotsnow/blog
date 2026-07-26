@@ -1,61 +1,43 @@
 ---
 import { Icon } from "astro-icon/components";
-import ButtonLink from "@components/control/ButtonLink.astro";
 import type { CategoryPageProps } from "@/services/category-page";
-import { url } from "@utils/url";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 
-type Props = Pick<
-	CategoryPageProps,
-	"categories" | "categorySlug" | "pagination"
->;
+type Props = Pick<CategoryPageProps, "support">;
 
-const { categories, categorySlug, pagination } = Astro.props as Props;
-const activeCategory = categories.find(
-	(category) => category.slug === categorySlug,
-);
-const relatedCategories = categories.filter(
-	(category) => category.slug !== categorySlug,
-);
-const visibleTags = activeCategory?.tags.slice(0, 12) ?? [];
+const { support } = Astro.props as Props;
 ---
 
 <aside class="category-support ds-stack" aria-label="分类上下文">
-	<section class="category-support__panel ds-surface-card">
-		<div class="category-support__eyebrow">当前分类</div>
-		<h2 class="category-support__title">
-			{activeCategory?.name ?? "文章分类"}
-		</h2>
-		<div class="category-support__stats">
-			<div>
-				<span>{pagination.total}</span>
-				<small>篇文章</small>
-			</div>
-			<div>
-				<span>{activeCategory?.tags.length ?? 0}</span>
-				<small>个标签</small>
-			</div>
-		</div>
-	</section>
+	{
+		support.recentPosts.length > 0 && (
+			<section class="category-support__panel ds-surface-card">
+				<h2 class="category-support__heading">
+					<Icon name="material-symbols:update-rounded" />
+					最近更新
+				</h2>
+				<div class="category-support__post-list">
+					{support.recentPosts.map((post) => (
+						<a href={post.url} class="category-support__post">
+							<strong>{post.title}</strong>
+							<span>{formatDateToYYYYMMDD(post.published)}</span>
+						</a>
+					))}
+				</div>
+			</section>
+		)
+	}
 
 	{
-		visibleTags.length > 0 && (
+		support.tags.length > 0 && (
 			<section class="category-support__panel ds-surface-card">
 				<h2 class="category-support__heading">
 					<Icon name="material-symbols:tag-rounded" />
-					标签索引
+					热门标签
 				</h2>
 				<div class="category-support__tags">
-					<a
-						href={url(`/category/${categorySlug}/`)}
-						class="category-support__tag category-support__tag--all"
-					>
-						全部
-					</a>
-					{visibleTags.map((tag) => (
-						<a
-							href={url(`/category/${categorySlug}/?tag=${tag.slug}`)}
-							class="category-support__tag"
-						>
+					{support.tags.map((tag) => (
+						<a href={tag.url} class="category-support__tag">
 							<span>{tag.name}</span>
 							<small>{tag.count}</small>
 						</a>
@@ -66,21 +48,18 @@ const visibleTags = activeCategory?.tags.slice(0, 12) ?? [];
 	}
 
 	{
-		relatedCategories.length > 0 && (
+		support.categories.length > 0 && (
 			<section class="category-support__panel ds-surface-card">
 				<h2 class="category-support__heading">
 					<Icon name="material-symbols:category-outline-rounded" />
 					其他分类
 				</h2>
 				<div class="category-support__links">
-					{relatedCategories.slice(0, 8).map((category) => (
-						<ButtonLink
-							url={category.url ?? url(`/category/${category.slug}/`)}
-							badge={String(category.count)}
-							label={`View all posts in the ${category.name.trim()} category`}
-						>
-							{category.name.trim()}
-						</ButtonLink>
+					{support.categories.map((category) => (
+						<a href={category.url} class="category-support__link">
+							<span>{category.name}</span>
+							<small>{category.count}</small>
+						</a>
 					))}
 				</div>
 			</section>
@@ -93,54 +72,14 @@ const visibleTags = activeCategory?.tags.slice(0, 12) ?? [];
 		--stack-space: var(--space-grid-gap);
 	}
 
+	@media (max-width: 879px) {
+		.category-support {
+			display: none;
+		}
+	}
+
 	.category-support__panel {
 		padding: var(--space-card);
-	}
-
-	.category-support__eyebrow {
-		color: var(--text-muted);
-		font-size: var(--text-meta);
-		font-weight: 700;
-	}
-
-	.category-support__title {
-		margin-top: var(--size-1);
-		color: var(--text-primary);
-		font-family: var(--font-heading);
-		font-size: 1.35rem;
-		font-weight: 800;
-		line-height: 1.2;
-	}
-
-	.category-support__stats {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: var(--size-2);
-		margin-top: var(--space-card);
-	}
-
-	.category-support__stats div {
-		padding: var(--size-3);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--radius-md);
-	}
-
-	.category-support__stats span,
-	.category-support__stats small {
-		display: block;
-	}
-
-	.category-support__stats span {
-		color: var(--text-primary);
-		font-size: 1.25rem;
-		font-weight: 800;
-		line-height: 1;
-	}
-
-	.category-support__stats small {
-		margin-top: var(--size-1);
-		color: var(--text-secondary);
-		font-size: var(--text-meta);
 	}
 
 	.category-support__heading {
@@ -164,6 +103,14 @@ const visibleTags = activeCategory?.tags.slice(0, 12) ?? [];
 		gap: var(--size-2);
 	}
 
+	.category-support__post-list,
+	.category-support__links {
+		display: grid;
+		gap: var(--size-2);
+	}
+
+	.category-support__post,
+	.category-support__link,
 	.category-support__tag {
 		display: inline-flex;
 		max-width: 100%;
@@ -186,25 +133,35 @@ const visibleTags = activeCategory?.tags.slice(0, 12) ?? [];
 		color: var(--accent);
 	}
 
-	.category-support__tag--all {
-		border-color: var(--accent);
-		background: var(--accent);
-		color: var(--text-on-accent);
+	.category-support__post,
+	.category-support__link {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: var(--size-2);
+		padding: var(--size-3);
+		line-height: 1.35;
 	}
 
+	.category-support__post strong,
+	.category-support__link span,
 	.category-support__tag span {
 		overflow: hidden;
+		color: var(--text-primary);
+		font-size: 0.9rem;
+		font-weight: 800;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	.category-support__tag small {
-		color: inherit;
-		opacity: 0.7;
+	.category-support__post:hover strong,
+	.category-support__link:hover span {
+		color: var(--accent);
 	}
 
-	.category-support__links {
-		display: grid;
-		gap: var(--size-2);
+	.category-support__post span,
+	.category-support__link small,
+	.category-support__tag small {
+		color: var(--text-muted);
+		font-size: var(--text-meta);
 	}
 </style>
