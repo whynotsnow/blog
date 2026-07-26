@@ -35,6 +35,10 @@ export function getCategoryHubUrl(): string {
 	return url("/category/");
 }
 
+export function getCategoryRecommendedUrl(): string {
+	return url("/category/recommended/");
+}
+
 export function getCategoryTagUrl(
 	categorySlug: string,
 	tagSlug: string,

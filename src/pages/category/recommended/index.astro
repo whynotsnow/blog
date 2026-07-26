@@ -1,0 +1,11 @@
+---
+import CategoryHubPage from "@components/category/CategoryHubPage.astro";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { getCategoryRecommendedPageViewModel } from "@/services/category-hub";
+
+const model = await getCategoryRecommendedPageViewModel();
+---
+
+<MainGridLayout title={model.title} layoutPolicy="listing">
+	<CategoryHubPage {model} />
+</MainGridLayout>

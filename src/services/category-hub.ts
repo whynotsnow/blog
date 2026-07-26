@@ -1,6 +1,13 @@
-import { getCategoryHubUrl, getCategoryPageUrl } from "@/utils/url";
+import { CATEGORY_PAGE_SIZE } from "@constants/constants";
+import {
+	getCategoryHubUrl,
+	getCategoryPageUrl,
+	getCategoryRecommendedUrl,
+} from "@/utils/url";
 import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
+import { toPostCardViewModel } from "./core/inject";
+import { sortByScore } from "./core/sort";
 import {
 	sortByRecentActivity,
 	toSupportCategoryLink,
@@ -10,7 +17,7 @@ import {
 	type SupportTaxonomyLink,
 } from "./support";
 
-export type CategoryHubView = "all";
+export type CategoryHubView = "all" | "recommended";
 
 export type CategoryHubTab = {
 	id: CategoryHubView;
@@ -46,10 +53,17 @@ function buildCategoryHubTabs(): CategoryHubTab[] {
 			label: "全部分类",
 			url: getCategoryHubUrl(),
 		},
+		{
+			id: "recommended",
+			label: "推荐",
+			url: getCategoryRecommendedUrl(),
+		},
 	];
 }
 
-export async function getCategoryHubPageViewModel(): Promise<CategoryHubPageViewModel> {
+async function buildCategoryHubPageViewModel(
+	activeView: CategoryHubView,
+): Promise<CategoryHubPageViewModel> {
 	const store = await getContentStore();
 	const categories = store.categories.map((category) => {
 		const entry = store.categoryMap.get(category.slug);
@@ -72,13 +86,30 @@ export async function getCategoryHubPageViewModel(): Promise<CategoryHubPageView
 			recentPosts,
 		};
 	});
+	const posts =
+		activeView === "recommended"
+			? sortByScore(store.posts)
+					.slice(0, CATEGORY_PAGE_SIZE)
+					.map(toPostCardViewModel)
+			: [];
 
 	return {
-		activeView: "all",
-		title: "全部分类",
-		description: "按主题浏览文章，进入具体分类后可继续按标签筛选。",
+		activeView,
+		title: activeView === "recommended" ? "推荐" : "全部分类",
+		description:
+			activeView === "recommended"
+				? "按推荐分展示值得优先阅读的文章。"
+				: "按主题浏览文章，进入具体分类后可继续按标签筛选。",
 		tabs: buildCategoryHubTabs(),
 		categories,
-		posts: [],
+		posts,
 	};
+}
+
+export async function getCategoryHubPageViewModel(): Promise<CategoryHubPageViewModel> {
+	return buildCategoryHubPageViewModel("all");
+}
+
+export async function getCategoryRecommendedPageViewModel(): Promise<CategoryHubPageViewModel> {
+	return buildCategoryHubPageViewModel("recommended");
 }

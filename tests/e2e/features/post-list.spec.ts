@@ -52,6 +52,9 @@ test("category hub lists all categories and links to category pages", async ({
 	await expect(
 		page.locator(".category-hub-tab[aria-current='page']"),
 	).toHaveText("全部分类");
+	await expect(
+		page.locator('.category-hub-tab[href="/category/recommended/"]'),
+	).toHaveText("推荐");
 
 	const techCard = page.locator('[data-category-card="tech"]');
 	await expect(techCard).toBeVisible();
@@ -66,6 +69,28 @@ test("category hub lists all categories and links to category pages", async ({
 	await techCard.locator(".category-hub-card__main").click();
 	await expect(page).toHaveURL(/\/category\/tech\/$/);
 	await expect(page.locator("#category-filter-title")).toHaveText("技术");
+});
+
+test("category recommended view renders recommended posts", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1000, height: 900 });
+	await gotoPage(page, "/category/recommended/");
+
+	const hub = page.locator("[data-category-hub]");
+	await expect(hub).toHaveAttribute("data-category-hub-view", "recommended");
+	await expect(page.locator("#category-hub-title")).toHaveText("推荐");
+	await expect(
+		page.locator(".category-hub-tab[aria-current='page']"),
+	).toHaveText("推荐");
+	await expect(page.locator("#category-filter-title")).toHaveCount(0);
+
+	const postList = page.locator("#category-recommended-post-list");
+	await expect(postList).toHaveAttribute("data-post-list-renderer", "astro");
+	await expect(postList.locator(":scope > .post-list__item")).toHaveCount(12);
+	await page.locator('.category-hub-tab[href="/category/"]').click();
+	await expect(page).toHaveURL(/\/category\/$/);
+	await expect(hub).toHaveAttribute("data-category-hub-view", "all");
 });
 
 test("Grid Card height follows its cover while Content keeps a bounded budget", async ({
