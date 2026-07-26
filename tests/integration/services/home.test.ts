@@ -16,16 +16,107 @@ vi.mock("@/services/core/inject", () => ({
 }));
 
 import { getHomePageViewModel } from "@/services/home";
-import type { PostIndexEntry } from "@/services/core/types";
+import type {
+	CategoryEntry,
+	ContentStore,
+	PostIndexEntry,
+	PostNavigatorCategory,
+	TagItem,
+} from "@/services/core/types";
 
 function post(id: string, categorySlug: string, score: number): PostIndexEntry {
 	return {
 		id,
+		postId: Number.parseInt(id.replace(/\D/g, ""), 10) || score,
+		route: {
+			postId: id,
+			defaultSlug: id,
+			canonicalSlug: id,
+			canonicalUrl: `/posts/${id}/`,
+			usesAlias: false,
+		},
+		title: id,
+		description: "",
 		score,
 		category: { name: categorySlug, slug: categorySlug, url: "" },
+		tags: [
+			{
+				name: `${categorySlug}-tag`,
+				slug: `${categorySlug}-tag`,
+				url: `/category/${categorySlug}/?tag=${categorySlug}-tag`,
+			},
+		],
+		words: 100,
+		minutes: 1,
+		excerpt: "",
+		pinned: false,
+		draft: false,
+		encrypted: false,
 		updated: new Date("2026-01-02T00:00:00.000Z"),
 		published: new Date("2026-01-01T00:00:00.000Z"),
 	} as PostIndexEntry;
+}
+
+function buildStore(posts: PostIndexEntry[]): ContentStore {
+	const categoryMap = new Map<string, CategoryEntry>();
+
+	for (const entry of posts) {
+		let categoryEntry = categoryMap.get(entry.category.slug);
+		if (!categoryEntry) {
+			categoryEntry = {
+				category: {
+					slug: entry.category.slug,
+					name: entry.category.name,
+					count: 0,
+					url: `/category/${entry.category.slug}/`,
+				},
+				posts: [],
+				tags: new Map<string, TagItem>(),
+			};
+			categoryMap.set(entry.category.slug, categoryEntry);
+		}
+
+		categoryEntry.posts.push(entry);
+		categoryEntry.category.count += 1;
+
+		for (const tag of entry.tags) {
+			const current = categoryEntry.tags.get(tag.slug);
+			categoryEntry.tags.set(tag.slug, {
+				slug: tag.slug,
+				name: tag.name,
+				count: (current?.count ?? 0) + 1,
+				url: tag.url,
+			});
+		}
+	}
+
+	const categories: PostNavigatorCategory[] = Array.from(
+		categoryMap.values(),
+	).map((entry) => ({
+		slug: entry.category.slug,
+		name: entry.category.name,
+		count: entry.posts.length,
+		url: entry.category.url,
+		tags: Array.from(entry.tags.values()),
+	}));
+
+	return {
+		posts,
+		postsById: new Map(posts.map((entry) => [entry.id, entry])),
+		routes: {
+			byId: new Map(posts.map((entry) => [entry.id, entry.route])),
+			bySlug: new Map(
+				posts.map((entry) => [entry.route.canonicalSlug, entry.route]),
+			),
+		},
+		stats: {
+			postCount: posts.length,
+			totalWords: posts.reduce((total, entry) => total + entry.words, 0),
+			lastActivityAt: posts[0]?.updated ?? posts[0]?.published ?? null,
+		},
+		categoryMap,
+		categories,
+	};
 }
 
 describe("home page content selection", () => {
@@ -37,10 +128,9 @@ describe("home page content selection", () => {
 			post("tech-high", "tech", 10),
 		];
 		const other = post("other", "notes", 100);
-		getContentStore.mockResolvedValue({
-			posts: [other, ...technologyPosts],
-			categoryMap: new Map([["tech", { posts: technologyPosts }]]),
-		});
+		getContentStore.mockResolvedValue(
+			buildStore([other, ...technologyPosts]),
+		);
 
 		const page = await getHomePageViewModel();
 		const technology = page.sections.find(
@@ -59,10 +149,9 @@ describe("home page content selection", () => {
 
 	it("does not backfill a short technology section", async () => {
 		const onlyTechnologyPost = post("only-tech", "tech", 1);
-		getContentStore.mockResolvedValue({
-			posts: [onlyTechnologyPost, post("other", "notes", 100)],
-			categoryMap: new Map([["tech", { posts: [onlyTechnologyPost] }]]),
-		});
+		getContentStore.mockResolvedValue(
+			buildStore([onlyTechnologyPost, post("other", "notes", 100)]),
+		);
 
 		const page = await getHomePageViewModel();
 		expect(
@@ -74,10 +163,7 @@ describe("home page content selection", () => {
 		const technologyPosts = Array.from({ length: 7 }, (_, index) =>
 			post(`tech-${index}`, "tech", index),
 		);
-		getContentStore.mockResolvedValue({
-			posts: technologyPosts,
-			categoryMap: new Map([["tech", { posts: technologyPosts }]]),
-		});
+		getContentStore.mockResolvedValue(buildStore(technologyPosts));
 
 		const page = await getHomePageViewModel();
 
@@ -94,10 +180,9 @@ describe("home page content selection", () => {
 	});
 
 	it("omits the technology section when the category is empty", async () => {
-		getContentStore.mockResolvedValue({
-			posts: [post("other", "notes", 100)],
-			categoryMap: new Map(),
-		});
+		getContentStore.mockResolvedValue(
+			buildStore([post("other", "notes", 100)]),
+		);
 
 		const page = await getHomePageViewModel();
 		expect(page.sections.map((section) => section.id)).toEqual([
