@@ -31,7 +31,7 @@ This index clusters known failure patterns so agents can recognize them quickly 
 
 ### pnpm-store-location-mismatch
 
-- Symptom: `ERR_PNPM_UNEXPECTED_STORE` because existing `node_modules` is linked from a different pnpm store than the active pnpm config wants to use.
+- Symptom: `ERR_PNPM_UNEXPECTED_STORE` because existing `node_modules` is linked from a different pnpm store than the active pnpm config wants to use; do not solve it by adding a project-local `.pnpm-store`.
 - Playbook: [pnpm-store-location-mismatch](./runtime-playbook.md#pnpm-store-location-mismatch)
 
 ### generated-font-dev-drift

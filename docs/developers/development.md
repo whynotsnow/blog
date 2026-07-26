@@ -2,16 +2,20 @@
 
 ## 环境要求
 
-- Node.js 18 或更新版本。
+- Node.js 22 或更新版本。本仓库提供 `.nvmrc`，在安装了 nvm 的设备上优先运行 `nvm use`。
 - pnpm 10，版本应与 `package.json` 中的 `packageManager` 保持一致。
 
-本项目通过 `scripts/check-env.mjs` 校验 pnpm 版本。若本机全局 PATH 中存在其他 pnpm 版本，优先使用 Corepack 启动项目声明的版本：
+本项目通过 nvm 固定 Node 入口，通过 Corepack 启动 `package.json` 中声明的 pnpm 版本。若本机全局 PATH 中存在其他 pnpm 版本，不要为本项目单独配置 `.pnpm-store`，优先使用 Corepack：
 
 ```bash
+nvm use
+npm uninstall -g pnpm
 corepack enable
 corepack install
 corepack pnpm --version
 ```
+
+如果曾经通过 `npm i -g pnpm` 或 Homebrew 安装过 pnpm，应先移除全局 pnpm，避免全局命令优先于 Corepack shim 并绕过 `packageManager` 字段。卸载后重新运行 `corepack enable && corepack install`，确认 `which pnpm` 指向当前 nvm Node 目录下的 Corepack 代理。
 
 在 Codex 或临时 shell 中，可以先进入项目环境：
 
@@ -21,16 +25,31 @@ source .codex/env-setup.sh
 
 该脚本会通过 Corepack 使用 `package.json` 中声明的 pnpm 版本，不会要求修改系统全局 pnpm。
 
+pnpm store 使用 pnpm 的用户级默认目录，不在项目内设置 `store-dir=.pnpm-store`。如果历史环境导致 `ERR_PNPM_UNEXPECTED_STORE`，先确认当前入口：
+
+```bash
+nvm use
+corepack pnpm --version
+corepack pnpm store path
+```
+
+确认无误后重建依赖目录，而不是修改 `pnpm-lock.yaml`：
+
+```bash
+rm -rf node_modules
+corepack pnpm install
+```
+
 ## 安装依赖
 
 ```bash
-pnpm install
+corepack pnpm install
 ```
 
 ## 本地开发
 
 ```bash
-pnpm dev
+corepack pnpm dev
 ```
 
 `dev` 脚本会依次准备 Content 和字体子集，再启动 `astro dev --host`。字体准备使用输入 Hash 缓存；源字体、配置和字符集没有变化时不会重复压缩。

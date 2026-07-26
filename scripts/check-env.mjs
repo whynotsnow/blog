@@ -21,6 +21,15 @@ const expectedPnpmVersion = match[1];
 
 function getPnpmVersionFromUserAgent() {
 	const userAgent = process.env.npm_config_user_agent ?? "";
+	const packageManagerName = /^([^\s/]+)/.exec(userAgent)?.[1];
+
+	if (packageManagerName && packageManagerName !== "pnpm") {
+		fail(`Unsupported package manager: ${packageManagerName}.`, [
+			"Use the project-declared package manager through Corepack:",
+			"  corepack pnpm <command>",
+		]);
+	}
+
 	const userAgentMatch = /\bpnpm\/([^\s]+)/.exec(userAgent);
 	return userAgentMatch?.[1];
 }

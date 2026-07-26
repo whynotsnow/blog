@@ -91,7 +91,7 @@
 			"symptoms": [
 				"ERR_PNPM_UNEXPECTED_STORE",
 				"existing node_modules is linked from a different pnpm store",
-				"pnpm wants to use .pnpm-store while node_modules points to the user-level store"
+				"historical config may point pnpm at a project-local .pnpm-store instead of the default user-level store"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#pnpm-store-location-mismatch"
 		},

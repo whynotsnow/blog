@@ -276,6 +276,8 @@
 				"vitest.config.*",
 				"tests/impact-map.json",
 				"scripts/test-impact.mjs",
+				"scripts/check-env.mjs",
+				".nvmrc",
 				".github/workflows/**"
 			],
 			"groups": ["full"]

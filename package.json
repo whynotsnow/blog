@@ -2,6 +2,9 @@
 	"name": "mizuki",
 	"type": "module",
 	"version": "8.3",
+	"engines": {
+		"node": ">=22.0.0"
+	},
 	"scripts": {
 		"check-env": "node scripts/check-env.mjs",
 		"content:prepare": "node scripts/prepare-content.mjs",
@@ -52,7 +55,7 @@
 		"design:check": "node scripts/check-design-system.mjs",
 		"prepare": "node scripts/install-git-hooks.mjs",
 		"precommit": "node scripts/check-env.mjs && node scripts/pre-commit-check.mjs",
-		"preinstall": "node scripts/check-env.mjs && npx only-allow pnpm",
+		"preinstall": "node scripts/check-env.mjs",
 		"clean": "rimraf node_modules pnpm-lock.yaml",
 		"clean:force": "rimraf node_modules pnpm-lock.yaml && pnpm store prune"
 	},

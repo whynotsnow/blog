@@ -100,7 +100,10 @@ Pattern:
 
 Use:
 
+- Load the project Node version with `nvm use` when nvm is available.
 - Prefer the project-declared pnpm version.
+- If npm-global or Homebrew pnpm is installed, remove it before relying on PATH `pnpm`; global pnpm can take priority over the Corepack shim and bypass `packageManager`.
+- After uninstalling a global pnpm, run `corepack enable && corepack install` again and confirm `which pnpm` resolves to the active nvm Node Corepack shim.
 - In Codex or a temporary shell, run `source .codex/env-setup.sh` before project `pnpm` commands when PATH resolves to a different pnpm.
 - Use `corepack pnpm <command>` when invoking a one-off command without sourcing the environment script.
 - Run `node scripts/check-env.mjs` or `corepack pnpm run check-env` to verify the active package manager.
@@ -123,20 +126,22 @@ Use:
 
 Pattern:
 
-- `source .codex/env-setup.sh` may configure pnpm to use the project-local `.pnpm-store`.
-- If the existing `node_modules` was linked from the user-level pnpm store, dependency install commands can fail with `ERR_PNPM_UNEXPECTED_STORE` before changing dependencies.
+- Historical shell or pnpm configuration may point this project at a project-local `.pnpm-store`.
+- If the existing `node_modules` was linked from a different pnpm store than the active pnpm config wants to use, dependency install commands can fail with `ERR_PNPM_UNEXPECTED_STORE` before changing dependencies.
 
 Use:
 
 - Treat this as package-manager preflight failure, not as a dependency resolution failure.
-- Prefer preserving the existing `node_modules` store when making a narrow dependency change:
+- Prefer the default user-level pnpm store. Do not add `store-dir=.pnpm-store` for this project.
+- Confirm the active package-manager entrypoint and store before retrying:
 
 ```bash
-source .codex/env-setup.sh
-pnpm --store-dir "$HOME/Library/pnpm/store/v10" add -D <package>
+nvm use
+corepack pnpm --version
+corepack pnpm store path
 ```
 
-- In restricted sandboxes, writing to the user-level store may require approval. Request escalation instead of reinstalling `node_modules` or rewriting the lockfile.
+- If `node_modules` was created with the wrong store, remove `node_modules` and run `corepack pnpm install`. Do not rewrite the lockfile just to satisfy a different store.
 
 ## TypeScript
 
