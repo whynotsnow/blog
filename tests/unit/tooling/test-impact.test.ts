@@ -39,6 +39,25 @@ describe("impact-based validation selection", () => {
 		expect(planFor("playwright.config.ts").groups).toEqual(["full"]);
 	});
 
+	it("falls back to full validation when the base commit is unavailable", () => {
+		const plan = JSON.parse(
+			execFileSync(
+				process.execPath,
+				[
+					"scripts/test-impact.mjs",
+					"--base=0000000000000000000000000000000000000001",
+					"--json",
+				],
+				{ cwd: process.cwd(), encoding: "utf8" },
+			),
+		) as { commands: Array<{ reasons: string[] }>; groups: string[] };
+
+		expect(plan.groups).toEqual(["full"]);
+		expect(plan.commands[0]?.reasons).toEqual([
+			"unavailable base 0000000000000000000000000000000000000001",
+		]);
+	});
+
 	it("classifies every guarded Feature and E2E path", () => {
 		expect(() =>
 			execFileSync(

@@ -1,6 +1,6 @@
 {
 	"version": 2,
-	"updated": "2026-07-21",
+	"updated": "2026-07-27",
 	"principle": "This project is not debugged repeatedly. It is learned once and reused forever.",
 	"architecture_constraints": [
 		{
@@ -57,6 +57,16 @@
 				"no JSON parse or coverage error appears before Process completed with exit code 1"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#bash-groups-special-variable"
+		},
+		{
+			"id": "ci-unavailable-push-base",
+			"cluster": "ci",
+			"symptoms": [
+				"GitHub Actions push validation plan fails after a force push",
+				"git diff reports Invalid symmetric difference expression for github.event.before",
+				"Browser, quality, fast, and build jobs are skipped because the plan job exits early"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#ci-unavailable-push-base"
 		},
 		{
 			"id": "astro-telemetry-side-effects",

@@ -13,10 +13,13 @@ const json = args.includes("--json");
 const staged = args.includes("--staged");
 const checkCoverage = args.includes("--check-coverage");
 const baseIndex = args.indexOf("--base");
-const base = baseIndex >= 0 ? args[baseIndex + 1] : undefined;
+const baseEquals = args.find((argument) => argument.startsWith("--base="));
+const base =
+	baseIndex >= 0 ? args[baseIndex + 1] : baseEquals?.slice("--base=".length);
 const explicitFiles = args
 	.filter((argument) => argument.startsWith("--file="))
 	.map((argument) => argument.slice("--file=".length));
+let unavailableBase;
 
 function gitLines(gitArgs) {
 	return execFileSync("git", gitArgs, { cwd: root, encoding: "utf8" })
@@ -25,9 +28,22 @@ function gitLines(gitArgs) {
 		.filter(Boolean);
 }
 
+function gitRefExists(ref) {
+	const result = spawnSync(
+		"git",
+		["rev-parse", "--verify", "--quiet", `${ref}^{commit}`],
+		{ cwd: root, stdio: "ignore" },
+	);
+	return result.status === 0;
+}
+
 function changedFiles() {
 	if (explicitFiles.length) return explicitFiles;
 	if (base) {
+		if (!gitRefExists(base)) {
+			unavailableBase = base;
+			return [];
+		}
 		return gitLines([
 			"diff",
 			"--name-only",
@@ -97,6 +113,11 @@ const files = [...new Set(changedFiles())].sort();
 const selected = new Set();
 const reasons = new Map();
 const unmatched = [];
+
+if (unavailableBase) {
+	selected.add("full");
+	reasons.set("full", [`unavailable base ${unavailableBase}`]);
+}
 
 for (const file of files) {
 	const fileRules = matchingRules(file);

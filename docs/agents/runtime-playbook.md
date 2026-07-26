@@ -50,6 +50,20 @@ Use:
 - Use a neutral name such as `SELECTED_GROUPS`, `VALIDATION_GROUPS`, or `PLAN_GROUPS` before writing to `$GITHUB_OUTPUT`.
 - When diagnosing CI plan failures, distinguish the successful `cat test-plan.json` output from the later output-write step. A valid printed JSON document means the failure may be shell assignment, not malformed JSON.
 
+### ci-unavailable-push-base
+
+Pattern:
+
+- A push workflow receives `github.event.before`, but that commit is unavailable in the checked-out repository.
+- This commonly happens after rewriting the branch with a force push or force-with-lease push.
+- `scripts/test-impact.mjs --base <sha> --json` fails before emitting a plan because `git diff <sha>...HEAD` cannot resolve the base.
+
+Use:
+
+- Treat an unavailable push base as an impact-analysis gap, not as a product or test failure.
+- The validation selector should emit a valid `full` plan when the base commit is missing, so CI continues with the conservative gate instead of failing in the planning job.
+- Before changing the workflow, reproduce with `node scripts/test-impact.mjs --base <missing-sha> --json` and confirm it returns `groups: ["full"]`.
+
 ### generated-font-dev-drift
 
 Pattern:

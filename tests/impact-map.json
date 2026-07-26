@@ -114,8 +114,18 @@
 				"src/components/control/BackToTop.astro",
 				"src/components/control/FloatingTOC.astro",
 				"src/components/features/settings/**",
+				"src/components/ui/local-icons.ts",
+				"src/config/live2d-companion.ts",
 				"src/config/music.ts"
 			],
+			"groups": ["lint", "type", "astro", "design", "floating-tools"]
+		},
+		{
+			"patterns": ["public/live2d-companion/**"],
+			"groups": ["astro", "floating-tools"]
+		},
+		{
+			"patterns": ["src/assets/icons/**"],
 			"groups": ["lint", "type", "astro", "design", "floating-tools"]
 		},
 		{

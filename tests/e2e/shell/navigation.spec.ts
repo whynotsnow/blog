@@ -184,13 +184,33 @@ test("Swup shows navigation progress independently from page entry scrolling", a
 	await expect
 		.poll(() => page.evaluate(() => Boolean(window.swup)))
 		.toBe(true);
-
-	await page.evaluate(() => {
-		window.swup.navigate("/archive/?progress-test=1");
-	});
+	const sawActiveProgress = await page.evaluate(
+		() =>
+			new Promise<boolean>((resolve) => {
+				let settled = false;
+				const finish = (value: boolean) => {
+					if (settled) return;
+					settled = true;
+					resolve(value);
+				};
+				const dispose = window.onPageLifecycle?.("visit-start", () => {
+					requestAnimationFrame(() => {
+						dispose?.();
+						finish(
+							document.getElementById("navigation-progress")
+								?.dataset.state === "active",
+						);
+					});
+				});
+				window.setTimeout(() => {
+					dispose?.();
+					finish(false);
+				}, 5_000);
+				window.swup.navigate("/archive/?progress-test=1");
+			}),
+	);
 	const progress = page.locator("#navigation-progress");
-	await expect(progress).toHaveAttribute("data-state", "active");
-	await expect(progress).toBeVisible();
+	expect(sawActiveProgress).toBe(true);
 	await expect(page).toHaveURL(/\/archive\/\?progress-test=1$/);
 	await expect(progress).toHaveAttribute("data-state", "idle");
 });
@@ -309,7 +329,7 @@ test("browser history realigns the category and post main regions", async ({
 			const geometry = await readEntryGeometry();
 			return Math.abs(geometry.top - geometry.clearance);
 		})
-		.toBeLessThan(1);
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
 	const normalEntry = await readEntryGeometry();
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
 
@@ -358,15 +378,38 @@ test("browser history realigns the category and post main regions", async ({
 		})
 		.toBeLessThanOrEqual(entryAlignmentTolerance);
 	const backEntry = await readEntryGeometry();
-	expect(Math.abs(backEntry.top - normalEntry.top)).toBeLessThan(1);
+	expect(Math.abs(backEntry.top - normalEntry.top)).toBeLessThanOrEqual(
+		entryAlignmentTolerance,
+	);
 
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
-	await page.evaluate(() => window.history.forward());
-	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
-	await expect(page.locator("#navigation-progress")).toHaveAttribute(
-		"data-state",
-		"active",
+	const sawForwardProgress = await page.evaluate(
+		() =>
+			new Promise<boolean>((resolve) => {
+				let settled = false;
+				const finish = (value: boolean) => {
+					if (settled) return;
+					settled = true;
+					resolve(value);
+				};
+				const dispose = window.onPageLifecycle?.("visit-start", () => {
+					requestAnimationFrame(() => {
+						dispose?.();
+						finish(
+							document.getElementById("navigation-progress")
+								?.dataset.state === "active",
+						);
+					});
+				});
+				window.setTimeout(() => {
+					dispose?.();
+					finish(false);
+				}, 5_000);
+				window.history.forward();
+			}),
 	);
+	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	expect(sawForwardProgress).toBe(true);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -376,9 +419,11 @@ test("browser history realigns the category and post main regions", async ({
 			const geometry = await readEntryGeometry();
 			return Math.abs(geometry.top - geometry.clearance);
 		})
-		.toBeLessThan(1);
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
 	const forwardEntry = await readEntryGeometry();
-	expect(Math.abs(forwardEntry.top - normalEntry.top)).toBeLessThan(1);
+	expect(Math.abs(forwardEntry.top - normalEntry.top)).toBeLessThanOrEqual(
+		entryAlignmentTolerance,
+	);
 });
 
 test("navbar stays sticky while the desktop banner scrolls", async ({

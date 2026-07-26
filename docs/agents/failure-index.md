@@ -19,6 +19,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: a GitHub Actions Bash step prints a valid validation plan JSON, then exits with code 1 after assigning to `GROUPS`.
 - Playbook: [bash-groups-special-variable](./runtime-playbook.md#bash-groups-special-variable)
 
+### ci-unavailable-push-base
+
+- Symptom: a GitHub Actions push validation plan fails with `Invalid symmetric difference expression <before>...HEAD` after a force push or rewritten history.
+- Playbook: [ci-unavailable-push-base](./runtime-playbook.md#ci-unavailable-push-base)
+
 ### pnpm-version-config-drift
 
 - Symptom: pnpm warns that `package.json#pnpm` is ignored, then reports lockfile config mismatch.
