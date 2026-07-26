@@ -16,27 +16,27 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 					{
 						name: "smile",
 						label: "微笑",
-						icon: "material-symbols:face-retouching-natural-rounded",
+						icon: "material-symbols:sentiment-satisfied-rounded",
 					},
 					{
 						name: "heart-combo",
 						label: "心动",
-						icon: "material-symbols:spa-outline-rounded",
+						icon: "material-symbols:mood-heart-rounded",
 					},
 					{
 						name: "angry-combo",
 						label: "生气",
-						icon: "material-symbols:error-outline-rounded",
+						icon: "material-symbols:sentiment-frustrated-rounded",
 					},
 					{
 						name: "dizzy-combo",
 						label: "晕乎",
-						icon: "material-symbols:airwave-rounded",
+						icon: "material-symbols:face-shake-rounded",
 					},
 					{
 						name: "blush",
 						label: "脸红",
-						icon: "material-symbols:wb-sunny-outline-rounded",
+						icon: "material-symbols:sentiment-excited-rounded",
 					},
 				],
 			},
@@ -58,22 +58,22 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 					{
 						name: "eyeclose",
 						label: "闭眼",
-						icon: "material-symbols:visibility-off-rounded",
+						icon: "material-symbols:visibility-off-outline-rounded",
 					},
 					{
 						name: "quanquan",
 						label: "圈圈眼",
-						icon: "material-symbols:airwave-rounded",
+						icon: "material-symbols:cyclone-rounded",
 					},
 					{
 						name: "tears",
 						label: "眼泪",
-						icon: "material-symbols:error-outline-rounded",
+						icon: "material-symbols:water-drop-rounded",
 					},
 					{
 						name: "white",
 						label: "变白",
-						icon: "material-symbols:wb-sunny-outline-rounded",
+						icon: "material-symbols:invert-colors-rounded",
 					},
 				],
 			},
@@ -93,7 +93,7 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 	hiddenOnMobile: false, // 中小屏仍展示看板娘，避免 Floating Tools 入口与组件消失
 	hideAboutMenu: true, // 隐藏 widget 内置 About/休眠/Switch，统一使用本地菜单按钮
 	modelSwitch: {
-		icon: "material-symbols:view-carousel-outline-rounded",
+		icon: "material-symbols:swap-horiz-rounded",
 		label: "切换模型",
 	},
 	expressionMenu: {
@@ -140,7 +140,7 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 	ui: {
 		themeMode: "site", // 使用站点语义色同步 iframe 内 UI
 		messageOffset: { top: 32 }, // 只调整壳层气泡，不依赖具体模型
-		collapseIcon: "material-symbols:visibility-off-rounded", // 使用本地图标
+		collapseIcon: "material-symbols:collapse-content-rounded", // 使用本地图标
 		collapseLabel: "收起看板娘",
 		hideWidgetStatusPanel: true,
 	},

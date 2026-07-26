@@ -34,6 +34,16 @@ async function openMiniPlayer(page: Page) {
 	return miniPlayer;
 }
 
+async function expectCompanionMenuIcon(
+	page: Page,
+	label: string,
+	icon: string,
+) {
+	await expect(
+		page.frameLocator("#l2d-iframe").getByRole("button", { name: label }),
+	).toHaveAttribute("data-local-icon", icon);
+}
+
 test("floating tools owns theme, settings, toc, and back-to-top actions", async ({
 	page,
 }) => {
@@ -827,6 +837,11 @@ test("floating tools controls the Live2D companion preference", async ({
 			.frameLocator("#l2d-iframe")
 			.getByRole("button", { name: "切换模型" }),
 	).toBeVisible();
+	await expect(
+		page
+			.frameLocator("#l2d-iframe")
+			.getByRole("button", { name: "切换模型" }),
+	).toHaveAttribute("data-local-icon", "material-symbols:swap-horiz-rounded");
 	const getCompanionMenuState = () =>
 		page
 			.frameLocator("#l2d-iframe")
@@ -857,6 +872,11 @@ test("floating tools controls the Live2D companion preference", async ({
 			.frameLocator("#l2d-iframe")
 			.getByRole("button", { name: "全部表情" }),
 	).toHaveAttribute("title", "全部表情");
+	await expectCompanionMenuIcon(
+		page,
+		"全部表情",
+		"material-symbols:grid-view-rounded",
+	);
 	await expect(
 		page.frameLocator("#l2d-iframe").getByRole("button", {
 			name: "微笑",
@@ -867,6 +887,31 @@ test("floating tools controls the Live2D companion preference", async ({
 			name: "微笑",
 		}),
 	).toHaveAttribute("title", "微笑");
+	await expectCompanionMenuIcon(
+		page,
+		"微笑",
+		"material-symbols:sentiment-satisfied-rounded",
+	);
+	await expectCompanionMenuIcon(
+		page,
+		"心动",
+		"material-symbols:mood-heart-rounded",
+	);
+	await expectCompanionMenuIcon(
+		page,
+		"生气",
+		"material-symbols:sentiment-frustrated-rounded",
+	);
+	await expectCompanionMenuIcon(
+		page,
+		"晕乎",
+		"material-symbols:face-shake-rounded",
+	);
+	await expectCompanionMenuIcon(
+		page,
+		"脸红",
+		"material-symbols:sentiment-excited-rounded",
+	);
 	await expect(
 		page.frameLocator("#l2d-iframe").getByRole("button", {
 			name: "冒汗",
@@ -1008,10 +1053,10 @@ test("floating tools controls the Live2D companion preference", async ({
 				transform: buttonStyle.transform,
 			};
 		});
-	expect(collapseButtonGeometry.buttonWidth).toBeCloseTo(28, 0);
-	expect(collapseButtonGeometry.buttonHeight).toBeCloseTo(28, 0);
+	expect(collapseButtonGeometry.buttonWidth).toBeCloseTo(24, 0);
+	expect(collapseButtonGeometry.buttonHeight).toBeCloseTo(24, 0);
 	expect(collapseButtonGeometry.iconName).toBe(
-		"material-symbols:visibility-off-rounded",
+		"material-symbols:collapse-content-rounded",
 	);
 	expect(collapseButtonGeometry.borderWidth).toBe("1px");
 	expect(collapseButtonGeometry.backgroundColor).not.toContain(
@@ -1081,6 +1126,26 @@ test("floating tools controls the Live2D companion preference", async ({
 	await expect(
 		page.frameLocator("#l2d-iframe").getByRole("button", { name: "闭眼" }),
 	).toBeVisible();
+	await expectCompanionMenuIcon(
+		page,
+		"闭眼",
+		"material-symbols:visibility-off-outline-rounded",
+	);
+	await expectCompanionMenuIcon(
+		page,
+		"圈圈眼",
+		"material-symbols:cyclone-rounded",
+	);
+	await expectCompanionMenuIcon(
+		page,
+		"眼泪",
+		"material-symbols:water-drop-rounded",
+	);
+	await expectCompanionMenuIcon(
+		page,
+		"变白",
+		"material-symbols:invert-colors-rounded",
+	);
 	await expect(
 		page.frameLocator("#l2d-iframe").getByRole("button", { name: "变白" }),
 	).toHaveAttribute("title", "变白");
@@ -1168,6 +1233,10 @@ test("floating tools controls the Live2D companion preference", async ({
 		/live2d-companion--collapsed/,
 	);
 	await expect(page.locator(".live2d-companion__avatar")).toBeVisible();
+	await expect(page.locator(".live2d-companion__avatar img")).toHaveAttribute(
+		"src",
+		"/live2d-companion/models/NOIR/avatar.png",
+	);
 	const collapsedIframeGeometry = await page
 		.locator("#l2d-iframe")
 		.evaluate((iframe) => {
@@ -1204,6 +1273,10 @@ test("floating tools controls the Live2D companion preference", async ({
 	await expect(page.locator(".live2d-companion")).not.toHaveClass(
 		/live2d-companion--collapsed/,
 	);
+	await expect.poll(getCompanionMenuState).toEqual({
+		opacity: "1",
+		pointerEvents: "auto",
+	});
 	await expect
 		.poll(() =>
 			page.evaluate(() =>

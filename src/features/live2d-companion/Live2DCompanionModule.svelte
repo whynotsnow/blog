@@ -98,6 +98,11 @@
 	let availableExpressions: string[] = [];
 	let expressionPanelAnchor: { x: number; y: number } | undefined;
 	let expressionPanelEl: HTMLDivElement | undefined;
+	const modelStorageKey = "live2d-companion-model-index";
+	const defaultAvatarSrc =
+		live2dCompanionConfig.avatar ??
+		"/live2d-companion/models/NOIR/avatar.png";
+	let activeAvatarSrc = defaultAvatarSrc;
 
 	function normalizeMessages(value?: string | string[]) {
 		if (!value) return undefined;
@@ -222,12 +227,22 @@
 	const widgetHeight = live2dCompanionConfig.height ?? widgetWidth;
 	const frameHeight = Math.min(widgetHeight + 72, 360);
 	const expressionLabels = live2dCompanionConfig.expressionMenu?.labels ?? {};
-	const avatarSrc =
-		live2dCompanionConfig.avatar ??
-		"/live2d-companion/models/NOIR/avatar.png";
 	const expandLabel = live2dCompanionConfig.dialog?.welcome
 		? normalizeMessages(live2dCompanionConfig.dialog.welcome)?.[0]
 		: "Show companion";
+
+	function getModelAvatarByStoredIndex() {
+		const models = live2dCompanionConfig.models ?? [];
+		const modelEntries = models.map((model) =>
+			typeof model === "string" ? { path: model } : model,
+		);
+		if (modelEntries.length === 0) return defaultAvatarSrc;
+		const rawIndex = Number(localStorage.getItem(modelStorageKey));
+		const index = Number.isFinite(rawIndex)
+			? Math.max(0, Math.min(modelEntries.length - 1, rawIndex))
+			: 0;
+		return modelEntries[index]?.avatar ?? defaultAvatarSrc;
+	}
 
 	function setCollapsed(nextCollapsed: boolean) {
 		collapsed = nextCollapsed;
@@ -372,6 +387,12 @@
 			iframeEl.style.height = `${Math.min(height, frameHeight)}px`;
 			loaded = true;
 		}
+		if (event.data?.type === "l2d-model-state") {
+			activeAvatarSrc =
+				typeof event.data.avatar === "string" && event.data.avatar
+					? event.data.avatar
+					: defaultAvatarSrc;
+		}
 		if (event.data?.type === "l2d-expressions") {
 			availableExpressions = Array.isArray(event.data.expressions)
 				? event.data.expressions.filter(
@@ -416,7 +437,19 @@
 		}, 80);
 	}
 
-	function expandCompanion() {
+	function syncFramePointerFromEvent(event?: MouseEvent) {
+		if (!event || !iframeEl) return;
+		const rect = iframeEl.getBoundingClientRect();
+		postToFrame({
+			type: "live2d-companion-sync-pointer",
+			point: {
+				x: event.clientX - rect.left,
+				y: event.clientY - rect.top,
+			},
+		});
+	}
+
+	function expandCompanion(event?: MouseEvent) {
 		window.clearTimeout(pendingCollapse);
 		collapsing = false;
 		setCollapsed(false);
@@ -425,6 +458,7 @@
 		} else {
 			queueFrameMount();
 		}
+		requestAnimationFrame(() => syncFramePointerFromEvent(event));
 	}
 
 	function toggleCollapsed() {
@@ -462,6 +496,7 @@
 	onMount(() => {
 		disposed = false;
 		collapsed = getLive2DCompanionCollapsed(false);
+		activeAvatarSrc = getModelAvatarByStoredIndex();
 		window.addEventListener("message", handleMessage);
 		window.addEventListener(LIVE2D_COMPANION_COMMAND_EVENT, handleCommand);
 		themeObserver = new MutationObserver(postTheme);
@@ -532,7 +567,7 @@
 		title={expandLabel}
 		onclick={expandCompanion}
 	>
-		<img src={avatarSrc} alt="" decoding="async" loading="eager" />
+		<img src={activeAvatarSrc} alt="" decoding="async" loading="eager" />
 	</button>
 	{#if expressionPanelOpen && availableExpressions.length > 0}
 		<div
