@@ -31,6 +31,10 @@ export function getCategoryPageUrl(slug: string): string {
 	return url(`/category/${encodeURIComponent(slug.trim())}/`);
 }
 
+export function getCategoryHubUrl(): string {
+	return url("/category/");
+}
+
 export function getCategoryTagUrl(
 	categorySlug: string,
 	tagSlug: string,

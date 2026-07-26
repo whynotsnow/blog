@@ -40,6 +40,34 @@ test("saved Grid preference follows the post Feed container width", async ({
 	).toBe(2);
 });
 
+test("category hub lists all categories and links to category pages", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1000, height: 900 });
+	await gotoPage(page, "/category/");
+
+	const hub = page.locator("[data-category-hub]");
+	await expect(hub).toHaveAttribute("data-category-hub-view", "all");
+	await expect(page.locator("#category-hub-title")).toHaveText("全部分类");
+	await expect(
+		page.locator(".category-hub-tab[aria-current='page']"),
+	).toHaveText("全部分类");
+
+	const techCard = page.locator('[data-category-card="tech"]');
+	await expect(techCard).toBeVisible();
+	await expect(techCard.locator(".category-hub-card__main")).toHaveAttribute(
+		"href",
+		"/category/tech/",
+	);
+	await expect(
+		techCard.locator(".category-hub-card__post").first(),
+	).toBeVisible();
+
+	await techCard.locator(".category-hub-card__main").click();
+	await expect(page).toHaveURL(/\/category\/tech\/$/);
+	await expect(page.locator("#category-filter-title")).toHaveText("技术");
+});
+
 test("Grid Card height follows its cover while Content keeps a bounded budget", async ({
 	page,
 }) => {

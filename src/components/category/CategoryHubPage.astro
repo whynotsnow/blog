@@ -1,0 +1,249 @@
+---
+import PostGrid from "@components/post/PostGrid.astro";
+import type { CategoryHubPageViewModel } from "@/services/category-hub";
+
+interface Props {
+	model: CategoryHubPageViewModel;
+}
+
+const { model } = Astro.props;
+---
+
+<div
+	id="page-content"
+	class="listing-page category-hub-page ds-stack w-full"
+	style="--stack-space: var(--space-section);"
+	data-category-hub
+	data-category-hub-view={model.activeView}
+>
+	<section
+		class="category-hub-hero ds-surface-card ds-stack"
+		style="--stack-space: var(--space-cluster);"
+		aria-labelledby="category-hub-title"
+	>
+		<nav class="category-hub-tabs ds-cluster" aria-label="分类视图">
+			{
+				model.tabs.map((tab) => (
+					<a
+						href={tab.url}
+						class:list={[
+							"category-hub-tab",
+							tab.id === model.activeView &&
+								"category-hub-tab--active",
+						]}
+						aria-current={
+							tab.id === model.activeView ? "page" : undefined
+						}
+					>
+						{tab.label}
+					</a>
+				))
+			}
+		</nav>
+		<div>
+			<h1 id="category-hub-title" class="category-hub-title">
+				{model.title}
+			</h1>
+			<p class="category-hub-description">{model.description}</p>
+		</div>
+	</section>
+
+	{
+		model.activeView === "all" ? (
+			<section class="category-hub-grid" aria-label="全部分类">
+				{model.categories.map((category) => (
+					<article
+						class="category-hub-card ds-surface-card"
+						data-category-card={category.slug}
+					>
+						<a class="category-hub-card__main" href={category.url}>
+							<span class="category-hub-card__name">
+								{category.name}
+							</span>
+							<span class="category-hub-card__count">
+								{category.count} 篇文章
+							</span>
+						</a>
+						{category.tags.length > 0 && (
+							<div class="category-hub-card__tags">
+								{category.tags.map((tag) => (
+									<a href={tag.url} class="category-hub-card__tag">
+										# {tag.name}
+									</a>
+								))}
+							</div>
+						)}
+						{category.recentPosts.length > 0 && (
+							<div class="category-hub-card__posts">
+								{category.recentPosts.map((post) => (
+									<a href={post.url} class="category-hub-card__post">
+										{post.title}
+									</a>
+								))}
+							</div>
+						)}
+					</article>
+				))}
+			</section>
+		) : (
+			<PostGrid
+				posts={model.posts}
+				id="category-recommended-post-list"
+			/>
+		)
+	}
+</div>
+
+<style>
+	.category-hub-hero {
+		padding: clamp(1rem, 2cqi, 1.25rem);
+	}
+
+	.category-hub-tabs {
+		--cluster-space: var(--size-2);
+	}
+
+	.category-hub-tab {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.25rem;
+		padding: 0.45rem 0.8rem;
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-md);
+		color: var(--text-secondary);
+		font-size: 0.875rem;
+		font-weight: 700;
+		line-height: 1.2;
+		transition:
+			border-color var(--motion-fast) var(--motion-ease-standard),
+			color var(--motion-fast) var(--motion-ease-standard),
+			background var(--motion-fast) var(--motion-ease-standard);
+	}
+
+	.category-hub-tab:hover {
+		border-color: var(--border-strong);
+		color: var(--accent);
+	}
+
+	.category-hub-tab--active {
+		border-color: var(--accent);
+		background: var(--accent);
+		color: var(--text-on-accent);
+	}
+
+	.category-hub-title {
+		color: var(--text-primary);
+		font-family: var(--font-heading);
+		font-size: var(--post-card-title-size);
+		font-weight: 800;
+		line-height: 1.25;
+		letter-spacing: 0;
+	}
+
+	.category-hub-description {
+		margin-top: 0.35rem;
+		color: var(--text-secondary);
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
+
+	.category-hub-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-grid-gap);
+	}
+
+	.category-hub-card {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		gap: 0.85rem;
+		padding: 1rem;
+	}
+
+	.category-hub-card__main {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem;
+		color: var(--text-primary);
+	}
+
+	.category-hub-card__main:hover .category-hub-card__name {
+		color: var(--accent);
+	}
+
+	.category-hub-card__name {
+		min-width: 0;
+		font-family: var(--font-heading);
+		font-size: 1.05rem;
+		font-weight: 800;
+		line-height: 1.25;
+		transition: color var(--motion-fast) var(--motion-ease-standard);
+	}
+
+	.category-hub-card__count {
+		flex-shrink: 0;
+		color: var(--text-muted);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+
+	.category-hub-card__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.category-hub-card__tag {
+		max-width: 100%;
+		padding: 0.25rem 0.45rem;
+		border-radius: var(--radius-sm);
+		background: color-mix(in srgb, var(--surface-raised) 84%, transparent);
+		color: var(--text-secondary);
+		font-size: 0.75rem;
+		font-weight: 700;
+		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.category-hub-card__tag:hover {
+		color: var(--accent);
+	}
+
+	.category-hub-card__posts {
+		display: grid;
+		gap: 0.45rem;
+		padding-top: 0.85rem;
+		border-top: 1px solid var(--border-subtle);
+	}
+
+	.category-hub-card__post {
+		color: var(--text-secondary);
+		font-size: 0.8125rem;
+		font-weight: 650;
+		line-height: 1.35;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.category-hub-card__post:hover {
+		color: var(--accent);
+	}
+
+	@container post-feed (min-width: 608px) {
+		.category-hub-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@container post-feed (min-width: 932px) {
+		.category-hub-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+</style>
