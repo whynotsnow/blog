@@ -215,6 +215,21 @@ Response:
 
 ## Browser Verification
 
+### same-origin-iframe-frame-policy
+
+Pattern:
+
+- A site-owned feature loads a same-origin static host page through an iframe.
+- Production sends `X-Frame-Options: DENY` globally, so the browser refuses to render the frame even though the iframe URL is same-origin and reachable.
+- The failure may surface as the site origin or clean URL in the browser error, not necessarily the exact `.html` source path.
+
+Use:
+
+- Keep global frame protection compatible with same-origin feature frames: `X-Frame-Options: SAMEORIGIN`.
+- Add or keep `Content-Security-Policy: frame-ancestors 'self'` when only embedding ancestors need to be constrained.
+- Do not remove frame protection entirely just to fix the internal iframe.
+- For the Live2D companion, verify `/live2d-companion/live2d-host.html` response headers and the `#l2d-iframe` load path together.
+
 ### playwright-spec-split-concurrency-drift
 
 Pattern:

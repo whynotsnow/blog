@@ -144,6 +144,15 @@
 			"playbook": "docs/agents/runtime-playbook.md#banner-entry-geometry-feedback"
 		},
 		{
+			"id": "same-origin-iframe-frame-policy",
+			"cluster": "deployment-security",
+			"symptoms": [
+				"same-site iframe fails in production with X-Frame-Options deny",
+				"Live2D companion iframe stays unloaded even though the static host file exists"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#same-origin-iframe-frame-policy"
+		},
+		{
 			"id": "playwright-chromium-mac-sandbox",
 			"cluster": "runtime-environment",
 			"severity": "medium",

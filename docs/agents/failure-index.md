@@ -65,6 +65,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 
 ## Browser Verification
 
+### same-origin-iframe-frame-policy
+
+- Symptom: a same-origin iframe, such as the Live2D companion host, fails in production with `X-Frame-Options` set to `deny`.
+- Playbook: [same-origin-iframe-frame-policy](./runtime-playbook.md#same-origin-iframe-frame-policy)
+
 ### playwright-spec-split-concurrency-drift
 
 - Symptom: splitting a large spec into multiple files unexpectedly increases worker concurrency, dev-server load, timeouts, or readiness flakes even though assertions did not change.
