@@ -89,7 +89,7 @@
 
 	const showModeValue = siteConfig.wallpaperMode.showModeSwitchOnMobile;
 	let isMobile = $state(false);
-	let pageAllowsLayoutSwitch = $state(true);
+	let pageHasPostList = $state(false);
 
 	const isWallpaperModeSwitchable = $derived(
 		(showModeValue === "both" ||
@@ -102,7 +102,7 @@
 	const hasAnyContent = $derived(
 		showThemeColor ||
 			isWallpaperModeSwitchable ||
-			(allowLayoutSwitch && pageAllowsLayoutSwitch) ||
+			(allowLayoutSwitch && pageHasPostList) ||
 			hasOverlaySettings ||
 			hasBannerSettings ||
 			hasEffectsSettings,
@@ -244,13 +244,9 @@
 		isMobile = window.innerWidth <= 768;
 	}
 
-	function syncPageLayoutPolicy() {
-		const allowed = document
-			.getElementById("main-grid")
-			?.dataset.allowedDesktopLayouts?.split(" ");
-		pageAllowsLayoutSwitch =
-			allowed?.includes("three-column") === true &&
-			allowed.includes("content-right");
+	function syncPostListAvailability() {
+		pageHasPostList =
+			document.querySelector("[data-post-list-renderer]") !== null;
 	}
 
 	onMount(() => {
@@ -264,12 +260,11 @@
 		bannerTitleEnabled = getStoredBannerTitleEnabled();
 		sakuraEnabled = getStoredSakuraEnabled();
 		checkMobile();
-		syncPageLayoutPolicy();
+		syncPostListAvailability();
 		window.addEventListener("resize", checkMobile);
-		window.addEventListener("desktop-layout-applied", syncPageLayoutPolicy);
 		const unsubscribeContentReplace = onPageLifecycle(
 			"content-replace",
-			syncPageLayoutPolicy,
+			syncPostListAvailability,
 		);
 
 		const handlePostListViewChange = (event: Event) => {
@@ -283,10 +278,6 @@
 
 		return () => {
 			window.removeEventListener("resize", checkMobile);
-			window.removeEventListener(
-				"desktop-layout-applied",
-				syncPageLayoutPolicy,
-			);
 			window.removeEventListener(
 				"postListViewChange",
 				handlePostListViewChange,
@@ -535,7 +526,7 @@
 			</SettingSection>
 		{/if}
 
-		{#if allowLayoutSwitch && pageAllowsLayoutSwitch}
+		{#if allowLayoutSwitch && pageHasPostList}
 			<SettingSection
 				title={i18n(I18nKey.settingsLayout)}
 				showReset={currentLayout !== defaultLayout}

@@ -7,7 +7,6 @@ import {
 	applyPostListViewMode,
 	bindPostListViewModeEvents,
 } from "@/utils/post-list-view-mode";
-import { bindDesktopLayoutPreference } from "@/features/layout-preference/controller";
 import { initializePostCardTagFitting } from "@/features/post-list/controller";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
@@ -322,7 +321,6 @@ export function applyWallpaperMode() {
 
 function syncPageShell() {
 	bindPostListViewModeEvents();
-	bindDesktopLayoutPreference();
 	window.applyWallpaperMode?.();
 	applyWallpaperVisualSettings();
 	requestAnimationFrame(() => {
@@ -683,7 +681,6 @@ function bindMainGridClient() {
 	if (mainGridClientBound) return;
 	mainGridClientBound = true;
 	window.history.scrollRestoration = "manual";
-	bindDesktopLayoutPreference();
 
 	window.addEventListener("wallpaper-mode-change", () => {
 		applyWallpaperMode();

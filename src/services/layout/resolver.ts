@@ -8,6 +8,5 @@ export function resolvePageLayout(
 	return {
 		name,
 		...policy,
-		allowedDesktopLayouts: policy.desktop.allowed.join(" "),
 	};
 }

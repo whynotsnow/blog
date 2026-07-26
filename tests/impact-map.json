@@ -119,10 +119,6 @@
 			"groups": ["lint", "type", "astro", "design", "floating-tools"]
 		},
 		{
-			"patterns": ["src/features/layout-preference/**"],
-			"groups": ["lint", "type", "astro", "unit", "shell"]
-		},
-		{
 			"patterns": ["src/content/**"],
 			"groups": ["astro", "integration", "astro-build", "smoke"]
 		},
@@ -132,6 +128,7 @@
 				"src/styles/layout/**",
 				"src/styles/main-grid-layout.css",
 				"src/styles/transition.css",
+				"src/components/layout/main-grid-client.ts",
 				"src/scripts/layout-client.ts",
 				"src/utils/page-lifecycle.ts",
 				"src/services/layout/**"

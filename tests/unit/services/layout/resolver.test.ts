@@ -7,7 +7,9 @@ describe("resolvePageLayout", () => {
 		expect(resolvePageLayout()).toMatchObject({
 			name: "default",
 			shellStrategy: "viewport-legacy",
-			allowedDesktopLayouts: "content-right",
+			desktop: {
+				layout: "content-right",
+			},
 		});
 	});
 

@@ -405,14 +405,7 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 		"data-shell-strategy",
 		"container-content",
 	);
-	await expect(grid).toHaveAttribute(
-		"data-base-desktop-layout",
-		"content-right",
-	);
-	await expect(grid).toHaveAttribute(
-		"data-allowed-desktop-layouts",
-		"content-right",
-	);
+	await expect(grid).toHaveAttribute("data-desktop-layout", "content-right");
 
 	const postLink = page.locator('a[href^="/posts/"]').first();
 	await expect(postLink).toBeVisible();
@@ -424,14 +417,7 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 	);
 	await expect(page.locator("body")).toHaveClass(/navbar-fixed-visible/);
 	await expect(page.locator("#navbar")).toHaveClass(/scrolled/);
-	await expect(grid).toHaveAttribute(
-		"data-base-desktop-layout",
-		"content-right",
-	);
-	await expect(grid).toHaveAttribute(
-		"data-allowed-desktop-layouts",
-		"content-right",
-	);
+	await expect(grid).toHaveAttribute("data-desktop-layout", "content-right");
 	await expect(page.locator("#swup-container")).toHaveCount(1);
 	await expect(grid).toHaveCount(1);
 
@@ -442,12 +428,5 @@ test("page layout policy follows Swup navigation", async ({ page }) => {
 		"banner-aware",
 	);
 	await expect(page.locator("body")).not.toHaveClass(/navbar-fixed-visible/);
-	await expect(grid).toHaveAttribute(
-		"data-base-desktop-layout",
-		"content-right",
-	);
-	await expect(grid).toHaveAttribute(
-		"data-allowed-desktop-layouts",
-		"content-right",
-	);
+	await expect(grid).toHaveAttribute("data-desktop-layout", "content-right");
 });

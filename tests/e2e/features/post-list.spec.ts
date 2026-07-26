@@ -498,7 +498,6 @@ test("post list view does not imply desktop page layout preference", async ({
 }) => {
 	await page.addInitScript(() => {
 		localStorage.setItem("postListLayout", "grid");
-		localStorage.removeItem("desktopLayoutPreference");
 	});
 	await page.setViewportSize({ width: 1400, height: 900 });
 	await gotoPage(page, "/anime/");
@@ -509,10 +508,7 @@ test("post list view does not imply desktop page layout preference", async ({
 		"viewport-legacy",
 	);
 	await expect(grid).toHaveAttribute("data-post-list-view", "grid");
-	await expect(grid).toHaveAttribute(
-		"data-effective-desktop-layout",
-		"content-right",
-	);
+	await expect(grid).toHaveAttribute("data-desktop-layout", "content-right");
 });
 
 test("post list keeps Astro snapshots and switches to Svelte for tag pagination", async ({

@@ -143,7 +143,7 @@ RawPost
 - `siteConfig`：站点信息、语言、特色页面、横幅、主题、字体、文章列表行为。
 - `navbarConfig`：顶部导航。
 - `profileConfig`：首页作者资料模块内容。
-- `pageLayoutPolicies`：页面 Shell Strategy 与允许的 Desktop Page Layout Preference；当前 policy 仅允许 `content-right`。
+- `pageLayoutPolicies`：页面 Shell Strategy 与由配置确定的 Desktop Layout。
 - `commentConfig`：评论系统。
 
 配置结构变化需要同步更新 [配置说明](./configuration.md)。

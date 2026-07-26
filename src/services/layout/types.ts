@@ -7,14 +7,12 @@ export type ResponsiveShellStrategy = "viewport-legacy" | "container-content";
 export type PageLayoutPolicy = {
 	shellStrategy: ResponsiveShellStrategy;
 	desktop: {
-		base: DesktopPageLayout;
-		allowed: readonly DesktopPageLayout[];
+		layout: DesktopPageLayout;
 	};
 };
 
 export type ResolvedPageLayout = PageLayoutPolicy & {
 	name: PageLayoutPolicyName;
-	allowedDesktopLayouts: string;
 };
 
 export type PageInteractionPolicy = {
