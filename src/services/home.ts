@@ -3,7 +3,11 @@ import {
 	HOME_TECHNOLOGY_SECTION_SIZE,
 } from "@constants/constants";
 import { CATEGORY_SLUGS } from "@/config";
-import { getCategoryPageUrl } from "@/utils/url";
+import {
+	getCategoryHubUrl,
+	getCategoryPageUrl,
+	getCategoryRecommendedUrl,
+} from "@/utils/url";
 import { toPostCardViewModel } from "./core/inject";
 import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
@@ -66,7 +70,7 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 					id: "technology",
 					title: "技术文章",
 					href: getCategoryPageUrl(CATEGORY_SLUGS.technology),
-					linkLabel: "查看技术文章",
+					linkLabel: "更多",
 					posts: technology,
 				},
 			]
@@ -87,15 +91,15 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 			{
 				id: "recent",
 				title: "最近更新",
-				href: "/archive/?sort=updated",
-				linkLabel: "查看最近更新",
+				href: getCategoryHubUrl(),
+				linkLabel: "更多",
 				posts: recent,
 			},
 			{
 				id: "recommended",
 				title: "推荐阅读",
-				href: "/archive/",
-				linkLabel: "查看全部文章",
+				href: getCategoryRecommendedUrl(),
+				linkLabel: "更多",
 				posts: recommended,
 			},
 			...technologySection,

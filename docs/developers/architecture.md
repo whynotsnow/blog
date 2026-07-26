@@ -74,7 +74,7 @@ src/features/music-player/
 
 拆分时优先把 helper 和类型留在所属功能目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
 
-首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块；最近更新与推荐阅读各 3 篇，技术文章上限 6 篇。分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro SSG 页面 props 只保留当前页文章与不含 `data` 的分页元数据；每个分类另外生成一份 `/api/categories/{slug}.json/` 紧凑索引。普通分类页在首屏 `load` 完成且页面可见、在线、未启用 `Save-Data`、网络不属于 `2g` 或 `slow-2g` 时，才在浏览器 idle 阶段低优先级预取索引；合法 Tag 查询仍会立即加载，因网络条件跳过的预取不会阻止后续请求。索引 Promise 按完整 URL 隔离并以 3 个分类为上限执行 LRU 淘汰，因此同一分类的预取、Tag 切换、分页和 history 共用请求，而旧分类响应不会写入当前组件状态。查询参数、请求状态、失败重试、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
+首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块；最近更新与推荐阅读各 3 篇，技术文章上限 6 篇。首页区块右上角入口优先导向分类发现体系：最近更新进入 `/category/` 的全部分类视图，推荐阅读进入 `/category/recommended/` 的推荐视图，技术文章进入 `/category/tech/`。`/category/` 是分类 Hub，不是具体分类；它展示分类卡片、热门 Tag 和每类最近文章。`/category/recommended/` 复用分类 Hub 壳层，按全站 `sortByScore()` 展示推荐文章，不参与具体分类的 Tag JSON 索引。具体分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro SSG 页面 props 只保留当前页文章与不含 `data` 的分页元数据；每个具体分类另外生成一份 `/api/categories/{slug}.json/` 紧凑索引。普通分类页在首屏 `load` 完成且页面可见、在线、未启用 `Save-Data`、网络不属于 `2g` 或 `slow-2g` 时，才在浏览器 idle 阶段低优先级预取索引；合法 Tag 查询仍会立即加载，因网络条件跳过的预取不会阻止后续请求。索引 Promise 按完整 URL 隔离并以 3 个分类为上限执行 LRU 淘汰，因此同一分类的预取、Tag 切换、分页和 history 共用请求，而旧分类响应不会写入当前组件状态。查询参数、请求状态、失败重试、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
 首页、分类页与文章详情页使用 `container-content` 布局策略。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用统一的 `1280px` 外部最大宽度。首页显式提供一份 Profile support 内容：`1200px` 以上为最大 `992px` 的三列 Feed + `248px–272px` support column，`880px–1199px` 为最大 `656px` 的双列 Feed + support column，低于 `880px` 时同一个 Profile DOM 移到 Main 前方；Feed 在 `608px` 以下退为单列，并在 `932px` 进入三列。分类页与文章详情页不提供 support slot，内容区在 `1200px` 以下最大 `656px`，达到 `1200px` 后最大 `992px`；文章正文内部仍使用阅读宽度。站点统计由 `src/services/footer.ts` 生成 View Model，并由 `src/components/footer` 在 Footer 中渲染一次。归档页在主内容流中拥有 Calendar 与 Timeline，只负责时间维度浏览；分类和 Tag 浏览由分类页持有。`PanelCard.astro` 只负责通用卡片 Surface，不负责注册、解析或放置业务组件。旧 viewport Grid 已隔离到 `page-grid-legacy.css`，不得重新覆盖 `container-content` 状态。
 
@@ -127,7 +127,9 @@ RawPost
 | --- | --- |
 | `src/pages/index.astro` | 首页文章列表和分类导航。 |
 | `src/pages/posts/[...slug].astro` | 文章详情页，由 `buildPostDetailStaticPaths` 生成路径。 |
-| `src/pages/category/[slug]/index.astro` | 分类第一页，底层由 `src/services/category-page.ts` 生成页面数据。 |
+| `src/pages/category/index.astro` | 分类 Hub 的全部分类视图，底层由 `src/services/category-hub.ts` 生成页面数据。 |
+| `src/pages/category/recommended/index.astro` | 分类 Hub 的推荐视图，使用全站推荐分排序。 |
+| `src/pages/category/[slug]/index.astro` | 具体分类第一页，底层由 `src/services/category-page.ts` 生成页面数据。 |
 | `src/pages/category/[slug]/page/[page].astro` | 分类分页，底层由 `src/services/category-page.ts` 生成页面数据。 |
 | `src/pages/api/categories/[slug].json.ts` | 每分类一份紧凑 Tag 索引；普通分类访问不会下载。 |
 | `src/pages/archive.astro` | 归档页。 |
