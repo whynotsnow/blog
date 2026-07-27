@@ -10,6 +10,7 @@ export type DesktopTocTransitionType =
 	| "branch-switch"
 	| "boundary-start"
 	| "boundary-end"
+	| "boundary-exit"
 	| "anchor-jump"
 	| "runtime-refresh"
 	| "layout-remeasure";
@@ -19,6 +20,7 @@ export type DesktopTocBoundary = "start" | "end" | null;
 
 export interface DesktopTocViewportState {
 	activeIndex: number;
+	highlightIndex: number;
 	activeRootIndex: number;
 	boundary: DesktopTocBoundary;
 	visibleIndexes: Set<number>;
@@ -35,6 +37,7 @@ export interface ResolveDesktopTocViewportOptions {
 	previous?: DesktopTocViewportState | null;
 	scrollDirection: TocScrollDirection;
 	boundary?: DesktopTocBoundary;
+	suppressHighlight?: boolean;
 	reason?: DesktopTocTransitionType;
 }
 
@@ -42,6 +45,19 @@ function resolveActiveRootIndex(graph: TocGraph, activeIndex: number) {
 	const activeNode = getTocNode(graph, activeIndex);
 	if (activeNode) return activeNode.rootIndex;
 	return graph.rootIndexes[0] ?? -1;
+}
+
+function resolveBoundaryRootIndex(
+	graph: TocGraph,
+	boundary: DesktopTocBoundary,
+) {
+	if (boundary === "end") {
+		return graph.rootIndexes.at(-1) ?? -1;
+	}
+	if (boundary === "start") {
+		return graph.rootIndexes[0] ?? -1;
+	}
+	return null;
 }
 
 function resolveTransitionType({
@@ -58,7 +74,8 @@ function resolveTransitionType({
 		reason === "init" ||
 		reason === "runtime-refresh" ||
 		reason === "layout-remeasure" ||
-		reason === "anchor-jump"
+		reason === "anchor-jump" ||
+		reason === "boundary-exit"
 	) {
 		return reason;
 	}
@@ -105,23 +122,30 @@ export function resolveDesktopTocViewportState(
 	options: ResolveDesktopTocViewportOptions,
 ): DesktopTocViewportState {
 	const boundary = options.boundary ?? null;
-	const activeRootIndex = resolveActiveRootIndex(
-		options.graph,
-		boundary ? -1 : options.activeIndex,
-	);
+	const activeRootIndex =
+		resolveBoundaryRootIndex(options.graph, boundary) ??
+		resolveActiveRootIndex(options.graph, options.activeIndex);
 	const branchIndexes = boundary
 		? new Set<number>()
 		: new Set(getTocBranchIndexes(options.graph, activeRootIndex));
 	const transitionType = resolveTransitionType(options);
 	const phase =
-		transitionType === "same-node" || transitionType === "layout-remeasure"
-			? "idle"
-			: options.previous
-				? "commit"
-				: "prepare";
+		options.suppressHighlight ||
+		(options.previous?.boundary &&
+			!boundary &&
+			transitionType === "boundary-exit")
+			? "prepare"
+			: transitionType === "same-node" ||
+				  transitionType === "layout-remeasure"
+				? "idle"
+				: options.previous
+					? "commit"
+					: "prepare";
 
 	return {
 		activeIndex: boundary ? -1 : options.activeIndex,
+		highlightIndex:
+			boundary || options.suppressHighlight ? -1 : options.activeIndex,
 		activeRootIndex,
 		boundary,
 		visibleIndexes: resolveVisibleIndexes(

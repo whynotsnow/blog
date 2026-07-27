@@ -57,7 +57,7 @@ export class DesktopTocPresenter {
 
 		for (let index = 0; index < this.entries.length; index++) {
 			const entry = this.entries[index];
-			const isActive = index === state.activeIndex;
+			const isActive = index === state.highlightIndex;
 			const isVisible = state.visibleIndexes.has(index);
 
 			entry.classList.toggle(VISIBLE_CLASS, isActive);
@@ -74,6 +74,10 @@ export class DesktopTocPresenter {
 		if (state.boundary) {
 			this.hideIndicator();
 			this.scrollRoot.scrollTo({ top: 0, left: 0, behavior: "auto" });
+			return;
+		}
+		if (state.highlightIndex < 0) {
+			this.hideIndicator();
 			return;
 		}
 
@@ -98,7 +102,7 @@ export class DesktopTocPresenter {
 		if (this.indicatorRaf) cancelAnimationFrame(this.indicatorRaf);
 		this.indicatorRaf = requestAnimationFrame(() => {
 			this.indicatorRaf = 0;
-			this.moveIndicator(state.activeIndex);
+			this.moveIndicator(state.highlightIndex);
 		});
 	}
 
@@ -113,7 +117,7 @@ export class DesktopTocPresenter {
 
 		this.finalizeTimer = window.setTimeout(() => {
 			this.finalizeTimer = 0;
-			this.moveIndicator(state.activeIndex);
+			this.moveIndicator(state.highlightIndex);
 			this.ensureActiveRangeVisible(state);
 		}, TRANSITION_FINALIZE_DELAY);
 	}
@@ -149,13 +153,13 @@ export class DesktopTocPresenter {
 	}
 
 	private ensureActiveRangeVisible(state: DesktopTocViewportState) {
-		const activeEntry = this.entries[state.activeIndex];
+		const activeEntry = this.entries[state.highlightIndex];
 		if (!activeEntry || activeEntry.classList.contains("is-collapsed"))
 			return;
 
 		const requiredIndexes = new Set([
-			...getTocAncestorIndexes(this.graph, state.activeIndex),
-			state.activeIndex,
+			...getTocAncestorIndexes(this.graph, state.highlightIndex),
+			state.highlightIndex,
 		]);
 		const requiredEntries = [...requiredIndexes]
 			.map((index) => this.entries[index])

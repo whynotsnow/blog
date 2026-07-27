@@ -115,4 +115,38 @@ describe("desktop TOC state", () => {
 			expect(state.transitionType).toBe(`boundary-${boundary}`);
 		}
 	});
+
+	it("expands the target branch before highlighting when exiting a boundary", () => {
+		const graph = buildTocGraph(items);
+		const boundaryState = resolveDesktopTocViewportState({
+			graph,
+			activeIndex: 5,
+			scrollDirection: "down",
+			boundary: "end",
+		});
+		const prepareState = resolveDesktopTocViewportState({
+			graph,
+			activeIndex: 5,
+			previous: boundaryState,
+			scrollDirection: "up",
+			reason: "boundary-exit",
+			suppressHighlight: true,
+		});
+		const commitState = resolveDesktopTocViewportState({
+			graph,
+			activeIndex: 5,
+			previous: prepareState,
+			scrollDirection: "up",
+			reason: "boundary-exit",
+		});
+
+		expect(boundaryState.activeRootIndex).toBe(3);
+		expect(prepareState.transitionType).toBe("boundary-exit");
+		expect(prepareState.phase).toBe("prepare");
+		expect(prepareState.highlightIndex).toBe(-1);
+		expect([...prepareState.branchIndexes]).toEqual([3, 4, 5]);
+		expect([...prepareState.visibleIndexes]).toEqual([0, 1, 3, 4, 5]);
+		expect(commitState.highlightIndex).toBe(5);
+		expect(commitState.phase).toBe("commit");
+	});
 });

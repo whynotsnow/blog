@@ -100,6 +100,8 @@ const tocItems = deferHeadings
 		lastScrollY = 0;
 		scrollRaf = 0;
 		layoutMeasureRaf = 0;
+		boundaryExitTimer = 0;
+		pendingBoundaryExitIndex = -1;
 		contentResizeObserver: ResizeObserver | null = null;
 		initialized = false;
 
@@ -110,6 +112,13 @@ const tocItems = deferHeadings
 					currentIndex,
 					reason,
 				);
+				if (
+					this.shouldStageBoundaryExit(currentIndex, reason, nextState)
+				) {
+					this.stageBoundaryExit(currentIndex);
+					return;
+				}
+				this.clearBoundaryExit();
 				this.viewportState = nextState;
 				this.presenter?.apply(nextState);
 			});
@@ -146,11 +155,14 @@ const tocItems = deferHeadings
 
 	resolveViewportBoundary(currentIndex: number): DesktopTocBoundary {
 		if (!this.activeTracker.nodes.length) return null;
+		if (this.boundaryExitTimer) return null;
 		if (window.scrollY <= 1 || currentIndex < 0) return "start";
 
-		const contentRoot = this.getContentRoot();
-		const contentRect = contentRoot?.getBoundingClientRect();
-		if (contentRect && contentRect.bottom <= window.innerHeight + 1) {
+		if (
+			window.scrollY + window.innerHeight >=
+				document.documentElement.scrollHeight - 1 &&
+			this.activeTracker.scrollDirection !== "up"
+		) {
 			return "end";
 		}
 
@@ -160,6 +172,7 @@ const tocItems = deferHeadings
 	resolveViewportState(
 		currentIndex: number,
 		reason?: DesktopTocTransitionType,
+		options: { suppressHighlight?: boolean } = {},
 	) {
 		const boundary = this.resolveViewportBoundary(currentIndex);
 		return resolveDesktopTocViewportState({
@@ -168,8 +181,68 @@ const tocItems = deferHeadings
 			previous: this.viewportState,
 			scrollDirection: this.activeTracker.scrollDirection,
 			boundary,
+			suppressHighlight: options.suppressHighlight,
 			reason,
 		});
+	}
+
+	shouldStageBoundaryExit(
+		currentIndex: number,
+		reason: DesktopTocTransitionType | undefined,
+		nextState: DesktopTocViewportState,
+	) {
+		return (
+			currentIndex >= 0 &&
+			!reason &&
+			!nextState.boundary &&
+			(this.boundaryExitTimer > 0 ||
+				this.viewportState?.boundary === "end")
+		);
+	}
+
+	stageBoundaryExit(currentIndex: number) {
+		const prepareState = this.resolveViewportState(
+			currentIndex,
+			"boundary-exit",
+			{ suppressHighlight: true },
+		);
+		this.viewportState = prepareState;
+		this.presenter?.apply(prepareState);
+
+		if (
+			this.pendingBoundaryExitIndex === currentIndex &&
+			this.boundaryExitTimer
+		) {
+			return;
+		}
+
+		this.clearBoundaryExit();
+		this.pendingBoundaryExitIndex = currentIndex;
+		this.boundaryExitTimer = window.setTimeout(() => {
+			this.boundaryExitTimer = 0;
+			const atDocumentEnd =
+				window.scrollY + window.innerHeight >=
+				document.documentElement.scrollHeight - 1;
+			if (atDocumentEnd) {
+				this.pendingBoundaryExitIndex = -1;
+				return;
+			}
+			const commitState = this.resolveViewportState(
+				currentIndex,
+				"boundary-exit",
+			);
+			this.viewportState = commitState;
+			this.pendingBoundaryExitIndex = -1;
+			this.presenter?.apply(commitState);
+		}, 260);
+	}
+
+	clearBoundaryExit() {
+		if (this.boundaryExitTimer) {
+			window.clearTimeout(this.boundaryExitTimer);
+			this.boundaryExitTimer = 0;
+		}
+		this.pendingBoundaryExitIndex = -1;
 	}
 
 		handleAnchorClick = (event: Event) => {
@@ -219,6 +292,7 @@ const tocItems = deferHeadings
 				this.contentResizeObserver?.disconnect();
 				if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 				if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
+				this.clearBoundaryExit();
 				this.presenter?.dispose();
 			}
 			this.headingIdxMap.clear();
@@ -230,6 +304,8 @@ const tocItems = deferHeadings
 			this.presenter = null;
 			this.scrollRaf = 0;
 			this.layoutMeasureRaf = 0;
+			this.boundaryExitTimer = 0;
+			this.pendingBoundaryExitIndex = -1;
 			this.contentResizeObserver = null;
 			this.initialized = false;
 		}
@@ -392,6 +468,7 @@ const tocItems = deferHeadings
 			this.contentResizeObserver?.disconnect();
 			if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 			if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
+			this.clearBoundaryExit();
 			this.presenter?.dispose();
 		}
 	}

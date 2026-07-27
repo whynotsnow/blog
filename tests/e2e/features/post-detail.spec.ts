@@ -422,12 +422,48 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		const heading = document.getElementById(headingId);
 		if (!heading) throw new Error(`Missing heading ${headingId}`);
 
+		const documentElement = document.documentElement;
+		const previousScrollBehavior = documentElement.style.scrollBehavior;
+		documentElement.style.scrollBehavior = "auto";
 		window.scrollTo(0, document.documentElement.scrollHeight);
-		await wait(340);
+		for (let step = 0; step < 20; step += 1) {
+			await wait(100);
+			if (
+				document.querySelector<HTMLElement>("#toc")?.dataset
+					.tocTransition === "boundary-end"
+			) {
+				break;
+			}
+		}
 		window.scrollTo({
 			top: heading.getBoundingClientRect().top + window.scrollY - 120,
 		});
-		await wait(560);
+		const samples: Array<{
+			visible: string;
+			branch: string[];
+			transition: string;
+			phase: string;
+		}> = [];
+		for (let step = 0; step < 12; step += 1) {
+			await wait(70);
+			samples.push({
+				visible: normalize(
+					document.querySelector("#toc a.visible")?.textContent,
+				),
+				branch: Array.from(
+					document.querySelectorAll<HTMLElement>(
+						"#toc a.is-current-branch:not(.is-collapsed)",
+					),
+				).map((entry) => normalize(entry.textContent)),
+				transition:
+					document.querySelector<HTMLElement>("#toc")?.dataset
+						.tocTransition ?? "",
+				phase:
+					document.querySelector<HTMLElement>("#toc")?.dataset
+						.tocPhase ?? "",
+			});
+		}
+		documentElement.style.scrollBehavior = previousScrollBehavior;
 
 		const scrollContainer = document.querySelector<HTMLElement>(
 			".post-support__toc-body",
@@ -442,6 +478,7 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		const rootRect = activeRoot?.getBoundingClientRect();
 
 		return {
+			samples,
 			activeText: normalize(activeEntry?.textContent),
 			activeLevel: activeEntry?.dataset.tocLevel ?? "",
 			activeRootText: normalize(activeRoot?.textContent),
@@ -456,6 +493,20 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		};
 	});
 
+	expect(
+		bottomUpState.samples.some((sample) =>
+			sample.visible.includes("1 Markdown Tutorial"),
+		),
+	).toBe(false);
+	expect(
+		bottomUpState.samples.some(
+			(sample) =>
+				sample.transition === "boundary-exit" &&
+				sample.phase === "prepare" &&
+				sample.visible === "" &&
+				sample.branch.some((text) => text.includes("4 This is an H1")),
+		),
+	).toBe(true);
 	expect(bottomUpState.activeText.length).toBeGreaterThan(0);
 	expect(bottomUpState.activeLevel).toBe("1");
 	expect(bottomUpState.activeRootText).toContain("4 This is an H1");
