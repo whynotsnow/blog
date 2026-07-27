@@ -72,6 +72,13 @@ const tocItems = deferHeadings
 
 <script>
 	import { buildTocItems, collectTocHeadings } from "./toc-data";
+	import {
+		TOC_SCROLL_OFFSET,
+		findHeadingById,
+		getPostContentRoot,
+		getTocOptions,
+		onPostTocRefresh,
+	} from "./toc-runtime";
 
 	const escapeHtml = (value: string) =>
 		value
@@ -434,15 +441,14 @@ const tocItems = deferHeadings
 				event.preventDefault(); // 阻止默认的锚点跳转
 
 				const id = decodeURIComponent(anchor.hash?.substring(1));
-				const targetElement = document.getElementById(id);
+				const targetElement = findHeadingById(id);
 
 				if (targetElement) {
 					// 计算目标位置，与移动端保持一致
-					const navbarHeight = 80; // 导航栏高度
 					const targetTop =
 						targetElement.getBoundingClientRect().top +
 						window.scrollY -
-						navbarHeight;
+						TOC_SCROLL_OFFSET;
 
 					// 使用与移动端相同的滚动方式
 					window.scrollTo({
@@ -465,11 +471,7 @@ const tocItems = deferHeadings
 		}
 
 		getContentRoot() {
-			return (
-				document.querySelector("#post-container .post-detail__content") ||
-				document.querySelector(".markdown-content") ||
-				document.querySelector(".custom-md")
-			);
+			return getPostContentRoot();
 		}
 
 		resetRuntimeState() {
@@ -629,12 +631,7 @@ const tocItems = deferHeadings
 				delete this.dataset.loaded;
 				return;
 			}
-			// 获取配置信息
-			const siteConfig = window.siteConfig;
-			const tocItems = buildTocItems(headings, {
-				maxDepth: siteConfig.toc?.depth || 3,
-				useJapaneseBadge: siteConfig.toc?.useJapaneseBadge || false,
-			});
+			const tocItems = buildTocItems(headings, getTocOptions());
 			const tocHTML = tocItems
 				.map((item) => {
 					const depthClass =
@@ -685,6 +682,14 @@ const tocItems = deferHeadings
 	if (!customElements.get("table-of-contents")) {
 		customElements.define("table-of-contents", TableOfContents);
 	}
+
+	onPostTocRefresh(({ root }) => {
+		document
+			.querySelector<HTMLElementTagNameMap["table-of-contents"]>(
+				"table-of-contents",
+			)
+			?.refreshRuntimeHeadings?.(root);
+	});
 </script>
 
 <style>

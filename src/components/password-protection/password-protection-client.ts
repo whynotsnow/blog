@@ -1,13 +1,8 @@
 import type { PasswordProtectionClientConfig } from "./types";
+import { dispatchPostTocRefresh } from "@/components/post-toc/toc-runtime";
 
 const CONFIG_ID = "password-protection-config";
 const VERIFY_PREFIX = "MIZUKI-VERIFY:";
-
-type TocElement = HTMLElement & {
-	regenerateTOC?: () => void;
-	refreshRuntimeHeadings?: (root?: Element) => void;
-	init?: () => void;
-};
 
 function readConfig(): PasswordProtectionClientConfig | null {
 	const configElement = document.getElementById(CONFIG_ID);
@@ -66,17 +61,7 @@ async function runPostDecryptHooks(contentDiv: HTMLElement) {
 		});
 	}
 
-	const tocElement = document.querySelector<TocElement>("table-of-contents");
-	if (tocElement?.refreshRuntimeHeadings) {
-		tocElement.refreshRuntimeHeadings(contentDiv);
-	} else if (tocElement?.regenerateTOC && tocElement.init) {
-		tocElement.regenerateTOC();
-		tocElement.init();
-	}
-
-	if (window.mobileTOCInit) {
-		window.mobileTOCInit(contentDiv);
-	}
+	dispatchPostTocRefresh(contentDiv);
 
 	if (window.Fancybox?.bind) {
 		window.Fancybox.unbind?.("[data-fancybox]");

@@ -6,10 +6,12 @@
 	import { navigateToPage } from "../utils/navigation-utils";
 	import { panelManager } from "../utils/panel-manager.js";
 	import {
-		buildTocItems,
-		collectTocHeadings,
+		TOC_ACTIVE_OFFSET,
+		onPostTocRefresh,
+		resolveTocRuntimeState,
+		scrollToHeading as scrollToPostHeading,
 		type TocItem,
-	} from "./post-toc/toc-data";
+	} from "./post-toc/toc-runtime";
 
 	let tocItems: TocItem[] = [];
 	let postItems: Array<{
@@ -23,10 +25,7 @@
 	let isHomePage = false;
 	let swupReady = false;
 
-	const getContentRoot = (): Element | null =>
-		document.querySelector("#post-container .post-detail__content") ||
-		document.querySelector(".markdown-content") ||
-		document.querySelector(".custom-md");
+	let tocHeadings: HTMLElement[] = [];
 
 	const togglePanel = async () => {
 		await panelManager.togglePanel("mobile-toc-panel");
@@ -36,36 +35,10 @@
 		await panelManager.togglePanel("mobile-toc-panel", show);
 	};
 
-	const readStaticTocItems = (): TocItem[] => {
-		const dataElement = document.getElementById("post-toc-data");
-		if (!dataElement?.textContent) return [];
-
-		try {
-			const items = JSON.parse(dataElement.textContent) as TocItem[];
-			return Array.isArray(items) ? items : [];
-		} catch (error) {
-			console.error("Failed to parse post TOC data:", error);
-			return [];
-		}
-	};
-
 	const generateTOC = (runtimeRoot?: Element) => {
-		const staticItems = runtimeRoot ? [] : readStaticTocItems();
-		if (staticItems.length > 0) {
-			tocItems = staticItems;
-			return;
-		}
-
-		const contentRoot = runtimeRoot || getContentRoot();
-		if (!contentRoot) {
-			tocItems = [];
-			return;
-		}
-
-		tocItems = buildTocItems(collectTocHeadings(contentRoot), {
-			maxDepth: window.siteConfig?.toc?.depth || 3,
-			useJapaneseBadge: window.siteConfig?.toc?.useJapaneseBadge || false,
-		});
+		const state = resolveTocRuntimeState(runtimeRoot);
+		tocItems = state.items;
+		tocHeadings = state.headings;
 	};
 
 	const generatePostList = () => {
@@ -117,25 +90,7 @@
 	};
 
 	const scrollToHeading = (id: string) => {
-		const contentRoot = getContentRoot();
-		const element = Array.from(
-			contentRoot?.querySelectorAll<HTMLElement>(
-				"h1, h2, h3, h4, h5, h6",
-			) ?? [],
-		).find((heading) => heading.id === id);
-		if (element) {
-			// 关闭面板
-			setPanelVisibility(false);
-
-			// 滚动到目标位置，考虑导航栏高度
-			const offset = 80;
-			const elementPosition = element.offsetTop - offset;
-
-			window.scrollTo({
-				top: elementPosition,
-				behavior: "smooth",
-			});
-		}
+		scrollToPostHeading(id, { close: () => setPanelVisibility(false) });
 	};
 
 	const navigateToPost = (url: string) => {
@@ -147,15 +102,12 @@
 	};
 
 	const updateActiveHeading = () => {
-		const contentRoot = getContentRoot();
-		const headings = getTocHeadingElements(contentRoot);
 		const scrollTop = window.scrollY;
-		const offset = 100;
 
 		let currentActiveId = "";
-		headings.forEach((heading) => {
+		tocHeadings.forEach((heading) => {
 			if (heading.id) {
-				const elementTop = (heading as HTMLElement).offsetTop - offset;
+				const elementTop = heading.offsetTop - TOC_ACTIVE_OFFSET;
 				if (scrollTop >= elementTop) {
 					currentActiveId = heading.id;
 				}
@@ -166,9 +118,6 @@
 	};
 
 	const setupIntersectionObserver = () => {
-		const contentRoot = getContentRoot();
-		const headings = getTocHeadingElements(contentRoot);
-
 		if (observer) {
 			observer.disconnect();
 		}
@@ -187,27 +136,16 @@
 			},
 		);
 
-		headings.forEach((heading) => {
+		tocHeadings.forEach((heading) => {
 			if (heading.id) {
 				observer.observe(heading);
 			}
 		});
 	};
 
-	const getTocHeadingElements = (
-		contentRoot: Element | null,
-	): HTMLElement[] => {
-		if (!contentRoot) return [];
-
-		const itemIds = new Set(tocItems.map((item) => item.id));
-		return Array.from(
-			contentRoot.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6"),
-		).filter((heading) =>
-			itemIds.size > 0 ? itemIds.has(heading.id) : Boolean(heading.id),
-		);
-	};
-
 	let swupListenersRegistered = false;
+	let swupPageViewHandler: (() => void) | null = null;
+	let popstateHandler: (() => void) | null = null;
 
 	const setupSwupListeners = () => {
 		if (
@@ -218,22 +156,22 @@
 			const swup = window.swup;
 
 			// 只监听页面视图事件，避免重复触发
-			swup.hooks.on("page:view", () => {
+			swupPageViewHandler = () => {
 				// 延迟执行，确保页面已完全加载
 				setTimeout(() => {
 					init();
 				}, 200);
-			});
+			};
+			swup.hooks.on("page:view", swupPageViewHandler);
 
 			swupListenersRegistered = true;
-			console.log("MobileTOC Swup listener registered");
 		} else if (!swupListenersRegistered) {
 			// 降级处理：监听普通页面切换事件
-			window.addEventListener("popstate", () => {
+			popstateHandler = () => {
 				setTimeout(init, 200);
-			});
+			};
+			window.addEventListener("popstate", popstateHandler);
 			swupListenersRegistered = true;
-			console.log("MobileTOC fallback listener registered");
 		}
 	};
 
@@ -287,6 +225,9 @@
 	onMount(() => {
 		// 延迟初始化，确保页面内容已加载
 		setTimeout(init, 100);
+		const removeTocRefreshListener = onPostTocRefresh(({ root }) => {
+			init(root);
+		});
 
 		// 监听滚动事件作为备用
 		window.addEventListener("scroll", updateActiveHeading);
@@ -298,14 +239,22 @@
 			window.removeEventListener("scroll", updateActiveHeading);
 
 			// 清理Swup事件监听器
-			if (typeof window !== "undefined" && window.swup) {
-				const swup = window.swup;
-				swup.hooks.off("page:view");
+			if (
+				typeof window !== "undefined" &&
+				window.swup &&
+				swupPageViewHandler
+			) {
+				window.swup.hooks.off("page:view", swupPageViewHandler);
 			}
 
 			// 清理popstate事件监听器
-			window.removeEventListener("popstate", () => init());
+			if (popstateHandler) {
+				window.removeEventListener("popstate", popstateHandler);
+			}
+			removeTocRefreshListener();
 			swupListenersRegistered = false;
+			swupPageViewHandler = null;
+			popstateHandler = null;
 		};
 	});
 
