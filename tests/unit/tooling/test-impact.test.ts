@@ -55,6 +55,18 @@ describe("impact-based validation selection", () => {
 		expect(plan.unmatched).toEqual([]);
 	});
 
+	it("keeps post TOC changes on the narrow support overflow check", () => {
+		const plan = planFor("src/components/post-toc/TableOfContents.astro");
+
+		expect(plan.groups).toEqual([
+			"lint",
+			"type",
+			"astro",
+			"post-support-toc",
+		]);
+		expect(plan.unmatched).toEqual([]);
+	});
+
 	it("keeps local toolchain changes on fast checks with a CI full risk", () => {
 		const plan = planFor("playwright.config.ts");
 

@@ -635,13 +635,16 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	expect(compactTocState).toBe(true);
 	const compactIndicatorState = await page.locator("#toc").evaluate((toc) => {
 		const indicator = toc.querySelector<HTMLElement>("#active-indicator")!;
-		const tocStyle = getComputedStyle(toc);
+		const tocBody = toc.closest<HTMLElement>(".post-support__toc-body")!;
+		const tocBodyStyle = getComputedStyle(tocBody);
 		return {
-			overflowY: tocStyle.overflowY,
+			overflowY: tocBodyStyle.overflowY,
+			scrollbarWidth: tocBodyStyle.scrollbarWidth,
 			opacity: Number.parseFloat(getComputedStyle(indicator).opacity),
 		};
 	});
-	expect(compactIndicatorState.overflowY).toBe("hidden");
+	expect(compactIndicatorState.overflowY).toBe("auto");
+	expect(compactIndicatorState.scrollbarWidth).toBe("none");
 	expect(compactIndicatorState.opacity).toBeGreaterThan(0);
 
 	await page.evaluate(() => {

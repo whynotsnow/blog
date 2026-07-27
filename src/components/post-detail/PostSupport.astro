@@ -71,13 +71,15 @@ const hasHeadings = headings.length > 0;
 <style>
 	.post-support {
 		--stack-space: var(--space-grid-gap);
+		--post-support-toc-height: min(
+			24rem,
+			calc(100dvh - var(--page-entry-clearance) - var(--size-6))
+		);
 		position: sticky;
 		top: calc(var(--page-entry-clearance) + var(--size-3));
 		width: 100%;
-		max-height: calc(100dvh - var(--page-entry-clearance) - var(--size-6));
 		align-items: stretch;
-		overflow-y: auto;
-		overscroll-behavior: contain;
+		overflow: visible;
 	}
 
 	:global(.page-support-region:has(.post-support)) {
@@ -97,11 +99,24 @@ const hasHeadings = headings.length > 0;
 	.post-support__panel {
 		width: 100%;
 		padding: var(--space-card);
+		flex-shrink: 0;
+		transition:
+			transform var(--motion-normal) var(--motion-ease-standard),
+			opacity var(--motion-normal) var(--motion-ease-standard);
 	}
 
 	.post-support__toc {
+		display: flex;
+		flex: 0 0 auto;
+		flex-direction: column;
+		max-height: var(--post-support-toc-height);
+		min-height: 0;
 		align-self: start;
 		z-index: 1;
+		overflow: hidden;
+		transition:
+			max-height var(--motion-normal) var(--motion-ease-standard),
+			padding var(--motion-normal) var(--motion-ease-standard);
 	}
 
 	.post-support__heading {
@@ -120,11 +135,19 @@ const hasHeadings = headings.length > 0;
 	}
 
 	.post-support__toc-body {
-		overflow: visible;
+		flex: 1 1 auto;
+		max-height: calc(var(--post-support-toc-height) - 5rem);
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: none;
+		transition: max-height var(--motion-normal)
+			var(--motion-ease-standard);
 	}
 
-	.post-support__toc :global(table-of-contents#toc) {
-		max-height: none;
+	.post-support__toc-body::-webkit-scrollbar {
+		display: none;
 	}
 
 	.post-support__nav {

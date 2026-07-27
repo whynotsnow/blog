@@ -45,6 +45,15 @@
 			"test",
 			"tests/e2e/features/post-detail.spec.ts"
 		],
+		"post-support-toc": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/post-detail.spec.ts",
+			"-g",
+			"post support TOC owns internal overflow without sidebar scrollbar"
+		],
 		"activity-center": [
 			"pnpm",
 			"exec",
@@ -250,6 +259,10 @@
 				"src/pages/posts/**"
 			],
 			"groups": ["lint", "type", "astro", "post-detail"]
+		},
+		{
+			"patterns": ["src/components/post-toc/TableOfContents.astro"],
+			"groups": ["lint", "type", "astro", "post-support-toc"]
 		},
 		{
 			"patterns": ["tests/unit/**"],
