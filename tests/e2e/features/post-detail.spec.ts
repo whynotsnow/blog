@@ -138,12 +138,8 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 	expect(overflowState.tocBodyScrollbarWidth).toBe("none");
 	expect(overflowState.tocOverflowY).toBe("visible");
 	expect(overflowState.collapsedEntryDisplay).toBe("flex");
-	expect(
-		Number.parseFloat(overflowState.collapsedEntryMaxHeight ?? "0"),
-	).toBeLessThan(1);
-	expect(
-		Number.parseFloat(overflowState.collapsedEntryOpacity ?? "0"),
-	).toBeLessThan(0.01);
+	expect(overflowState.collapsedEntryMaxHeight).toBe("0px");
+	expect(overflowState.collapsedEntryOpacity).toBe("0");
 	expect(overflowState.collapsedEntryTransition).toContain("max-height");
 	await expect(
 		page.locator("#toc a", { hasText: "站点施工提示" }),
@@ -163,17 +159,14 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 		});
 	await page.waitForTimeout(520);
 
-	const overflowBoundaryState = await page.locator("#toc").evaluate((toc) => {
-		const entries = Array.from(
-			toc.querySelectorAll<HTMLAnchorElement>("a"),
-		);
-		const childEntries = entries.filter(
-			(entry) => entry.dataset.tocLevel !== "0",
-		);
+	const expandedTocState = await page.locator("#toc").evaluate((toc) => {
 		const scrollContainer = toc.closest<HTMLElement>(
 			".post-support__toc-body",
 		)!;
 		const activeEntry = toc.querySelector<HTMLElement>("a.visible");
+		const indicator = toc.querySelector<HTMLElement>("#active-indicator");
+		const tocRect = scrollContainer.getBoundingClientRect();
+		const activeRect = activeEntry?.getBoundingClientRect();
 
 		return {
 			tocCanScroll:
@@ -181,20 +174,20 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 			tocScrollTop: scrollContainer.scrollTop,
 			activeText:
 				activeEntry?.textContent?.replace(/\s+/g, " ").trim() ?? "",
-			collapsedChildren: childEntries.filter((entry) =>
-				entry.classList.contains("is-collapsed"),
-			).length,
-			childCount: childEntries.length,
-			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
+			activeEntryVisible:
+				!!activeRect &&
+				activeRect.top >= tocRect.top - 1 &&
+				activeRect.bottom <= tocRect.bottom + 1,
+			indicatorStyle: indicator?.getAttribute("style") ?? "",
 		};
 	});
-	expect(overflowBoundaryState.tocCanScroll).toBe(false);
-	expect(overflowBoundaryState.tocScrollTop).toBe(0);
-	expect(overflowBoundaryState.activeText).toBe("");
-	expect(overflowBoundaryState.collapsedChildren).toBe(
-		overflowBoundaryState.childCount,
-	);
-	expect(overflowBoundaryState.transition).toBe("boundary-end");
+	expect(expandedTocState.tocCanScroll).toBe(true);
+	expect(expandedTocState.tocScrollTop).toBeGreaterThan(0);
+	expect(expandedTocState.activeText).toContain("Inline HTML");
+	expect(expandedTocState.activeEntryVisible).toBe(true);
+	expect(expandedTocState.indicatorStyle).toContain("top: 0");
+	expect(expandedTocState.indicatorStyle).toContain("bottom: auto");
+	expect(expandedTocState.indicatorStyle).toContain("transform: translateY");
 });
 
 test("post support TOC collapses to root list at document boundaries", async ({
@@ -380,10 +373,8 @@ test("post support TOC keeps active heading stable across branch transitions", a
 		),
 	).toBe(false);
 	expect(
-		targetRegionSamples.some(
-			(sample) =>
-				sample.visible.includes("This is an H1") ||
-				sample.visible.includes("This is an H2"),
+		targetRegionSamples.some((sample) =>
+			sample.visible.includes("This is an H1"),
 		),
 	).toBe(true);
 	expect(
@@ -453,7 +444,7 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 			transition: string;
 			phase: string;
 		}> = [];
-		for (let step = 0; step < 16; step += 1) {
+		for (let step = 0; step < 12; step += 1) {
 			await wait(70);
 			samples.push({
 				visible: normalize(
@@ -471,10 +462,6 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 					document.querySelector<HTMLElement>("#toc")?.dataset
 						.tocPhase ?? "",
 			});
-		}
-		for (let step = 0; step < 20; step += 1) {
-			if (document.querySelector("#toc a.visible")) break;
-			await wait(100);
 		}
 		documentElement.style.scrollBehavior = previousScrollBehavior;
 

@@ -159,7 +159,8 @@ const tocItems = deferHeadings
 		if (window.scrollY <= 1 || currentIndex < 0) return "start";
 
 		if (
-			(this.isAtDocumentEnd() || this.shouldUseSupportOverflowBoundary(currentIndex)) &&
+			window.scrollY + window.innerHeight >=
+				document.documentElement.scrollHeight - 1 &&
 			this.activeTracker.scrollDirection !== "up"
 		) {
 			return "end";
@@ -168,50 +169,12 @@ const tocItems = deferHeadings
 		return null;
 	}
 
-	isAtDocumentEnd() {
-		return (
-			window.scrollY + window.innerHeight >=
-			document.documentElement.scrollHeight - 1
-		);
-	}
-
-	shouldUseSupportOverflowBoundary(currentIndex: number) {
-		if (!this.tocEl || currentIndex < 0) return false;
-		const activeNode = this.activeTracker.nodes[currentIndex];
-		if (!activeNode) return false;
-		const rootIndexes = this.activeTracker.graph.rootIndexes;
-		const lastRootIndex = rootIndexes.at(-1);
-		if (activeNode.rootIndex !== lastRootIndex) return false;
-
-		const visibleIndexes = new Set(rootIndexes);
-		for (
-			let index = activeNode.rootIndex;
-			index < this.activeTracker.nodes.length;
-			index++
-		) {
-			const node = this.activeTracker.nodes[index];
-			if (index !== activeNode.rootIndex && node.level === 0) break;
-			visibleIndexes.add(index);
-		}
-
-		const naturalHeight = [...visibleIndexes].reduce((height, index) => {
-			const entry = this.tocEntries[index];
-			if (!entry) return height;
-			return height + Math.max(entry.scrollHeight, entry.offsetHeight, 36);
-		}, 0);
-
-		return naturalHeight > this.tocEl.clientHeight + 1;
-	}
-
 	resolveViewportState(
 		currentIndex: number,
 		reason?: DesktopTocTransitionType,
 		options: { suppressHighlight?: boolean } = {},
 	) {
-		const boundary =
-			reason === "boundary-exit"
-				? null
-				: this.resolveViewportBoundary(currentIndex);
+		const boundary = this.resolveViewportBoundary(currentIndex);
 		return resolveDesktopTocViewportState({
 			graph: this.activeTracker.graph,
 			activeIndex: currentIndex,
@@ -257,7 +220,10 @@ const tocItems = deferHeadings
 		this.pendingBoundaryExitIndex = currentIndex;
 		this.boundaryExitTimer = window.setTimeout(() => {
 			this.boundaryExitTimer = 0;
-			if (this.isAtDocumentEnd()) {
+			const atDocumentEnd =
+				window.scrollY + window.innerHeight >=
+				document.documentElement.scrollHeight - 1;
+			if (atDocumentEnd) {
 				this.pendingBoundaryExitIndex = -1;
 				return;
 			}
