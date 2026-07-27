@@ -63,6 +63,10 @@ describe("impact-based validation selection", () => {
 			planFor("src/components/post-toc/toc-data.ts"),
 			planFor("src/components/post-toc/toc-render.ts"),
 			planFor("src/components/post-toc/toc-runtime.ts"),
+			planFor("src/components/post-toc/toc-active.ts"),
+			planFor("src/components/post-toc/toc-graph.ts"),
+			planFor("src/components/post-toc/toc-desktop-state.ts"),
+			planFor("src/components/post-toc/toc-desktop-presenter.ts"),
 			planFor("src/components/MobileTOC.svelte"),
 		];
 

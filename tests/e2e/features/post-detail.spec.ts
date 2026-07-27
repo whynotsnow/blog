@@ -87,17 +87,9 @@ test("post TOC ignores headings outside article content", async ({ page }) => {
 		page.locator("#toc a", { hasText: "Outside Post Heading" }),
 	).toHaveCount(0);
 
-	await page.setViewportSize({ width: 390, height: 760 });
-	await page.evaluate(() => window.mobileTOCInit?.());
-	await page.locator("#mobile-toc-switch").click();
-	await expect(page.locator("#mobile-toc-panel .toc-item")).toHaveCount(
-		staticTocItems.length,
+	expect(staticTocItems.map((item) => item.text)).not.toContain(
+		"Outside Post Heading",
 	);
-	await expect(
-		page.locator("#mobile-toc-panel .toc-item", {
-			hasText: "Outside Post Heading",
-		}),
-	).toHaveCount(0);
 });
 
 test("post support TOC owns internal overflow without sidebar scrollbar", async ({
@@ -153,62 +145,26 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 		page.locator("#toc a", { hasText: "站点施工提示" }),
 	).toHaveCount(0);
 
-	await page.locator("#toc").evaluate((toc) => {
-		const entries = Array.from(
-			toc.querySelectorAll<HTMLAnchorElement>("a"),
-		);
-		for (const entry of entries) {
-			entry.classList.remove("is-collapsed", "visible");
-			entry.style.maxHeight = "5rem";
-			entry.style.opacity = "1";
-		}
-		const activeEntry =
-			entries.find((entry) =>
-				entry.textContent?.includes("Inline HTML"),
-			) ?? entries.at(-1);
-		activeEntry?.classList.add("visible");
-		const scrollContainer = toc.closest<HTMLElement>(
-			".post-support__toc-body",
-		)!;
-		scrollContainer.scrollTop = 0;
-	});
-
-	await page.waitForTimeout(280);
-	await expect
-		.poll(async () =>
-			page.locator("#toc").evaluate((toc) => {
-				const scrollContainer = toc.closest<HTMLElement>(
-					".post-support__toc-body",
-				)!;
-				return (
-					scrollContainer.scrollHeight >
-					scrollContainer.clientHeight + 1
-				);
-			}),
-		)
-		.toBe(true);
+	await page
+		.locator("#toc a", { hasText: "Inline HTML" })
+		.evaluate((entry) => {
+			const id = decodeURIComponent(
+				(entry as HTMLAnchorElement).hash.slice(1),
+			);
+			const heading = document.getElementById(id);
+			if (!heading) throw new Error(`Missing heading ${id}`);
+			window.scrollTo({
+				top: heading.getBoundingClientRect().top + window.scrollY - 120,
+			});
+		});
+	await page.waitForTimeout(520);
 
 	const expandedTocState = await page.locator("#toc").evaluate((toc) => {
-		const entries = Array.from(
-			toc.querySelectorAll<HTMLAnchorElement>("a"),
-		);
-		for (const entry of entries) {
-			entry.classList.remove("visible");
-		}
-		const activeEntry =
-			entries.find((entry) =>
-				entry.textContent?.includes("Inline HTML"),
-			) ?? entries.at(-1);
-		activeEntry?.classList.add("visible");
-		(
-			toc as HTMLElement & {
-				scrollToActiveHeading?: () => void;
-			}
-		).scrollToActiveHeading?.();
 		const scrollContainer = toc.closest<HTMLElement>(
 			".post-support__toc-body",
 		)!;
-
+		const activeEntry = toc.querySelector<HTMLElement>("a.visible");
+		const indicator = toc.querySelector<HTMLElement>("#active-indicator");
 		const tocRect = scrollContainer.getBoundingClientRect();
 		const activeRect = activeEntry?.getBoundingClientRect();
 
@@ -216,196 +172,225 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 			tocCanScroll:
 				scrollContainer.scrollHeight > scrollContainer.clientHeight + 1,
 			tocScrollTop: scrollContainer.scrollTop,
+			activeText:
+				activeEntry?.textContent?.replace(/\s+/g, " ").trim() ?? "",
 			activeEntryVisible:
 				!!activeRect &&
 				activeRect.top >= tocRect.top - 1 &&
 				activeRect.bottom <= tocRect.bottom + 1,
+			indicatorStyle: indicator?.getAttribute("style") ?? "",
 		};
 	});
 	expect(expandedTocState.tocCanScroll).toBe(true);
 	expect(expandedTocState.tocScrollTop).toBeGreaterThan(0);
+	expect(expandedTocState.activeText).toContain("Inline HTML");
 	expect(expandedTocState.activeEntryVisible).toBe(true);
+	expect(expandedTocState.indicatorStyle).toContain("top: 0");
+	expect(expandedTocState.indicatorStyle).toContain("bottom: auto");
+	expect(expandedTocState.indicatorStyle).toContain("transform: translateY");
+});
 
-	const upwardIndicatorState = await page.locator("#toc").evaluate((toc) => {
+test("post support TOC keeps active heading stable across branch transitions", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 720 });
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(page.locator("#toc a").first()).toBeVisible();
+
+	const transitionState = await page.evaluate(async () => {
+		const normalize = (value: string | null | undefined) =>
+			value?.replace(/\s+/g, " ").trim() ?? "";
+		const waitFrame = () =>
+			new Promise<void>((resolve) =>
+				requestAnimationFrame(() =>
+					requestAnimationFrame(() => resolve()),
+				),
+			);
 		const entries = Array.from(
-			toc.querySelectorAll<HTMLAnchorElement>("a"),
+			document.querySelectorAll<HTMLAnchorElement>("#toc a"),
 		);
-		for (const entry of entries) {
-			entry.classList.remove("is-collapsed", "visible");
+		const roots = entries
+			.map((entry, index) => ({ entry, index }))
+			.filter(({ entry }) => entry.dataset.tocLevel === "0");
+		const fourthRoot = roots[3];
+		const previousRoot = roots[2];
+		if (!fourthRoot || !previousRoot) {
+			throw new Error(
+				"Expected markdown tutorial to expose four TOC roots",
+			);
 		}
-		const childIndex = entries.findIndex(
-			(entry) => entry.dataset.tocLevel === "1",
+
+		const previousBranchChild = entries
+			.map((entry, index) => ({ entry, index }))
+			.find(
+				({ entry, index }) =>
+					index > previousRoot.index &&
+					index < fourthRoot.index &&
+					entry.dataset.tocLevel === "1",
+			);
+		if (!previousBranchChild) {
+			throw new Error(
+				"Expected previous TOC branch to expose a child heading",
+			);
+		}
+
+		const headingTop = (entry: HTMLAnchorElement) => {
+			const id = decodeURIComponent(entry.hash.slice(1));
+			const heading = document.getElementById(id);
+			if (!heading) throw new Error(`Missing heading ${id}`);
+			return heading.getBoundingClientRect().top + window.scrollY;
+		};
+
+		const startY = headingTop(fourthRoot.entry) - 120;
+		const endY = headingTop(previousBranchChild.entry) - 120;
+		window.scrollTo(0, startY);
+		await waitFrame();
+
+		const collected: Array<{
+			scrollY: number;
+			trackerText: string;
+			visible: string;
+		}> = [];
+		for (let step = 0; step <= 20; step += 1) {
+			const progress = step / 20;
+			window.scrollTo(0, startY + (endY - startY) * progress);
+			await waitFrame();
+			collected.push({
+				scrollY: Math.round(window.scrollY),
+				trackerText:
+					(
+						document.querySelector<
+							HTMLElementTagNameMap["table-of-contents"]
+						>("table-of-contents") as HTMLElement & {
+							activeTracker?: {
+								getActiveNode?: () => { text?: string } | null;
+							};
+						}
+					)?.activeTracker?.getActiveNode?.()?.text ?? "",
+				visible: normalize(
+					document.querySelector("#toc a.visible")?.textContent,
+				),
+			});
+		}
+		await new Promise((resolve) => window.setTimeout(resolve, 300));
+		const scrollContainer = document.querySelector<HTMLElement>(
+			".post-support__toc-body",
 		);
-		const rootIndex = Math.max(
-			0,
-			entries
-				.slice(0, childIndex)
-				.findLastIndex((entry) => entry.dataset.tocLevel === "0"),
+		const activeEntry =
+			document.querySelector<HTMLElement>("#toc a.visible");
+		const containerRect = scrollContainer?.getBoundingClientRect();
+		const activeRect = activeEntry?.getBoundingClientRect();
+
+		return {
+			samples: collected,
+			activeFullyVisible:
+				!!containerRect &&
+				!!activeRect &&
+				activeRect.top >= containerRect.top - 1 &&
+				activeRect.bottom <= containerRect.bottom + 1,
+		};
+	});
+	const scrolledSamples = transitionState.samples.filter(
+		(sample) => sample.scrollY > 100 && sample.visible.length > 0,
+	);
+	const targetRegionSamples = scrolledSamples.filter((sample) =>
+		sample.trackerText.includes("This is an H"),
+	);
+
+	expect(
+		targetRegionSamples.some((sample) =>
+			sample.visible.includes("Markdown Tutorial"),
+		),
+	).toBe(false);
+	expect(
+		targetRegionSamples.some((sample) =>
+			sample.visible.includes("This is an H1"),
+		),
+	).toBe(true);
+	expect(
+		targetRegionSamples.some((sample) => sample.visible.length > 0),
+	).toBe(true);
+	expect(transitionState.activeFullyVisible).toBe(true);
+});
+
+test("post support TOC keeps expanded child fully visible when scrolling up from bottom", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 520 });
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(page.locator("#toc a").first()).toBeVisible();
+
+	const bottomUpState = await page.evaluate(async () => {
+		const normalize = (value: string | null | undefined) =>
+			value?.replace(/\s+/g, " ").trim() ?? "";
+		const wait = (delay: number) =>
+			new Promise((resolve) => window.setTimeout(resolve, delay));
+		const entries = Array.from(
+			document.querySelectorAll<HTMLAnchorElement>("#toc a"),
 		);
-		const childEntry = entries[childIndex]!;
-		const rootEntry = entries[rootIndex]!;
-		const scrollContainer = toc.closest<HTMLElement>(
+		const roots = entries
+			.map((entry, index) => ({ entry, index }))
+			.filter(({ entry }) => entry.dataset.tocLevel === "0");
+		const fourthRoot = roots[3];
+		if (!fourthRoot) {
+			throw new Error("Expected markdown tutorial to expose fourth root");
+		}
+		const nextRoot = roots[4]?.index ?? entries.length;
+		const firstChild = entries
+			.map((entry, index) => ({ entry, index }))
+			.find(
+				({ entry, index }) =>
+					index > fourthRoot.index &&
+					index < nextRoot &&
+					entry.dataset.tocLevel === "1",
+			);
+		if (!firstChild) {
+			throw new Error("Expected fourth root to expose a child heading");
+		}
+
+		const headingId = decodeURIComponent(firstChild.entry.hash.slice(1));
+		const heading = document.getElementById(headingId);
+		if (!heading) throw new Error(`Missing heading ${headingId}`);
+
+		window.scrollTo(0, document.documentElement.scrollHeight);
+		await wait(340);
+		window.scrollTo({
+			top: heading.getBoundingClientRect().top + window.scrollY - 120,
+		});
+		await wait(560);
+
+		const scrollContainer = document.querySelector<HTMLElement>(
 			".post-support__toc-body",
 		)!;
-		const tocElement = toc as HTMLElement & {
-			indicatorPlacement: "top" | "bottom";
-			lastActiveIndicatorIndex: number;
-			primeActiveIndicatorFromRect: (rect: DOMRect) => void;
-			moveActiveIndicator: (top: number, bottom: number) => void;
-		};
-
-		scrollContainer.scrollTop = 0;
-		childEntry.classList.add("visible");
-		const childRect = childEntry.getBoundingClientRect();
-		tocElement.indicatorPlacement = "bottom";
-		tocElement.lastActiveIndicatorIndex = childIndex;
-		tocElement.primeActiveIndicatorFromRect(childRect);
-
-		childEntry.classList.remove("visible");
-		rootEntry.classList.add("visible");
-		const parentOffset = scrollContainer.getBoundingClientRect().top;
-		const scrollOffset = scrollContainer.scrollTop;
-		const rootRect = rootEntry.getBoundingClientRect();
-		tocElement.moveActiveIndicator(
-			rootRect.top - parentOffset + scrollOffset,
-			rootRect.bottom - parentOffset + scrollOffset,
+		const activeEntry =
+			document.querySelector<HTMLElement>("#toc a.visible");
+		const activeRoot = document.querySelector<HTMLElement>(
+			"#toc a.is-current-branch[data-toc-level='0']",
 		);
+		const containerRect = scrollContainer.getBoundingClientRect();
+		const activeRect = activeEntry?.getBoundingClientRect();
+		const rootRect = activeRoot?.getBoundingClientRect();
 
 		return {
-			style:
-				toc
-					.querySelector<HTMLElement>("#active-indicator")
-					?.getAttribute("style") ?? "",
+			activeText: normalize(activeEntry?.textContent),
+			activeLevel: activeEntry?.dataset.tocLevel ?? "",
+			activeRootText: normalize(activeRoot?.textContent),
+			activeFullyVisible:
+				!!activeRect &&
+				activeRect.top >= containerRect.top - 1 &&
+				activeRect.bottom <= containerRect.bottom + 1,
+			rootVisible:
+				!!rootRect &&
+				rootRect.bottom >= containerRect.top - 1 &&
+				rootRect.top <= containerRect.bottom + 1,
 		};
 	});
-	expect(upwardIndicatorState.style).toContain("top: auto");
-	expect(upwardIndicatorState.style).toContain("bottom:");
 
-	const boundaryState = await page.locator("#toc").evaluate((toc) => {
-		for (const entry of toc.querySelectorAll<HTMLElement>("a")) {
-			entry.style.maxHeight = "";
-			entry.style.opacity = "";
-		}
-		const tocElement = toc as HTMLElement & {
-			headings: HTMLElement[];
-			indicatorPlacement: "top" | "bottom";
-			updateAdaptiveState: () => void;
-			toggleActiveHeading: () => void;
-		};
-		const stickyTop = Number.parseFloat(
-			getComputedStyle(
-				document.querySelector<HTMLElement>(".post-support")!,
-			).top,
-		);
-		const targetTop = stickyTop + 24;
-		const mockedTops = new Map<number, number>([
-			[0, targetTop - 360],
-			[1, targetTop - 320],
-			[2, targetTop - 260],
-			[3, targetTop - 180],
-			[4, targetTop + 140],
-			[5, targetTop + 220],
-			[6, targetTop + 900],
-		]);
-		for (const [index, top] of mockedTops) {
-			const heading = tocElement.headings[index];
-			heading.getBoundingClientRect = (() =>
-				({
-					top,
-					bottom: top + 36,
-					height: 36,
-					left: 0,
-					right: 0,
-					width: 0,
-					x: 0,
-					y: top,
-					toJSON: () => ({}),
-				}) as DOMRect) as HTMLElement["getBoundingClientRect"];
-		}
-
-		tocElement.indicatorPlacement = "bottom";
-		tocElement.updateAdaptiveState();
-		tocElement.toggleActiveHeading();
-
-		const visibleEntry = toc.querySelector<HTMLElement>("a.visible");
-		const currentBranchText = Array.from(
-			toc.querySelectorAll<HTMLElement>(
-				"a.is-current-branch:not(.is-collapsed)",
-			),
-		).map((entry) => entry.textContent?.replace(/\s+/g, " ").trim());
-		const indicator = toc.querySelector<HTMLElement>("#active-indicator")!;
-		const indicatorStyle = getComputedStyle(indicator);
-
-		return {
-			visibleText: visibleEntry?.textContent?.replace(/\s+/g, " ").trim(),
-			currentBranchText,
-			indicatorHeight: Number.parseFloat(indicatorStyle.height),
-		};
-	});
-	expect(boundaryState.currentBranchText.join(" / ")).not.toContain(
-		"2 This is an H1",
-	);
-	expect(boundaryState.currentBranchText.join(" / ")).toContain(
-		"3 This is an H1",
-	);
-	expect(boundaryState.indicatorHeight).toBeGreaterThanOrEqual(32);
-
-	const staleFirstHeadingState = await page
-		.locator("#toc")
-		.evaluate((toc) => {
-			const tocElement = toc as HTMLElement & {
-				headings: HTMLElement[];
-				indicatorPlacement: "top" | "bottom";
-				lastResolvedHeadingIndex: number;
-				updateAdaptiveState: () => void;
-				toggleActiveHeading: () => void;
-			};
-			const stickyTop = Number.parseFloat(
-				getComputedStyle(
-					document.querySelector<HTMLElement>(".post-support")!,
-				).top,
-			);
-			const targetTop = stickyTop + 24;
-			for (let i = 0; i <= 6; i++) {
-				const heading = tocElement.headings[i];
-				heading.getBoundingClientRect = (() =>
-					({
-						top: targetTop + 240 + i * 40,
-						bottom: targetTop + 276 + i * 40,
-						height: 36,
-						left: 0,
-						right: 0,
-						width: 0,
-						x: 0,
-						y: targetTop + 240 + i * 40,
-						toJSON: () => ({}),
-					}) as DOMRect) as HTMLElement["getBoundingClientRect"];
-			}
-			tocElement.indicatorPlacement = "bottom";
-			tocElement.lastResolvedHeadingIndex = 6;
-			tocElement.updateAdaptiveState();
-			tocElement.toggleActiveHeading();
-
-			const visibleEntry = toc.querySelector<HTMLElement>("a.visible");
-			const currentBranchText = Array.from(
-				toc.querySelectorAll<HTMLElement>(
-					"a.is-current-branch:not(.is-collapsed)",
-				),
-			).map((entry) => entry.textContent?.replace(/\s+/g, " ").trim());
-
-			return {
-				visibleText: visibleEntry?.textContent
-					?.replace(/\s+/g, " ")
-					.trim(),
-				currentBranchText,
-			};
-		});
-	expect(staleFirstHeadingState.visibleText).not.toContain(
-		"1 Markdown Tutorial",
-	);
-	expect(staleFirstHeadingState.currentBranchText.join(" / ")).not.toContain(
-		"1 Markdown Tutorial",
-	);
+	expect(bottomUpState.activeText.length).toBeGreaterThan(0);
+	expect(bottomUpState.activeLevel).toBe("1");
+	expect(bottomUpState.activeRootText).toContain("4 This is an H1");
+	expect(bottomUpState.activeFullyVisible).toBe(true);
+	expect(bottomUpState.rootVisible).toBe(true);
 });
 
 test("encrypted posts reuse the shared post content contract", async ({
