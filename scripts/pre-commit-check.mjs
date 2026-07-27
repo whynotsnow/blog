@@ -215,6 +215,26 @@ if (affectsSourceTypes) {
 	});
 }
 
+const affectsSvelteTypes = stagedFiles.some(
+	(file) =>
+		(isUnder(file, "src") && extname(file) === ".svelte") ||
+		file === "svelte.config.js" ||
+		file === "svelte.config.mjs" ||
+		file === "tsconfig.json" ||
+		affectsDependencies,
+);
+if (affectsSvelteTypes) {
+	console.log("[pre-commit] Running Svelte component diagnostics...");
+	run(
+		localBin("svelte-check"),
+		["--tsconfig", "./tsconfig.json", "--threshold", "error"],
+		{
+			failureAdvice:
+				"Svelte diagnostics failed. Review the errors above, then run `pnpm type-check:svelte` to verify the fix.",
+		},
+	);
+}
+
 const affectsTestTypes = stagedFiles.some(
 	(file) =>
 		isUnder(file, "tests") ||

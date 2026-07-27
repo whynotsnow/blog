@@ -26,6 +26,7 @@ describe("impact-based validation selection", () => {
 		expect(sourcePlan.groups).toEqual([
 			"lint",
 			"type",
+			"svelte-type",
 			"astro",
 			"design",
 			"floating-tools",

@@ -9,6 +9,7 @@
 		"markdown": ["pnpm", "lint:md"],
 		"lint": ["pnpm", "lint"],
 		"type": ["pnpm", "type-check"],
+		"svelte-type": ["pnpm", "type-check:svelte"],
 		"test-type": ["pnpm", "type-check:tests"],
 		"astro": ["pnpm", "check"],
 		"design": ["pnpm", "design:check"],
@@ -118,7 +119,14 @@
 				"src/config/live2d-companion.ts",
 				"src/config/music.ts"
 			],
-			"groups": ["lint", "type", "astro", "design", "floating-tools"]
+			"groups": [
+				"lint",
+				"type",
+				"svelte-type",
+				"astro",
+				"design",
+				"floating-tools"
+			]
 		},
 		{
 			"patterns": ["public/live2d-companion/**"],
@@ -126,7 +134,14 @@
 		},
 		{
 			"patterns": ["src/assets/icons/**"],
-			"groups": ["lint", "type", "astro", "design", "floating-tools"]
+			"groups": [
+				"lint",
+				"type",
+				"svelte-type",
+				"astro",
+				"design",
+				"floating-tools"
+			]
 		},
 		{
 			"patterns": ["src/content/**"],
@@ -282,6 +297,7 @@
 				"playwright.config.*",
 				"vitest.config.*",
 				"tests/impact-map.json",
+				"scripts/pre-commit-check.mjs",
 				"scripts/test-impact.mjs",
 				"scripts/check-env.mjs",
 				".nvmrc",

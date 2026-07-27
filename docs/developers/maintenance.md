@@ -7,13 +7,14 @@
 ```bash
 pnpm check
 pnpm type-check
+pnpm type-check:svelte
 pnpm lint
 pnpm lint:md
 pnpm build
 ```
 
 涉及部署影响的改动建议运行 `pnpm build`，因为它会同时覆盖 Astro 构建、Pagefind 索引和字体压缩。
-代码质量检查建议运行 `pnpm lint`；如需自动修复可修复问题，运行 `pnpm lint:fix` 后再复查 diff。`pnpm type-check` 与 `pnpm check` 都属于提交门禁：前者检查纯 TypeScript，后者负责 Astro、Svelte、内容和组件 Props 诊断。完整 `pnpm build` 仍应作为 CI 的合并门禁，避免被本地 `--no-verify` 绕过。
+代码质量检查建议运行 `pnpm lint`；如需自动修复可修复问题，运行 `pnpm lint:fix` 后再复查 diff。`pnpm type-check`、`pnpm type-check:svelte` 与 `pnpm check` 都属于提交门禁：`type-check` 检查纯 TypeScript，`type-check:svelte` 负责 `.svelte` 组件脚本、模板和 Props 诊断，`check` 负责 Astro 与内容诊断。完整 `pnpm build` 仍应作为 CI 的合并门禁，避免被本地 `--no-verify` 绕过。
 文档结构调整或 Markdown 格式修复建议运行 `pnpm lint:md`。
 
 ## Agent Workspace Spec 公开边界

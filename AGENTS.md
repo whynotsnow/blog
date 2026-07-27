@@ -53,6 +53,7 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm dev`: start the Astro dev server.
 - `pnpm check`: run Astro checks.
 - `pnpm type-check`: run TypeScript declaration-oriented checks.
+- `pnpm type-check:svelte`: run Svelte component diagnostics with `svelte-check`.
 - `pnpm build`: production build, Pagefind indexing, and font compression.
 - `pnpm build:astro`: prepare Content and font subsets, then run only the Astro production build stage without Pagefind.
 - `pnpm format:check`: check formatting.
