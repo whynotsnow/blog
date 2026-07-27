@@ -79,7 +79,7 @@ pnpm build
 4. `astro build`
 5. `pagefind --site dist`
 
-字体子集必须在 `astro build` 之前生成。Astro Font API 从 `.font-build/` 读取 WOFF2，生成带 Hash 的 `/_astro/fonts/` 产物；生产输出不再复制 `src/assets/fonts/source/` 中的原始 TTF。
+字体子集必须在 `astro build` 之前生成。Astro Font API 从 `.font-build/` 读取 WOFF2，生成带 Hash 的 `/_astro/fonts/` 产物；原始 TTF 存放在 `scripts/fonts/source/`，不能放在 `src/assets/` 或 `public/`，避免被 Vite/Astro 当作可发布静态资源复制到 `dist/_astro/`。
 
 如果启用了外部服务，构建可能依赖对应环境变量或网络访问。
 

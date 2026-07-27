@@ -360,6 +360,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Preserved the ASCII-first/CJK-fallback behavior by physically limiting Zen Maru Gothic to ASCII, while collecting the Lolita V2 subset from prepared Content, local UI sources, and a fixed safelist without network or random inputs.
 - Kept concrete Astro font variables below Design Typography semantics, preloaded only the small Latin subset, and reserved Locale plus `unicode-range` metadata for future language packages.
 - Learned that generated assets referenced by global CSS must be prepared before every runtime that consumes them; postbuild generation cannot satisfy Dev Server requests, and missing build configuration must fail rather than silently select fallback fonts.
+- Later clean-build diagnosis showed source TTF files under `src/assets` can still be emitted into `dist/_astro` as orphaned Vite assets even when Astro Font API publishes only `.font-build` WOFF2 subsets; keep compiler-only TTF inputs under `scripts/fonts/source`.
 
 ## 2026-07-24
 

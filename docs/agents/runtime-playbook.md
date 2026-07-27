@@ -74,7 +74,7 @@ Pattern:
 
 Use:
 
-- Keep original fonts under `src/assets/fonts/source` with lowercase ASCII filenames; never use `public` as the compiler input directory.
+- Keep original fonts under `scripts/fonts/source` with lowercase ASCII filenames; never use `src/assets` or `public` as the compiler input directory because those directories can be treated as publishable asset roots.
 - Run `content:prepare`, then `font:prepare`, before Astro starts in development, production builds, checks, and Playwright web servers.
 - Treat `scripts/fonts/config.mjs` as the font build contract. Do not parse `siteConfig` or TypeScript source with regular expressions.
 - Keep character collection deterministic and local. Runtime API text must use a system fallback or an already persisted data source; do not use network responses, time values, or random sampling as font inputs.
