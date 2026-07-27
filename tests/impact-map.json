@@ -59,6 +59,15 @@
 			"test",
 			"tests/e2e/features/floating-tools.spec.ts"
 		],
+		"floating-toc": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/floating-tools.spec.ts",
+			"-g",
+			"floating TOC progress ring geometry"
+		],
 		"design-contract": [
 			"pnpm",
 			"exec",
@@ -109,11 +118,14 @@
 			]
 		},
 		{
+			"patterns": ["src/components/control/FloatingTOC.astro"],
+			"groups": ["lint", "type", "astro", "design", "floating-toc"]
+		},
+		{
 			"patterns": [
 				"src/features/**",
 				"src/components/LightDarkSwitch.svelte",
 				"src/components/control/BackToTop.astro",
-				"src/components/control/FloatingTOC.astro",
 				"src/components/features/settings/**",
 				"src/components/ui/local-icons.ts",
 				"src/config/live2d-companion.ts",

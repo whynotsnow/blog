@@ -42,6 +42,19 @@ describe("impact-based validation selection", () => {
 		expect(testPlan.unmatched).toEqual([]);
 	});
 
+	it("keeps floating TOC changes on the narrow geometry check", () => {
+		const plan = planFor("src/components/control/FloatingTOC.astro");
+
+		expect(plan.groups).toEqual([
+			"lint",
+			"type",
+			"astro",
+			"design",
+			"floating-toc",
+		]);
+		expect(plan.unmatched).toEqual([]);
+	});
+
 	it("keeps local toolchain changes on fast checks with a CI full risk", () => {
 		const plan = planFor("playwright.config.ts");
 
