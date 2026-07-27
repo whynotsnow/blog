@@ -179,6 +179,63 @@ test("floating TOC progress ring geometry", async ({ page }) => {
 	);
 });
 
+test("floating TOC uses shared post TOC data sources", async ({ page }) => {
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await page.locator("#floating-tools-switch").click();
+	const tocButton = page.locator("#floating-tools #floating-toc-btn");
+	await expect(tocButton).toBeVisible();
+	await tocButton.click();
+
+	const staticTocItems = await page.locator("#post-toc-data").evaluate(
+		(dataElement) =>
+			JSON.parse(dataElement.textContent || "[]") as Array<{
+				id: string;
+				text: string;
+			}>,
+	);
+	await expect(
+		page.locator("#floating-toc-content .floating-toc-item"),
+	).toHaveCount(staticTocItems.length);
+	await expect(
+		page.locator("#floating-toc-content .floating-toc-item", {
+			hasText: "Markdown Tutorial",
+		}),
+	).toBeVisible();
+
+	await page.evaluate(() => {
+		const heading = document.createElement("h2");
+		heading.id = "outside-floating-toc-heading";
+		heading.textContent = "Outside Floating TOC Heading";
+		document.querySelector("#main-grid")?.prepend(heading);
+	});
+	await expect(
+		page.locator("#floating-toc-content .floating-toc-item", {
+			hasText: "Outside Floating TOC Heading",
+		}),
+	).toHaveCount(0);
+});
+
+test("floating TOC refreshes from decrypted content", async ({ page }) => {
+	await gotoPage(page, "/posts/encrypted-example/");
+	await page.locator("#floating-tools-switch").click();
+	const tocButton = page.locator("#floating-tools #floating-toc-btn");
+	await expect(tocButton).toBeHidden();
+	await expect(page.locator("#post-toc-data")).toHaveCount(0);
+	await expect(
+		page.locator("#floating-toc-content .floating-toc-item"),
+	).toHaveCount(0);
+
+	await page.locator("#password-input").fill("123456");
+	await page.locator("#unlock-btn").click();
+	await expect(page.locator("#decrypted-content")).toBeVisible();
+	await expect(tocButton).toBeVisible();
+	await expect(
+		page.locator("#floating-toc-content .floating-toc-item", {
+			hasText: "Front-matter of Posts",
+		}),
+	).toHaveCount(1);
+});
+
 test("floating tools controls music visibility while the player owns its presentation", async ({
 	page,
 }) => {

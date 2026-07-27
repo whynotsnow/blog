@@ -42,15 +42,17 @@ describe("impact-based validation selection", () => {
 		expect(testPlan.unmatched).toEqual([]);
 	});
 
-	it("keeps floating TOC changes on the narrow geometry check", () => {
+	it("keeps floating TOC changes on shell and post-detail checks", () => {
 		const plan = planFor("src/components/control/FloatingTOC.astro");
 
 		expect(plan.groups).toEqual([
 			"lint",
 			"type",
+			"svelte-type",
 			"astro",
 			"design",
-			"floating-toc",
+			"floating-tools",
+			"post-detail",
 		]);
 		expect(plan.unmatched).toEqual([]);
 	});
@@ -59,6 +61,8 @@ describe("impact-based validation selection", () => {
 		const plans = [
 			planFor("src/components/post-toc/TableOfContents.astro"),
 			planFor("src/components/post-toc/toc-data.ts"),
+			planFor("src/components/post-toc/toc-render.ts"),
+			planFor("src/components/post-toc/toc-runtime.ts"),
 			planFor("src/components/MobileTOC.svelte"),
 		];
 

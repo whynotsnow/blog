@@ -112,9 +112,9 @@ pnpm new-post -- my-post-title
 
 ## 加密文章目录
 
-普通文章的目录（TOC）来自 Astro 在构建期提供的 `headings`，桌面目录和移动端目录共享同一份静态 TOC 数据。
+普通文章的目录（TOC）来自 Astro 在构建期提供的 `headings`，桌面目录、移动端目录和 Floating TOC 共享同一份静态 TOC 数据。
 
-当文章设置 `encrypted: true` 且配置 `password` 时，构建输出不会暴露静态目录数据，避免未解锁前泄露受保护内容的标题结构。用户输入正确密码后，客户端会从解密后的正文 root 显式生成 runtime TOC；普通文章不依赖全页面 DOM 扫描生成目录。
+当文章设置 `encrypted: true` 且配置 `password` 时，构建输出不会暴露静态目录数据，避免未解锁前泄露受保护内容的标题结构。用户输入正确密码后，客户端会从解密后的正文 root 显式生成 runtime TOC，并通过统一刷新事件同步桌面、移动端和 Floating TOC；普通文章不依赖全页面 DOM 扫描生成目录。
 
 ## 内容分离
 

@@ -128,7 +128,15 @@
 		},
 		{
 			"patterns": ["src/components/control/FloatingTOC.astro"],
-			"groups": ["lint", "type", "astro", "design", "floating-toc"]
+			"groups": [
+				"lint",
+				"type",
+				"svelte-type",
+				"astro",
+				"design",
+				"floating-tools",
+				"post-detail"
+			]
 		},
 		{
 			"patterns": [
