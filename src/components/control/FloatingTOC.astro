@@ -217,14 +217,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		resolveTocRuntimeState,
 		scrollToHeading,
 	} from "@/components/post-toc/toc-runtime";
+	import { renderFloatingTocItem } from "@/components/post-toc/toc-render";
 	import { onPageLifecycle } from "@/utils/page-lifecycle";
-
-	const escapeHtml = (value: string) =>
-		value
-			.replaceAll("&", "&amp;")
-			.replaceAll("<", "&lt;")
-			.replaceAll(">", "&gt;")
-			.replaceAll('"', "&quot;");
 
 	class FloatingTOC {
 		private btn: HTMLElement | null;
@@ -389,19 +383,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.wrapper?.classList.remove("no-toc");
 			this.wrapper?.classList.add("active-toc");
 			this.headings = state.headings;
-			const html = state.items
-				.map((item) => {
-					const indent = item.level;
-					const badge =
-						item.badgeKind === "text"
-							? `<span class="floating-toc-badge">${escapeHtml(item.badge)}</span>`
-							: item.badgeKind === "square"
-								? '<span class="floating-toc-dot"></span>'
-								: '<span class="floating-toc-dot-small"></span>';
-
-					return `<a href="#${escapeHtml(item.id)}" class="floating-toc-item" style="padding-left: ${0.5 + indent}rem" data-level="${item.level}">${badge}<span class="floating-toc-text">${escapeHtml(item.text)}</span></a>`;
-				})
-				.join("");
+			const html = state.items.map(renderFloatingTocItem).join("");
 
 			if (this.content) {
 				this.content.innerHTML = html;
