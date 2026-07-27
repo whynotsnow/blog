@@ -475,12 +475,15 @@ test("category filter and post TOC follow their owning width budgets", async ({
 		const support = document.querySelector<HTMLElement>(
 			".page-support-region",
 		)!;
+		const supportToc =
+			document.querySelector<HTMLElement>(".post-support__toc")!;
 		const article = document.querySelector<HTMLElement>(
 			".post-detail__content",
 		)!;
 		const gridRect = grid.getBoundingClientRect();
 		const mainRect = main.getBoundingClientRect();
 		const supportRect = support.getBoundingClientRect();
+		const supportTocRect = supportToc.getBoundingClientRect();
 		const articleRect = article.getBoundingClientRect();
 		return {
 			gridRight: gridRect.right,
@@ -488,6 +491,7 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			supportLeft: supportRect.left,
 			supportRight: supportRect.right,
 			supportWidth: supportRect.width,
+			supportTocWidth: supportTocRect.width,
 			articleWidth: articleRect.width,
 		};
 	});
@@ -499,7 +503,29 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	);
 	expect(supportTocGeometry.supportWidth).toBeGreaterThanOrEqual(248 - 1);
 	expect(supportTocGeometry.supportWidth).toBeLessThanOrEqual(272 + 1);
+	expect(supportTocGeometry.supportTocWidth).toBeCloseTo(
+		supportTocGeometry.supportWidth,
+		0,
+	);
 	expect(supportTocGeometry.articleWidth).toBeLessThanOrEqual(768 + 1);
+
+	await page.evaluate(() => {
+		const main = document.querySelector<HTMLElement>(".page-main-content")!;
+		const mainTop = main.getBoundingClientRect().top + window.scrollY;
+		window.scrollTo({
+			top: Math.max(mainTop + main.offsetHeight * 0.65, 0),
+			behavior: "auto",
+		});
+	});
+	await expect
+		.poll(() =>
+			page.locator(".post-support__toc").evaluate((node) => {
+				const rect = node.getBoundingClientRect();
+				const top = Number.parseFloat(getComputedStyle(node).top);
+				return Math.abs(rect.top - top);
+			}),
+		)
+		.toBeLessThanOrEqual(2);
 });
 
 test("layout breakpoint boundaries do not overlap", async ({ page }) => {

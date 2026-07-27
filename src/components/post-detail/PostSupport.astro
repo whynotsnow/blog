@@ -71,6 +71,17 @@ const hasHeadings = headings.length > 0;
 <style>
 	.post-support {
 		--stack-space: var(--space-grid-gap);
+		width: 100%;
+		min-height: 100%;
+		align-items: stretch;
+	}
+
+	:global(.page-support-region:has(.post-support)) {
+		align-self: stretch;
+	}
+
+	:global(.page-support-region:has(.post-support) > .support-module-slot) {
+		height: 100%;
 	}
 
 	@media (max-width: 879px) {
@@ -80,6 +91,7 @@ const hasHeadings = headings.length > 0;
 	}
 
 	.post-support__panel {
+		width: 100%;
 		padding: var(--space-card);
 	}
 
