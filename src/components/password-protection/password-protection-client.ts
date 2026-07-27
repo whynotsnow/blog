@@ -1,5 +1,5 @@
 import type { PasswordProtectionClientConfig } from "./types";
-import { dispatchPostTocRefresh } from "@/components/post-toc/toc-runtime";
+import { refreshRuntimeHeadings } from "@/components/post-toc/toc-runtime";
 
 const CONFIG_ID = "password-protection-config";
 const VERIFY_PREFIX = "MIZUKI-VERIFY:";
@@ -61,7 +61,7 @@ async function runPostDecryptHooks(contentDiv: HTMLElement) {
 		});
 	}
 
-	dispatchPostTocRefresh(contentDiv);
+	refreshRuntimeHeadings(contentDiv);
 
 	if (window.Fancybox?.bind) {
 		window.Fancybox.unbind?.("[data-fancybox]");

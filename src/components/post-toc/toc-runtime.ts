@@ -119,13 +119,15 @@ export function scrollToHeading(
 	return true;
 }
 
-export function dispatchPostTocRefresh(root?: Element) {
+export function refreshRuntimeHeadings(root?: Element) {
 	window.dispatchEvent(
 		new CustomEvent<PostTocRefreshDetail>(POST_TOC_REFRESH_EVENT, {
 			detail: { root },
 		}),
 	);
 }
+
+export const dispatchPostTocRefresh = refreshRuntimeHeadings;
 
 export function onPostTocRefresh(
 	callback: (detail: PostTocRefreshDetail) => void,

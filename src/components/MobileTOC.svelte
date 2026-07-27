@@ -6,7 +6,7 @@
 	import { navigateToPage } from "../utils/navigation-utils";
 	import { panelManager } from "../utils/panel-manager.js";
 	import {
-		TOC_ACTIVE_OFFSET,
+		TocActiveTracker,
 		onPostTocRefresh,
 		resolveTocRuntimeState,
 		scrollToHeading as scrollToPostHeading,
@@ -21,11 +21,11 @@
 		pinned?: boolean;
 	}> = [];
 	let activeId = "";
-	let observer: IntersectionObserver;
 	let isHomePage = false;
 	let swupReady = false;
 
 	let tocHeadings: HTMLElement[] = [];
+	const activeTracker = new TocActiveTracker();
 
 	const togglePanel = async () => {
 		await panelManager.togglePanel("mobile-toc-panel");
@@ -39,6 +39,7 @@
 		const state = resolveTocRuntimeState(runtimeRoot);
 		tocItems = state.items;
 		tocHeadings = state.headings;
+		activeTracker.setState(tocItems, tocHeadings);
 	};
 
 	const generatePostList = () => {
@@ -102,45 +103,13 @@
 	};
 
 	const updateActiveHeading = () => {
-		const scrollTop = window.scrollY;
-
-		let currentActiveId = "";
-		tocHeadings.forEach((heading) => {
-			if (heading.id) {
-				const elementTop = heading.offsetTop - TOC_ACTIVE_OFFSET;
-				if (scrollTop >= elementTop) {
-					currentActiveId = heading.id;
-				}
-			}
-		});
-
-		activeId = currentActiveId;
+		const activeIndex = activeTracker.update();
+		activeId = activeTracker.nodes[activeIndex]?.id ?? "";
 	};
 
-	const setupIntersectionObserver = () => {
-		if (observer) {
-			observer.disconnect();
-		}
-
-		observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						activeId = entry.target.id;
-					}
-				});
-			},
-			{
-				rootMargin: "-80px 0px -80% 0px",
-				threshold: 0,
-			},
-		);
-
-		tocHeadings.forEach((heading) => {
-			if (heading.id) {
-				observer.observe(heading);
-			}
-		});
+	const handleResize = () => {
+		activeTracker.measure();
+		updateActiveHeading();
 	};
 
 	let swupListenersRegistered = false;
@@ -217,7 +186,6 @@
 			generatePostList();
 		} else {
 			generateTOC(runtimeRoot);
-			setupIntersectionObserver();
 			updateActiveHeading();
 		}
 	};
@@ -231,12 +199,11 @@
 
 		// 监听滚动事件作为备用
 		window.addEventListener("scroll", updateActiveHeading);
+		window.addEventListener("resize", handleResize);
 
 		return () => {
-			if (observer) {
-				observer.disconnect();
-			}
 			window.removeEventListener("scroll", updateActiveHeading);
+			window.removeEventListener("resize", handleResize);
 
 			// 清理Swup事件监听器
 			if (

@@ -210,12 +210,12 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 <script>
 	import {
-		TOC_ACTIVE_OFFSET,
 		TOC_SCROLL_OFFSET,
-		getActiveHeadingIndex,
+		TocActiveTracker,
 		onPostTocRefresh,
 		resolveTocRuntimeState,
 		scrollToHeading,
+		type TocItem,
 	} from "@/components/post-toc/toc-runtime";
 	import { renderFloatingTocItem } from "@/components/post-toc/toc-render";
 	import { onPageLifecycle } from "@/utils/page-lifecycle";
@@ -228,6 +228,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		private isOpen = false;
 		private observer: MutationObserver | null = null;
 		private headings: HTMLElement[] = [];
+		private tocItems: TocItem[] = [];
+		private activeTracker = new TocActiveTracker();
 		private initialized = false;
 		private removeTocRefreshListener: (() => void) | null = null;
 		private handleScroll = () => {
@@ -235,6 +237,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.updateActiveHeading();
 		};
 		private handleResize = () => {
+			this.activeTracker.measure();
 			this.updateActiveHeading();
 			this.updateProgress();
 		};
@@ -338,10 +341,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 		private updateActiveHeading() {
 			if (!this.content || this.headings.length === 0) return;
-			const activeIndex = getActiveHeadingIndex(
-				this.headings,
-				TOC_ACTIVE_OFFSET,
-			);
+			const activeIndex = this.activeTracker.update();
 
 			const links = Array.from(
 				this.content.querySelectorAll(".floating-toc-item"),
@@ -375,7 +375,9 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			if (state.items.length === 0) {
 				this.wrapper?.classList.remove("active-toc");
 				this.wrapper?.classList.add("no-toc");
+				this.tocItems = [];
 				this.headings = [];
+				this.activeTracker.setState([], []);
 				if (this.content) this.content.innerHTML = "";
 				return;
 			}
@@ -383,6 +385,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.wrapper?.classList.remove("no-toc");
 			this.wrapper?.classList.add("active-toc");
 			this.headings = state.headings;
+			this.tocItems = state.items;
+			this.activeTracker.setState(this.tocItems, this.headings);
 			const html = state.items.map(renderFloatingTocItem).join("");
 
 			if (this.content) {
