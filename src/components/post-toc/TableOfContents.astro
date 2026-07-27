@@ -1,12 +1,14 @@
 ---
 import type { MarkdownHeading } from "astro";
+import { siteConfig } from "@/config";
 
 export interface Props {
 	class?: string;
 	headings: MarkdownHeading[];
+	deferHeadings?: boolean;
 }
 
-const { headings = [] } = Astro.props;
+const { headings = [], deferHeadings = false } = Astro.props;
 
 let minDepth = 10;
 for (const heading of headings) {
@@ -14,10 +16,129 @@ for (const heading of headings) {
 }
 
 const className = Astro.props.class;
+const maxLevel = siteConfig.toc?.depth || 3;
+const useJapaneseBadge = siteConfig.toc?.useJapaneseBadge || false;
+const japaneseKatakana = [
+	"ア",
+	"イ",
+	"ウ",
+	"エ",
+	"オ",
+	"カ",
+	"キ",
+	"ク",
+	"ケ",
+	"コ",
+	"サ",
+	"シ",
+	"ス",
+	"セ",
+	"ソ",
+	"タ",
+	"チ",
+	"ツ",
+	"テ",
+	"ト",
+	"ナ",
+	"ニ",
+	"ヌ",
+	"ネ",
+	"ノ",
+	"ハ",
+	"ヒ",
+	"フ",
+	"ヘ",
+	"ホ",
+	"マ",
+	"ミ",
+	"ム",
+	"メ",
+	"モ",
+	"ヤ",
+	"ユ",
+	"ヨ",
+	"ラ",
+	"リ",
+	"ル",
+	"レ",
+	"ロ",
+	"ワ",
+	"ヲ",
+	"ン",
+];
+let heading1Count = 1;
+const tocHeadings = deferHeadings
+	? []
+	: headings.filter((heading) => heading.depth < minDepth + maxLevel);
 ---
 
 <table-of-contents class:list={[className, "group hide-scrollbar"]} id="toc">
-	<!-- TOC内容将由JavaScript动态生成 -->
+	{
+		tocHeadings.map((heading) => {
+			const depthClass =
+				heading.depth === minDepth
+					? ""
+					: heading.depth === minDepth + 1
+						? "ml-4"
+						: "ml-8";
+			let badgeContent = "";
+			if (heading.depth === minDepth) {
+				if (
+					useJapaneseBadge &&
+					heading1Count - 1 < japaneseKatakana.length
+				) {
+					badgeContent = japaneseKatakana[heading1Count - 1];
+				} else {
+					badgeContent = heading1Count.toString();
+				}
+				heading1Count++;
+			}
+
+			return (
+				<a
+					href={`#${heading.slug}`}
+					data-depth={heading.depth}
+					data-toc-level={heading.depth - minDepth}
+					class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2"
+				>
+					<div
+						class:list={[
+							"transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
+							depthClass,
+							{
+								"bg-(--toc-badge-bg) text-(--btn-content)":
+									heading.depth === minDepth,
+							},
+						]}
+					>
+						{heading.depth === minDepth && badgeContent}
+						{heading.depth === minDepth + 1 && (
+							<div class="transition w-2 h-2 rounded-[0.1875rem] bg-(--toc-badge-bg)" />
+						)}
+						{heading.depth > minDepth + 1 && (
+							<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10" />
+						)}
+					</div>
+					<div
+						class:list={[
+							"transition text-sm",
+							heading.depth <= minDepth + 1
+								? "text-50"
+								: "text-30",
+						]}
+					>
+						{heading.text}
+					</div>
+				</a>
+			);
+		})
+	}
+	<div
+		id="active-indicator"
+		style="opacity: 0"
+		class="-z-10 absolute bg-(--toc-btn-hover) left-0 right-0 rounded-xl transition-all group-hover:bg-transparent border-2 border-(--toc-btn-hover) group-hover:border-(--toc-btn-active) border-dashed"
+	>
+	</div>
 </table-of-contents>
 
 <script>
@@ -45,6 +166,7 @@ const className = Astro.props.class;
 		lastResolvedHeadingIndex = 0;
 		lastScrollY = 0;
 		scrollRaf = 0;
+		initialized = false;
 
 		constructor() {
 			super();
@@ -412,6 +534,35 @@ const className = Astro.props.class;
 			);
 		}
 
+		resetRuntimeState() {
+			if (this.initialized) {
+				this.sections.forEach((section) => {
+					if (section) this.observer.unobserve(section);
+				});
+				this.tocEl?.removeEventListener(
+					"click",
+					this.handleAnchorClick,
+				);
+				window.removeEventListener("scroll", this.handleScroll);
+				if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
+				if (this.activeIndicatorRetry)
+					window.clearTimeout(this.activeIndicatorRetry);
+			}
+			this.headingIdxMap.clear();
+			this.headings = [];
+			this.sections = [];
+			this.tocEntries = [];
+			this.tocRootIndexes = [];
+			this.active = [];
+			this.anchorNavTarget = null;
+			this.activeIndicatorState = null;
+			this.activeIndicatorStartRect = null;
+			this.lastActiveIndicatorIndex = -1;
+			this.activeIndicatorRetry = 0;
+			this.scrollRaf = 0;
+			this.initialized = false;
+		}
+
 		connectedCallback() {
 			// 优先监听动画结束，兜底定时初始化，确保二次刷新也能正常显示 TOC
 			const element =
@@ -429,6 +580,7 @@ const className = Astro.props.class;
 				element.addEventListener("animationend", tryInit, {
 					once: true,
 				});
+				tryInit();
 				// 兜底：无论动画是否触发，300ms后强制初始化一次
 				setTimeout(tryInit, 300);
 			} else {
@@ -439,8 +591,7 @@ const className = Astro.props.class;
 		}
 
 		init() {
-			// 重新生成TOC内容
-			this.regenerateTOC();
+			this.resetRuntimeState();
 
 			this.tocEl =
 				this.closest<HTMLElement>(".post-support__toc-body") ?? this;
@@ -449,12 +600,14 @@ const className = Astro.props.class;
 				capture: true,
 			});
 
-			this.activeIndicator = document.getElementById("active-indicator");
+			this.activeIndicator =
+				this.querySelector<HTMLElement>("#active-indicator");
 
 			this.tocEntries = Array.from(
 				this.querySelectorAll<HTMLAnchorElement>("a[href^='#']"),
 			);
 
+			this.initialized = true;
 			if (this.tocEntries.length === 0) return;
 
 			this.tocRootIndexes = new Array(this.tocEntries.length);
@@ -495,7 +648,12 @@ const className = Astro.props.class;
 			this.update();
 		}
 
-		regenerateTOC(retryCount = 0) {
+		refreshRuntimeHeadings(root?: Element) {
+			this.regenerateTOC(0, root);
+			this.init();
+		}
+
+		regenerateTOC(retryCount = 0, root?: Element) {
 			// 检查是否为文章页面
 			const isPostPage =
 				window.location.pathname.includes("/posts/") ||
@@ -508,7 +666,7 @@ const className = Astro.props.class;
 				return;
 			}
 			// 从当前页面重新获取标题
-			const contentRoot = this.getContentRoot();
+			const contentRoot = root || this.getContentRoot();
 			if (!contentRoot) {
 				this.innerHTML = "";
 				delete this.dataset.loaded;
@@ -525,7 +683,10 @@ const className = Astro.props.class;
 				}));
 			// 如果没有标题，延迟重试最多3次
 			if (headings.length === 0 && retryCount < 3) {
-				setTimeout(() => this.regenerateTOC(retryCount + 1), 120);
+				setTimeout(
+					() => this.regenerateTOC(retryCount + 1, root),
+					120,
+				);
 				return;
 			}
 			if (headings.length === 0) {
@@ -635,9 +796,9 @@ const className = Astro.props.class;
 		}
 
 		disconnectedCallback() {
-			this.sections.forEach((section) =>
-				this.observer.unobserve(section),
-			);
+			this.sections.forEach((section) => {
+				if (section) this.observer.unobserve(section);
+			});
 			this.observer.disconnect();
 			this.tocEl?.removeEventListener("click", this.handleAnchorClick);
 			window.removeEventListener("scroll", this.handleScroll);

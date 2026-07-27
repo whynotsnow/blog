@@ -5,6 +5,7 @@ const VERIFY_PREFIX = "MIZUKI-VERIFY:";
 
 type TocElement = HTMLElement & {
 	regenerateTOC?: () => void;
+	refreshRuntimeHeadings?: (root?: Element) => void;
 	init?: () => void;
 };
 
@@ -66,7 +67,9 @@ async function runPostDecryptHooks(contentDiv: HTMLElement) {
 	}
 
 	const tocElement = document.querySelector<TocElement>("table-of-contents");
-	if (tocElement?.regenerateTOC && tocElement.init) {
+	if (tocElement?.refreshRuntimeHeadings) {
+		tocElement.refreshRuntimeHeadings(contentDiv);
+	} else if (tocElement?.regenerateTOC && tocElement.init) {
 		tocElement.regenerateTOC();
 		tocElement.init();
 	}

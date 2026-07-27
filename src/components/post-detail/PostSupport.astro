@@ -8,9 +8,10 @@ import type { PostDetailPageProps } from "@/services/post-detail/types";
 interface Props {
 	headings: MarkdownHeading[];
 	support: PostDetailPageProps["support"];
+	deferTocHeadings?: boolean;
 }
 
-const { headings, support } = Astro.props;
+const { headings, support, deferTocHeadings = false } = Astro.props;
 const hasHeadings = headings.length > 0;
 ---
 
@@ -23,7 +24,7 @@ const hasHeadings = headings.length > 0;
 					文章目录
 				</h2>
 				<div class="post-support__toc-body">
-					<TOC headings={headings} />
+					<TOC headings={headings} deferHeadings={deferTocHeadings} />
 				</div>
 			</section>
 		)

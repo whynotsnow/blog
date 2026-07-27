@@ -145,6 +145,8 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 		);
 		for (const entry of entries) {
 			entry.classList.remove("is-collapsed", "visible");
+			entry.style.maxHeight = "5rem";
+			entry.style.opacity = "1";
 		}
 		const activeEntry =
 			entries.find((entry) =>
@@ -158,14 +160,37 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 	});
 
 	await page.waitForTimeout(280);
+	await expect
+		.poll(async () =>
+			page.locator("#toc").evaluate((toc) => {
+				const scrollContainer = toc.closest<HTMLElement>(
+					".post-support__toc-body",
+				)!;
+				return (
+					scrollContainer.scrollHeight >
+					scrollContainer.clientHeight + 1
+				);
+			}),
+		)
+		.toBe(true);
 
 	const expandedTocState = await page.locator("#toc").evaluate((toc) => {
+		const entries = Array.from(
+			toc.querySelectorAll<HTMLAnchorElement>("a"),
+		);
+		for (const entry of entries) {
+			entry.classList.remove("visible");
+		}
+		const activeEntry =
+			entries.find((entry) =>
+				entry.textContent?.includes("Inline HTML"),
+			) ?? entries.at(-1);
+		activeEntry?.classList.add("visible");
 		(
 			toc as HTMLElement & {
 				scrollToActiveHeading?: () => void;
 			}
 		).scrollToActiveHeading?.();
-		const activeEntry = toc.querySelector<HTMLElement>("a.visible");
 		const scrollContainer = toc.closest<HTMLElement>(
 			".post-support__toc-body",
 		)!;
@@ -243,6 +268,10 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 	expect(upwardIndicatorState.style).toContain("bottom:");
 
 	const boundaryState = await page.locator("#toc").evaluate((toc) => {
+		for (const entry of toc.querySelectorAll<HTMLElement>("a")) {
+			entry.style.maxHeight = "";
+			entry.style.opacity = "";
+		}
 		const tocElement = toc as HTMLElement & {
 			headings: HTMLElement[];
 			indicatorPlacement: "top" | "bottom";

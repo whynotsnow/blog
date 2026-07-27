@@ -33,6 +33,8 @@ declare global {
 	interface HTMLElementTagNameMap {
 		"table-of-contents": HTMLElement & {
 			init?: () => void;
+			refreshRuntimeHeadings?: (root?: Element) => void;
+			regenerateTOC?: (retryCount?: number, root?: Element) => void;
 		};
 	}
 
