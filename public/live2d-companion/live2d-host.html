@@ -727,7 +727,7 @@
 				lastIdlePlaybackExpression = "";
 				saveModelIndex(currentModelIndex);
 				postActiveModelState();
-				hideExpressionPanel();
+				requestCloseExpressionPanel();
 				if (widgetInstance && widgetInstance.switchModel) {
 					modelLoaded = false;
 					expressionsReady = false;
@@ -772,6 +772,17 @@
 					"live2d-companion-expression-panel-toggle",
 				);
 				if (button) button.classList.remove("is-active");
+			}
+
+			function requestCloseExpressionPanel() {
+				hideExpressionPanel();
+				parent.postMessage(
+					{
+						type: "l2d-action",
+						action: "closeExpressionPanel",
+					},
+					"*",
+				);
 			}
 
 			function syncExpressionPanelState(open) {
@@ -889,6 +900,7 @@
 						shortcut.icon ||
 							"material-symbols:face-retouching-natural-rounded",
 						function () {
+							requestCloseExpressionPanel();
 							setCompanionExpression(shortcut.name);
 						},
 					);

@@ -965,9 +965,53 @@ test("floating tools controls the Live2D companion preference", async ({
 		pointerEvents: "auto",
 	});
 	await page
-		.frameLocator("#l2d-iframe")
-		.getByRole("button", { name: "全部表情" })
+		.locator(".live2d-companion__expression-panel")
+		.getByRole("button", { name: "X 嘴" })
 		.click();
+	await expect
+		.poll(() =>
+			page
+				.frameLocator("#l2d-iframe")
+				.locator("body")
+				.evaluate(
+					() =>
+						(
+							window as Window & {
+								__lastLive2DExpression?: string;
+							}
+						).__lastLive2DExpression,
+				),
+		)
+		.toBe("x-mouth");
+	await expect(
+		page.locator(".live2d-companion__expression-panel"),
+	).toBeVisible();
+	await expect.poll(getCompanionMenuState).toEqual({
+		opacity: "1",
+		pointerEvents: "auto",
+	});
+	await page
+		.frameLocator("#l2d-iframe")
+		.getByRole("button", { name: "心动" })
+		.click();
+	await expect(
+		page.locator(".live2d-companion__expression-panel"),
+	).toHaveCount(0);
+	await expect
+		.poll(() =>
+			page
+				.frameLocator("#l2d-iframe")
+				.locator("body")
+				.evaluate(
+					() =>
+						(
+							window as Window & {
+								__lastLive2DExpression?: string;
+							}
+						).__lastLive2DExpression,
+				),
+		)
+		.toBe("heart-combo");
 	const watermarkParameter = await page
 		.frameLocator("#l2d-iframe")
 		.locator("canvas")

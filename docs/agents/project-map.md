@@ -37,6 +37,8 @@ flowchart TD
 | `scripts` | Local automation for content sync, post creation, anime data, fonts, and search indexing support. |
 | `docs` | Maintained project documentation. |
 
+Live2D full expression panel interaction contract: selecting an expression inside the full panel keeps the panel open for consecutive previews, while shortcut expressions, model switching, collapse, and other non-panel actions close it because the user's intent has moved away from the full expression list.
+
 ## Service and View Model Boundaries
 
 Large file splitting should preserve the existing service-oriented architecture:

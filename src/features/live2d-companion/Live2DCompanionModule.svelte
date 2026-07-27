@@ -141,16 +141,18 @@
 				"/live2d-companion/models/NOIR/noir.model3.json",
 			]
 		).map((model) => (typeof model === "string" ? { path: model } : model));
-		const modelConfigs = modelEntries.map((model) => ({
-			path: model.path,
-			...(typeof (model.scale ?? live2dCompanionConfig.modelScale) ===
-				"number" && {
-				scale: model.scale ?? live2dCompanionConfig.modelScale,
+		const modelConfigs: Live2DCompanionModelConfig[] = modelEntries.map(
+			(model) => ({
+				path: model.path,
+				...(typeof (model.scale ?? live2dCompanionConfig.modelScale) ===
+					"number" && {
+					scale: model.scale ?? live2dCompanionConfig.modelScale,
+				}),
+				...((model.offset ?? live2dCompanionConfig.modelOffset) && {
+					offset: model.offset ?? live2dCompanionConfig.modelOffset,
+				}),
 			}),
-			...((model.offset ?? live2dCompanionConfig.modelOffset) && {
-				offset: model.offset ?? live2dCompanionConfig.modelOffset,
-			}),
-		}));
+		);
 		const modelProfiles = modelEntries.map((model) => ({
 			path: model.path,
 			...(model.label && { label: model.label }),
@@ -324,7 +326,6 @@
 			type: "live2d-companion-command",
 			command: { type: "expression", name },
 		});
-		closeExpressionPanel();
 	}
 
 	function postInit() {
@@ -422,6 +423,9 @@
 							}
 						: undefined;
 				toggleExpressionPanel(anchor);
+			}
+			if (event.data.action === "closeExpressionPanel") {
+				closeExpressionPanel();
 			}
 		}
 	}
@@ -551,8 +555,9 @@
 		<iframe
 			id="l2d-iframe"
 			title="Live2D companion"
+			role="application"
 			src="/live2d-companion/live2d-host.html"
-			allowtransparency="true"
+			allowtransparency={true}
 			data-width={widgetWidth}
 			style={`height: ${frameHeight}px;`}
 			bind:this={iframeEl}
