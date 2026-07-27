@@ -65,7 +65,7 @@ const tocItems = deferHeadings
 	<div
 		id="active-indicator"
 		style="opacity: 0"
-		class="-z-10 absolute bg-(--toc-btn-hover) left-0 right-0 rounded-xl transition-all group-hover:bg-transparent border-2 border-(--toc-btn-hover) group-hover:border-(--toc-btn-active) border-dashed"
+		class="-z-10 absolute bg-(--toc-btn-hover) left-0 right-0 rounded-xl toc-active-indicator group-hover:bg-transparent border-2 border-(--toc-btn-hover) group-hover:border-(--toc-btn-active) border-dashed"
 	>
 	</div>
 </table-of-contents>
@@ -74,81 +74,68 @@ const tocItems = deferHeadings
 	import { buildTocItems, collectTocHeadings } from "./toc-data";
 	import {
 		TOC_SCROLL_OFFSET,
+		TocActiveTracker,
 		findHeadingById,
 		getPostContentRoot,
 		getTocOptions,
 		onPostTocRefresh,
+		type TocItem,
 	} from "./toc-runtime";
 	import { renderDesktopTocItem } from "./toc-render";
+	import {
+		resolveDesktopTocViewportState,
+		type DesktopTocTransitionType,
+		type DesktopTocViewportState,
+	} from "./toc-desktop-state";
 
 	class TableOfContents extends HTMLElement {
 		tocEl: HTMLElement | null = null;
 		visibleClass = "visible";
-		observer: IntersectionObserver;
 		anchorNavTarget: HTMLElement | null = null;
 		headingIdxMap = new Map<string, number>();
+		tocItems: TocItem[] = [];
 		headings: HTMLElement[] = [];
-		sections: HTMLElement[] = [];
 		tocEntries: HTMLAnchorElement[] = [];
-		tocRootIndexes: number[] = [];
-		active: boolean[] = [];
+		activeTracker = new TocActiveTracker();
 		activeIndicator: HTMLElement | null = null;
 		activeIndicatorState: {
 			top: number;
 			bottom: number;
-			placement: "top" | "bottom";
 		} | null = null;
-		activeIndicatorStartRect: DOMRect | null = null;
-		indicatorPlacement: "top" | "bottom" = "top";
+		viewportState: DesktopTocViewportState | null = null;
 		lastActiveIndicatorIndex = -1;
+		lastAutoScrolledIndex = -1;
+		activeScrollRetry = 0;
 		activeIndicatorRetry = 0;
-		lastResolvedHeadingIndex = 0;
 		lastScrollY = 0;
 		scrollRaf = 0;
+		layoutMeasureRaf = 0;
+		contentResizeObserver: ResizeObserver | null = null;
 		initialized = false;
 
-		constructor() {
-			super();
-			this.observer = new IntersectionObserver(this.markVisibleSection, {
-				threshold: 0,
-			});
-		}
-
-		markVisibleSection = (entries: IntersectionObserverEntry[]) => {
-			entries.forEach((entry) => {
-				const id = entry.target.children[0]?.getAttribute("id");
-				const idx = id ? this.headingIdxMap.get(id) : undefined;
-				if (idx != undefined) this.active[idx] = entry.isIntersecting;
-
-				if (
-					entry.isIntersecting &&
-					this.anchorNavTarget == entry.target.firstChild
-				)
-					this.anchorNavTarget = null;
-			});
-
-			if (!this.active.includes(true)) this.fallback();
-			this.update();
-		};
-
-		toggleActiveHeading = () => {
+		toggleActiveHeading = (currentIndex: number) => {
 			if (!this.tocEntries.length) {
 				this.hideActiveIndicator();
 				return;
 			}
 
-			const currentIndex = this.getCurrentHeadingIndex();
-			const currentRoot = this.tocRootIndexes[currentIndex] ?? 0;
-			const compact = this.classList.contains("toc-compact");
-			const activeIndex = compact ? currentRoot : currentIndex;
-			const activeEntry = this.tocEntries[activeIndex];
-
-			for (const entry of this.tocEntries) {
-				entry.classList.remove(this.visibleClass);
-			}
-			if (!activeEntry || activeEntry.classList.contains("is-collapsed")) {
+			if (currentIndex < 0) {
 				this.hideActiveIndicator();
 				return;
+			}
+
+			const activeIndex = currentIndex;
+			const activeEntry = this.tocEntries[activeIndex];
+
+			if (!activeEntry) {
+				this.hideActiveIndicator();
+				return;
+			}
+			if (activeEntry.classList.contains("is-collapsed")) {
+				return;
+			}
+			for (const entry of this.tocEntries) {
+				entry.classList.remove(this.visibleClass);
 			}
 			activeEntry.classList.add(this.visibleClass);
 			const activeEntryRect = activeEntry.getBoundingClientRect();
@@ -156,22 +143,12 @@ const tocItems = deferHeadings
 				if (!this.activeIndicatorRetry) {
 					this.activeIndicatorRetry = window.setTimeout(() => {
 						this.activeIndicatorRetry = 0;
-						this.toggleActiveHeading();
+						this.toggleActiveHeading(this.getCurrentHeadingIndex());
 						this.scrollToActiveHeading();
 					}, 260);
 				}
 				return;
 			}
-			if (
-				this.activeIndicatorStartRect &&
-				this.lastActiveIndicatorIndex !== -1 &&
-				this.lastActiveIndicatorIndex !== activeIndex
-			) {
-				this.primeActiveIndicatorFromRect(
-					this.activeIndicatorStartRect,
-				);
-			}
-
 			const parentOffset = this.tocEl?.getBoundingClientRect().top || 0;
 			const scrollOffset = this.tocEl?.scrollTop || 0;
 			const top =
@@ -188,31 +165,6 @@ const tocItems = deferHeadings
 			this.lastActiveIndicatorIndex = -1;
 		}
 
-		primeActiveIndicatorFromRect(rect: DOMRect) {
-			if (!this.activeIndicator || !this.tocEl) return;
-
-			const parentOffset = this.tocEl.getBoundingClientRect().top;
-			const scrollOffset = this.tocEl.scrollTop;
-			const top = Math.max(0, rect.top - parentOffset + scrollOffset);
-			const bottom = Math.max(top, rect.bottom - parentOffset + scrollOffset);
-			const height = bottom - top;
-			if (height <= 0) return;
-
-			const placement = this.indicatorPlacement;
-			const scrollHeight = this.tocEl.scrollHeight;
-			const style =
-				placement === "bottom"
-					? `top: auto; bottom: ${Math.max(0, scrollHeight - bottom)}px; height: ${height}px; opacity: 1; transition: none;`
-					: `top: ${top}px; bottom: auto; height: ${height}px; opacity: 1; transition: none;`;
-			this.activeIndicator.setAttribute("style", style);
-			this.activeIndicator.getBoundingClientRect();
-			this.activeIndicatorState = {
-				top,
-				bottom,
-				placement,
-			};
-		}
-
 		moveActiveIndicator(top: number, bottom: number) {
 			if (!this.activeIndicator || !this.tocEl) return;
 
@@ -224,28 +176,11 @@ const tocItems = deferHeadings
 				return;
 			}
 
-			const previous = this.activeIndicatorState;
-			const placement = this.indicatorPlacement;
-			const scrollHeight = this.tocEl.scrollHeight;
-
-			if (previous && previous.placement !== placement) {
-				const currentStyle =
-					placement === "bottom"
-						? `top: auto; bottom: ${Math.max(0, scrollHeight - previous.bottom)}px; height: ${previous.bottom - previous.top}px; opacity: 1; transition: none;`
-						: `top: ${previous.top}px; bottom: auto; height: ${previous.bottom - previous.top}px; opacity: 1; transition: none;`;
-				this.activeIndicator.setAttribute("style", currentStyle);
-				this.activeIndicator.getBoundingClientRect();
-			}
-
-			const style =
-				placement === "bottom"
-					? `top: auto; bottom: ${Math.max(0, scrollHeight - boundedBottom)}px; height: ${height}px; opacity: 1;`
-					: `top: ${boundedTop}px; bottom: auto; height: ${height}px; opacity: 1;`;
+			const style = `top: 0; bottom: auto; height: ${height}px; opacity: 1; transform: translateY(${boundedTop}px);`;
 			this.activeIndicator.setAttribute("style", style);
 			this.activeIndicatorState = {
 				top: boundedTop,
 				bottom: boundedBottom,
-				placement,
 			};
 		}
 
@@ -260,17 +195,18 @@ const tocItems = deferHeadings
 			const bottommost = activeHeading[activeHeading.length - 1];
 			const tocHeight = this.tocEl.clientHeight;
 			const currentScroll = this.tocEl.scrollTop;
-			const safeTop = currentScroll + tocHeight * 0.28;
-			const safeBottom = currentScroll + tocHeight * 0.72;
+			const visibilityPadding = 12;
+			const safeTop = currentScroll + visibilityPadding;
+			const safeBottom = currentScroll + tocHeight - visibilityPadding;
 			const topmostTop = topmost.offsetTop;
 			const bottommostBottom =
 				bottommost.offsetTop + bottommost.offsetHeight;
 
 			let top = currentScroll;
 			if (topmostTop < safeTop) {
-				top = topmostTop - tocHeight * 0.32;
+				top = topmostTop - visibilityPadding;
 			} else if (bottommostBottom > safeBottom) {
-				top = bottommostBottom - tocHeight * 0.68;
+				top = bottommostBottom - tocHeight + visibilityPadding;
 			} else {
 				return;
 			}
@@ -284,25 +220,32 @@ const tocItems = deferHeadings
 
 		update = () => {
 			requestAnimationFrame(() => {
-				this.activeIndicatorStartRect =
-					this.activeIndicator &&
-					Number.parseFloat(
-						getComputedStyle(this.activeIndicator).opacity,
-					) > 0
-						? this.activeIndicator.getBoundingClientRect()
-						: null;
-				this.updateAdaptiveState();
-				this.toggleActiveHeading();
-				this.scrollToActiveHeading();
-				window.setTimeout(this.scrollToActiveHeading, 260);
-				this.activeIndicatorStartRect = null;
+				const currentIndex = this.getCurrentHeadingIndex();
+				const nextState = this.resolveViewportState(currentIndex);
+				const adaptiveChanged = this.updateAdaptiveState(nextState);
+				this.viewportState = nextState;
+				this.toggleActiveHeading(nextState.activeIndex);
+				if (
+					nextState.activeIndex !== this.lastAutoScrolledIndex ||
+					adaptiveChanged
+				) {
+					this.scrollToActiveHeading();
+					this.lastAutoScrolledIndex = nextState.activeIndex;
+					if (adaptiveChanged) {
+						if (this.activeScrollRetry) {
+							window.clearTimeout(this.activeScrollRetry);
+						}
+						this.activeScrollRetry = window.setTimeout(() => {
+							this.activeScrollRetry = 0;
+							this.scrollToActiveHeading();
+						}, 260);
+					}
+				}
 			});
 		};
 
 		handleScroll = () => {
 			const currentScrollY = window.scrollY;
-			this.indicatorPlacement =
-				currentScrollY < this.lastScrollY ? "bottom" : "top";
 			this.lastScrollY = currentScrollY;
 			if (this.scrollRaf) return;
 			this.scrollRaf = requestAnimationFrame(() => {
@@ -311,26 +254,13 @@ const tocItems = deferHeadings
 			});
 		};
 
-		fallback = () => {
-			if (!this.sections.length) return;
-
-			for (let i = 0; i < this.sections.length; i++) {
-				const offsetTop = this.sections[i].getBoundingClientRect().top;
-				const offsetBottom =
-				this.sections[i].getBoundingClientRect().bottom;
-
-				if (
-					this.isInRange(offsetTop, 0, window.innerHeight) ||
-					this.isInRange(offsetBottom, 0, window.innerHeight) ||
-					(offsetTop < 0 && offsetBottom > window.innerHeight)
-				) {
-					this.markActiveHeading(i);
-				} else if (offsetTop > window.innerHeight) break;
-			}
-		};
-
-		markActiveHeading = (idx: number) => {
-			this.active[idx] = true;
+		handleLayoutResize = () => {
+			if (this.layoutMeasureRaf) return;
+			this.layoutMeasureRaf = requestAnimationFrame(() => {
+				this.layoutMeasureRaf = 0;
+				this.activeTracker.measure();
+				this.update();
+			});
 		};
 
 		getCurrentHeadingIndex() {
@@ -340,90 +270,49 @@ const tocItems = deferHeadings
 				? Number.parseFloat(getComputedStyle(stickySupport).top)
 				: Number.NaN;
 			const targetTop = Number.isFinite(stickyTop) ? stickyTop + 24 : 120;
-			let current = 0;
-			const firstHeading = this.headings[0];
-			const firstHeadingTop = firstHeading
-				? firstHeading.getBoundingClientRect().top
-				: Number.NaN;
-			for (let i = 0; i < this.headings.length; i++) {
-				const heading = this.headings[i];
-				if (!heading) continue;
-				if (heading.getBoundingClientRect().top <= targetTop) {
-					current = i;
-				} else {
-					break;
-				}
-			}
-			if (this.indicatorPlacement === "bottom") {
-				const nextRoot = this.tocRootIndexes.find(
-					(rootIndex) => rootIndex > current,
-				);
-				const nextRootHeading =
-					typeof nextRoot === "number"
-						? this.headings[nextRoot]
-						: undefined;
-				if (
-					typeof nextRoot === "number" &&
-					nextRootHeading &&
-					nextRootHeading.getBoundingClientRect().top <=
-						targetTop + 180
-				) {
-					current = nextRoot;
-				}
-			}
-			if (
-				current === 0 &&
-				this.lastResolvedHeadingIndex > 0 &&
-				Number.isFinite(firstHeadingTop) &&
-				firstHeadingTop > targetTop &&
-				window.scrollY > 1
-			) {
-				return this.lastResolvedHeadingIndex;
-			}
-			if (current > 0) {
-				this.lastResolvedHeadingIndex = current;
-				return current;
-			}
-
-			const firstActive = this.active.findIndex(Boolean);
-			if (firstActive > 0) {
-				this.lastResolvedHeadingIndex = firstActive;
-				return firstActive;
-			}
-			this.lastResolvedHeadingIndex = current;
-			return current;
+			return this.activeTracker.update(window.scrollY, targetTop);
 		}
 
-		isNearArticleEnd() {
-			const article =
-				document.getElementById("post-container") ||
-				document.querySelector<HTMLElement>(".post-detail__content");
-			if (!article) return false;
-			const rect = article.getBoundingClientRect();
-			return rect.bottom <= window.innerHeight + 180;
+		resolveViewportState(
+			currentIndex: number,
+			reason?: DesktopTocTransitionType,
+		) {
+			return resolveDesktopTocViewportState({
+				graph: this.activeTracker.graph,
+				activeIndex: currentIndex,
+				previous: this.viewportState,
+				scrollDirection: this.activeTracker.scrollDirection,
+				reason,
+			});
 		}
 
-		updateAdaptiveState() {
-			if (!this.tocEntries.length) return;
-
-			const currentIndex = this.getCurrentHeadingIndex();
-			const currentRoot = this.tocRootIndexes[currentIndex] ?? 0;
-			const compact = this.isNearArticleEnd();
-			this.classList.toggle("toc-compact", compact);
+		updateAdaptiveState(state: DesktopTocViewportState) {
+			if (!this.tocEntries.length) return false;
+			const previousKey = this.dataset.tocViewportKey ?? "";
+			const nextKey = [
+				state.activeIndex,
+				state.activeRootIndex,
+				state.transitionType,
+				...state.visibleIndexes,
+			].join(":");
+			const adaptiveChanged =
+				previousKey !== "" && previousKey !== nextKey;
+			this.dataset.tocViewportKey = nextKey;
+			this.dataset.tocTransition = state.transitionType;
+			this.dataset.tocPhase = state.phase;
+			this.classList.remove("toc-compact");
 
 			for (let i = 0; i < this.tocEntries.length; i++) {
 				const entry = this.tocEntries[i];
-				const level = Number(entry.dataset.tocLevel ?? 0);
-				const rootIndex = this.tocRootIndexes[i] ?? 0;
-				const isCurrentBranch = rootIndex === currentRoot;
-				const isReadEntry = i < currentIndex && i !== currentRoot;
-				const shouldCollapse =
-					level > 0 && (compact || !isCurrentBranch);
+				const isCurrentBranch = state.branchIndexes.has(i);
+				const isReadEntry = state.readIndexes.has(i);
+				const shouldCollapse = !state.visibleIndexes.has(i);
 
 				entry.classList.toggle("is-current-branch", isCurrentBranch);
 				entry.classList.toggle("is-read", isReadEntry);
 				entry.classList.toggle("is-collapsed", shouldCollapse);
 			}
+			return adaptiveChanged;
 		}
 
 		handleAnchorClick = (event: Event) => {
@@ -460,40 +349,41 @@ const tocItems = deferHeadings
 			}
 		};
 
-		isInRange(value: number, min: number, max: number) {
-			return min < value && value < max;
-		}
-
 		getContentRoot() {
 			return getPostContentRoot();
 		}
 
 		resetRuntimeState() {
 			if (this.initialized) {
-				this.sections.forEach((section) => {
-					if (section) this.observer.unobserve(section);
-				});
 				this.tocEl?.removeEventListener(
 					"click",
 					this.handleAnchorClick,
 				);
 				window.removeEventListener("scroll", this.handleScroll);
+				window.removeEventListener("resize", this.handleLayoutResize);
+				this.contentResizeObserver?.disconnect();
 				if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
+				if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
+				if (this.activeScrollRetry)
+					window.clearTimeout(this.activeScrollRetry);
 				if (this.activeIndicatorRetry)
 					window.clearTimeout(this.activeIndicatorRetry);
 			}
 			this.headingIdxMap.clear();
+			this.tocItems = [];
 			this.headings = [];
-			this.sections = [];
 			this.tocEntries = [];
-			this.tocRootIndexes = [];
-			this.active = [];
+			this.activeTracker.setState([], []);
 			this.anchorNavTarget = null;
 			this.activeIndicatorState = null;
-			this.activeIndicatorStartRect = null;
+			this.viewportState = null;
 			this.lastActiveIndicatorIndex = -1;
+			this.lastAutoScrolledIndex = -1;
+			this.activeScrollRetry = 0;
 			this.activeIndicatorRetry = 0;
 			this.scrollRaf = 0;
+			this.layoutMeasureRaf = 0;
+			this.contentResizeObserver = null;
 			this.initialized = false;
 		}
 
@@ -544,16 +434,6 @@ const tocItems = deferHeadings
 			this.initialized = true;
 			if (this.tocEntries.length === 0) return;
 
-			this.tocRootIndexes = new Array(this.tocEntries.length);
-			let currentRootIndex = 0;
-			for (let i = 0; i < this.tocEntries.length; i++) {
-				if (Number(this.tocEntries[i].dataset.tocLevel ?? 0) === 0) {
-					currentRootIndex = i;
-				}
-				this.tocRootIndexes[i] = currentRootIndex;
-			}
-
-			this.sections = new Array(this.tocEntries.length);
 			this.headings = new Array(this.tocEntries.length);
 			const contentRoot = this.getContentRoot();
 			for (let i = 0; i < this.tocEntries.length; i++) {
@@ -565,25 +445,43 @@ const tocItems = deferHeadings
 						"h1, h2, h3, h4, h5, h6",
 					) ?? [],
 				).find((element) => element.id === id);
-				const section = heading?.parentElement;
-				if (
-					heading instanceof HTMLElement &&
-					section instanceof HTMLElement
-				) {
+				if (heading instanceof HTMLElement) {
 					this.headings[i] = heading;
-					this.sections[i] = section;
 					this.headingIdxMap.set(id, i);
 				}
 			}
-			this.active = new Array(this.tocEntries.length).fill(false);
+			this.tocItems = this.tocEntries.map((entry) => {
+				const level = Number(entry.dataset.tocLevel ?? 0);
+				const depth = Number(entry.dataset.depth ?? level + 1);
+				return {
+					id: decodeURIComponent(entry.hash?.substring(1)),
+					text: entry.textContent?.replace(/\s+/g, " ").trim() ?? "",
+					depth,
+					level,
+					badge: "",
+					badgeKind: level === 0 ? "text" : level === 1 ? "square" : "dot",
+				};
+			});
+			this.activeTracker.setState(this.tocItems, this.headings);
+			this.viewportState = this.resolveViewportState(
+				this.activeTracker.activeIndex,
+				"init",
+			);
 			this.lastScrollY = window.scrollY;
 
-			this.sections.forEach((section) => this.observer.observe(section));
 			window.addEventListener("scroll", this.handleScroll, {
 				passive: true,
 			});
+			window.addEventListener("resize", this.handleLayoutResize, {
+				passive: true,
+			});
+			if (contentRoot && "ResizeObserver" in window) {
+				this.contentResizeObserver = new ResizeObserver(
+					this.handleLayoutResize,
+				);
+				this.contentResizeObserver.observe(contentRoot);
+			}
 
-			this.fallback();
 			this.update();
 		}
 
@@ -629,18 +527,19 @@ const tocItems = deferHeadings
 			const tocHTML = tocItems.map(renderDesktopTocItem).join("");
 			this.innerHTML =
 				tocHTML +
-				'<div id="active-indicator" style="opacity: 0" class="-z-10 absolute bg-(--toc-btn-hover) left-0 right-0 rounded-xl transition-all group-hover:bg-transparent border-2 border-(--toc-btn-hover) group-hover:border-(--toc-btn-active) border-dashed"></div>';
+				'<div id="active-indicator" style="opacity: 0" class="-z-10 absolute bg-(--toc-btn-hover) left-0 right-0 rounded-xl toc-active-indicator group-hover:bg-transparent border-2 border-(--toc-btn-hover) group-hover:border-(--toc-btn-active) border-dashed"></div>';
 			this.dataset.loaded = "true";
 		}
 
 		disconnectedCallback() {
-			this.sections.forEach((section) => {
-				if (section) this.observer.unobserve(section);
-			});
-			this.observer.disconnect();
 			this.tocEl?.removeEventListener("click", this.handleAnchorClick);
 			window.removeEventListener("scroll", this.handleScroll);
+			window.removeEventListener("resize", this.handleLayoutResize);
+			this.contentResizeObserver?.disconnect();
 			if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
+			if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
+			if (this.activeScrollRetry)
+				window.clearTimeout(this.activeScrollRetry);
 			if (this.activeIndicatorRetry)
 				window.clearTimeout(this.activeIndicatorRetry);
 		}
@@ -686,6 +585,19 @@ const tocItems = deferHeadings
 
 	table-of-contents#toc :global(a.is-current-branch) {
 		color: var(--text-primary);
+	}
+
+	table-of-contents#toc :global(.toc-active-indicator) {
+		top: 0;
+		bottom: auto;
+		transform: translateY(0);
+		will-change: transform, height, opacity;
+		transition:
+			transform var(--motion-normal) var(--motion-ease-standard),
+			height var(--motion-normal) var(--motion-ease-standard),
+			opacity var(--motion-fast) var(--motion-ease-standard),
+			background-color var(--motion-fast) var(--motion-ease-standard),
+			border-color var(--motion-fast) var(--motion-ease-standard);
 	}
 
 	table-of-contents#toc :global(a.is-collapsed) {
