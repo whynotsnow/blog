@@ -12,6 +12,10 @@ const shouldRun = args.includes("--run");
 const json = args.includes("--json");
 const staged = args.includes("--staged");
 const checkCoverage = args.includes("--check-coverage");
+const modeEquals = args.find((argument) => argument.startsWith("--mode="));
+const mode =
+	modeEquals?.slice("--mode=".length) ?? (process.env.CI ? "ci" : "local");
+const ciMode = mode === "ci";
 const baseIndex = args.indexOf("--base");
 const baseEquals = args.find((argument) => argument.startsWith("--base="));
 const base =
@@ -20,6 +24,11 @@ const explicitFiles = args
 	.filter((argument) => argument.startsWith("--file="))
 	.map((argument) => argument.slice("--file=".length));
 let unavailableBase;
+
+if (!["local", "ci"].includes(mode)) {
+	console.error(`[test-impact] Unsupported mode: ${mode}`);
+	process.exit(1);
+}
 
 function gitLines(gitArgs) {
 	return execFileSync("git", gitArgs, { cwd: root, encoding: "utf8" })
@@ -113,38 +122,65 @@ const files = [...new Set(changedFiles())].sort();
 const selected = new Set();
 const reasons = new Map();
 const unmatched = [];
+const riskEscalations = [];
+
+function addGroup(group, reason) {
+	if (group === "full" && !ciMode) {
+		riskEscalations.push({
+			reason: "full validation recommended outside local mode",
+			files: [reason],
+		});
+		return;
+	}
+	selected.add(group);
+	const groupReasons = reasons.get(group) ?? [];
+	groupReasons.push(reason);
+	reasons.set(group, groupReasons);
+}
+
+function addRisk(reason, files) {
+	riskEscalations.push({ reason, files });
+}
 
 if (unavailableBase) {
-	selected.add("full");
-	reasons.set("full", [`unavailable base ${unavailableBase}`]);
+	if (ciMode) {
+		addGroup("full", `unavailable base ${unavailableBase}`);
+	} else {
+		addRisk(`unavailable base ${unavailableBase}`, []);
+	}
 }
 
 for (const file of files) {
 	const fileRules = matchingRules(file);
 	if (!fileRules.length) {
 		unmatched.push(file);
-		for (const group of impactMap.fallback) selected.add(group);
+		addRisk("unclassified path", [file]);
+		for (const group of ciMode
+			? (impactMap.ciFallback ?? impactMap.fallback)
+			: impactMap.fallback)
+			addGroup(group, file);
 		continue;
 	}
 	for (const rule of fileRules) {
-		for (const group of rule.groups) {
-			selected.add(group);
-			const groupReasons = reasons.get(group) ?? [];
-			groupReasons.push(file);
-			reasons.set(group, groupReasons);
+		const groups = ciMode ? (rule.ciGroups ?? rule.groups) : rule.groups;
+		if (!ciMode && rule.ciGroups?.includes("full")) {
+			addRisk("ci full validation rule", [file]);
 		}
+		for (const group of groups) addGroup(group, file);
 	}
 }
 
-if (selected.has("full")) {
+if (ciMode && selected.has("full")) {
 	selected.clear();
 	selected.add("full");
 }
 
 const plan = {
+	mode,
 	files,
 	groups: [...selected],
 	unmatched,
+	riskEscalations,
 	commands: [...selected].map((group) => ({
 		group,
 		command: impactMap.groups[group],
@@ -166,7 +202,15 @@ if (json) {
 	}
 	if (unmatched.length) {
 		console.log(
-			`[test-impact] Unclassified paths escalated to full: ${unmatched.join(", ")}`,
+			`[test-impact] Unclassified paths require CI/full review: ${unmatched.join(", ")}`,
+		);
+	}
+	for (const escalation of riskEscalations) {
+		const suffix = escalation.files.length
+			? `: ${escalation.files.join(", ")}`
+			: "";
+		console.log(
+			`[test-impact] Full validation risk (${escalation.reason})${suffix}`,
 		);
 	}
 }

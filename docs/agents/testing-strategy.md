@@ -13,7 +13,7 @@ This document is the normative test-selection contract for agents. Validation mu
 
 Path mapping is a conservative aid, not a substitute for reasoning. A change to a shared API can affect consumers outside the directory containing the edited file.
 
-Use `pnpm test:plan` to inspect the current working-tree plan and `pnpm test:affected` to execute it. In CI, pass the pull request base SHA to `scripts/test-impact.mjs --base <sha>`. The versioned rules live in `tests/impact-map.json`; unclassified paths select `full`.
+Use `pnpm test:plan` to inspect the current working-tree plan and `pnpm test:affected` to execute the local-mode selection. Local mode does not execute `verify:full`; paths that require full-regression confidence are reported as `riskEscalations` for CI or explicit manual follow-up. In CI, pass `--mode=ci` and the pull request base SHA to `scripts/test-impact.mjs --mode=ci --base <sha>`. The versioned rules live in `tests/impact-map.json`; unclassified paths select `full` only in CI mode.
 
 ## Validation Layers
 
@@ -47,7 +47,7 @@ Prefer L2 or L3 over browser coverage for deterministic pure logic. Use L4 or L5
 Run L6 when any condition applies:
 
 - `src/services/core`, content schema, shared URL contracts, global layout/navigation lifecycle, Design foundations, or global style entry points change in a cross-cutting way;
-- package dependencies, lockfiles, Astro/TypeScript/Playwright configuration, build orchestration, impact mapping, or CI selection logic changes;
+- package dependencies, lockfiles, Astro/TypeScript/Playwright configuration, build orchestration, impact mapping, or CI selection logic changes in CI mode or when explicitly validating before release;
 - three or more unrelated feature owners are affected;
 - a changed runtime path is not classified by the impact map;
 - selected validation reveals an unexpected cross-module dependency;
@@ -86,7 +86,7 @@ Do not place unrelated behavior in a convenient existing spec. Avoid duplicating
 | `pnpm build:astro` | Content/font preparation plus the Astro build stage, without Pagefind |
 | `pnpm verify:full` | Static checks, fast tests, full E2E, and complete production build |
 
-Pre-commit uses staged-file categories for local static gates and never runs browser tests. Pull request and ordinary `main` push CI consume the same impact plan. Weekly scheduled runs, manual full runs, releases, and risk-based escalation keep L6 as the mapping safety net. `pnpm test:impact:check` guards `src/features/**` and `tests/e2e/**` so newly added paths cannot silently fall through to full validation.
+Pre-commit uses staged-file categories for local static gates and never runs browser tests. Local `test:plan` and `test:affected` favor fast, determined checks and report full-regression recommendations as risks instead of executing `verify:full`. Pull request and ordinary `main` push CI consume the CI-mode impact plan. Weekly scheduled runs, manual full runs, releases, and risk-based escalation keep L6 as the mapping safety net. `pnpm test:impact:check` guards `src/features/**` and `tests/e2e/**` so newly added paths cannot silently fall through to full validation in CI.
 
 ## Handoff Evidence
 

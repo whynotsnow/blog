@@ -41,13 +41,13 @@ jobs:
                   node scripts/test-impact.mjs --check-coverage
                   case "$EVENT_NAME" in
                     pull_request)
-                      node scripts/test-impact.mjs --base "$BASE_SHA" --json > test-plan.json
+                      node scripts/test-impact.mjs --mode=ci --base "$BASE_SHA" --json > test-plan.json
                       ;;
                     push)
                       if [[ -z "$BEFORE_SHA" || "$BEFORE_SHA" =~ ^0+$ ]]; then
                         echo '{"groups":["full"],"files":[],"unmatched":[],"commands":[]}' > test-plan.json
                       else
-                        node scripts/test-impact.mjs --base "$BEFORE_SHA" --json > test-plan.json
+                        node scripts/test-impact.mjs --mode=ci --base "$BEFORE_SHA" --json > test-plan.json
                       fi
                       ;;
                     *)

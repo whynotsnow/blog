@@ -96,13 +96,15 @@ pnpm test:smoke
 pnpm test:e2e:full
 pnpm test:plan
 pnpm test:affected
+pnpm test:plan:ci
+pnpm test:affected:ci
 pnpm test:impact:check
 pnpm format:check
 pnpm lint
 pnpm lint:md
 ```
 
-先运行 `pnpm test:plan` 查看改动影响范围；需要自动执行选择结果时运行 `pnpm test:affected`。`pnpm test:impact:check` 会确认 `src/features/**` 与 `tests/e2e/**` 均已录入 Impact Map，避免新增模块静默回退到全量验证。`pnpm type-check` 检查纯 TypeScript 项目，`pnpm type-check:svelte` 使用 `svelte-check` 检查 `.svelte` 组件脚本、模板和 Props 诊断，`pnpm type-check:tests` 检查 Unit、Integration、Playwright 和测试配置。`pnpm test:fast` 运行 Vitest 快速层。
+先运行 `pnpm test:plan` 查看本地快速模式的改动影响范围；需要自动执行选择结果时运行 `pnpm test:affected`。本地模式不会自动执行 `verify:full`，无法分类或建议完整回归的路径会以风险提示输出。CI 或远程 Push 场景使用 `pnpm test:plan:ci` 与 `pnpm test:affected:ci`，此时高风险路径会升级到完整回归。`pnpm test:impact:check` 会确认 `src/features/**` 与 `tests/e2e/**` 均已录入 Impact Map，避免新增模块在 CI 中静默回退到全量验证。`pnpm type-check` 检查纯 TypeScript 项目，`pnpm type-check:svelte` 使用 `svelte-check` 检查 `.svelte` 组件脚本、模板和 Props 诊断，`pnpm type-check:tests` 检查 Unit、Integration、Playwright 和测试配置。`pnpm test:fast` 运行 Vitest 快速层。
 
 需要浏览器冒烟测试时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。该命令只运行关键路由；完整浏览器回归使用 `pnpm test:e2e:full`。Playwright 会自动启动 Astro dev server，不需要手动运行 `pnpm dev`。
 
@@ -139,7 +141,7 @@ Markdown 规范检查由 `markdownlint-cli2` 单独处理，不会自动重写�
 5. Design、Astro/内容、source TypeScript 和 Svelte component 门禁仅在对应范围变化时运行；Astro 检查会把 `hint` 级诊断也作为提交阻塞项，Svelte component 门禁使用 `svelte-check --tsconfig ./tsconfig.json --threshold error` 对齐 VSCode Svelte Language Server 的 error 级组件诊断。
 6. 测试和测试配置变化时运行独立的 `tsconfig.tests.json` 检查；`tests/tsconfig.json` 只服务编辑器项目发现，继承同一套测试类型配置。
 
-GitHub Pull Request 与普通 `main` Push CI 都使用 `tests/impact-map.json`，按 Git Diff 选择 Quality、Fast Tests、Browser Tests 和 Astro Build。依赖、测试基础设施、跨模块基础设施、未分类路径等高风险改动仍会升级为全量验证；每周定时任务和手动 Workflow Dispatch 固定运行全部门禁，作为影响映射的兜底。
+GitHub Pull Request 与普通 `main` Push CI 都使用 `tests/impact-map.json` 的 CI 模式，按 Git Diff 选择 Quality、Fast Tests、Browser Tests 和 Astro Build。依赖、测试基础设施、跨模块基础设施、未分类路径等高风险改动在 CI 中仍会升级为全量验证；每周定时任务和手动 Workflow Dispatch 固定运行全部门禁，作为影响映射的兜底。
 
 也可以手动运行：
 

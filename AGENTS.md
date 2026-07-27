@@ -59,8 +59,10 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm format:check`: check formatting.
 - `pnpm format`: format the repository according to the local Prettier config.
 - `pnpm precommit`: run the same pre-commit gate as the Git hook.
-- `pnpm test:plan`: print the validation selected for current changes without executing it.
-- `pnpm test:affected`: execute the validation selected by `tests/impact-map.json`.
+- `pnpm test:plan`: print the local-mode validation selected for current changes without executing it; full-regression needs are reported as risks, not executed.
+- `pnpm test:affected`: execute the local-mode validation selected by `tests/impact-map.json`.
+- `pnpm test:plan:ci`: print the CI-mode validation plan where high-risk or unclassified paths can select `verify:full`.
+- `pnpm test:affected:ci`: execute the CI-mode validation plan.
 - `pnpm test:impact:check`: ensure guarded Feature and E2E paths are classified by the impact map.
 - `pnpm test:fast`: run Unit and Integration tests.
 - `pnpm test:smoke`: run the critical-route Playwright smoke suite.

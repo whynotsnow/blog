@@ -303,7 +303,15 @@
 				".nvmrc",
 				".github/workflows/**"
 			],
-			"groups": ["full"]
+			"groups": [
+				"lint",
+				"type",
+				"svelte-type",
+				"test-type",
+				"unit",
+				"astro"
+			],
+			"ciGroups": ["full"]
 		},
 		{
 			"patterns": [
@@ -312,8 +320,10 @@
 				"scripts/init-content-repo.js",
 				"scripts/fonts/**"
 			],
-			"groups": ["full"]
+			"groups": ["lint", "integration", "astro-build"],
+			"ciGroups": ["full"]
 		}
 	],
-	"fallback": ["full"]
+	"fallback": [],
+	"ciFallback": ["full"]
 }

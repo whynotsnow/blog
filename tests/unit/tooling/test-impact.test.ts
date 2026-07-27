@@ -4,13 +4,19 @@ import { describe, expect, it } from "vitest";
 type ImpactPlan = {
 	groups: string[];
 	unmatched: string[];
+	riskEscalations: Array<{ reason: string; files: string[] }>;
 };
 
-function planFor(file: string): ImpactPlan {
+function planFor(file: string, extraArgs: string[] = []): ImpactPlan {
 	return JSON.parse(
 		execFileSync(
 			process.execPath,
-			["scripts/test-impact.mjs", `--file=${file}`, "--json"],
+			[
+				"scripts/test-impact.mjs",
+				`--file=${file}`,
+				"--json",
+				...extraArgs,
+			],
 			{ cwd: process.cwd(), encoding: "utf8" },
 		),
 	) as ImpactPlan;
@@ -36,11 +42,32 @@ describe("impact-based validation selection", () => {
 		expect(testPlan.unmatched).toEqual([]);
 	});
 
-	it("keeps cross-cutting toolchain changes on full validation", () => {
-		expect(planFor("playwright.config.ts").groups).toEqual(["full"]);
+	it("keeps local toolchain changes on fast checks with a CI full risk", () => {
+		const plan = planFor("playwright.config.ts");
+
+		expect(plan.groups).toEqual([
+			"lint",
+			"type",
+			"svelte-type",
+			"test-type",
+			"unit",
+			"astro",
+		]);
+		expect(plan.riskEscalations).toEqual([
+			{
+				reason: "ci full validation rule",
+				files: ["playwright.config.ts"],
+			},
+		]);
 	});
 
-	it("falls back to full validation when the base commit is unavailable", () => {
+	it("keeps CI toolchain changes on full validation", () => {
+		expect(planFor("playwright.config.ts", ["--mode=ci"]).groups).toEqual([
+			"full",
+		]);
+	});
+
+	it("marks unavailable local bases as a full-validation risk", () => {
 		const plan = JSON.parse(
 			execFileSync(
 				process.execPath,
@@ -51,11 +78,47 @@ describe("impact-based validation selection", () => {
 				],
 				{ cwd: process.cwd(), encoding: "utf8" },
 			),
+		) as ImpactPlan;
+
+		expect(plan.groups).toEqual([]);
+		expect(plan.riskEscalations).toEqual([
+			{
+				reason: "unavailable base 0000000000000000000000000000000000000001",
+				files: [],
+			},
+		]);
+	});
+
+	it("falls back to full validation when the CI base commit is unavailable", () => {
+		const plan = JSON.parse(
+			execFileSync(
+				process.execPath,
+				[
+					"scripts/test-impact.mjs",
+					"--mode=ci",
+					"--base=0000000000000000000000000000000000000001",
+					"--json",
+				],
+				{ cwd: process.cwd(), encoding: "utf8" },
+			),
 		) as { commands: Array<{ reasons: string[] }>; groups: string[] };
 
 		expect(plan.groups).toEqual(["full"]);
 		expect(plan.commands[0]?.reasons).toEqual([
 			"unavailable base 0000000000000000000000000000000000000001",
+		]);
+	});
+
+	it("keeps unclassified local paths as a risk without executing full", () => {
+		const plan = planFor("unmapped/file.txt");
+
+		expect(plan.groups).toEqual([]);
+		expect(plan.unmatched).toEqual(["unmapped/file.txt"]);
+		expect(plan.riskEscalations).toEqual([
+			{
+				reason: "unclassified path",
+				files: ["unmapped/file.txt"],
+			},
 		]);
 	});
 
