@@ -445,13 +445,23 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	await expect(filterOptions).toBeVisible();
 
 	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.evaluate(() => {
+		localStorage.setItem(
+			"site-notice:acknowledged:site-building-2026-07",
+			"true",
+		);
+		localStorage.setItem(
+			"site-notice:acknowledged:site-content-updates-2026-07",
+			"true",
+		);
+	});
 	await gotoPage(page, "/posts/markdown-tutorial/");
 	await expect(page.locator(".sidebar-toc-region--container")).toHaveCount(0);
 	await expect(page.locator(".post-support__toc")).toBeVisible();
 	await expect(
 		page.locator(".post-support__toc table-of-contents#toc a").first(),
 	).toBeVisible();
-	await page.locator(".post-support__toc").evaluate((node) => {
+	await page.locator(".post-support").evaluate((node) => {
 		const rect = node.getBoundingClientRect();
 		const top = Number.parseFloat(getComputedStyle(node).top);
 		window.scrollTo({
@@ -461,7 +471,7 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	});
 	await expect
 		.poll(() =>
-			page.locator(".post-support__toc").evaluate((node) => {
+			page.locator(".post-support").evaluate((node) => {
 				const rect = node.getBoundingClientRect();
 				const top = Number.parseFloat(getComputedStyle(node).top);
 				return Math.abs(rect.top - top);
@@ -510,22 +520,160 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	expect(supportTocGeometry.articleWidth).toBeLessThanOrEqual(768 + 1);
 
 	await page.evaluate(() => {
-		const main = document.querySelector<HTMLElement>(".page-main-content")!;
-		const mainTop = main.getBoundingClientRect().top + window.scrollY;
+		const laterHeading = Array.from(
+			document.querySelectorAll<HTMLElement>(".markdown-content h2"),
+		).find((heading) => heading.textContent?.includes("Inline HTML"));
+		const target =
+			laterHeading ||
+			document.querySelector<HTMLElement>(".page-main-content")!;
+		const targetTop = target.getBoundingClientRect().top + window.scrollY;
+		const stickyTop = Number.parseFloat(
+			getComputedStyle(
+				document.querySelector<HTMLElement>(".post-support")!,
+			).top,
+		);
 		window.scrollTo({
-			top: Math.max(mainTop + main.offsetHeight * 0.65, 0),
+			top: Math.max(targetTop - stickyTop - 24, 0),
 			behavior: "auto",
 		});
 	});
 	await expect
 		.poll(() =>
-			page.locator(".post-support__toc").evaluate((node) => {
+			page
+				.locator("#toc")
+				.evaluate((toc) =>
+					Array.from(toc.querySelectorAll("a.visible")).some(
+						(entry) => entry.textContent?.includes("Inline HTML"),
+					),
+				),
+		)
+		.toBe(true);
+
+	await page.evaluate(() => {
+		const spanHeading = Array.from(
+			document.querySelectorAll<HTMLElement>(".markdown-content h2"),
+		).find((heading) => heading.textContent?.includes("Span Elements"));
+		const target =
+			spanHeading ||
+			document.querySelector<HTMLElement>(".page-main-content")!;
+		const targetTop = target.getBoundingClientRect().top + window.scrollY;
+		const stickyTop = Number.parseFloat(
+			getComputedStyle(
+				document.querySelector<HTMLElement>(".post-support")!,
+			).top,
+		);
+		window.scrollTo({
+			top: Math.max(targetTop - stickyTop - 24, 0),
+			behavior: "auto",
+		});
+	});
+	await expect
+		.poll(async () => {
+			const stickyDelta = await page
+				.locator(".post-support")
+				.evaluate((node) => {
+					const rect = node.getBoundingClientRect();
+					const top = Number.parseFloat(getComputedStyle(node).top);
+					return Math.abs(rect.top - top);
+				});
+			const readEntries = await page
+				.locator("#toc")
+				.evaluate((toc) => toc.querySelectorAll("a.is-read").length);
+			return stickyDelta <= 2 && readEntries > 0;
+		})
+		.toBe(true);
+
+	await expect
+		.poll(() =>
+			page.locator(".post-support").evaluate((node) => {
 				const rect = node.getBoundingClientRect();
 				const top = Number.parseFloat(getComputedStyle(node).top);
 				return Math.abs(rect.top - top);
 			}),
 		)
 		.toBeLessThanOrEqual(2);
+
+	const adaptiveTocState = await page.locator("#toc").evaluate((toc) => {
+		const childEntries = Array.from(
+			toc.querySelectorAll<HTMLAnchorElement>("a[data-toc-level='1']"),
+		);
+		return {
+			collapsedChildren: childEntries.filter((entry) =>
+				entry.classList.contains("is-collapsed"),
+			).length,
+			readEntries: toc.querySelectorAll("a.is-read").length,
+			currentBranchEntries: toc.querySelectorAll("a.is-current-branch")
+				.length,
+		};
+	});
+	expect(adaptiveTocState.collapsedChildren).toBeGreaterThan(0);
+	expect(adaptiveTocState.readEntries).toBeGreaterThan(0);
+	expect(adaptiveTocState.currentBranchEntries).toBeGreaterThan(0);
+
+	await page.evaluate(() => {
+		const article = document.querySelector<HTMLElement>("#post-container")!;
+		const articleTop = article.getBoundingClientRect().top + window.scrollY;
+		window.scrollTo({
+			top: Math.max(
+				articleTop + article.offsetHeight - window.innerHeight + 120,
+				0,
+			),
+			behavior: "auto",
+		});
+	});
+	await expect(page.locator("#toc")).toHaveClass(/toc-compact/);
+	const compactTocState = await page.locator("#toc").evaluate((toc) => {
+		const childEntries = Array.from(
+			toc.querySelectorAll<HTMLAnchorElement>(
+				"a[data-toc-level]:not([data-toc-level='0'])",
+			),
+		);
+		return childEntries.every((entry) =>
+			entry.classList.contains("is-collapsed"),
+		);
+	});
+	expect(compactTocState).toBe(true);
+	const compactIndicatorState = await page.locator("#toc").evaluate((toc) => {
+		const indicator = toc.querySelector<HTMLElement>("#active-indicator")!;
+		const tocStyle = getComputedStyle(toc);
+		return {
+			overflowY: tocStyle.overflowY,
+			opacity: Number.parseFloat(getComputedStyle(indicator).opacity),
+		};
+	});
+	expect(compactIndicatorState.overflowY).toBe("hidden");
+	expect(compactIndicatorState.opacity).toBeGreaterThan(0);
+
+	await page.evaluate(() => {
+		const spanHeading = Array.from(
+			document.querySelectorAll<HTMLElement>(".markdown-content h2"),
+		).find((heading) => heading.textContent?.includes("Span Elements"));
+		const target =
+			spanHeading ||
+			document.querySelector<HTMLElement>(".page-main-content")!;
+		const targetTop = target.getBoundingClientRect().top + window.scrollY;
+		const stickyTop = Number.parseFloat(
+			getComputedStyle(
+				document.querySelector<HTMLElement>(".post-support")!,
+			).top,
+		);
+		window.scrollTo({
+			top: Math.max(targetTop - stickyTop - 24, 0),
+			behavior: "auto",
+		});
+	});
+	await expect(page.locator("#toc")).not.toHaveClass(/toc-compact/);
+	await expect
+		.poll(() =>
+			page.locator("#active-indicator").evaluate((indicator) => {
+				const inlineStyle = indicator.getAttribute("style") ?? "";
+				return (
+					inlineStyle.includes("top: auto") &&
+					inlineStyle.includes("bottom:")
+				);
+			}),
+		)
+		.toBe(true);
 });
 
 test("layout breakpoint boundaries do not overlap", async ({ page }) => {

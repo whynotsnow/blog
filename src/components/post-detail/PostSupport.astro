@@ -71,9 +71,13 @@ const hasHeadings = headings.length > 0;
 <style>
 	.post-support {
 		--stack-space: var(--space-grid-gap);
+		position: sticky;
+		top: calc(var(--page-entry-clearance) + var(--size-3));
 		width: 100%;
-		min-height: 100%;
+		max-height: calc(100dvh - var(--page-entry-clearance) - var(--size-6));
 		align-items: stretch;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	:global(.page-support-region:has(.post-support)) {
@@ -96,8 +100,6 @@ const hasHeadings = headings.length > 0;
 	}
 
 	.post-support__toc {
-		position: sticky;
-		top: calc(var(--page-entry-clearance) + var(--size-3));
 		align-self: start;
 		z-index: 1;
 	}
@@ -118,12 +120,11 @@ const hasHeadings = headings.length > 0;
 	}
 
 	.post-support__toc-body {
-		max-height: calc(100dvh - var(--page-entry-clearance) - 8rem);
-		overflow: hidden;
+		overflow: visible;
 	}
 
 	.post-support__toc :global(table-of-contents#toc) {
-		max-height: calc(100dvh - var(--page-entry-clearance) - 11rem);
+		max-height: none;
 	}
 
 	.post-support__nav {
