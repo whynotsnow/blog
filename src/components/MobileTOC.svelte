@@ -5,13 +5,13 @@
 	import { i18n } from "../i18n/translation";
 	import { navigateToPage } from "../utils/navigation-utils";
 	import { panelManager } from "../utils/panel-manager.js";
+	import {
+		buildTocItems,
+		collectTocHeadings,
+		type TocItem,
+	} from "./post-toc/toc-data";
 
-	let tocItems: Array<{
-		id: string;
-		text: string;
-		level: number;
-		badge?: string;
-	}> = [];
+	let tocItems: TocItem[] = [];
 	let postItems: Array<{
 		title: string;
 		url: string;
@@ -22,8 +22,6 @@
 	let observer: IntersectionObserver;
 	let isHomePage = false;
 	let swupReady = false;
-	let useJapaneseBadge = false;
-	let tocDepth = 3;
 
 	const getContentRoot = (): Element | null =>
 		document.querySelector("#post-container .post-detail__content") ||
@@ -38,74 +36,36 @@
 		await panelManager.togglePanel("mobile-toc-panel", show);
 	};
 
-	const generateTOC = () => {
-		// 获取配置
-		useJapaneseBadge = window.siteConfig?.toc?.useJapaneseBadge || false;
-		tocDepth = window.siteConfig?.toc?.depth || 3;
+	const readStaticTocItems = (): TocItem[] => {
+		const dataElement = document.getElementById("post-toc-data");
+		if (!dataElement?.textContent) return [];
 
-		const contentRoot = getContentRoot();
-		const headings =
-			contentRoot?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
-		const items: Array<{
-			id: string;
-			text: string;
-			level: number;
-			badge?: string;
-		}> = [];
-		const japaneseHiragana = [
-			"ア",
-			"イ",
-			"ウ",
-			"エ",
-			"オ",
-			"カ",
-			"キ",
-			"ク",
-			"ケ",
-			"コ",
-			"サ",
-			"シ",
-			"ス",
-			"セ",
-			"ソ",
-			"タ",
-			"チ",
-			"ツ",
-			"テ",
-			"ト",
-		];
-		let h1Count = 0;
+		try {
+			const items = JSON.parse(dataElement.textContent) as TocItem[];
+			return Array.isArray(items) ? items : [];
+		} catch (error) {
+			console.error("Failed to parse post TOC data:", error);
+			return [];
+		}
+	};
 
-		headings.forEach((heading) => {
-			if (heading.id) {
-				const level = Number.parseInt(heading.tagName.charAt(1), 10);
+	const generateTOC = (runtimeRoot?: Element) => {
+		const staticItems = runtimeRoot ? [] : readStaticTocItems();
+		if (staticItems.length > 0) {
+			tocItems = staticItems;
+			return;
+		}
 
-				// 根据depth配置过滤标题
-				if (level > tocDepth) {
-					return;
-				}
+		const contentRoot = runtimeRoot || getContentRoot();
+		if (!contentRoot) {
+			tocItems = [];
+			return;
+		}
 
-				const text = (heading.textContent || "").replace(/#+\s*$/, "");
-				let badge = "";
-
-				// 只为H1标题生成badge
-				if (level === 1) {
-					h1Count++;
-					if (
-						useJapaneseBadge &&
-						h1Count - 1 < japaneseHiragana.length
-					) {
-						badge = japaneseHiragana[h1Count - 1];
-					} else {
-						badge = h1Count.toString();
-					}
-				}
-
-				items.push({ id: heading.id, text, level, badge });
-			}
+		tocItems = buildTocItems(collectTocHeadings(contentRoot), {
+			maxDepth: window.siteConfig?.toc?.depth || 3,
+			useJapaneseBadge: window.siteConfig?.toc?.useJapaneseBadge || false,
 		});
-
-		tocItems = items;
 	};
 
 	const generatePostList = () => {
@@ -157,7 +117,12 @@
 	};
 
 	const scrollToHeading = (id: string) => {
-		const element = document.getElementById(id);
+		const contentRoot = getContentRoot();
+		const element = Array.from(
+			contentRoot?.querySelectorAll<HTMLElement>(
+				"h1, h2, h3, h4, h5, h6",
+			) ?? [],
+		).find((heading) => heading.id === id);
 		if (element) {
 			// 关闭面板
 			setPanelVisibility(false);
@@ -183,8 +148,7 @@
 
 	const updateActiveHeading = () => {
 		const contentRoot = getContentRoot();
-		const headings =
-			contentRoot?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
+		const headings = getTocHeadingElements(contentRoot);
 		const scrollTop = window.scrollY;
 		const offset = 100;
 
@@ -203,8 +167,7 @@
 
 	const setupIntersectionObserver = () => {
 		const contentRoot = getContentRoot();
-		const headings =
-			contentRoot?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
+		const headings = getTocHeadingElements(contentRoot);
 
 		if (observer) {
 			observer.disconnect();
@@ -229,6 +192,19 @@
 				observer.observe(heading);
 			}
 		});
+	};
+
+	const getTocHeadingElements = (
+		contentRoot: Element | null,
+	): HTMLElement[] => {
+		if (!contentRoot) return [];
+
+		const itemIds = new Set(tocItems.map((item) => item.id));
+		return Array.from(
+			contentRoot.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6"),
+		).filter((heading) =>
+			itemIds.size > 0 ? itemIds.has(heading.id) : Boolean(heading.id),
+		);
 	};
 
 	let swupListenersRegistered = false;
@@ -296,13 +272,13 @@
 		}
 	};
 
-	const init = () => {
+	const init = (runtimeRoot?: Element) => {
 		checkIsHomePage();
 		checkSwupAvailability();
 		if (isHomePage) {
 			generatePostList();
 		} else {
-			generateTOC();
+			generateTOC(runtimeRoot);
 			setupIntersectionObserver();
 			updateActiveHeading();
 		}
@@ -328,7 +304,7 @@
 			}
 
 			// 清理popstate事件监听器
-			window.removeEventListener("popstate", init);
+			window.removeEventListener("popstate", () => init());
 			swupListenersRegistered = false;
 		};
 	});
@@ -411,14 +387,14 @@
 			{#each tocItems as item (item.id)}
 				<button
 					on:click={() => scrollToHeading(item.id)}
-					class="toc-item level-{item.level} {activeId === item.id
+					class="toc-item level-{item.depth} {activeId === item.id
 						? 'active'
 						: ''}"
 					class:active={activeId === item.id}
 				>
-					{#if item.level === 1}
+					{#if item.badgeKind === "text"}
 						<span class="badge">{item.badge}</span>
-					{:else if item.level === 2}
+					{:else if item.badgeKind === "square"}
 						<span class="dot-square"></span>
 					{:else}
 						<span class="dot-small"></span>

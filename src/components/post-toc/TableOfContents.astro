@@ -1,6 +1,7 @@
 ---
 import type { MarkdownHeading } from "astro";
 import { siteConfig } from "@/config";
+import { buildTocItems } from "./toc-data";
 
 export interface Props {
 	class?: string;
@@ -9,96 +10,26 @@ export interface Props {
 }
 
 const { headings = [], deferHeadings = false } = Astro.props;
-
-let minDepth = 10;
-for (const heading of headings) {
-	minDepth = Math.min(minDepth, heading.depth);
-}
-
 const className = Astro.props.class;
-const maxLevel = siteConfig.toc?.depth || 3;
-const useJapaneseBadge = siteConfig.toc?.useJapaneseBadge || false;
-const japaneseKatakana = [
-	"ア",
-	"イ",
-	"ウ",
-	"エ",
-	"オ",
-	"カ",
-	"キ",
-	"ク",
-	"ケ",
-	"コ",
-	"サ",
-	"シ",
-	"ス",
-	"セ",
-	"ソ",
-	"タ",
-	"チ",
-	"ツ",
-	"テ",
-	"ト",
-	"ナ",
-	"ニ",
-	"ヌ",
-	"ネ",
-	"ノ",
-	"ハ",
-	"ヒ",
-	"フ",
-	"ヘ",
-	"ホ",
-	"マ",
-	"ミ",
-	"ム",
-	"メ",
-	"モ",
-	"ヤ",
-	"ユ",
-	"ヨ",
-	"ラ",
-	"リ",
-	"ル",
-	"レ",
-	"ロ",
-	"ワ",
-	"ヲ",
-	"ン",
-];
-let heading1Count = 1;
-const tocHeadings = deferHeadings
+const tocItems = deferHeadings
 	? []
-	: headings.filter((heading) => heading.depth < minDepth + maxLevel);
+	: buildTocItems(headings, {
+			maxDepth: siteConfig.toc?.depth || 3,
+			useJapaneseBadge: siteConfig.toc?.useJapaneseBadge || false,
+		});
 ---
 
 <table-of-contents class:list={[className, "group hide-scrollbar"]} id="toc">
 	{
-		tocHeadings.map((heading) => {
+		tocItems.map((item) => {
 			const depthClass =
-				heading.depth === minDepth
-					? ""
-					: heading.depth === minDepth + 1
-						? "ml-4"
-						: "ml-8";
-			let badgeContent = "";
-			if (heading.depth === minDepth) {
-				if (
-					useJapaneseBadge &&
-					heading1Count - 1 < japaneseKatakana.length
-				) {
-					badgeContent = japaneseKatakana[heading1Count - 1];
-				} else {
-					badgeContent = heading1Count.toString();
-				}
-				heading1Count++;
-			}
+				item.level === 0 ? "" : item.level === 1 ? "ml-4" : "ml-8";
 
 			return (
 				<a
-					href={`#${heading.slug}`}
-					data-depth={heading.depth}
-					data-toc-level={heading.depth - minDepth}
+					href={`#${item.id}`}
+					data-depth={item.depth}
+					data-toc-level={item.level}
 					class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2"
 				>
 					<div
@@ -107,27 +38,25 @@ const tocHeadings = deferHeadings
 							depthClass,
 							{
 								"bg-(--toc-badge-bg) text-(--btn-content)":
-									heading.depth === minDepth,
+									item.badgeKind === "text",
 							},
 						]}
 					>
-						{heading.depth === minDepth && badgeContent}
-						{heading.depth === minDepth + 1 && (
+						{item.badgeKind === "text" && item.badge}
+						{item.badgeKind === "square" && (
 							<div class="transition w-2 h-2 rounded-[0.1875rem] bg-(--toc-badge-bg)" />
 						)}
-						{heading.depth > minDepth + 1 && (
+						{item.badgeKind === "dot" && (
 							<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10" />
 						)}
 					</div>
 					<div
 						class:list={[
 							"transition text-sm",
-							heading.depth <= minDepth + 1
-								? "text-50"
-								: "text-30",
+							item.level <= 1 ? "text-50" : "text-30",
 						]}
 					>
-						{heading.text}
+						{item.text}
 					</div>
 				</a>
 			);
@@ -142,6 +71,15 @@ const tocHeadings = deferHeadings
 </table-of-contents>
 
 <script>
+	import { buildTocItems, collectTocHeadings } from "./toc-data";
+
+	const escapeHtml = (value: string) =>
+		value
+			.replaceAll("&", "&amp;")
+			.replaceAll("<", "&lt;")
+			.replaceAll(">", "&gt;")
+			.replaceAll('"', "&quot;");
+
 	class TableOfContents extends HTMLElement {
 		tocEl: HTMLElement | null = null;
 		visibleClass = "visible";
@@ -621,11 +559,16 @@ const tocHeadings = deferHeadings
 
 			this.sections = new Array(this.tocEntries.length);
 			this.headings = new Array(this.tocEntries.length);
+			const contentRoot = this.getContentRoot();
 			for (let i = 0; i < this.tocEntries.length; i++) {
 				const id = decodeURIComponent(
 					this.tocEntries[i].hash?.substring(1),
 				);
-				const heading = document.getElementById(id);
+				const heading = Array.from(
+					contentRoot?.querySelectorAll<HTMLElement>(
+						"h1, h2, h3, h4, h5, h6",
+					) ?? [],
+				).find((element) => element.id === id);
 				const section = heading?.parentElement;
 				if (
 					heading instanceof HTMLElement &&
@@ -672,15 +615,7 @@ const tocHeadings = deferHeadings
 				delete this.dataset.loaded;
 				return;
 			}
-			const headings = Array.from(
-				contentRoot.querySelectorAll("h1, h2, h3, h4, h5, h6"),
-			)
-				.filter((h) => h.id)
-				.map((h) => ({
-					depth: parseInt(h.tagName.substring(1)),
-					slug: h.id,
-					text: (h.textContent || "").replace(/#+\s*$/, ""),
-				}));
+			const headings = collectTocHeadings(contentRoot);
 			// 如果没有标题，延迟重试最多3次
 			if (headings.length === 0 && retryCount < 3) {
 				setTimeout(
@@ -694,98 +629,37 @@ const tocHeadings = deferHeadings
 				delete this.dataset.loaded;
 				return;
 			}
-			// 重新生成TOC HTML
-			const minDepth = Math.min(...headings.map((h) => h.depth));
 			// 获取配置信息
 			const siteConfig = window.siteConfig;
-			const maxLevel = siteConfig.toc?.depth || 3;
-			const useJapaneseBadge = siteConfig.toc?.useJapaneseBadge || false;
-
-			// 日语片假名字符集
-			const japaneseKatakana = [
-				"ア",
-				"イ",
-				"ウ",
-				"エ",
-				"オ",
-				"カ",
-				"キ",
-				"ク",
-				"ケ",
-				"コ",
-				"サ",
-				"シ",
-				"ス",
-				"セ",
-				"ソ",
-				"タ",
-				"チ",
-				"ツ",
-				"テ",
-				"ト",
-				"ナ",
-				"ニ",
-				"ヌ",
-				"ネ",
-				"ノ",
-				"ハ",
-				"ヒ",
-				"フ",
-				"ヘ",
-				"ホ",
-				"マ",
-				"ミ",
-				"ム",
-				"メ",
-				"モ",
-				"ヤ",
-				"ユ",
-				"ヨ",
-				"ラ",
-				"リ",
-				"ル",
-				"レ",
-				"ロ",
-				"ワ",
-				"ヲ",
-				"ン",
-			];
-
-			let heading1Count = 1;
-			const tocHTML = headings
-				.filter((heading) => heading.depth < minDepth + maxLevel)
-				.map((heading) => {
+			const tocItems = buildTocItems(headings, {
+				maxDepth: siteConfig.toc?.depth || 3,
+				useJapaneseBadge: siteConfig.toc?.useJapaneseBadge || false,
+			});
+			const tocHTML = tocItems
+				.map((item) => {
 					const depthClass =
-						heading.depth === minDepth
+						item.level === 0
 							? ""
-							: heading.depth === minDepth + 1
+							: item.level === 1
 								? "ml-4"
 								: "ml-8";
+					const rootBadgeClass =
+						item.badgeKind === "text"
+							? "bg-(--toc-badge-bg) text-(--btn-content)"
+							: "";
+					const badgeContent =
+						item.badgeKind === "text"
+							? item.badge
+							: item.badgeKind === "square"
+								? '<div class="transition w-2 h-2 rounded-[0.1875rem] bg-(--toc-badge-bg)"></div>'
+								: '<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
+					const textClass = item.level <= 1 ? "text-50" : "text-30";
 
-					let badgeContent = "";
-					if (heading.depth === minDepth) {
-						if (
-							useJapaneseBadge &&
-							heading1Count - 1 < japaneseKatakana.length
-						) {
-							badgeContent = japaneseKatakana[heading1Count - 1];
-						} else {
-							badgeContent = heading1Count.toString();
-						}
-						heading1Count++;
-					} else if (heading.depth === minDepth + 1) {
-						badgeContent =
-							'<div class="transition w-2 h-2 rounded-[0.1875rem] bg-(--toc-badge-bg)"></div>';
-					} else {
-						badgeContent =
-							'<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
-					}
-
-					return `<a href="#${heading.slug}" data-depth="${heading.depth}" data-toc-level="${heading.depth - minDepth}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2">
-                    <div class="transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${depthClass} ${heading.depth === minDepth ? "bg-(--toc-badge-bg) text-(--btn-content)" : ""}">
+					return `<a href="#${escapeHtml(item.id)}" data-depth="${item.depth}" data-toc-level="${item.level}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2">
+                    <div class="transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${depthClass} ${rootBadgeClass}">
                         ${badgeContent}
                     </div>
-                    <div class="transition text-sm ${heading.depth <= minDepth + 1 ? "text-50" : "text-30"}">${heading.text}</div>
+                    <div class="transition text-sm ${textClass}">${escapeHtml(item.text)}</div>
                 </a>`;
 				})
 				.join("");

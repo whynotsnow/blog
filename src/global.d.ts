@@ -69,7 +69,7 @@ declare global {
 		hljs?: {
 			highlightElement: (element: Element) => void;
 		};
-		mobileTOCInit?: () => void;
+		mobileTOCInit?: (runtimeRoot?: Element) => void;
 		renderMermaidDiagrams?: () => void;
 		initSemifullScrollDetection?: () => void;
 		applyWallpaperMode?: () => void;

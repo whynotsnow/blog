@@ -75,7 +75,7 @@ async function runPostDecryptHooks(contentDiv: HTMLElement) {
 	}
 
 	if (window.mobileTOCInit) {
-		window.mobileTOCInit();
+		window.mobileTOCInit(contentDiv);
 	}
 
 	if (window.Fancybox?.bind) {

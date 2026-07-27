@@ -16,6 +16,7 @@ import PostHeader from "./PostHeader.astro";
 import PostLastModified from "./PostLastModified.astro";
 import PostNavigation from "./PostNavigation.astro";
 import PostSupport from "./PostSupport.astro";
+import { buildTocItems } from "@components/post-toc/toc-data";
 import "./post-detail.css";
 import type { PostDetailPageProps } from "./types";
 
@@ -43,6 +44,12 @@ const {
 	posterAvatarUrl,
 } = Astro.props as PostDetailPageProps;
 
+const staticTocItems = encryption.enabled
+	? []
+	: buildTocItems(headings, {
+			maxDepth: siteConfig.toc?.depth || 3,
+			useJapaneseBadge: siteConfig.toc?.useJapaneseBadge || false,
+		});
 ---
 
 <MainGridLayout
@@ -68,6 +75,16 @@ const {
 		support={support}
 		deferTocHeadings={encryption.enabled}
 	/>
+	{
+		!encryption.enabled && (
+			<script
+				id="post-toc-data"
+				is:inline
+				type="application/json"
+				set:html={JSON.stringify(staticTocItems)}
+			/>
+		)
+	}
 		<div class="post-detail__shell flex relative">
 			<div
 				id="post-container"
