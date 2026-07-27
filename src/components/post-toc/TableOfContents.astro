@@ -404,6 +404,14 @@ const className = Astro.props.class;
 			return min < value && value < max;
 		}
 
+		getContentRoot() {
+			return (
+				document.querySelector("#post-container .post-detail__content") ||
+				document.querySelector(".markdown-content") ||
+				document.querySelector(".custom-md")
+			);
+		}
+
 		connectedCallback() {
 			// 优先监听动画结束，兜底定时初始化，确保二次刷新也能正常显示 TOC
 			const element =
@@ -500,11 +508,12 @@ const className = Astro.props.class;
 				return;
 			}
 			// 从当前页面重新获取标题
-			const contentRoot =
-				document.querySelector(".markdown-content") ||
-				document.querySelector(".custom-md") ||
-				document.querySelector(".post-detail__content") ||
-				document;
+			const contentRoot = this.getContentRoot();
+			if (!contentRoot) {
+				this.innerHTML = "";
+				delete this.dataset.loaded;
+				return;
+			}
 			const headings = Array.from(
 				contentRoot.querySelectorAll("h1, h2, h3, h4, h5, h6"),
 			)

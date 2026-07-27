@@ -55,6 +55,37 @@ test("post content shares markdown styles and copy behavior", async ({
 	await expect(copyButton).toHaveClass(/success/);
 });
 
+test("post TOC ignores headings outside article content", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 720 });
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(page.locator("#toc a").first()).toBeVisible();
+
+	await page.evaluate(() => {
+		const heading = document.createElement("h2");
+		heading.id = "outside-post-heading";
+		heading.textContent = "Outside Post Heading";
+		document.querySelector("#main-grid")?.prepend(heading);
+		document
+			.querySelector<
+				HTMLElement & { regenerateTOC?: () => void }
+			>("table-of-contents")
+			?.regenerateTOC?.();
+	});
+
+	await expect(
+		page.locator("#toc a", { hasText: "Outside Post Heading" }),
+	).toHaveCount(0);
+
+	await page.setViewportSize({ width: 390, height: 760 });
+	await page.evaluate(() => window.mobileTOCInit?.());
+	await page.locator("#mobile-toc-switch").click();
+	await expect(
+		page.locator("#mobile-toc-panel .toc-item", {
+			hasText: "Outside Post Heading",
+		}),
+	).toHaveCount(0);
+});
+
 test("post support TOC owns internal overflow without sidebar scrollbar", async ({
 	page,
 }) => {

@@ -25,6 +25,11 @@
 	let useJapaneseBadge = false;
 	let tocDepth = 3;
 
+	const getContentRoot = (): Element | null =>
+		document.querySelector("#post-container .post-detail__content") ||
+		document.querySelector(".markdown-content") ||
+		document.querySelector(".custom-md");
+
 	const togglePanel = async () => {
 		await panelManager.togglePanel("mobile-toc-panel");
 	};
@@ -38,7 +43,9 @@
 		useJapaneseBadge = window.siteConfig?.toc?.useJapaneseBadge || false;
 		tocDepth = window.siteConfig?.toc?.depth || 3;
 
-		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+		const contentRoot = getContentRoot();
+		const headings =
+			contentRoot?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
 		const items: Array<{
 			id: string;
 			text: string;
@@ -175,7 +182,9 @@
 	};
 
 	const updateActiveHeading = () => {
-		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+		const contentRoot = getContentRoot();
+		const headings =
+			contentRoot?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
 		const scrollTop = window.scrollY;
 		const offset = 100;
 
@@ -193,7 +202,9 @@
 	};
 
 	const setupIntersectionObserver = () => {
-		const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+		const contentRoot = getContentRoot();
+		const headings =
+			contentRoot?.querySelectorAll("h1, h2, h3, h4, h5, h6") ?? [];
 
 		if (observer) {
 			observer.disconnect();
