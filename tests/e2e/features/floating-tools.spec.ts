@@ -139,6 +139,46 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 		.toBeLessThan(8);
 });
 
+test("floating TOC progress ring geometry", async ({ page }) => {
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await page.locator("#floating-tools-switch").click();
+	await expect(
+		page.locator("#floating-tools #floating-toc-btn"),
+	).toBeVisible();
+
+	const tocProgressGeometry = await page
+		.locator("#floating-tools #floating-toc-btn")
+		.evaluate((button) => {
+			const ring = button.querySelector<SVGSVGElement>(".progress-ring")!;
+			const icon = button.querySelector<HTMLElement>(
+				".btn-icon .local-icon",
+			)!;
+			const buttonRect = button.getBoundingClientRect();
+			const ringRect = ring.getBoundingClientRect();
+			const iconRect = icon.getBoundingClientRect();
+			return {
+				buttonWidth: buttonRect.width,
+				buttonHeight: buttonRect.height,
+				ringWidth: ringRect.width,
+				ringHeight: ringRect.height,
+				iconWidth: iconRect.width,
+				iconHeight: iconRect.height,
+			};
+		});
+	expect(tocProgressGeometry.ringWidth).toBeGreaterThan(
+		tocProgressGeometry.buttonWidth * 0.9,
+	);
+	expect(tocProgressGeometry.ringHeight).toBeGreaterThan(
+		tocProgressGeometry.buttonHeight * 0.9,
+	);
+	expect(tocProgressGeometry.iconWidth).toBeLessThan(
+		tocProgressGeometry.ringWidth,
+	);
+	expect(tocProgressGeometry.iconHeight).toBeLessThan(
+		tocProgressGeometry.ringHeight,
+	);
+});
+
 test("floating tools controls music visibility while the player owns its presentation", async ({
 	page,
 }) => {
