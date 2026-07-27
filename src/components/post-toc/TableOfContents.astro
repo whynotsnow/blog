@@ -87,160 +87,33 @@ const tocItems = deferHeadings
 		type DesktopTocTransitionType,
 		type DesktopTocViewportState,
 	} from "./toc-desktop-state";
+	import { DesktopTocPresenter } from "./toc-desktop-presenter";
 
 	class TableOfContents extends HTMLElement {
 		tocEl: HTMLElement | null = null;
-		visibleClass = "visible";
-		anchorNavTarget: HTMLElement | null = null;
 		headingIdxMap = new Map<string, number>();
 		tocItems: TocItem[] = [];
 		headings: HTMLElement[] = [];
 		tocEntries: HTMLAnchorElement[] = [];
 		activeTracker = new TocActiveTracker();
 		activeIndicator: HTMLElement | null = null;
-		activeIndicatorState: {
-			top: number;
-			bottom: number;
-		} | null = null;
 		viewportState: DesktopTocViewportState | null = null;
-		lastActiveIndicatorIndex = -1;
-		lastAutoScrolledIndex = -1;
-		activeScrollRetry = 0;
-		activeIndicatorRetry = 0;
+		presenter: DesktopTocPresenter | null = null;
 		lastScrollY = 0;
 		scrollRaf = 0;
 		layoutMeasureRaf = 0;
 		contentResizeObserver: ResizeObserver | null = null;
 		initialized = false;
 
-		toggleActiveHeading = (currentIndex: number) => {
-			if (!this.tocEntries.length) {
-				this.hideActiveIndicator();
-				return;
-			}
-
-			if (currentIndex < 0) {
-				this.hideActiveIndicator();
-				return;
-			}
-
-			const activeIndex = currentIndex;
-			const activeEntry = this.tocEntries[activeIndex];
-
-			if (!activeEntry) {
-				this.hideActiveIndicator();
-				return;
-			}
-			if (activeEntry.classList.contains("is-collapsed")) {
-				return;
-			}
-			for (const entry of this.tocEntries) {
-				entry.classList.remove(this.visibleClass);
-			}
-			activeEntry.classList.add(this.visibleClass);
-			const activeEntryRect = activeEntry.getBoundingClientRect();
-			if (activeEntryRect.height < 24) {
-				if (!this.activeIndicatorRetry) {
-					this.activeIndicatorRetry = window.setTimeout(() => {
-						this.activeIndicatorRetry = 0;
-						this.toggleActiveHeading(this.getCurrentHeadingIndex());
-						this.scrollToActiveHeading();
-					}, 260);
-				}
-				return;
-			}
-			const parentOffset = this.tocEl?.getBoundingClientRect().top || 0;
-			const scrollOffset = this.tocEl?.scrollTop || 0;
-			const top =
-				activeEntryRect.top - parentOffset + scrollOffset;
-			const bottom =
-				activeEntryRect.bottom - parentOffset + scrollOffset;
-			this.moveActiveIndicator(top, bottom);
-			this.lastActiveIndicatorIndex = activeIndex;
-		};
-
-		hideActiveIndicator() {
-			this.activeIndicator?.setAttribute("style", "opacity: 0");
-			this.activeIndicatorState = null;
-			this.lastActiveIndicatorIndex = -1;
-		}
-
-		moveActiveIndicator(top: number, bottom: number) {
-			if (!this.activeIndicator || !this.tocEl) return;
-
-			const boundedTop = Math.max(0, top);
-			const boundedBottom = Math.max(boundedTop, bottom);
-			const height = boundedBottom - boundedTop;
-			if (height <= 0) {
-				this.hideActiveIndicator();
-				return;
-			}
-
-			const style = `top: 0; bottom: auto; height: ${height}px; opacity: 1; transform: translateY(${boundedTop}px);`;
-			this.activeIndicator.setAttribute("style", style);
-			this.activeIndicatorState = {
-				top: boundedTop,
-				bottom: boundedBottom,
-			};
-		}
-
-		scrollToActiveHeading = () => {
-			if (this.anchorNavTarget || !this.tocEl) return;
-			const activeHeading = document.querySelectorAll<HTMLDivElement>(
-				`#toc .${this.visibleClass}`,
-			);
-			if (!activeHeading.length) return;
-
-			const topmost = activeHeading[0];
-			const bottommost = activeHeading[activeHeading.length - 1];
-			const tocHeight = this.tocEl.clientHeight;
-			const currentScroll = this.tocEl.scrollTop;
-			const visibilityPadding = 12;
-			const safeTop = currentScroll + visibilityPadding;
-			const safeBottom = currentScroll + tocHeight - visibilityPadding;
-			const topmostTop = topmost.offsetTop;
-			const bottommostBottom =
-				bottommost.offsetTop + bottommost.offsetHeight;
-
-			let top = currentScroll;
-			if (topmostTop < safeTop) {
-				top = topmostTop - visibilityPadding;
-			} else if (bottommostBottom > safeBottom) {
-				top = bottommostBottom - tocHeight + visibilityPadding;
-			} else {
-				return;
-			}
-
-			this.tocEl.scrollTo({
-				top: Math.max(0, top),
-				left: 0,
-				behavior: "auto",
-			});
-		};
-
-		update = () => {
+		update = (reason?: DesktopTocTransitionType) => {
 			requestAnimationFrame(() => {
 				const currentIndex = this.getCurrentHeadingIndex();
-				const nextState = this.resolveViewportState(currentIndex);
-				const adaptiveChanged = this.updateAdaptiveState(nextState);
+				const nextState = this.resolveViewportState(
+					currentIndex,
+					reason,
+				);
 				this.viewportState = nextState;
-				this.toggleActiveHeading(nextState.activeIndex);
-				if (
-					nextState.activeIndex !== this.lastAutoScrolledIndex ||
-					adaptiveChanged
-				) {
-					this.scrollToActiveHeading();
-					this.lastAutoScrolledIndex = nextState.activeIndex;
-					if (adaptiveChanged) {
-						if (this.activeScrollRetry) {
-							window.clearTimeout(this.activeScrollRetry);
-						}
-						this.activeScrollRetry = window.setTimeout(() => {
-							this.activeScrollRetry = 0;
-							this.scrollToActiveHeading();
-						}, 260);
-					}
-				}
+				this.presenter?.apply(nextState);
 			});
 		};
 
@@ -259,7 +132,7 @@ const tocItems = deferHeadings
 			this.layoutMeasureRaf = requestAnimationFrame(() => {
 				this.layoutMeasureRaf = 0;
 				this.activeTracker.measure();
-				this.update();
+				this.update("layout-remeasure");
 			});
 		};
 
@@ -284,35 +157,6 @@ const tocItems = deferHeadings
 				scrollDirection: this.activeTracker.scrollDirection,
 				reason,
 			});
-		}
-
-		updateAdaptiveState(state: DesktopTocViewportState) {
-			if (!this.tocEntries.length) return false;
-			const previousKey = this.dataset.tocViewportKey ?? "";
-			const nextKey = [
-				state.activeIndex,
-				state.activeRootIndex,
-				state.transitionType,
-				...state.visibleIndexes,
-			].join(":");
-			const adaptiveChanged =
-				previousKey !== "" && previousKey !== nextKey;
-			this.dataset.tocViewportKey = nextKey;
-			this.dataset.tocTransition = state.transitionType;
-			this.dataset.tocPhase = state.phase;
-			this.classList.remove("toc-compact");
-
-			for (let i = 0; i < this.tocEntries.length; i++) {
-				const entry = this.tocEntries[i];
-				const isCurrentBranch = state.branchIndexes.has(i);
-				const isReadEntry = state.readIndexes.has(i);
-				const shouldCollapse = !state.visibleIndexes.has(i);
-
-				entry.classList.toggle("is-current-branch", isCurrentBranch);
-				entry.classList.toggle("is-read", isReadEntry);
-				entry.classList.toggle("is-collapsed", shouldCollapse);
-			}
-			return adaptiveChanged;
 		}
 
 		handleAnchorClick = (event: Event) => {
@@ -342,9 +186,7 @@ const tocItems = deferHeadings
 
 				const idx = this.headingIdxMap.get(id);
 				if (idx !== undefined) {
-					this.anchorNavTarget = this.headings[idx];
-				} else {
-					this.anchorNavTarget = null;
+					this.update("anchor-jump");
 				}
 			}
 		};
@@ -364,23 +206,15 @@ const tocItems = deferHeadings
 				this.contentResizeObserver?.disconnect();
 				if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 				if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
-				if (this.activeScrollRetry)
-					window.clearTimeout(this.activeScrollRetry);
-				if (this.activeIndicatorRetry)
-					window.clearTimeout(this.activeIndicatorRetry);
+				this.presenter?.dispose();
 			}
 			this.headingIdxMap.clear();
 			this.tocItems = [];
 			this.headings = [];
 			this.tocEntries = [];
 			this.activeTracker.setState([], []);
-			this.anchorNavTarget = null;
-			this.activeIndicatorState = null;
 			this.viewportState = null;
-			this.lastActiveIndicatorIndex = -1;
-			this.lastAutoScrolledIndex = -1;
-			this.activeScrollRetry = 0;
-			this.activeIndicatorRetry = 0;
+			this.presenter = null;
 			this.scrollRaf = 0;
 			this.layoutMeasureRaf = 0;
 			this.contentResizeObserver = null;
@@ -463,6 +297,13 @@ const tocItems = deferHeadings
 				};
 			});
 			this.activeTracker.setState(this.tocItems, this.headings);
+			this.presenter = new DesktopTocPresenter({
+				host: this,
+				scrollRoot: this.tocEl,
+				indicator: this.activeIndicator,
+				entries: this.tocEntries,
+				graph: this.activeTracker.graph,
+			});
 			this.viewportState = this.resolveViewportState(
 				this.activeTracker.activeIndex,
 				"init",
@@ -482,7 +323,7 @@ const tocItems = deferHeadings
 				this.contentResizeObserver.observe(contentRoot);
 			}
 
-			this.update();
+			this.update("init");
 		}
 
 		refreshRuntimeHeadings(root?: Element) {
@@ -538,10 +379,7 @@ const tocItems = deferHeadings
 			this.contentResizeObserver?.disconnect();
 			if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 			if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
-			if (this.activeScrollRetry)
-				window.clearTimeout(this.activeScrollRetry);
-			if (this.activeIndicatorRetry)
-				window.clearTimeout(this.activeIndicatorRetry);
+			this.presenter?.dispose();
 		}
 	}
 
