@@ -261,8 +261,11 @@
 			"groups": ["lint", "type", "astro", "post-detail"]
 		},
 		{
-			"patterns": ["src/components/post-toc/TableOfContents.astro"],
-			"groups": ["lint", "type", "astro", "post-support-toc"]
+			"patterns": [
+				"src/components/MobileTOC.svelte",
+				"src/components/post-toc/**"
+			],
+			"groups": ["lint", "type", "svelte-type", "astro", "post-detail"]
 		},
 		{
 			"patterns": ["tests/unit/**"],

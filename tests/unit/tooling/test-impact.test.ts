@@ -55,16 +55,23 @@ describe("impact-based validation selection", () => {
 		expect(plan.unmatched).toEqual([]);
 	});
 
-	it("keeps post TOC changes on the narrow support overflow check", () => {
-		const plan = planFor("src/components/post-toc/TableOfContents.astro");
+	it("keeps post TOC changes on the post-detail feature check", () => {
+		const plans = [
+			planFor("src/components/post-toc/TableOfContents.astro"),
+			planFor("src/components/post-toc/toc-data.ts"),
+			planFor("src/components/MobileTOC.svelte"),
+		];
 
-		expect(plan.groups).toEqual([
-			"lint",
-			"type",
-			"astro",
-			"post-support-toc",
-		]);
-		expect(plan.unmatched).toEqual([]);
+		for (const plan of plans) {
+			expect(plan.groups).toEqual([
+				"lint",
+				"type",
+				"svelte-type",
+				"astro",
+				"post-detail",
+			]);
+			expect(plan.unmatched).toEqual([]);
+		}
 	});
 
 	it("keeps local toolchain changes on fast checks with a CI full risk", () => {

@@ -59,6 +59,17 @@ test("post TOC ignores headings outside article content", async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 720 });
 	await gotoPage(page, "/posts/markdown-tutorial/");
 	await expect(page.locator("#toc a").first()).toBeVisible();
+	const staticTocItems = await page.locator("#post-toc-data").evaluate(
+		(dataElement) =>
+			JSON.parse(dataElement.textContent || "[]") as Array<{
+				id: string;
+				text: string;
+			}>,
+	);
+	expect(staticTocItems.length).toBeGreaterThan(0);
+	expect(staticTocItems.map((item) => item.text)).toContain(
+		"Markdown Tutorial",
+	);
 
 	await page.evaluate(() => {
 		const heading = document.createElement("h2");
@@ -79,6 +90,9 @@ test("post TOC ignores headings outside article content", async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 760 });
 	await page.evaluate(() => window.mobileTOCInit?.());
 	await page.locator("#mobile-toc-switch").click();
+	await expect(page.locator("#mobile-toc-panel .toc-item")).toHaveCount(
+		staticTocItems.length,
+	);
 	await expect(
 		page.locator("#mobile-toc-panel .toc-item", {
 			hasText: "Outside Post Heading",
@@ -400,10 +414,16 @@ test("encrypted posts reuse the shared post content contract", async ({
 	await gotoPage(page, "/posts/encrypted-example/");
 
 	await expect(page.locator("#password-protection")).toBeVisible();
+	await expect(page.locator("#post-toc-data")).toHaveCount(0);
+	await expect(page.locator("#toc a")).toHaveCount(0);
 	await page.locator("#password-input").fill("123456");
 	await page.locator("#unlock-btn").click();
 
 	const decryptedContent = page.locator("#decrypted-content");
 	await expect(decryptedContent).toBeVisible();
 	await expect(decryptedContent.locator(".post-content")).toBeVisible();
+	await expect(page.locator("#toc a").first()).toBeVisible();
+	await expect(
+		page.locator("#toc a", { hasText: "Front-matter of Posts" }),
+	).toBeVisible();
 });
