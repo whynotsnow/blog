@@ -9,8 +9,6 @@ export function escapeHtml(value: string) {
 }
 
 export function renderDesktopTocItem(item: TocItem) {
-	const depthClass =
-		item.level === 0 ? "" : item.level === 1 ? "ml-4" : "ml-8";
 	const rootBadgeClass =
 		item.badgeKind === "text"
 			? "bg-(--toc-badge-bg) text-(--btn-content)"
@@ -23,8 +21,8 @@ export function renderDesktopTocItem(item: TocItem) {
 				: '<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
 	const textClass = item.level <= 1 ? "text-50" : "text-30";
 
-	return `<a href="#${escapeHtml(item.id)}" data-depth="${item.depth}" data-toc-level="${item.level}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2">
-		<div class="transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${depthClass} ${rootBadgeClass}">
+	return `<a href="#${escapeHtml(item.id)}" data-depth="${item.depth}" data-toc-level="${item.level}" style="--toc-level: ${item.level};" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2">
+		<div class="toc-entry-badge transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${rootBadgeClass}">
 			${badgeContent}
 		</div>
 		<div class="transition text-sm ${textClass}">${escapeHtml(item.text)}</div>

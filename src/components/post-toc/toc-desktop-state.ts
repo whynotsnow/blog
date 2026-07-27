@@ -8,15 +8,19 @@ export type DesktopTocTransitionType =
 	| "leave-child"
 	| "root-to-root"
 	| "branch-switch"
+	| "boundary-start"
+	| "boundary-end"
 	| "anchor-jump"
 	| "runtime-refresh"
 	| "layout-remeasure";
 
 export type DesktopTocPhase = "idle" | "prepare" | "commit";
+export type DesktopTocBoundary = "start" | "end" | null;
 
 export interface DesktopTocViewportState {
 	activeIndex: number;
 	activeRootIndex: number;
+	boundary: DesktopTocBoundary;
 	visibleIndexes: Set<number>;
 	branchIndexes: Set<number>;
 	readIndexes: Set<number>;
@@ -30,6 +34,7 @@ export interface ResolveDesktopTocViewportOptions {
 	activeIndex: number;
 	previous?: DesktopTocViewportState | null;
 	scrollDirection: TocScrollDirection;
+	boundary?: DesktopTocBoundary;
 	reason?: DesktopTocTransitionType;
 }
 
@@ -44,8 +49,11 @@ function resolveTransitionType({
 	activeIndex,
 	previous,
 	scrollDirection,
+	boundary,
 	reason,
 }: ResolveDesktopTocViewportOptions): DesktopTocTransitionType {
+	if (boundary === "start") return "boundary-start";
+	if (boundary === "end") return "boundary-end";
 	if (
 		reason === "init" ||
 		reason === "runtime-refresh" ||
@@ -70,8 +78,13 @@ function resolveTransitionType({
 	return scrollDirection === "jump" ? "anchor-jump" : "same-node";
 }
 
-function resolveVisibleIndexes(graph: TocGraph, activeRootIndex: number) {
+function resolveVisibleIndexes(
+	graph: TocGraph,
+	activeRootIndex: number,
+	boundary: DesktopTocBoundary,
+) {
 	const visibleIndexes = new Set(graph.rootIndexes);
+	if (boundary) return visibleIndexes;
 	for (const index of getTocBranchIndexes(graph, activeRootIndex)) {
 		visibleIndexes.add(index);
 	}
@@ -91,13 +104,14 @@ function resolveReadIndexes(graph: TocGraph, activeIndex: number) {
 export function resolveDesktopTocViewportState(
 	options: ResolveDesktopTocViewportOptions,
 ): DesktopTocViewportState {
+	const boundary = options.boundary ?? null;
 	const activeRootIndex = resolveActiveRootIndex(
 		options.graph,
-		options.activeIndex,
+		boundary ? -1 : options.activeIndex,
 	);
-	const branchIndexes = new Set(
-		getTocBranchIndexes(options.graph, activeRootIndex),
-	);
+	const branchIndexes = boundary
+		? new Set<number>()
+		: new Set(getTocBranchIndexes(options.graph, activeRootIndex));
 	const transitionType = resolveTransitionType(options);
 	const phase =
 		transitionType === "same-node" || transitionType === "layout-remeasure"
@@ -107,11 +121,18 @@ export function resolveDesktopTocViewportState(
 				: "prepare";
 
 	return {
-		activeIndex: options.activeIndex,
+		activeIndex: boundary ? -1 : options.activeIndex,
 		activeRootIndex,
-		visibleIndexes: resolveVisibleIndexes(options.graph, activeRootIndex),
+		boundary,
+		visibleIndexes: resolveVisibleIndexes(
+			options.graph,
+			activeRootIndex,
+			boundary,
+		),
 		branchIndexes,
-		readIndexes: resolveReadIndexes(options.graph, options.activeIndex),
+		readIndexes: boundary
+			? new Set<number>()
+			: resolveReadIndexes(options.graph, options.activeIndex),
 		transitionType,
 		phase,
 		scrollDirection: options.scrollDirection,

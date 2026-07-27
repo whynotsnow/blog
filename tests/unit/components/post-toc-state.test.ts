@@ -44,6 +44,14 @@ const items: TocItem[] = [
 		badge: "",
 		badgeKind: "square",
 	},
+	{
+		id: "three-grandchild",
+		text: "This is an H3",
+		depth: 3,
+		level: 2,
+		badge: "",
+		badgeKind: "dot",
+	},
 ];
 
 describe("desktop TOC state", () => {
@@ -59,6 +67,10 @@ describe("desktop TOC state", () => {
 		});
 		expect(graph.nodes[1].childrenIndexes).toEqual([2]);
 		expect(graph.byId.get("three-child")?.parentIndex).toBe(3);
+		expect(graph.byId.get("three-grandchild")).toMatchObject({
+			parentIndex: 4,
+			rootIndex: 3,
+		});
 	});
 
 	it("keeps roots visible and switches only the current branch", () => {
@@ -81,5 +93,26 @@ describe("desktop TOC state", () => {
 		expect([...next.branchIndexes]).toEqual([1, 2]);
 		expect(next.activeRootIndex).toBe(1);
 		expect(next.visibleIndexes.has(4)).toBe(false);
+		expect(next.visibleIndexes.has(5)).toBe(false);
+	});
+
+	it("shows only root entries at document start and end boundaries", () => {
+		const graph = buildTocGraph(items);
+
+		for (const boundary of ["start", "end"] as const) {
+			const state = resolveDesktopTocViewportState({
+				graph,
+				activeIndex: boundary === "start" ? -1 : 5,
+				scrollDirection: boundary === "start" ? "still" : "down",
+				boundary,
+			});
+
+			expect(state.activeIndex).toBe(-1);
+			expect(state.boundary).toBe(boundary);
+			expect([...state.visibleIndexes]).toEqual(graph.rootIndexes);
+			expect([...state.branchIndexes]).toEqual([]);
+			expect([...state.readIndexes]).toEqual([]);
+			expect(state.transitionType).toBe(`boundary-${boundary}`);
+		}
 	});
 });

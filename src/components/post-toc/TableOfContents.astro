@@ -22,20 +22,17 @@ const tocItems = deferHeadings
 <table-of-contents class:list={[className, "group hide-scrollbar"]} id="toc">
 	{
 		tocItems.map((item) => {
-			const depthClass =
-				item.level === 0 ? "" : item.level === 1 ? "ml-4" : "ml-8";
-
 			return (
 				<a
 					href={`#${item.id}`}
 					data-depth={item.depth}
 					data-toc-level={item.level}
+					style={`--toc-level: ${item.level};`}
 					class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2"
 				>
 					<div
 						class:list={[
-							"transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
-							depthClass,
+							"toc-entry-badge transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
 							{
 								"bg-(--toc-badge-bg) text-(--btn-content)":
 									item.badgeKind === "text",
@@ -86,6 +83,7 @@ const tocItems = deferHeadings
 		resolveDesktopTocViewportState,
 		type DesktopTocTransitionType,
 		type DesktopTocViewportState,
+		type DesktopTocBoundary,
 	} from "./toc-desktop-state";
 	import { DesktopTocPresenter } from "./toc-desktop-presenter";
 
@@ -136,28 +134,43 @@ const tocItems = deferHeadings
 			});
 		};
 
-		getCurrentHeadingIndex() {
+	getCurrentHeadingIndex() {
 			const stickySupport =
 				document.querySelector<HTMLElement>(".post-support");
 			const stickyTop = stickySupport
 				? Number.parseFloat(getComputedStyle(stickySupport).top)
 				: Number.NaN;
 			const targetTop = Number.isFinite(stickyTop) ? stickyTop + 24 : 120;
-			return this.activeTracker.update(window.scrollY, targetTop);
+		return this.activeTracker.update(window.scrollY, targetTop);
+	}
+
+	resolveViewportBoundary(currentIndex: number): DesktopTocBoundary {
+		if (!this.activeTracker.nodes.length) return null;
+		if (window.scrollY <= 1 || currentIndex < 0) return "start";
+
+		const contentRoot = this.getContentRoot();
+		const contentRect = contentRoot?.getBoundingClientRect();
+		if (contentRect && contentRect.bottom <= window.innerHeight + 1) {
+			return "end";
 		}
 
-		resolveViewportState(
-			currentIndex: number,
-			reason?: DesktopTocTransitionType,
-		) {
-			return resolveDesktopTocViewportState({
-				graph: this.activeTracker.graph,
-				activeIndex: currentIndex,
-				previous: this.viewportState,
-				scrollDirection: this.activeTracker.scrollDirection,
-				reason,
-			});
-		}
+		return null;
+	}
+
+	resolveViewportState(
+		currentIndex: number,
+		reason?: DesktopTocTransitionType,
+	) {
+		const boundary = this.resolveViewportBoundary(currentIndex);
+		return resolveDesktopTocViewportState({
+			graph: this.activeTracker.graph,
+			activeIndex: currentIndex,
+			previous: this.viewportState,
+			scrollDirection: this.activeTracker.scrollDirection,
+			boundary,
+			reason,
+		});
+	}
 
 		handleAnchorClick = (event: Event) => {
 			const anchor = event
@@ -415,6 +428,10 @@ const tocItems = deferHeadings
 			opacity var(--motion-normal) var(--motion-ease-standard),
 			color var(--motion-fast) var(--motion-ease-standard),
 			background-color var(--motion-fast) var(--motion-ease-standard);
+	}
+
+	table-of-contents#toc :global(.toc-entry-badge) {
+		margin-left: calc(var(--toc-level, 0) * 1rem);
 	}
 
 	table-of-contents#toc :global(a.is-read) {

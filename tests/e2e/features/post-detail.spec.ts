@@ -190,6 +190,76 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 	expect(expandedTocState.indicatorStyle).toContain("transform: translateY");
 });
 
+test("post support TOC collapses to root list at document boundaries", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 720 });
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(page.locator("#toc a").first()).toBeVisible();
+	await page.waitForTimeout(320);
+
+	const topState = await page.locator("#toc").evaluate((toc) => {
+		const entries = Array.from(
+			toc.querySelectorAll<HTMLAnchorElement>("a"),
+		);
+		const childEntries = entries.filter(
+			(entry) => entry.dataset.tocLevel !== "0",
+		);
+		return {
+			visibleCount: toc.querySelectorAll("a.visible").length,
+			currentBranchCount: toc.querySelectorAll("a.is-current-branch")
+				.length,
+			collapsedChildren: childEntries.filter((entry) =>
+				entry.classList.contains("is-collapsed"),
+			).length,
+			childCount: childEntries.length,
+			indicatorStyle:
+				toc
+					.querySelector<HTMLElement>("#active-indicator")
+					?.getAttribute("style") ?? "",
+			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
+		};
+	});
+	expect(topState.visibleCount).toBe(0);
+	expect(topState.currentBranchCount).toBe(0);
+	expect(topState.collapsedChildren).toBe(topState.childCount);
+	expect(topState.indicatorStyle).toContain("opacity: 0");
+	expect(topState.transition).toBe("boundary-start");
+
+	await page.evaluate(() => {
+		window.scrollTo(0, document.documentElement.scrollHeight);
+	});
+	await page.waitForTimeout(420);
+
+	const bottomState = await page.locator("#toc").evaluate((toc) => {
+		const entries = Array.from(
+			toc.querySelectorAll<HTMLAnchorElement>("a"),
+		);
+		const childEntries = entries.filter(
+			(entry) => entry.dataset.tocLevel !== "0",
+		);
+		const scrollContainer = toc.closest<HTMLElement>(
+			".post-support__toc-body",
+		)!;
+		return {
+			visibleCount: toc.querySelectorAll("a.visible").length,
+			currentBranchCount: toc.querySelectorAll("a.is-current-branch")
+				.length,
+			collapsedChildren: childEntries.filter((entry) =>
+				entry.classList.contains("is-collapsed"),
+			).length,
+			childCount: childEntries.length,
+			tocScrollTop: scrollContainer.scrollTop,
+			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
+		};
+	});
+	expect(bottomState.visibleCount).toBe(0);
+	expect(bottomState.currentBranchCount).toBe(0);
+	expect(bottomState.collapsedChildren).toBe(bottomState.childCount);
+	expect(bottomState.tocScrollTop).toBe(0);
+	expect(bottomState.transition).toBe("boundary-end");
+});
+
 test("post support TOC keeps active heading stable across branch transitions", async ({
 	page,
 }) => {

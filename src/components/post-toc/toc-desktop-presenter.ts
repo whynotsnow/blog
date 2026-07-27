@@ -71,6 +71,12 @@ export class DesktopTocPresenter {
 			entry.dataset.tocVisibility = isVisible ? "visible" : "hidden";
 		}
 
+		if (state.boundary) {
+			this.hideIndicator();
+			this.scrollRoot.scrollTo({ top: 0, left: 0, behavior: "auto" });
+			return;
+		}
+
 		this.scheduleIndicator(state);
 		this.scheduleScrollCorrection(state);
 	}
