@@ -1,6 +1,16 @@
 import { buildTocItems, collectTocHeadings, type TocItem } from "./toc-data";
 
 export type { TocItem } from "./toc-data";
+export { TocActiveTracker, type TocScrollDirection } from "./toc-active";
+export {
+	buildTocGraph,
+	createEmptyTocGraph,
+	getTocAncestorIndexes,
+	getTocBranchIndexes,
+	getTocNode,
+	type TocGraph,
+	type TocNode,
+} from "./toc-graph";
 
 export const POST_TOC_DATA_ID = "post-toc-data";
 export const POST_TOC_REFRESH_EVENT = "post-toc:refresh";
@@ -85,22 +95,6 @@ export function findHeadingById(
 	return getHeadingElementsForItems(root, []).find(
 		(heading) => heading.id === id,
 	);
-}
-
-export function getActiveHeadingIndex(
-	headings: HTMLElement[],
-	offset = TOC_ACTIVE_OFFSET,
-): number {
-	let activeIndex = -1;
-	for (let i = 0; i < headings.length; i++) {
-		const heading = headings[i];
-		if (heading.getBoundingClientRect().top <= offset) {
-			activeIndex = i;
-		} else {
-			break;
-		}
-	}
-	return activeIndex;
 }
 
 export function scrollToHeading(
