@@ -201,10 +201,33 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		background: var(--primary);
 	}
 
+	:global(.floating-toc-expanded-region) {
+		height: 0;
+		overflow: hidden;
+		opacity: 0;
+		transform: translateY(-4px);
+		will-change: height, opacity, transform;
+		transition:
+			height var(--motion-normal) var(--motion-ease-standard),
+			opacity var(--motion-fast) var(--motion-ease-standard),
+			transform var(--motion-normal) var(--motion-ease-standard);
+	}
+
+	:global(.floating-toc-expanded-region[data-expanded="true"]) {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
 	:global(.floating-toc-text) {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.floating-toc-expanded-region) {
+			transition: none;
+		}
 	}
 </style>
 
@@ -212,13 +235,21 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 	import {
 		TOC_SCROLL_OFFSET,
 		TocActiveTracker,
+		getTocBranchIndexes,
+		getTocNode,
 		onPostTocRefresh,
 		resolveTocRuntimeState,
 		scrollToHeading,
 		type TocItem,
 	} from "@/components/post-toc/toc-runtime";
-	import { renderFloatingTocItem } from "@/components/post-toc/toc-render";
+	import {
+		renderFloatingTocItem,
+		renderFloatingTocShell,
+	} from "@/components/post-toc/toc-render";
+	import { resolveTocBranchView } from "@/components/post-toc/toc-view";
 	import { onPageLifecycle } from "@/utils/page-lifecycle";
+
+	const EXPANDED_REGION_TRANSITION_MS = 260;
 
 	class FloatingTOC {
 		private btn: HTMLElement | null;
@@ -231,6 +262,9 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		private tocItems: TocItem[] = [];
 		private activeTracker = new TocActiveTracker();
 		private initialized = false;
+		private renderedRootIndex = -1;
+		private slotCleanupTimers = new WeakMap<HTMLElement, number>();
+		private activeSlotTimers = new Set<number>();
 		private removeTocRefreshListener: (() => void) | null = null;
 		private handleScroll = () => {
 			this.updateProgress();
@@ -342,13 +376,28 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		private updateActiveHeading() {
 			if (!this.content || this.headings.length === 0) return;
 			const activeIndex = this.activeTracker.update();
+			const branchView = resolveTocBranchView(
+				this.activeTracker.graph,
+				activeIndex,
+				{ rootsOnly: activeIndex < 0 },
+			);
+			this.renderExpandedRegion(branchView.activeRootIndex);
 
 			const links = Array.from(
-				this.content.querySelectorAll(".floating-toc-item"),
+				this.content.querySelectorAll<HTMLElement>(
+					".floating-toc-item[data-toc-index]",
+				),
 			);
-			links.forEach((link, index) => {
+			links.forEach((link) => {
+				const index = Number(link.dataset.tocIndex ?? -1);
+				const node = getTocNode(this.activeTracker.graph, index);
+				const isActive = index === activeIndex;
+				const isCurrentBranch =
+					node?.rootIndex === branchView.activeRootIndex;
+				link.classList.toggle("active", isActive);
+				link.classList.toggle("is-current-branch", isCurrentBranch);
+
 				if (index === activeIndex) {
-					link.classList.add("active");
 					if (this.isOpen) {
 						const panelContent = this.content;
 						if (panelContent) {
@@ -364,10 +413,112 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 							}
 						}
 					}
-				} else {
-					link.classList.remove("active");
 				}
 			});
+		}
+
+		private renderExpandedRegion(rootIndex: number) {
+			if (!this.content || this.renderedRootIndex === rootIndex) return;
+
+			for (const slot of this.content.querySelectorAll<HTMLElement>(
+				".floating-toc-expanded-region",
+			)) {
+				if (Number(slot.dataset.rootIndex) !== rootIndex) {
+					this.collapseSlot(slot);
+				}
+			}
+
+			this.renderedRootIndex = rootIndex;
+			if (rootIndex < 0) return;
+
+			const slot = this.content.querySelector<HTMLElement>(
+				`.floating-toc-expanded-region[data-root-index="${rootIndex}"]`,
+			);
+			if (!slot) return;
+
+			const childItems = getTocBranchIndexes(
+				this.activeTracker.graph,
+				rootIndex,
+			)
+				.filter((index) => index !== rootIndex)
+				.map((index) => ({
+					item: this.tocItems[index],
+					index,
+				}));
+			if (!childItems.length) return;
+
+			const nextHTML = childItems
+				.map(({ item, index }) => renderFloatingTocItem(item, index))
+				.join("");
+			this.expandSlot(slot, nextHTML);
+		}
+
+		private clearSlotTimer(slot: HTMLElement) {
+			const timer = this.slotCleanupTimers.get(slot);
+			if (!timer) return;
+			window.clearTimeout(timer);
+			this.slotCleanupTimers.delete(slot);
+			this.activeSlotTimers.delete(timer);
+		}
+
+		private collapseSlot(slot: HTMLElement) {
+			this.clearSlotTimer(slot);
+			if (!slot.childElementCount) {
+				slot.dataset.expanded = "false";
+				slot.style.removeProperty("height");
+				slot.style.removeProperty("opacity");
+				slot.style.removeProperty("transform");
+				return;
+			}
+
+			slot.dataset.expanded = "false";
+			slot.style.height = `${slot.scrollHeight}px`;
+			slot.style.opacity = "1";
+			slot.style.transform = "translateY(0)";
+			void slot.offsetHeight;
+			slot.style.height = "0px";
+			slot.style.opacity = "0";
+			slot.style.transform = "translateY(-4px)";
+
+			const timer = window.setTimeout(() => {
+				slot.replaceChildren();
+				slot.style.removeProperty("height");
+				slot.style.removeProperty("opacity");
+				slot.style.removeProperty("transform");
+				this.slotCleanupTimers.delete(slot);
+				this.activeSlotTimers.delete(timer);
+			}, EXPANDED_REGION_TRANSITION_MS);
+			this.slotCleanupTimers.set(slot, timer);
+			this.activeSlotTimers.add(timer);
+		}
+
+		private expandSlot(slot: HTMLElement, nextHTML: string) {
+			this.clearSlotTimer(slot);
+			const previousHeight = slot.childElementCount
+				? slot.scrollHeight
+				: 0;
+			slot.style.height = `${previousHeight}px`;
+			slot.style.opacity = previousHeight > 0 ? "1" : "0";
+			slot.style.transform =
+				previousHeight > 0 ? "translateY(0)" : "translateY(-4px)";
+			slot.innerHTML = nextHTML;
+			slot.dataset.expanded = "true";
+
+			const nextHeight = slot.scrollHeight;
+			void slot.offsetHeight;
+			slot.style.height = `${nextHeight}px`;
+			slot.style.opacity = "1";
+			slot.style.transform = "translateY(0)";
+
+			const timer = window.setTimeout(() => {
+				slot.style.height = "auto";
+				slot.style.removeProperty("opacity");
+				slot.style.removeProperty("transform");
+				this.slotCleanupTimers.delete(slot);
+				this.activeSlotTimers.delete(timer);
+			}, EXPANDED_REGION_TRANSITION_MS);
+			this.slotCleanupTimers.set(slot, timer);
+			this.activeSlotTimers.add(timer);
 		}
 
 		private generateTOC(runtimeRoot?: Element) {
@@ -377,6 +528,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 				this.wrapper?.classList.add("no-toc");
 				this.tocItems = [];
 				this.headings = [];
+				this.renderedRootIndex = -1;
 				this.activeTracker.setState([], []);
 				if (this.content) this.content.innerHTML = "";
 				return;
@@ -387,11 +539,12 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.headings = state.headings;
 			this.tocItems = state.items;
 			this.activeTracker.setState(this.tocItems, this.headings);
-			const html = state.items.map(renderFloatingTocItem).join("");
+			const html = renderFloatingTocShell(state.items);
 
 			if (this.content) {
 				this.content.innerHTML = html;
 			}
+			this.renderedRootIndex = -1;
 
 			this.updateActiveHeading();
 		}
@@ -441,6 +594,11 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			document.removeEventListener("keydown", this.handleKeydown);
 			this.observer?.disconnect();
 			this.removeTocRefreshListener?.();
+			for (const timer of this.activeSlotTimers) {
+				window.clearTimeout(timer);
+			}
+			this.slotCleanupTimers = new WeakMap();
+			this.activeSlotTimers.clear();
 			this.initialized = false;
 		}
 	}

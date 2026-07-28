@@ -2,6 +2,7 @@
 import type { MarkdownHeading } from "astro";
 import { siteConfig } from "@/config";
 import { buildTocItems } from "./toc-data";
+import { renderDesktopTocShell } from "./toc-render";
 
 export interface Props {
 	class?: string;
@@ -17,48 +18,17 @@ const tocItems = deferHeadings
 			maxDepth: siteConfig.toc?.depth || 3,
 			useJapaneseBadge: siteConfig.toc?.useJapaneseBadge || false,
 		});
+const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 ---
 
 <table-of-contents class:list={[className, "group hide-scrollbar"]} id="toc">
-	{
-		tocItems.map((item) => {
-			return (
-				<a
-					href={`#${item.id}`}
-					data-depth={item.depth}
-					data-toc-level={item.level}
-					style={`--toc-level: ${item.level};`}
-					class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2"
-				>
-					<div
-						class:list={[
-							"toc-entry-badge transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
-							{
-								"bg-(--toc-badge-bg) text-(--btn-content)":
-									item.badgeKind === "text",
-							},
-						]}
-					>
-						{item.badgeKind === "text" && item.badge}
-						{item.badgeKind === "square" && (
-							<div class="transition w-2 h-2 rounded-[0.1875rem] bg-(--toc-badge-bg)" />
-						)}
-						{item.badgeKind === "dot" && (
-							<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10" />
-						)}
-					</div>
-					<div
-						class:list={[
-							"transition text-sm",
-							item.level <= 1 ? "text-50" : "text-30",
-						]}
-					>
-						{item.text}
-					</div>
-				</a>
-			);
-		})
-	}
+	<script
+		is:inline
+		type="application/json"
+		data-toc-items
+		set:html={tocItemsJson}
+	/>
+	<Fragment set:html={renderDesktopTocShell(tocItems)} />
 	<div
 		id="active-indicator"
 		style="opacity: 0"
@@ -78,12 +48,11 @@ const tocItems = deferHeadings
 		onPostTocRefresh,
 		type TocItem,
 	} from "./toc-runtime";
-	import { renderDesktopTocItem } from "./toc-render";
+	import { renderDesktopTocShell } from "./toc-render";
 	import {
-		resolveDesktopTocViewportState,
+		resolveDesktopTocViewState,
 		type DesktopTocTransitionType,
-		type DesktopTocViewportState,
-		type DesktopTocBoundary,
+		type DesktopTocViewState,
 	} from "./toc-desktop-state";
 	import { DesktopTocPresenter } from "./toc-desktop-presenter";
 
@@ -92,16 +61,13 @@ const tocItems = deferHeadings
 		headingIdxMap = new Map<string, number>();
 		tocItems: TocItem[] = [];
 		headings: HTMLElement[] = [];
-		tocEntries: HTMLAnchorElement[] = [];
 		activeTracker = new TocActiveTracker();
 		activeIndicator: HTMLElement | null = null;
-		viewportState: DesktopTocViewportState | null = null;
+		viewportState: DesktopTocViewState | null = null;
 		presenter: DesktopTocPresenter | null = null;
 		lastScrollY = 0;
 		scrollRaf = 0;
 		layoutMeasureRaf = 0;
-		boundaryExitTimer = 0;
-		pendingBoundaryExitIndex = -1;
 		contentResizeObserver: ResizeObserver | null = null;
 		initialized = false;
 
@@ -112,13 +78,6 @@ const tocItems = deferHeadings
 					currentIndex,
 					reason,
 				);
-				if (
-					this.shouldStageBoundaryExit(currentIndex, reason, nextState)
-				) {
-					this.stageBoundaryExit(currentIndex);
-					return;
-				}
-				this.clearBoundaryExit();
 				this.viewportState = nextState;
 				this.presenter?.apply(nextState);
 			});
@@ -143,107 +102,61 @@ const tocItems = deferHeadings
 			});
 		};
 
-	getCurrentHeadingIndex() {
+		getCurrentHeadingIndex() {
 			const stickySupport =
 				document.querySelector<HTMLElement>(".post-support");
 			const stickyTop = stickySupport
 				? Number.parseFloat(getComputedStyle(stickySupport).top)
 				: Number.NaN;
-			const targetTop = Number.isFinite(stickyTop) ? stickyTop + 24 : 120;
-		return this.activeTracker.update(window.scrollY, targetTop);
-	}
-
-	resolveViewportBoundary(currentIndex: number): DesktopTocBoundary {
-		if (!this.activeTracker.nodes.length) return null;
-		if (this.boundaryExitTimer) return null;
-		if (window.scrollY <= 1 || currentIndex < 0) return "start";
-
-		if (
-			window.scrollY + window.innerHeight >=
-				document.documentElement.scrollHeight - 1 &&
-			this.activeTracker.scrollDirection !== "up"
-		) {
-			return "end";
+			const targetTop = Number.isFinite(stickyTop)
+				? stickyTop + 24
+				: 120;
+			return this.activeTracker.update(window.scrollY, targetTop);
 		}
 
-		return null;
-	}
+		resolveRootsOnly(currentIndex: number) {
+			if (!this.activeTracker.nodes.length) return true;
+			if (window.scrollY <= 1 || currentIndex < 0) return true;
 
-	resolveViewportState(
-		currentIndex: number,
-		reason?: DesktopTocTransitionType,
-		options: { suppressHighlight?: boolean } = {},
-	) {
-		const boundary = this.resolveViewportBoundary(currentIndex);
-		return resolveDesktopTocViewportState({
-			graph: this.activeTracker.graph,
-			activeIndex: currentIndex,
-			previous: this.viewportState,
-			scrollDirection: this.activeTracker.scrollDirection,
-			boundary,
-			suppressHighlight: options.suppressHighlight,
-			reason,
-		});
-	}
-
-	shouldStageBoundaryExit(
-		currentIndex: number,
-		reason: DesktopTocTransitionType | undefined,
-		nextState: DesktopTocViewportState,
-	) {
-		return (
-			currentIndex >= 0 &&
-			!reason &&
-			!nextState.boundary &&
-			(this.boundaryExitTimer > 0 ||
-				this.viewportState?.boundary === "end")
-		);
-	}
-
-	stageBoundaryExit(currentIndex: number) {
-		const prepareState = this.resolveViewportState(
-			currentIndex,
-			"boundary-exit",
-			{ suppressHighlight: true },
-		);
-		this.viewportState = prepareState;
-		this.presenter?.apply(prepareState);
-
-		if (
-			this.pendingBoundaryExitIndex === currentIndex &&
-			this.boundaryExitTimer
-		) {
-			return;
-		}
-
-		this.clearBoundaryExit();
-		this.pendingBoundaryExitIndex = currentIndex;
-		this.boundaryExitTimer = window.setTimeout(() => {
-			this.boundaryExitTimer = 0;
-			const atDocumentEnd =
+			if (
 				window.scrollY + window.innerHeight >=
-				document.documentElement.scrollHeight - 1;
-			if (atDocumentEnd) {
-				this.pendingBoundaryExitIndex = -1;
-				return;
+					document.documentElement.scrollHeight - 1 &&
+				this.activeTracker.scrollDirection !== "up"
+			) {
+				return true;
 			}
-			const commitState = this.resolveViewportState(
-				currentIndex,
-				"boundary-exit",
-			);
-			this.viewportState = commitState;
-			this.pendingBoundaryExitIndex = -1;
-			this.presenter?.apply(commitState);
-		}, 260);
-	}
 
-	clearBoundaryExit() {
-		if (this.boundaryExitTimer) {
-			window.clearTimeout(this.boundaryExitTimer);
-			this.boundaryExitTimer = 0;
+			return false;
 		}
-		this.pendingBoundaryExitIndex = -1;
-	}
+
+		resolveViewportState(
+			currentIndex: number,
+			reason?: DesktopTocTransitionType,
+			options: { suppressHighlight?: boolean } = {},
+		) {
+			const rootsOnly = this.resolveRootsOnly(currentIndex);
+			return resolveDesktopTocViewState({
+				graph: this.activeTracker.graph,
+				activeIndex: currentIndex,
+				previous: this.viewportState,
+				scrollDirection: this.activeTracker.scrollDirection,
+				rootsOnly,
+				suppressHighlight: options.suppressHighlight,
+				reason,
+			});
+		}
+
+		readTocItems() {
+			const dataElement = this.querySelector<HTMLScriptElement>(
+				"script[data-toc-items]",
+			);
+			if (!dataElement?.textContent) return [];
+			try {
+				return JSON.parse(dataElement.textContent) as TocItem[];
+			} catch {
+				return [];
+			}
+		}
 
 		handleAnchorClick = (event: Event) => {
 			const anchor = event
@@ -292,20 +205,16 @@ const tocItems = deferHeadings
 				this.contentResizeObserver?.disconnect();
 				if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 				if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
-				this.clearBoundaryExit();
 				this.presenter?.dispose();
 			}
 			this.headingIdxMap.clear();
 			this.tocItems = [];
 			this.headings = [];
-			this.tocEntries = [];
 			this.activeTracker.setState([], []);
 			this.viewportState = null;
 			this.presenter = null;
 			this.scrollRaf = 0;
 			this.layoutMeasureRaf = 0;
-			this.boundaryExitTimer = 0;
-			this.pendingBoundaryExitIndex = -1;
 			this.contentResizeObserver = null;
 			this.initialized = false;
 		}
@@ -350,19 +259,15 @@ const tocItems = deferHeadings
 			this.activeIndicator =
 				this.querySelector<HTMLElement>("#active-indicator");
 
-			this.tocEntries = Array.from(
-				this.querySelectorAll<HTMLAnchorElement>("a[href^='#']"),
-			);
+			this.tocItems = this.readTocItems();
 
 			this.initialized = true;
-			if (this.tocEntries.length === 0) return;
+			if (this.tocItems.length === 0) return;
 
-			this.headings = new Array(this.tocEntries.length);
+			this.headings = new Array(this.tocItems.length);
 			const contentRoot = this.getContentRoot();
-			for (let i = 0; i < this.tocEntries.length; i++) {
-				const id = decodeURIComponent(
-					this.tocEntries[i].hash?.substring(1),
-				);
+			for (let i = 0; i < this.tocItems.length; i++) {
+				const id = this.tocItems[i].id;
 				const heading = Array.from(
 					contentRoot?.querySelectorAll<HTMLElement>(
 						"h1, h2, h3, h4, h5, h6",
@@ -373,24 +278,11 @@ const tocItems = deferHeadings
 					this.headingIdxMap.set(id, i);
 				}
 			}
-			this.tocItems = this.tocEntries.map((entry) => {
-				const level = Number(entry.dataset.tocLevel ?? 0);
-				const depth = Number(entry.dataset.depth ?? level + 1);
-				return {
-					id: decodeURIComponent(entry.hash?.substring(1)),
-					text: entry.textContent?.replace(/\s+/g, " ").trim() ?? "",
-					depth,
-					level,
-					badge: "",
-					badgeKind: level === 0 ? "text" : level === 1 ? "square" : "dot",
-				};
-			});
 			this.activeTracker.setState(this.tocItems, this.headings);
 			this.presenter = new DesktopTocPresenter({
 				host: this,
 				scrollRoot: this.tocEl,
 				indicator: this.activeIndicator,
-				entries: this.tocEntries,
 				graph: this.activeTracker.graph,
 			});
 			this.viewportState = this.resolveViewportState(
@@ -454,8 +346,15 @@ const tocItems = deferHeadings
 				return;
 			}
 			const tocItems = buildTocItems(headings, getTocOptions());
-			const tocHTML = tocItems.map(renderDesktopTocItem).join("");
+			const tocItemsJson = JSON.stringify(tocItems).replaceAll(
+				"<",
+				"\\u003c",
+			);
+			const tocHTML = renderDesktopTocShell(tocItems);
 			this.innerHTML =
+				'<scr' +
+				`ipt type="application/json" data-toc-items>${tocItemsJson}</scr` +
+				"ipt>" +
 				tocHTML +
 				'<div id="active-indicator" style="opacity: 0" class="-z-10 absolute bg-(--toc-btn-hover) left-0 right-0 rounded-xl toc-active-indicator group-hover:bg-transparent border-2 border-(--toc-btn-hover) group-hover:border-(--toc-btn-active) border-dashed"></div>';
 			this.dataset.loaded = "true";
@@ -468,7 +367,6 @@ const tocItems = deferHeadings
 			this.contentResizeObserver?.disconnect();
 			if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 			if (this.layoutMeasureRaf) cancelAnimationFrame(this.layoutMeasureRaf);
-			this.clearBoundaryExit();
 			this.presenter?.dispose();
 		}
 	}
@@ -519,6 +417,23 @@ const tocItems = deferHeadings
 		color: var(--text-primary);
 	}
 
+	table-of-contents#toc :global(.toc-expanded-region) {
+		height: 0;
+		overflow: hidden;
+		opacity: 0;
+		transform: translateY(-4px);
+		will-change: height, opacity, transform;
+		transition:
+			height var(--motion-normal) var(--motion-ease-standard),
+			opacity var(--motion-fast) var(--motion-ease-standard),
+			transform var(--motion-normal) var(--motion-ease-standard);
+	}
+
+	table-of-contents#toc :global(.toc-expanded-region[data-expanded="true"]) {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
 	table-of-contents#toc :global(.toc-active-indicator) {
 		top: 0;
 		bottom: auto;
@@ -539,6 +454,12 @@ const tocItems = deferHeadings
 		padding-bottom: 0;
 		opacity: 0;
 		pointer-events: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		table-of-contents#toc :global(.toc-expanded-region) {
+			transition: none;
+		}
 	}
 
 </style>

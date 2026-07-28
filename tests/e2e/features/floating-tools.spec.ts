@@ -191,11 +191,13 @@ test("floating TOC uses shared post TOC data sources", async ({ page }) => {
 			JSON.parse(dataElement.textContent || "[]") as Array<{
 				id: string;
 				text: string;
+				level: number;
 			}>,
 	);
+	const rootTocItems = staticTocItems.filter((item) => item.level === 0);
 	await expect(
 		page.locator("#floating-toc-content .floating-toc-item"),
-	).toHaveCount(staticTocItems.length);
+	).toHaveCount(rootTocItems.length);
 	await expect(
 		page.locator("#floating-toc-content .floating-toc-item", {
 			hasText: "Markdown Tutorial",
@@ -213,6 +215,29 @@ test("floating TOC uses shared post TOC data sources", async ({ page }) => {
 			hasText: "Outside Floating TOC Heading",
 		}),
 	).toHaveCount(0);
+
+	const inlineHtmlItem = staticTocItems.find((item) =>
+		item.text.includes("Inline HTML"),
+	);
+	if (!inlineHtmlItem) throw new Error("Missing Inline HTML TOC item");
+	await page.evaluate((id) => {
+		const heading = document.getElementById(id);
+		if (!heading) throw new Error(`Missing heading ${id}`);
+		window.scrollTo({
+			top: heading.getBoundingClientRect().top + window.scrollY - 120,
+			behavior: "auto",
+		});
+	}, inlineHtmlItem.id);
+	await expect(
+		page.locator("#floating-toc-content .floating-toc-item", {
+			hasText: "Inline HTML",
+		}),
+	).toBeVisible();
+	await expect(
+		page.locator(
+			"#floating-toc-content .floating-toc-expanded-region[data-expanded='true']",
+		),
+	).toHaveCount(1);
 });
 
 test("floating TOC refreshes from decrypted content", async ({ page }) => {

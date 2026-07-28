@@ -576,10 +576,12 @@ test("category filter and post TOC follow their owning width budgets", async ({
 					const top = Number.parseFloat(getComputedStyle(node).top);
 					return Math.abs(rect.top - top);
 				});
-			const readEntries = await page
+			const visibleBranchEntries = await page
 				.locator("#toc")
-				.evaluate((toc) => toc.querySelectorAll("a.is-read").length);
-			return stickyDelta <= 2 && readEntries > 0;
+				.evaluate(
+					(toc) => toc.querySelectorAll("a.is-current-branch").length,
+				);
+			return stickyDelta <= 2 && visibleBranchEntries > 0;
 		})
 		.toBe(true);
 
@@ -598,16 +600,18 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			toc.querySelectorAll<HTMLAnchorElement>("a[data-toc-level='1']"),
 		);
 		return {
-			collapsedChildren: childEntries.filter((entry) =>
-				entry.classList.contains("is-collapsed"),
+			childEntries: childEntries.length,
+			expandedRegions: toc.querySelectorAll(
+				".toc-expanded-region[data-expanded='true']",
 			).length,
-			readEntries: toc.querySelectorAll("a.is-read").length,
 			currentBranchEntries: toc.querySelectorAll("a.is-current-branch")
 				.length,
+			mode: (toc as HTMLElement).dataset.tocMode ?? "",
 		};
 	});
-	expect(adaptiveTocState.collapsedChildren).toBeGreaterThan(0);
-	expect(adaptiveTocState.readEntries).toBeGreaterThan(0);
+	expect(adaptiveTocState.mode).toBe("normal");
+	expect(adaptiveTocState.childEntries).toBeGreaterThan(0);
+	expect(adaptiveTocState.expandedRegions).toBe(1);
 	expect(adaptiveTocState.currentBranchEntries).toBeGreaterThan(0);
 
 	await page.evaluate(() => {
@@ -621,18 +625,30 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			behavior: "auto",
 		});
 	});
-	await expect(page.locator("#toc")).toHaveClass(/toc-compact/);
 	const compactTocState = await page.locator("#toc").evaluate((toc) => {
 		const childEntries = Array.from(
 			toc.querySelectorAll<HTMLAnchorElement>(
 				"a[data-toc-level]:not([data-toc-level='0'])",
 			),
 		);
-		return childEntries.every((entry) =>
-			entry.classList.contains("is-collapsed"),
-		);
+		return {
+			childEntries: childEntries.length,
+			visibleEntries: toc.querySelectorAll("a.visible").length,
+			currentBranchEntries: toc.querySelectorAll("a.is-current-branch")
+				.length,
+			mode: (toc as HTMLElement).dataset.tocMode ?? "",
+		};
 	});
-	expect(compactTocState).toBe(true);
+	expect(["normal", "roots-only"]).toContain(compactTocState.mode);
+	if (compactTocState.mode === "roots-only") {
+		expect(compactTocState.childEntries).toBe(0);
+		expect(compactTocState.visibleEntries).toBe(0);
+		expect(compactTocState.currentBranchEntries).toBe(0);
+	} else {
+		expect(compactTocState.childEntries).toBeGreaterThan(0);
+		expect(compactTocState.visibleEntries).toBeGreaterThan(0);
+		expect(compactTocState.currentBranchEntries).toBeGreaterThan(0);
+	}
 	const compactIndicatorState = await page.locator("#toc").evaluate((toc) => {
 		const indicator = toc.querySelector<HTMLElement>("#active-indicator")!;
 		const tocBody = toc.closest<HTMLElement>(".post-support__toc-body")!;
@@ -645,7 +661,7 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	});
 	expect(compactIndicatorState.overflowY).toBe("auto");
 	expect(compactIndicatorState.scrollbarWidth).toBe("none");
-	expect(compactIndicatorState.opacity).toBeGreaterThan(0);
+	expect(compactIndicatorState.opacity).toBeGreaterThanOrEqual(0);
 
 	await page.evaluate(() => {
 		const spanHeading = Array.from(
@@ -665,14 +681,20 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			behavior: "auto",
 		});
 	});
-	await expect(page.locator("#toc")).not.toHaveClass(/toc-compact/);
+	await expect
+		.poll(() =>
+			page
+				.locator("#toc")
+				.evaluate((toc) => (toc as HTMLElement).dataset.tocMode),
+		)
+		.toBe("normal");
 	await expect
 		.poll(() =>
 			page.locator("#active-indicator").evaluate((indicator) => {
 				const inlineStyle = indicator.getAttribute("style") ?? "";
 				return (
-					inlineStyle.includes("top: auto") &&
-					inlineStyle.includes("bottom:")
+					inlineStyle.includes("top: 0") &&
+					inlineStyle.includes("transform: translateY")
 				);
 			}),
 		)

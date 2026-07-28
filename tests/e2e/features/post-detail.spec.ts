@@ -110,53 +110,57 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 		const supportStyle = getComputedStyle(support);
 		const tocBodyStyle = getComputedStyle(tocBody);
 		const tocStyle = getComputedStyle(toc);
-		const collapsedEntry = toc.querySelector<HTMLElement>("a.is-collapsed");
-		const collapsedEntryStyle = collapsedEntry
-			? getComputedStyle(collapsedEntry)
-			: null;
 		const supportToc =
 			document.querySelector<HTMLElement>(".post-support__toc")!;
 		const supportTocStyle = getComputedStyle(supportToc);
+		const expandedRegion = toc.querySelector<HTMLElement>(
+			".toc-expanded-region",
+		)!;
+		const expandedRegionStyle = getComputedStyle(expandedRegion);
 
 		return {
 			supportTocHeight: supportToc.getBoundingClientRect().height,
 			supportTocTransition: supportTocStyle.transitionProperty,
+			expandedRegionTransition: expandedRegionStyle.transitionProperty,
 			supportOverflowY: supportStyle.overflowY,
 			tocBodyOverflowY: tocBodyStyle.overflowY,
 			tocBodyScrollbarWidth: tocBodyStyle.scrollbarWidth,
 			tocOverflowY: tocStyle.overflowY,
-			collapsedEntryDisplay: collapsedEntryStyle?.display,
-			collapsedEntryMaxHeight: collapsedEntryStyle?.maxHeight,
-			collapsedEntryOpacity: collapsedEntryStyle?.opacity,
-			collapsedEntryTransition: collapsedEntryStyle?.transitionProperty,
+			childAnchors: toc.querySelectorAll(
+				"a[data-toc-level]:not([data-toc-level='0'])",
+			).length,
+			expandedRegionCount: toc.querySelectorAll(".toc-expanded-region")
+				.length,
 		};
 	});
 	expect(overflowState.supportTocHeight).toBeLessThan(330);
 	expect(overflowState.supportTocTransition).toContain("max-height");
+	expect(overflowState.expandedRegionTransition).toContain("height");
+	expect(overflowState.expandedRegionTransition).toContain("opacity");
+	expect(overflowState.expandedRegionTransition).toContain("transform");
 	expect(overflowState.supportOverflowY).toBe("visible");
 	expect(overflowState.tocBodyOverflowY).toBe("auto");
 	expect(overflowState.tocBodyScrollbarWidth).toBe("none");
 	expect(overflowState.tocOverflowY).toBe("visible");
-	expect(overflowState.collapsedEntryDisplay).toBe("flex");
-	expect(overflowState.collapsedEntryMaxHeight).toBe("0px");
-	expect(overflowState.collapsedEntryOpacity).toBe("0");
-	expect(overflowState.collapsedEntryTransition).toContain("max-height");
+	expect(overflowState.childAnchors).toBe(0);
+	expect(overflowState.expandedRegionCount).toBeGreaterThan(0);
 	await expect(
 		page.locator("#toc a", { hasText: "站点施工提示" }),
 	).toHaveCount(0);
 
-	await page
-		.locator("#toc a", { hasText: "Inline HTML" })
-		.evaluate((entry) => {
-			const id = decodeURIComponent(
-				(entry as HTMLAnchorElement).hash.slice(1),
-			);
-			const heading = document.getElementById(id);
-			if (!heading) throw new Error(`Missing heading ${id}`);
-			window.scrollTo({
-				top: heading.getBoundingClientRect().top + window.scrollY - 120,
-			});
+	await page.locator("#toc").evaluate((toc) => {
+		const items = JSON.parse(
+			toc.querySelector<HTMLScriptElement>("script[data-toc-items]")
+				?.textContent || "[]",
+		) as Array<{ id: string; text: string }>;
+		const item = items.find((entry) => entry.text.includes("Inline HTML"));
+		if (!item) throw new Error("Missing Inline HTML TOC item");
+		const heading = document.getElementById(item.id);
+		if (!heading) throw new Error(`Missing heading ${item.id}`);
+		window.scrollTo({
+			top: heading.getBoundingClientRect().top + window.scrollY - 120,
 		});
+	});
 	await page.waitForTimeout(520);
 
 	const expandedTocState = await page.locator("#toc").evaluate((toc) => {
@@ -181,8 +185,6 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 			indicatorStyle: indicator?.getAttribute("style") ?? "",
 		};
 	});
-	expect(expandedTocState.tocCanScroll).toBe(true);
-	expect(expandedTocState.tocScrollTop).toBeGreaterThan(0);
 	expect(expandedTocState.activeText).toContain("Inline HTML");
 	expect(expandedTocState.activeEntryVisible).toBe(true);
 	expect(expandedTocState.indicatorStyle).toContain("top: 0");
@@ -209,27 +211,31 @@ test("post support TOC collapses to root list at document boundaries", async ({
 			visibleCount: toc.querySelectorAll("a.visible").length,
 			currentBranchCount: toc.querySelectorAll("a.is-current-branch")
 				.length,
-			collapsedChildren: childEntries.filter((entry) =>
-				entry.classList.contains("is-collapsed"),
-			).length,
 			childCount: childEntries.length,
 			indicatorStyle:
 				toc
 					.querySelector<HTMLElement>("#active-indicator")
 					?.getAttribute("style") ?? "",
 			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
+			mode: (toc as HTMLElement).dataset.tocMode ?? "",
 		};
 	});
 	expect(topState.visibleCount).toBe(0);
 	expect(topState.currentBranchCount).toBe(0);
-	expect(topState.collapsedChildren).toBe(topState.childCount);
+	expect(topState.childCount).toBe(0);
 	expect(topState.indicatorStyle).toContain("opacity: 0");
-	expect(topState.transition).toBe("boundary-start");
+	expect(topState.transition).toBe("roots-only");
+	expect(topState.mode).toBe("roots-only");
 
 	await page.evaluate(() => {
+		document.documentElement.style.scrollBehavior = "auto";
 		window.scrollTo(0, document.documentElement.scrollHeight);
 	});
-	await page.waitForTimeout(420);
+	await page.waitForFunction(
+		() =>
+			document.querySelector<HTMLElement>("#toc")?.dataset.tocMode ===
+			"roots-only",
+	);
 
 	const bottomState = await page.locator("#toc").evaluate((toc) => {
 		const entries = Array.from(
@@ -245,19 +251,18 @@ test("post support TOC collapses to root list at document boundaries", async ({
 			visibleCount: toc.querySelectorAll("a.visible").length,
 			currentBranchCount: toc.querySelectorAll("a.is-current-branch")
 				.length,
-			collapsedChildren: childEntries.filter((entry) =>
-				entry.classList.contains("is-collapsed"),
-			).length,
 			childCount: childEntries.length,
 			tocScrollTop: scrollContainer.scrollTop,
 			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
+			mode: (toc as HTMLElement).dataset.tocMode ?? "",
 		};
 	});
 	expect(bottomState.visibleCount).toBe(0);
 	expect(bottomState.currentBranchCount).toBe(0);
-	expect(bottomState.collapsedChildren).toBe(bottomState.childCount);
+	expect(bottomState.childCount).toBe(0);
 	expect(bottomState.tocScrollTop).toBe(0);
-	expect(bottomState.transition).toBe("boundary-end");
+	expect(bottomState.transition).toBe("roots-only");
+	expect(bottomState.mode).toBe("roots-only");
 });
 
 test("post support TOC keeps active heading stable across branch transitions", async ({
@@ -276,12 +281,14 @@ test("post support TOC keeps active heading stable across branch transitions", a
 					requestAnimationFrame(() => resolve()),
 				),
 			);
-		const entries = Array.from(
-			document.querySelectorAll<HTMLAnchorElement>("#toc a"),
-		);
-		const roots = entries
-			.map((entry, index) => ({ entry, index }))
-			.filter(({ entry }) => entry.dataset.tocLevel === "0");
+		const items = JSON.parse(
+			document.querySelector<HTMLScriptElement>(
+				"#toc script[data-toc-items]",
+			)?.textContent || "[]",
+		) as Array<{ id: string; text: string; level: number }>;
+		const roots = items
+			.map((item, index) => ({ item, index }))
+			.filter(({ item }) => item.level === 0);
 		const fourthRoot = roots[3];
 		const previousRoot = roots[2];
 		if (!fourthRoot || !previousRoot) {
@@ -290,13 +297,13 @@ test("post support TOC keeps active heading stable across branch transitions", a
 			);
 		}
 
-		const previousBranchChild = entries
-			.map((entry, index) => ({ entry, index }))
+		const previousBranchChild = items
+			.map((item, index) => ({ item, index }))
 			.find(
-				({ entry, index }) =>
+				({ item, index }) =>
 					index > previousRoot.index &&
 					index < fourthRoot.index &&
-					entry.dataset.tocLevel === "1",
+					item.level === 1,
 			);
 		if (!previousBranchChild) {
 			throw new Error(
@@ -304,15 +311,14 @@ test("post support TOC keeps active heading stable across branch transitions", a
 			);
 		}
 
-		const headingTop = (entry: HTMLAnchorElement) => {
-			const id = decodeURIComponent(entry.hash.slice(1));
+		const headingTop = (id: string) => {
 			const heading = document.getElementById(id);
 			if (!heading) throw new Error(`Missing heading ${id}`);
 			return heading.getBoundingClientRect().top + window.scrollY;
 		};
 
-		const startY = headingTop(fourthRoot.entry) - 120;
-		const endY = headingTop(previousBranchChild.entry) - 120;
+		const startY = headingTop(fourthRoot.item.id) - 120;
+		const endY = headingTop(previousBranchChild.item.id) - 120;
 		window.scrollTo(0, startY);
 		await waitFrame();
 
@@ -395,30 +401,32 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 			value?.replace(/\s+/g, " ").trim() ?? "";
 		const wait = (delay: number) =>
 			new Promise((resolve) => window.setTimeout(resolve, delay));
-		const entries = Array.from(
-			document.querySelectorAll<HTMLAnchorElement>("#toc a"),
-		);
-		const roots = entries
-			.map((entry, index) => ({ entry, index }))
-			.filter(({ entry }) => entry.dataset.tocLevel === "0");
+		const items = JSON.parse(
+			document.querySelector<HTMLScriptElement>(
+				"#toc script[data-toc-items]",
+			)?.textContent || "[]",
+		) as Array<{ id: string; text: string; level: number }>;
+		const roots = items
+			.map((item, index) => ({ item, index }))
+			.filter(({ item }) => item.level === 0);
 		const fourthRoot = roots[3];
 		if (!fourthRoot) {
 			throw new Error("Expected markdown tutorial to expose fourth root");
 		}
-		const nextRoot = roots[4]?.index ?? entries.length;
-		const firstChild = entries
-			.map((entry, index) => ({ entry, index }))
+		const nextRoot = roots[4]?.index ?? items.length;
+		const firstChild = items
+			.map((item, index) => ({ item, index }))
 			.find(
-				({ entry, index }) =>
+				({ item, index }) =>
 					index > fourthRoot.index &&
 					index < nextRoot &&
-					entry.dataset.tocLevel === "1",
+					item.level === 1,
 			);
 		if (!firstChild) {
 			throw new Error("Expected fourth root to expose a child heading");
 		}
 
-		const headingId = decodeURIComponent(firstChild.entry.hash.slice(1));
+		const headingId = firstChild.item.id;
 		const heading = document.getElementById(headingId);
 		if (!heading) throw new Error(`Missing heading ${headingId}`);
 
@@ -429,8 +437,8 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		for (let step = 0; step < 20; step += 1) {
 			await wait(100);
 			if (
-				document.querySelector<HTMLElement>("#toc")?.dataset
-					.tocTransition === "boundary-end"
+				document.querySelector<HTMLElement>("#toc")?.dataset.tocMode ===
+				"roots-only"
 			) {
 				break;
 			}
@@ -442,7 +450,7 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 			visible: string;
 			branch: string[];
 			transition: string;
-			phase: string;
+			mode: string;
 		}> = [];
 		for (let step = 0; step < 12; step += 1) {
 			await wait(70);
@@ -452,15 +460,15 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 				),
 				branch: Array.from(
 					document.querySelectorAll<HTMLElement>(
-						"#toc a.is-current-branch:not(.is-collapsed)",
+						"#toc a.is-current-branch",
 					),
 				).map((entry) => normalize(entry.textContent)),
 				transition:
 					document.querySelector<HTMLElement>("#toc")?.dataset
 						.tocTransition ?? "",
-				phase:
+				mode:
 					document.querySelector<HTMLElement>("#toc")?.dataset
-						.tocPhase ?? "",
+						.tocMode ?? "",
 			});
 		}
 		documentElement.style.scrollBehavior = previousScrollBehavior;
@@ -501,9 +509,7 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 	expect(
 		bottomUpState.samples.some(
 			(sample) =>
-				sample.transition === "boundary-exit" &&
-				sample.phase === "prepare" &&
-				sample.visible === "" &&
+				sample.mode === "normal" &&
 				sample.branch.some((text) => text.includes("4 This is an H1")),
 		),
 	).toBe(true);

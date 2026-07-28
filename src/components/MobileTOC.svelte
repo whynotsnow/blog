@@ -1,10 +1,12 @@
 <script lang="ts">
 	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { onMount } from "svelte";
+	import { slide } from "svelte/transition";
 	import I18nKey from "../i18n/i18nKey";
 	import { i18n } from "../i18n/translation";
 	import { navigateToPage } from "../utils/navigation-utils";
 	import { panelManager } from "../utils/panel-manager.js";
+	import { buildTocGraph, getTocBranchIndexes } from "./post-toc/toc-graph";
 	import {
 		TocActiveTracker,
 		onPostTocRefresh,
@@ -12,6 +14,7 @@
 		scrollToHeading as scrollToPostHeading,
 		type TocItem,
 	} from "./post-toc/toc-runtime";
+	import { resolveTocBranchView } from "./post-toc/toc-view";
 
 	let tocItems: TocItem[] = [];
 	let postItems: Array<{
@@ -23,9 +26,27 @@
 	let activeId = "";
 	let isHomePage = false;
 	let swupReady = false;
+	let activeIndex = -1;
 
 	let tocHeadings: HTMLElement[] = [];
 	const activeTracker = new TocActiveTracker();
+
+	$: tocGraph = buildTocGraph(tocItems);
+	$: tocBranchView = resolveTocBranchView(tocGraph, activeIndex, {
+		rootsOnly: activeIndex < 0,
+	});
+	$: rootTocItems = tocGraph.rootIndexes.map((index) => ({
+		item: tocItems[index],
+		index,
+	}));
+
+	const getExpandedTocItems = (rootIndex: number) =>
+		getTocBranchIndexes(tocGraph, rootIndex)
+			.filter((index) => index !== rootIndex)
+			.map((index) => ({
+				item: tocItems[index],
+				index,
+			}));
 
 	const togglePanel = async () => {
 		await panelManager.togglePanel("mobile-toc-panel");
@@ -40,6 +61,7 @@
 		tocItems = state.items;
 		tocHeadings = state.headings;
 		activeTracker.setState(tocItems, tocHeadings);
+		activeIndex = -1;
 	};
 
 	const generatePostList = () => {
@@ -103,7 +125,7 @@
 	};
 
 	const updateActiveHeading = () => {
-		const activeIndex = activeTracker.update();
+		activeIndex = activeTracker.update();
 		activeId = activeTracker.nodes[activeIndex]?.id ?? "";
 	};
 
@@ -300,7 +322,7 @@
 		</div>
 	{:else}
 		<div class="toc-content">
-			{#each tocItems as item (item.id)}
+			{#each rootTocItems as { item, index } (item.id)}
 				<button
 					on:click={() => scrollToHeading(item.id)}
 					class="toc-item level-{item.depth} {activeId === item.id
@@ -317,6 +339,32 @@
 					{/if}
 					<span class="toc-text">{item.text}</span>
 				</button>
+				{#if tocBranchView.activeRootIndex === index}
+					<div
+						class="toc-expanded-region"
+						transition:slide={{ duration: 260 }}
+					>
+						{#each getExpandedTocItems(index) as { item: child } (child.id)}
+							<button
+								on:click={() => scrollToHeading(child.id)}
+								class="toc-item level-{child.depth} {activeId ===
+								child.id
+									? 'active'
+									: ''}"
+								class:active={activeId === child.id}
+							>
+								{#if child.badgeKind === "text"}
+									<span class="badge">{child.badge}</span>
+								{:else if child.badgeKind === "square"}
+									<span class="dot-square"></span>
+								{:else}
+									<span class="dot-small"></span>
+								{/if}
+								<span class="toc-text">{child.text}</span>
+							</button>
+						{/each}
+					</div>
+				{/if}
 			{/each}
 		</div>
 	{/if}
@@ -348,6 +396,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+	}
+
+	.toc-expanded-region {
+		overflow: hidden;
 	}
 
 	.toc-item {
