@@ -244,6 +244,9 @@ test("post support TOC collapses to root list at document boundaries", async ({
 					?.getAttribute("style") ?? "",
 			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
 			mode: (toc as HTMLElement).dataset.tocMode ?? "",
+			rootsOnlyReason:
+				(toc as HTMLElement).dataset.tocRootsOnlyReason ?? "",
+			scrollAnchor: (toc as HTMLElement).dataset.tocScrollAnchor ?? "",
 		};
 	});
 	expect(topState.visibleCount).toBe(0);
@@ -252,6 +255,8 @@ test("post support TOC collapses to root list at document boundaries", async ({
 	expect(topState.indicatorStyle).toContain("opacity: 0");
 	expect(topState.transition).toBe("roots-only");
 	expect(topState.mode).toBe("roots-only");
+	expect(topState.rootsOnlyReason).toBe("top");
+	expect(topState.scrollAnchor).toBe("top");
 
 	await page.evaluate(() => {
 		document.documentElement.style.scrollBehavior = "auto";
@@ -259,8 +264,10 @@ test("post support TOC collapses to root list at document boundaries", async ({
 	});
 	await page.waitForFunction(
 		() =>
-			document.querySelector<HTMLElement>("#toc")?.dataset.tocMode ===
-			"roots-only",
+			window.scrollY + window.innerHeight >=
+				document.documentElement.scrollHeight - 1 &&
+			document.querySelector<HTMLElement>("#toc")?.dataset
+				.tocRootsOnlyReason === "bottom",
 	);
 
 	const bottomState = await page.locator("#toc").evaluate((toc) => {
@@ -281,14 +288,18 @@ test("post support TOC collapses to root list at document boundaries", async ({
 			tocScrollTop: scrollContainer.scrollTop,
 			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
 			mode: (toc as HTMLElement).dataset.tocMode ?? "",
+			rootsOnlyReason:
+				(toc as HTMLElement).dataset.tocRootsOnlyReason ?? "",
+			scrollAnchor: (toc as HTMLElement).dataset.tocScrollAnchor ?? "",
 		};
 	});
 	expect(bottomState.visibleCount).toBe(0);
 	expect(bottomState.currentBranchCount).toBe(0);
 	expect(bottomState.childCount).toBe(0);
-	expect(bottomState.tocScrollTop).toBe(0);
 	expect(bottomState.transition).toBe("roots-only");
 	expect(bottomState.mode).toBe("roots-only");
+	expect(bottomState.rootsOnlyReason).toBe("bottom");
+	expect(bottomState.scrollAnchor).toBe("bottom");
 });
 
 test("post support TOC keeps active heading stable across branch transitions", async ({
@@ -354,6 +365,9 @@ test("post support TOC keeps active heading stable across branch transitions", a
 			scrollY: number;
 			trackerText: string;
 			visible: string;
+			transition: string;
+			scrollAnchor: string;
+			tocScrollTop: number;
 		}> = [];
 		for (let step = 0; step <= 20; step += 1) {
 			const progress = step / 20;
@@ -374,6 +388,16 @@ test("post support TOC keeps active heading stable across branch transitions", a
 				visible: normalize(
 					document.querySelector("#toc a.visible")?.textContent,
 				),
+				transition:
+					document.querySelector<HTMLElement>("#toc")?.dataset
+						.tocTransition ?? "",
+				scrollAnchor:
+					document.querySelector<HTMLElement>("#toc")?.dataset
+						.tocScrollAnchor ?? "",
+				tocScrollTop:
+					document.querySelector<HTMLElement>(
+						".post-support__toc-body",
+					)?.scrollTop ?? 0,
 			});
 		}
 		await new Promise((resolve) => window.setTimeout(resolve, 300));
@@ -465,8 +489,10 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		for (let step = 0; step < 20; step += 1) {
 			await wait(100);
 			if (
-				document.querySelector<HTMLElement>("#toc")?.dataset.tocMode ===
-				"roots-only"
+				window.scrollY + window.innerHeight >=
+					document.documentElement.scrollHeight - 1 &&
+				document.querySelector<HTMLElement>("#toc")?.dataset
+					.tocRootsOnlyReason === "bottom"
 			) {
 				break;
 			}
@@ -479,6 +505,8 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 			branch: string[];
 			transition: string;
 			mode: string;
+			scrollAnchor: string;
+			tocScrollTop: number;
 		}> = [];
 		for (let step = 0; step < 12; step += 1) {
 			await wait(70);
@@ -497,6 +525,13 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 				mode:
 					document.querySelector<HTMLElement>("#toc")?.dataset
 						.tocMode ?? "",
+				scrollAnchor:
+					document.querySelector<HTMLElement>("#toc")?.dataset
+						.tocScrollAnchor ?? "",
+				tocScrollTop:
+					document.querySelector<HTMLElement>(
+						".post-support__toc-body",
+					)?.scrollTop ?? 0,
 			});
 		}
 		documentElement.style.scrollBehavior = previousScrollBehavior;

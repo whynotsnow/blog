@@ -3,6 +3,8 @@ import type { TocScrollDirection } from "./toc-active";
 import { resolveTocActiveRootIndex } from "./toc-view";
 
 export type DesktopTocMode = "roots-only" | "normal";
+export type DesktopTocRootsOnlyReason = "top" | "bottom" | "empty";
+export type DesktopTocScrollAnchor = "top" | "bottom" | "active";
 
 export type DesktopTocTransitionType =
 	| "init"
@@ -22,6 +24,8 @@ export interface DesktopTocViewState {
 	expandedRootIndex: number;
 	transitionType: DesktopTocTransitionType;
 	scrollDirection: TocScrollDirection;
+	rootsOnlyReason: DesktopTocRootsOnlyReason | null;
+	scrollAnchor: DesktopTocScrollAnchor;
 }
 
 export interface ResolveDesktopTocViewOptions {
@@ -30,6 +34,7 @@ export interface ResolveDesktopTocViewOptions {
 	previous?: DesktopTocViewState | null;
 	scrollDirection: TocScrollDirection;
 	rootsOnly?: boolean;
+	rootsOnlyReason?: DesktopTocRootsOnlyReason | null;
 	suppressHighlight?: boolean;
 	reason?: DesktopTocTransitionType;
 }
@@ -64,6 +69,9 @@ export function resolveDesktopTocViewState(
 	options: ResolveDesktopTocViewOptions,
 ): DesktopTocViewState {
 	const rootsOnly = Boolean(options.rootsOnly);
+	const rootsOnlyReason = rootsOnly
+		? (options.rootsOnlyReason ?? "empty")
+		: null;
 	const mode: DesktopTocMode = rootsOnly ? "roots-only" : "normal";
 	const activeRootIndex = rootsOnly
 		? -1
@@ -72,6 +80,24 @@ export function resolveDesktopTocViewState(
 		...options,
 		activeRootIndex,
 	});
+	const scrollAnchor: DesktopTocScrollAnchor = (() => {
+		if (rootsOnly) {
+			return rootsOnlyReason === "bottom" ? "bottom" : "top";
+		}
+		if (
+			options.previous?.mode === "roots-only" &&
+			options.previous.rootsOnlyReason === "bottom"
+		) {
+			return "bottom";
+		}
+		if (
+			transitionType === "root-switch" &&
+			options.scrollDirection === "up"
+		) {
+			return "bottom";
+		}
+		return "active";
+	})();
 
 	return {
 		mode,
@@ -82,5 +108,7 @@ export function resolveDesktopTocViewState(
 		expandedRootIndex: rootsOnly ? -1 : activeRootIndex,
 		transitionType,
 		scrollDirection: options.scrollDirection,
+		rootsOnlyReason,
+		scrollAnchor,
 	};
 }

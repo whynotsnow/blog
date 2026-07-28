@@ -42,24 +42,40 @@ export class DesktopTocPresenter {
 			state.activeRootIndex,
 			state.expandedRootIndex,
 			state.transitionType,
+			state.rootsOnlyReason ?? "none",
+			state.scrollAnchor,
 		].join(":");
 		this.host.dataset.tocTransition = state.transitionType;
 		this.host.dataset.tocMode = state.mode;
+		this.host.dataset.tocRootsOnlyReason = state.rootsOnlyReason ?? "none";
+		this.host.dataset.tocScrollAnchor = state.scrollAnchor;
 		this.host.classList.toggle(
 			"toc-roots-only",
 			state.mode === "roots-only",
 		);
 
 		this.renderExpandedRegion(state.expandedRootIndex, () => {
+			if (state.scrollAnchor === "bottom") {
+				this.anchorScrollBottom();
+			}
 			if (state.highlightIndex < 0) return;
 			this.moveIndicator(state.highlightIndex);
 			this.ensureActiveVisible(state.highlightIndex);
 		});
 		this.applyEntryState(state);
+		if (state.scrollAnchor === "bottom") {
+			this.anchorScrollBottom();
+		}
 
 		if (state.highlightIndex < 0) {
 			this.hideIndicator();
-			this.scrollRoot.scrollTo({ top: 0, left: 0, behavior: "auto" });
+			if (state.scrollAnchor === "top") {
+				this.scrollRoot.scrollTo({
+					top: 0,
+					left: 0,
+					behavior: "auto",
+				});
+			}
 			return;
 		}
 
@@ -138,6 +154,17 @@ export class DesktopTocPresenter {
 
 	private hideIndicator() {
 		this.indicator?.setAttribute("style", "opacity: 0");
+	}
+
+	private anchorScrollBottom() {
+		const maxScrollTop =
+			this.scrollRoot.scrollHeight - this.scrollRoot.clientHeight;
+		if (maxScrollTop <= 0) return;
+		this.scrollRoot.scrollTo({
+			top: maxScrollTop,
+			left: 0,
+			behavior: "auto",
+		});
 	}
 
 	private scheduleIndicator(activeIndex: number) {

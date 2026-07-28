@@ -44,6 +44,7 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 	import { renderDesktopTocShell } from "./toc-render";
 	import {
 		resolveDesktopTocViewState,
+		type DesktopTocRootsOnlyReason,
 		type DesktopTocTransitionType,
 		type DesktopTocViewState,
 	} from "./toc-desktop-state";
@@ -78,19 +79,22 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 			this.store.measure("layout-remeasure");
 		};
 
-		resolveRootsOnly(currentIndex: number) {
-			if (!this.activeTracker.nodes.length) return true;
-			if (window.scrollY <= 1 || currentIndex < 0) return true;
+		resolveRootsOnlyReason(
+			currentIndex: number,
+		): DesktopTocRootsOnlyReason | null {
+			if (!this.activeTracker.nodes.length) return "empty";
+			if (window.scrollY <= 1) return "top";
+			if (currentIndex < 0) return "top";
 
 			if (
 				window.scrollY + window.innerHeight >=
 					document.documentElement.scrollHeight - 1 &&
 				this.activeTracker.scrollDirection !== "up"
 			) {
-				return true;
+				return "bottom";
 			}
 
-			return false;
+			return null;
 		}
 
 		toDesktopReason(reason: TocStoreReason): DesktopTocTransitionType | undefined {
@@ -136,13 +140,14 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 			reason?: DesktopTocTransitionType,
 			options: { suppressHighlight?: boolean } = {},
 		) {
-			const rootsOnly = this.resolveRootsOnly(currentIndex);
+			const rootsOnlyReason = this.resolveRootsOnlyReason(currentIndex);
 			return resolveDesktopTocViewState({
 				graph: this.activeTracker.graph,
 				activeIndex: currentIndex,
 				previous: this.viewportState,
 				scrollDirection: this.activeTracker.scrollDirection,
-				rootsOnly,
+				rootsOnly: rootsOnlyReason !== null,
+				rootsOnlyReason,
 				suppressHighlight: options.suppressHighlight,
 				reason,
 			});
