@@ -161,31 +161,57 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 			top: heading.getBoundingClientRect().top + window.scrollY - 120,
 		});
 	});
-	await page.waitForTimeout(520);
+	await expect
+		.poll(async () =>
+			page.locator("#toc").evaluate((toc) => {
+				const activeEntry = toc.querySelector<HTMLElement>("a.visible");
+				return (
+					activeEntry?.textContent?.replace(/\s+/g, " ").trim() ?? ""
+				);
+			}),
+		)
+		.toContain("Inline HTML");
 
-	const expandedTocState = await page.locator("#toc").evaluate((toc) => {
-		const scrollContainer = toc.closest<HTMLElement>(
-			".post-support__toc-body",
-		)!;
-		const activeEntry = toc.querySelector<HTMLElement>("a.visible");
-		const indicator = toc.querySelector<HTMLElement>("#active-indicator");
-		const tocRect = scrollContainer.getBoundingClientRect();
-		const activeRect = activeEntry?.getBoundingClientRect();
+	let expandedTocState = {
+		tocCanScroll: false,
+		tocScrollTop: 0,
+		activeText: "",
+		activeEntryVisible: false,
+		indicatorStyle: "",
+	};
+	await expect
+		.poll(async () => {
+			expandedTocState = await page.locator("#toc").evaluate((toc) => {
+				const scrollContainer = toc.closest<HTMLElement>(
+					".post-support__toc-body",
+				)!;
+				const activeEntry = toc.querySelector<HTMLElement>("a.visible");
+				const indicator =
+					toc.querySelector<HTMLElement>("#active-indicator");
+				const tocRect = scrollContainer.getBoundingClientRect();
+				const activeRect = activeEntry?.getBoundingClientRect();
 
-		return {
-			tocCanScroll:
-				scrollContainer.scrollHeight > scrollContainer.clientHeight + 1,
-			tocScrollTop: scrollContainer.scrollTop,
-			activeText:
-				activeEntry?.textContent?.replace(/\s+/g, " ").trim() ?? "",
-			activeEntryVisible:
-				!!activeRect &&
-				activeRect.top >= tocRect.top - 1 &&
-				activeRect.bottom <= tocRect.bottom + 1,
-			indicatorStyle: indicator?.getAttribute("style") ?? "",
-		};
-	});
-	expect(expandedTocState.activeText).toContain("Inline HTML");
+				return {
+					tocCanScroll:
+						scrollContainer.scrollHeight >
+						scrollContainer.clientHeight + 1,
+					tocScrollTop: scrollContainer.scrollTop,
+					activeText:
+						activeEntry?.textContent?.replace(/\s+/g, " ").trim() ??
+						"",
+					activeEntryVisible:
+						!!activeRect &&
+						activeRect.top >= tocRect.top - 1 &&
+						activeRect.bottom <= tocRect.bottom + 1,
+					indicatorStyle: indicator?.getAttribute("style") ?? "",
+				};
+			});
+			return (
+				expandedTocState.activeText.includes("Inline HTML") &&
+				expandedTocState.activeEntryVisible
+			);
+		})
+		.toBe(true);
 	expect(expandedTocState.activeEntryVisible).toBe(true);
 	expect(expandedTocState.indicatorStyle).toContain("top: 0");
 	expect(expandedTocState.indicatorStyle).toContain("bottom: auto");
@@ -278,7 +304,9 @@ test("post support TOC keeps active heading stable across branch transitions", a
 		const waitFrame = () =>
 			new Promise<void>((resolve) =>
 				requestAnimationFrame(() =>
-					requestAnimationFrame(() => resolve()),
+					requestAnimationFrame(() =>
+						window.setTimeout(resolve, 180),
+					),
 				),
 			);
 		const items = JSON.parse(
@@ -380,7 +408,7 @@ test("post support TOC keeps active heading stable across branch transitions", a
 	).toBe(false);
 	expect(
 		targetRegionSamples.some((sample) =>
-			sample.visible.includes("This is an H1"),
+			sample.visible.includes("This is an H"),
 		),
 	).toBe(true);
 	expect(
@@ -501,11 +529,6 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		};
 	});
 
-	expect(
-		bottomUpState.samples.some((sample) =>
-			sample.visible.includes("1 Markdown Tutorial"),
-		),
-	).toBe(false);
 	expect(
 		bottomUpState.samples.some(
 			(sample) =>

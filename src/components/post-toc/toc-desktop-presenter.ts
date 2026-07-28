@@ -1,11 +1,14 @@
 import { getTocBranchIndexes, getTocNode, type TocGraph } from "./toc-graph";
 import { renderDesktopTocItem } from "./toc-render";
 import type { DesktopTocViewState } from "./toc-desktop-state";
+import {
+	TOC_SLOT_TRANSITION_MS,
+	TocSlotTransitionController,
+} from "./toc-slot-transition";
 
 const VISIBLE_CLASS = "visible";
-const TRANSITION_FINALIZE_DELAY = 260;
+const TRANSITION_FINALIZE_DELAY = TOC_SLOT_TRANSITION_MS + 80;
 const VISIBILITY_PADDING = 12;
-const EXPANDED_REGION_TRANSITION_MS = 260;
 
 export interface DesktopTocPresenterOptions {
 	host: HTMLElement;
@@ -23,8 +26,7 @@ export class DesktopTocPresenter {
 	private scrollRaf = 0;
 	private finalizeTimer = 0;
 	private renderedRootIndex = -1;
-	private slotCleanupTimers = new WeakMap<HTMLElement, number>();
-	private activeSlotTimers = new Set<number>();
+	private slotTransitions = new TocSlotTransitionController();
 
 	constructor(options: DesktopTocPresenterOptions) {
 		this.host = options.host;
@@ -48,7 +50,11 @@ export class DesktopTocPresenter {
 			state.mode === "roots-only",
 		);
 
-		this.renderExpandedRegion(state.expandedRootIndex);
+		this.renderExpandedRegion(state.expandedRootIndex, () => {
+			if (state.highlightIndex < 0) return;
+			this.moveIndicator(state.highlightIndex);
+			this.ensureActiveVisible(state.highlightIndex);
+		});
 		this.applyEntryState(state);
 
 		if (state.highlightIndex < 0) {
@@ -68,19 +74,19 @@ export class DesktopTocPresenter {
 		this.indicatorRaf = 0;
 		this.scrollRaf = 0;
 		this.finalizeTimer = 0;
-		for (const timer of this.activeSlotTimers) window.clearTimeout(timer);
-		this.slotCleanupTimers = new WeakMap();
-		this.activeSlotTimers.clear();
+		this.slotTransitions.dispose();
 	}
 
-	private renderExpandedRegion(rootIndex: number) {
-		if (this.renderedRootIndex === rootIndex) return;
+	private renderExpandedRegion(rootIndex: number, onSettled?: () => void) {
+		if (this.renderedRootIndex === rootIndex) {
+			return;
+		}
 
 		for (const slot of this.host.querySelectorAll<HTMLElement>(
 			".toc-expanded-region",
 		)) {
 			if (Number(slot.dataset.rootIndex) !== rootIndex) {
-				this.collapseSlot(slot);
+				this.slotTransitions.collapse(slot);
 			}
 		}
 
@@ -103,73 +109,7 @@ export class DesktopTocPresenter {
 		const nextHTML = childItems
 			.map(({ item, index }) => renderDesktopTocItem(item, index))
 			.join("");
-		this.expandSlot(slot, nextHTML);
-	}
-
-	private clearSlotTimer(slot: HTMLElement) {
-		const timer = this.slotCleanupTimers.get(slot);
-		if (!timer) return;
-		window.clearTimeout(timer);
-		this.slotCleanupTimers.delete(slot);
-		this.activeSlotTimers.delete(timer);
-	}
-
-	private collapseSlot(slot: HTMLElement) {
-		this.clearSlotTimer(slot);
-		if (!slot.childElementCount) {
-			slot.dataset.expanded = "false";
-			slot.style.removeProperty("height");
-			slot.style.removeProperty("opacity");
-			slot.style.removeProperty("transform");
-			return;
-		}
-
-		slot.dataset.expanded = "false";
-		slot.style.height = `${slot.scrollHeight}px`;
-		slot.style.opacity = "1";
-		slot.style.transform = "translateY(0)";
-		void slot.offsetHeight;
-		slot.style.height = "0px";
-		slot.style.opacity = "0";
-		slot.style.transform = "translateY(-4px)";
-
-		const timer = window.setTimeout(() => {
-			slot.replaceChildren();
-			slot.style.removeProperty("height");
-			slot.style.removeProperty("opacity");
-			slot.style.removeProperty("transform");
-			this.slotCleanupTimers.delete(slot);
-			this.activeSlotTimers.delete(timer);
-		}, EXPANDED_REGION_TRANSITION_MS);
-		this.slotCleanupTimers.set(slot, timer);
-		this.activeSlotTimers.add(timer);
-	}
-
-	private expandSlot(slot: HTMLElement, nextHTML: string) {
-		this.clearSlotTimer(slot);
-		const previousHeight = slot.childElementCount ? slot.scrollHeight : 0;
-		slot.style.height = `${previousHeight}px`;
-		slot.style.opacity = previousHeight > 0 ? "1" : "0";
-		slot.style.transform =
-			previousHeight > 0 ? "translateY(0)" : "translateY(-4px)";
-		slot.innerHTML = nextHTML;
-		slot.dataset.expanded = "true";
-
-		const nextHeight = slot.scrollHeight;
-		void slot.offsetHeight;
-		slot.style.height = `${nextHeight}px`;
-		slot.style.opacity = "1";
-		slot.style.transform = "translateY(0)";
-
-		const timer = window.setTimeout(() => {
-			slot.style.height = "auto";
-			slot.style.removeProperty("opacity");
-			slot.style.removeProperty("transform");
-			this.slotCleanupTimers.delete(slot);
-			this.activeSlotTimers.delete(timer);
-		}, EXPANDED_REGION_TRANSITION_MS);
-		this.slotCleanupTimers.set(slot, timer);
-		this.activeSlotTimers.add(timer);
+		this.slotTransitions.expand(slot, nextHTML, onSettled);
 	}
 
 	private applyEntryState(state: DesktopTocViewState) {

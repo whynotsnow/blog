@@ -15,12 +15,12 @@ export {
 export const POST_TOC_DATA_ID = "post-toc-data";
 export const POST_TOC_REFRESH_EVENT = "post-toc:refresh";
 export const TOC_SCROLL_OFFSET = 80;
-export const TOC_ACTIVE_OFFSET = 100;
+export const TOC_ACTIVE_OFFSET = 120;
 
 export interface TocRuntimeState {
 	root: Element | null;
 	items: TocItem[];
-	headings: HTMLElement[];
+	headings: Array<HTMLElement | undefined>;
 }
 
 export interface PostTocRefreshDetail {
@@ -60,15 +60,23 @@ export function getTocOptions() {
 export function getHeadingElementsForItems(
 	root: Element | null,
 	items: TocItem[],
-): HTMLElement[] {
+): Array<HTMLElement | undefined> {
 	if (!root) return [];
 
-	const itemIds = new Set(items.map((item) => item.id));
-	return Array.from(
+	const headings = Array.from(
 		root.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6"),
-	).filter((heading) =>
-		itemIds.size > 0 ? itemIds.has(heading.id) : Boolean(heading.id),
 	);
+	if (items.length === 0) {
+		return headings;
+	}
+
+	const headingsById = new Map<string, HTMLElement>();
+	for (const heading of headings) {
+		if (heading.id && !headingsById.has(heading.id)) {
+			headingsById.set(heading.id, heading);
+		}
+	}
+	return items.map((item) => headingsById.get(item.id));
 }
 
 export function resolveTocRuntimeState(runtimeRoot?: Element): TocRuntimeState {
@@ -93,7 +101,7 @@ export function findHeadingById(
 	root: Element | null = getPostContentRoot(),
 ): HTMLElement | undefined {
 	return getHeadingElementsForItems(root, []).find(
-		(heading) => heading.id === id,
+		(heading): heading is HTMLElement => heading?.id === id,
 	);
 }
 
@@ -117,6 +125,35 @@ export function scrollToHeading(
 		behavior: "smooth",
 	});
 	return true;
+}
+
+export function ensureTocTargetsScrollable(
+	targets: Array<HTMLElement | undefined>,
+	offset = TOC_ACTIVE_OFFSET,
+) {
+	const visibleTargets = targets.filter((target): target is HTMLElement =>
+		Boolean(target),
+	);
+	if (visibleTargets.length === 0) return;
+
+	const lastTargetTop = Math.max(
+		...visibleTargets.map(
+			(target) => target.getBoundingClientRect().top + window.scrollY,
+		),
+	);
+	const requiredScrollHeight = lastTargetTop - offset + window.innerHeight;
+	const currentScrollHeight = document.documentElement.scrollHeight;
+	const requiredCompensation = Math.ceil(
+		requiredScrollHeight - currentScrollHeight,
+	);
+	if (requiredCompensation <= 0) return;
+
+	const guard = document.getElementById("page-height-guard");
+	if (!guard) return;
+
+	const currentGuardHeight = Number.parseFloat(guard.style.height || "0");
+	guard.dataset.state = "active";
+	guard.style.height = `${Math.max(currentGuardHeight, requiredCompensation)}px`;
 }
 
 export function refreshRuntimeHeadings(root?: Element) {

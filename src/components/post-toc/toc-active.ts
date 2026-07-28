@@ -20,12 +20,17 @@ function getDocumentTop(element: HTMLElement) {
 }
 
 function findIndexAtProbe(nodes: TocNode[], probeY: number) {
+	let low = 0;
+	let high = nodes.length - 1;
 	let activeIndex = -1;
-	for (const node of nodes) {
+	while (low <= high) {
+		const middle = Math.floor((low + high) / 2);
+		const node = nodes[middle];
 		if (node.rangeStart <= probeY) {
 			activeIndex = node.index;
+			low = middle + 1;
 		} else {
-			break;
+			high = middle - 1;
 		}
 	}
 	return activeIndex;
@@ -45,7 +50,7 @@ export function resolveTocScrollDirection(
 export class TocActiveTracker {
 	graph: TocGraph = createEmptyTocGraph();
 	nodes: TocNode[] = [];
-	headings: HTMLElement[] = [];
+	headings: Array<HTMLElement | undefined> = [];
 	activeIndex = -1;
 	scrollDirection: TocScrollDirection = "still";
 	private activeId = "";
@@ -56,7 +61,7 @@ export class TocActiveTracker {
 		this.offset = options.offset ?? DEFAULT_ACTIVE_OFFSET;
 	}
 
-	setState(items: TocItem[], headings: HTMLElement[]) {
+	setState(items: TocItem[], headings: Array<HTMLElement | undefined>) {
 		const previousActiveId = this.getActiveNode()?.id ?? this.activeId;
 		this.graph = buildTocGraph(items);
 		this.nodes = this.graph.nodes;
@@ -114,6 +119,7 @@ export class TocActiveTracker {
 
 		const probeY = scrollY + this.offset;
 		if (this.activeIndex < 0 || this.scrollDirection === "jump") {
+			this.measure();
 			this.activeIndex = findIndexAtProbe(this.nodes, probeY);
 			this.activeId = this.getActiveNode()?.id ?? "";
 			return this.activeIndex;

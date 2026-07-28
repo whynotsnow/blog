@@ -4,14 +4,16 @@ import { Icon } from "astro-icon/components";
 import TOC from "@components/post-toc/TableOfContents.astro";
 import { formatDateToYYYYMMDD } from "@utils/date-utils";
 import type { PostDetailPageProps } from "@/services/post-detail/types";
+import type { TocItem } from "@components/post-toc/toc-data";
 
 interface Props {
 	headings: MarkdownHeading[];
+	tocItems: TocItem[];
 	support: PostDetailPageProps["support"];
 	deferTocHeadings?: boolean;
 }
 
-const { headings, support, deferTocHeadings = false } = Astro.props;
+const { headings, tocItems, support, deferTocHeadings = false } = Astro.props;
 const hasHeadings = headings.length > 0;
 ---
 
@@ -24,7 +26,7 @@ const hasHeadings = headings.length > 0;
 					文章目录
 				</h2>
 				<div class="post-support__toc-body">
-					<TOC headings={headings} deferHeadings={deferTocHeadings} />
+					<TOC items={tocItems} deferHeadings={deferTocHeadings} />
 				</div>
 			</section>
 		)

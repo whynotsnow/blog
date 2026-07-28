@@ -5,15 +5,17 @@
 	import I18nKey from "../i18n/i18nKey";
 	import { i18n } from "../i18n/translation";
 	import { navigateToPage } from "../utils/navigation-utils";
+	import { onPageLifecycle } from "../utils/page-lifecycle";
 	import { panelManager } from "../utils/panel-manager.js";
 	import { buildTocGraph, getTocBranchIndexes } from "./post-toc/toc-graph";
 	import {
-		TocActiveTracker,
-		onPostTocRefresh,
-		resolveTocRuntimeState,
 		scrollToHeading as scrollToPostHeading,
 		type TocItem,
 	} from "./post-toc/toc-runtime";
+	import {
+		getPostTocStore,
+		type TocStoreSnapshot,
+	} from "./post-toc/toc-store";
 	import { resolveTocBranchView } from "./post-toc/toc-view";
 
 	let tocItems: TocItem[] = [];
@@ -25,11 +27,9 @@
 	}> = [];
 	let activeId = "";
 	let isHomePage = false;
-	let swupReady = false;
 	let activeIndex = -1;
 
-	let tocHeadings: HTMLElement[] = [];
-	const activeTracker = new TocActiveTracker();
+	const tocStore = getPostTocStore();
 
 	$: tocGraph = buildTocGraph(tocItems);
 	$: tocBranchView = resolveTocBranchView(tocGraph, activeIndex, {
@@ -56,12 +56,14 @@
 		await panelManager.togglePanel("mobile-toc-panel", show);
 	};
 
-	const generateTOC = (runtimeRoot?: Element) => {
-		const state = resolveTocRuntimeState(runtimeRoot);
-		tocItems = state.items;
-		tocHeadings = state.headings;
-		activeTracker.setState(tocItems, tocHeadings);
-		activeIndex = -1;
+	const applyTocSnapshot = (snapshot: TocStoreSnapshot) => {
+		tocItems = snapshot.items;
+		activeIndex = snapshot.activeIndex;
+		activeId = snapshot.tracker.nodes[activeIndex]?.id ?? "";
+	};
+
+	const generateTOC = () => {
+		applyTocSnapshot(tocStore.refresh(undefined, "page-view"));
 	};
 
 	const generatePostList = () => {
@@ -124,126 +126,29 @@
 		navigateToPage(url);
 	};
 
-	const updateActiveHeading = () => {
-		activeIndex = activeTracker.update();
-		activeId = activeTracker.nodes[activeIndex]?.id ?? "";
-	};
-
-	const handleResize = () => {
-		activeTracker.measure();
-		updateActiveHeading();
-	};
-
-	let swupListenersRegistered = false;
-	let swupPageViewHandler: (() => void) | null = null;
-	let popstateHandler: (() => void) | null = null;
-
-	const setupSwupListeners = () => {
-		if (
-			typeof window !== "undefined" &&
-			window.swup &&
-			!swupListenersRegistered
-		) {
-			const swup = window.swup;
-
-			// 只监听页面视图事件，避免重复触发
-			swupPageViewHandler = () => {
-				// 延迟执行，确保页面已完全加载
-				setTimeout(() => {
-					init();
-				}, 200);
-			};
-			swup.hooks.on("page:view", swupPageViewHandler);
-
-			swupListenersRegistered = true;
-		} else if (!swupListenersRegistered) {
-			// 降级处理：监听普通页面切换事件
-			popstateHandler = () => {
-				setTimeout(init, 200);
-			};
-			window.addEventListener("popstate", popstateHandler);
-			swupListenersRegistered = true;
-		}
-	};
-
-	const checkSwupAvailability = () => {
-		if (typeof window !== "undefined") {
-			// 检查Swup是否已加载
-			swupReady = !!window.swup;
-
-			// 如果Swup还未加载，监听其加载事件
-			if (!swupReady) {
-				const checkSwup = () => {
-					if (window.swup) {
-						swupReady = true;
-						document.removeEventListener("swup:enable", checkSwup);
-						// Swup加载完成后设置监听器
-						setupSwupListeners();
-					}
-				};
-
-				// 监听Swup启用事件
-				document.addEventListener("swup:enable", checkSwup);
-
-				// 设置超时检查
-				setTimeout(() => {
-					if (window.swup) {
-						swupReady = true;
-						document.removeEventListener("swup:enable", checkSwup);
-						// Swup加载完成后设置监听器
-						setupSwupListeners();
-					}
-				}, 1000);
-			} else {
-				// Swup已经加载，直接设置监听器
-				setupSwupListeners();
-			}
-		}
-	};
-
-	const init = (runtimeRoot?: Element) => {
+	const init = () => {
 		checkIsHomePage();
-		checkSwupAvailability();
 		if (isHomePage) {
 			generatePostList();
 		} else {
-			generateTOC(runtimeRoot);
-			updateActiveHeading();
+			generateTOC();
 		}
 	};
 
 	onMount(() => {
 		// 延迟初始化，确保页面内容已加载
 		setTimeout(init, 100);
-		const removeTocRefreshListener = onPostTocRefresh(({ root }) => {
-			init(root);
+		const unsubscribeStore = tocStore.subscribe((snapshot) => {
+			if (!isHomePage) applyTocSnapshot(snapshot);
 		});
 
-		// 监听滚动事件作为备用
-		window.addEventListener("scroll", updateActiveHeading);
-		window.addEventListener("resize", handleResize);
+		const unsubscribePageView = onPageLifecycle("page-view", () => {
+			setTimeout(() => init(), 200);
+		});
 
 		return () => {
-			window.removeEventListener("scroll", updateActiveHeading);
-			window.removeEventListener("resize", handleResize);
-
-			// 清理Swup事件监听器
-			if (
-				typeof window !== "undefined" &&
-				window.swup &&
-				swupPageViewHandler
-			) {
-				window.swup.hooks.off("page:view", swupPageViewHandler);
-			}
-
-			// 清理popstate事件监听器
-			if (popstateHandler) {
-				window.removeEventListener("popstate", popstateHandler);
-			}
-			removeTocRefreshListener();
-			swupListenersRegistered = false;
-			swupPageViewHandler = null;
-			popstateHandler = null;
+			unsubscribeStore();
+			unsubscribePageView();
 		};
 	});
 
