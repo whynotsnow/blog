@@ -424,6 +424,14 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 			border-color var(--motion-fast) var(--motion-ease-standard);
 	}
 
+	table-of-contents#toc[data-toc-highlight-mode="fade-in"]
+		:global(.toc-active-indicator) {
+		transition:
+			opacity var(--motion-fast) var(--motion-ease-standard),
+			background-color var(--motion-fast) var(--motion-ease-standard),
+			border-color var(--motion-fast) var(--motion-ease-standard);
+	}
+
 	table-of-contents#toc :global(a.is-collapsed) {
 		max-height: 0;
 		min-height: 0;
