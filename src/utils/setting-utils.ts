@@ -1,11 +1,6 @@
-import {
-	DARK_MODE,
-	DEFAULT_THEME,
-	LIGHT_MODE,
-	// WALLPAPER_BANNER,
-} from "@constants/constants";
-import { overlayWallpaperConfig, sakuraConfig, siteConfig } from "@/config";
-import type { LIGHT_DARK_MODE, WALLPAPER_MODE } from "@/types/config";
+import { DARK_MODE, DEFAULT_THEME, LIGHT_MODE } from "@constants/constants";
+import { sakuraConfig, siteConfig, wallConfig } from "@/config";
+import type { LIGHT_DARK_MODE, WALL_MODE } from "@/types/config";
 
 export function getDefaultHue(): number {
 	const fallback = "250";
@@ -151,14 +146,14 @@ export function getStoredTheme(): LIGHT_DARK_MODE {
 	return (localStorage.getItem("theme") as LIGHT_DARK_MODE) || DEFAULT_THEME;
 }
 
-export function getStoredWallpaperMode(): WALLPAPER_MODE {
+export function getStoredWallpaperMode(): WALL_MODE {
 	return (
-		(localStorage.getItem("wallpaperMode") as WALLPAPER_MODE) ||
+		(localStorage.getItem("wallpaperMode") as WALL_MODE) ||
 		siteConfig.wallpaperMode.defaultMode
 	);
 }
 
-export function setWallpaperMode(mode: WALLPAPER_MODE): void {
+export function setWallpaperMode(mode: WALL_MODE): void {
 	localStorage.setItem("wallpaperMode", mode);
 	// 触发自定义事件通知其他组件壁纸模式已改变
 	window.dispatchEvent(
@@ -177,71 +172,68 @@ function getBooleanConfigDefault(
 	return typeof value === "boolean" ? value : fallback;
 }
 
-export function getDefaultOverlayOpacity(): number {
-	return getNumberConfigDefault(overlayWallpaperConfig.overlay?.opacity, 0.8);
+export function getDefaultWallOpacity(): number {
+	return getNumberConfigDefault(wallConfig.effects?.opacity, 0.8);
 }
 
-export function getStoredOverlayOpacity(): number {
-	const stored = localStorage.getItem("overlayOpacity");
-	return stored ? Number(stored) : getDefaultOverlayOpacity();
+export function getStoredWallOpacity(): number {
+	const stored = localStorage.getItem("wallOpacity");
+	return stored ? Number(stored) : getDefaultWallOpacity();
 }
 
-export function setOverlayOpacity(value: number): void {
-	localStorage.setItem("overlayOpacity", String(value));
+export function setWallOpacity(value: number): void {
+	localStorage.setItem("wallOpacity", String(value));
 	const wallpaper = document.querySelector(
-		"[data-overlay-wallpaper]",
+		"[data-wallpaper]",
 	) as HTMLElement | null;
 	if (wallpaper) {
 		wallpaper.style.setProperty("--wallpaper-opacity", String(value));
 	}
-	window.dispatchEvent(new CustomEvent("overlay-settings-change"));
+	window.dispatchEvent(new CustomEvent("wall-settings-change"));
 }
 
-export function getDefaultOverlayBlur(): number {
-	return getNumberConfigDefault(overlayWallpaperConfig.overlay?.blur, 1.5);
+export function getDefaultWallBlur(): number {
+	return getNumberConfigDefault(wallConfig.effects?.blur, 1.5);
 }
 
-export function getStoredOverlayBlur(): number {
-	const stored = localStorage.getItem("overlayBlur");
-	return stored ? Number(stored) : getDefaultOverlayBlur();
+export function getStoredWallBlur(): number {
+	const stored = localStorage.getItem("wallBlur");
+	return stored ? Number(stored) : getDefaultWallBlur();
 }
 
-export function setOverlayBlur(value: number): void {
-	localStorage.setItem("overlayBlur", String(value));
+export function setWallBlur(value: number): void {
+	localStorage.setItem("wallBlur", String(value));
 	const wallpaper = document.querySelector(
-		"[data-overlay-wallpaper]",
+		"[data-wallpaper]",
 	) as HTMLElement | null;
 	if (wallpaper) {
 		wallpaper.style.setProperty("--wallpaper-blur", `${value}px`);
 	}
-	window.dispatchEvent(new CustomEvent("overlay-settings-change"));
+	window.dispatchEvent(new CustomEvent("wall-settings-change"));
 }
 
-export function getDefaultOverlayCardOpacity(): number {
-	return getNumberConfigDefault(
-		overlayWallpaperConfig.overlay?.cardOpacity,
-		0.8,
-	);
+export function getDefaultWallCardOpacity(): number {
+	return getNumberConfigDefault(wallConfig.effects?.cardOpacity, 0.8);
 }
 
-export function getStoredOverlayCardOpacity(): number {
-	const stored = localStorage.getItem("overlayCardOpacity");
-	return stored ? Number(stored) : getDefaultOverlayCardOpacity();
+export function getStoredWallCardOpacity(): number {
+	const stored = localStorage.getItem("wallCardOpacity");
+	return stored ? Number(stored) : getDefaultWallCardOpacity();
 }
 
-export function setOverlayCardOpacity(value: number): void {
-	localStorage.setItem("overlayCardOpacity", String(value));
+export function setWallCardOpacity(value: number): void {
+	localStorage.setItem("wallCardOpacity", String(value));
 	document.documentElement.style.setProperty(
 		"--card-transparent-opacity",
 		String(value),
 	);
-	window.dispatchEvent(new CustomEvent("overlay-settings-change"));
+	window.dispatchEvent(new CustomEvent("wall-settings-change"));
 }
 
-export function applyWallpaperVisualSettings(mode?: WALLPAPER_MODE): void {
+export function applyWallpaperVisualSettings(mode?: WALL_MODE): void {
 	const currentMode = mode || getStoredWallpaperMode();
 	const wallpaper = document.querySelector(
-		"[data-overlay-wallpaper]",
+		"[data-wallpaper]",
 	) as HTMLElement | null;
 	const root = document.documentElement;
 
@@ -249,18 +241,18 @@ export function applyWallpaperVisualSettings(mode?: WALLPAPER_MODE): void {
 		return;
 	}
 
-	if (currentMode === "overlay") {
+	if (currentMode === "full-wall") {
 		wallpaper.style.setProperty(
 			"--wallpaper-opacity",
-			String(getStoredOverlayOpacity()),
+			String(getStoredWallOpacity()),
 		);
 		wallpaper.style.setProperty(
 			"--wallpaper-blur",
-			`${getStoredOverlayBlur()}px`,
+			`${getStoredWallBlur()}px`,
 		);
 		root.style.setProperty(
 			"--card-transparent-opacity",
-			String(getStoredOverlayCardOpacity()),
+			String(getStoredWallCardOpacity()),
 		);
 		return;
 	}

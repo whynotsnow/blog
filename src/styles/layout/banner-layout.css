@@ -180,7 +180,7 @@ body.is-home.home-initial-enter #header-waves {
 
 /* Low-height landscape prioritizes article content in normal banner mode. */
 @media (orientation: landscape) and (max-height: 500px) {
-  body.enable-banner:not(.fullscreen-banner) {
+  body.enable-banner:not(.full-banner) {
     --banner-block-size: 60vh;
     --banner-block-size: 60svh;
     --banner-text-padding: 1rem 1.5rem;
@@ -206,15 +206,15 @@ body.is-home.home-initial-enter #header-waves {
 }
 
 /* Fullscreen has one explicit, mode-specific final state. */
-body.fullscreen-banner.enable-banner {
+body.full-banner.enable-banner {
   --banner-block-size: 100dvh;
 }
 
-body.fullscreen-banner.enable-banner #top-row {
+body.full-banner.enable-banner #top-row {
   min-height: calc(100dvh - var(--main-content-offset));
 }
 
-body.fullscreen-banner.enable-banner #banner-wrapper:not(.mobile-hide-banner) {
+body.full-banner.enable-banner #banner-wrapper:not(.mobile-hide-banner) {
   transform: translateY(0);
 }
 

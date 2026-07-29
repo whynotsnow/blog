@@ -32,7 +32,7 @@ html.is-theme-transitioning #header-waves use {
   will-change: transform, fill;
 }
 
-body.fullscreen-banner.enable-banner #header-waves {
+body.full-banner.enable-banner #header-waves {
   position: absolute;
   right: 0;
   bottom: -1px;

@@ -48,7 +48,7 @@ body:is(.is-home, .is-post) #main-grid {
   transition: top var(--motion-slow) var(--motion-ease-standard);
 }
 
-body.enable-banner .main-content-layer:not(.mobile-main-no-banner):not(.fullscreen-content) {
+body.enable-banner .main-content-layer:not(.mobile-main-no-banner):not(.full-content) {
   top: var(--banner-block-size);
   min-height: calc(100dvh - var(--banner-block-size));
 }
@@ -60,7 +60,7 @@ body.no-banner-mode .main-content-layer,
   min-height: calc(100dvh - var(--main-content-offset));
 }
 
-body.fullscreen-banner.enable-banner .main-content-layer.fullscreen-content {
+body.full-banner.enable-banner .main-content-layer.full-content {
   position: absolute;
   top: var(--banner-block-size);
   min-height: calc(100dvh - var(--main-content-offset));

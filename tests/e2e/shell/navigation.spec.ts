@@ -49,7 +49,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
 	await expect(navbar).toHaveClass(/scrolled/);
 
-	await useStoredPreference(page, "wallpaperMode", "overlay");
+	await useStoredPreference(page, "wallpaperMode", "full-wall");
 	await gotoPage(page, "/category/tech/");
 	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 	await expect(banner).toBeHidden();
@@ -58,7 +58,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 test("fullscreen category and post pages align the main region", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "wallpaperMode", "fullscreen");
+	await useStoredPreference(page, "wallpaperMode", "full-banner");
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await gotoPage(page, "/category/tech/");
 

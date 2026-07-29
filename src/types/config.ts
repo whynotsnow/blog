@@ -1,10 +1,10 @@
 import type {
 	DARK_MODE,
 	LIGHT_MODE,
-	WALLPAPER_BANNER,
-	WALLPAPER_FULLSCREEN,
-	WALLPAPER_NONE,
-	WALLPAPER_OVERLAY,
+	WALL_BANNER,
+	WALL_FULL_BANNER,
+	WALL_FULL,
+	WALL_NONE,
 } from "../constants/constants";
 
 export type SiteConfig = {
@@ -120,7 +120,7 @@ export type SiteConfig = {
 
 	// 壁纸模式配置
 	wallpaperMode: {
-		defaultMode: "banner" | "fullscreen" | "overlay" | "none"; // 默认壁纸模式：banner=顶部横幅，fullscreen=全屏横幅，overlay=叠加壁纸，none=无壁纸
+		defaultMode: "banner" | "full-banner" | "full-wall" | "none"; // 默认壁纸模式：banner=横幅模式，full-banner=全屏横幅，full-wall=全屏壁纸，none=隐藏壁纸
 		showModeSwitchOnMobile?: "off" | "mobile" | "desktop" | "both"; // 整体布局方案切换按钮显示设置：off=隐藏，mobile=仅移动端，desktop=仅桌面端，both=全部显示
 	};
 
@@ -248,11 +248,11 @@ type TwikooConfig = {
 
 export type LIGHT_DARK_MODE = typeof LIGHT_MODE | typeof DARK_MODE;
 
-export type WALLPAPER_MODE =
-	| typeof WALLPAPER_BANNER
-	| typeof WALLPAPER_FULLSCREEN
-	| typeof WALLPAPER_OVERLAY
-	| typeof WALLPAPER_NONE;
+export type WALL_MODE =
+	| typeof WALL_BANNER
+	| typeof WALL_FULL_BANNER
+	| typeof WALL_FULL
+	| typeof WALL_NONE;
 
 export type BlogPostData = {
 	body: string;
@@ -318,8 +318,8 @@ export type SakuraConfig = {
 	zIndex: number; // 层级，确保樱花在合适的层级显示
 };
 
-export type OverlayWallpaperConfig = {
-	enable?: boolean; // 是否启用叠加壁纸资源
+export type WallConfig = {
+	enable?: boolean; // 是否启用全屏壁纸资源
 	src:
 		| string
 		| string[]
@@ -336,10 +336,10 @@ export type OverlayWallpaperConfig = {
 	opacity?: number; // 壁纸透明度，0-1之间
 	blur?: number; // 背景模糊程度，单位px
 	switchable?: boolean; // 是否允许在设置面板中切换壁纸模式
-	overlay?: {
-		opacity?: number; // 叠加壁纸不透明度
-		blur?: number; // 叠加壁纸模糊半径
-		cardOpacity?: number; // 叠加模式下卡片不透明度
+	effects?: {
+		opacity?: number; // 全屏壁纸不透明度
+		blur?: number; // 全屏壁纸模糊半径
+		cardOpacity?: number; // 全屏壁纸模式下卡片不透明度
 		switchable?:
 			| boolean
 			| {
@@ -349,9 +349,6 @@ export type OverlayWallpaperConfig = {
 			  };
 	};
 };
-
-/** @deprecated Use OverlayWallpaperConfig for the overlay wallpaper layer. */
-export type FullscreenWallpaperConfig = OverlayWallpaperConfig;
 
 /**
  * Live2D 看板娘配置

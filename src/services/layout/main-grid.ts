@@ -47,7 +47,7 @@ export async function buildMainGridLayoutViewModel({
 	const mobileNonHomeClass =
 		!isHomePage && !keepsBannerOnContentPage ? "mobile-hide-banner" : "";
 	const transparentClass =
-		config.wallpaperMode.defaultMode === "fullscreen"
+		config.wallpaperMode.defaultMode === "full-banner"
 			? "wallpaper-transparent"
 			: "";
 	const [bannerImages, footer] = await Promise.all([

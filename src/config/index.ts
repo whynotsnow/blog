@@ -16,4 +16,4 @@ export { live2dCompanionConfig } from "./live2d-companion";
 export { profileConfig } from "./profile";
 export { shareConfig } from "./share";
 export { SITE_LANG, SITE_TIMEZONE, siteConfig } from "./site";
-export { fullscreenWallpaperConfig, overlayWallpaperConfig } from "./wallpaper";
+export { wallConfig } from "./wallpaper";

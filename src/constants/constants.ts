@@ -22,7 +22,7 @@ export const PAGE_WIDTH = 86;
 export const UNCATEGORIZED = "uncategorized";
 
 // Wallpaper mode constants
-export const WALLPAPER_BANNER = "banner";
-export const WALLPAPER_FULLSCREEN = "fullscreen";
-export const WALLPAPER_OVERLAY = "overlay";
-export const WALLPAPER_NONE = "none";
+export const WALL_BANNER = "banner";
+export const WALL_FULL_BANNER = "full-banner";
+export const WALL_FULL = "full-wall";
+export const WALL_NONE = "none";

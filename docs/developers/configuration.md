@@ -24,7 +24,7 @@
 | `src/config/site.ts` | 站点核心配置 `siteConfig`、`SITE_LANG`、`SITE_TIMEZONE`。 |
 | `src/config/navbar.ts` | 顶部导航 `navBarConfig`。 |
 | `src/config/profile.ts` | 个人资料 `profileConfig`。 |
-| `src/config/wallpaper.ts` | 叠加壁纸 `overlayWallpaperConfig`。 |
+| `src/config/wallpaper.ts` | 全屏壁纸 `wallConfig`。 |
 | `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
 | `src/config/music.ts` | 音乐播放器 `musicPlayerConfig`。 |
 | `src/config/effects.ts` | 站点特效 `sakuraConfig`。 |
@@ -37,7 +37,7 @@
 | 配置 | 说明 |
 | --- | --- |
 | `siteConfig` | 站点信息、语言、特色页面、横幅、主题和文章列表等。 |
-| `overlayWallpaperConfig` | 叠加壁纸资源与效果行为。 |
+| `wallConfig` | 全屏壁纸资源与效果行为。 |
 | `navBarConfig` | 顶部导航链接。 |
 | `profileConfig` | 首页作者资料模块内容。 |
 | `licenseConfig` | 默认内容协议展示。 |
@@ -94,15 +94,15 @@
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。它只控制 Post List View，不再隐式改写页面级 Layout Policy。
 - 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 共享 `1280px` 外部最大宽度。首页在 `1200px` 以上使用最大 `992px` 的三列 Feed + Profile support，在 `880px–1199px` 使用最大 `656px` 的双列 Feed + Profile support，低于 `880px` 时把同一个 Profile DOM 放到 Main 前方；Feed 低于 `608px` 后退为单列。分类页与文章页不提供 support slot，内容区在 `1200px` 以下最大 `656px`、达到 `1200px` 后最大 `992px`。断点针对实际容器，不直接对应 viewport 宽度。
 - `siteConfig.pageScaling` 仅保留给尚未迁移的 `viewport-legacy` 页面；首页、分类页和文章详情页会主动清除根字号缩放，不能依赖该配置改变 Card、Sidebar 或 Typography 尺寸。
-- `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`fullscreen`、`overlay`、`none`。`fullscreen` 表示全屏高度的 banner 模式；`overlay` 才会显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果。
+- `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`full-banner`、`full-wall`、`none`。`banner` 表示横幅模式；`full-banner` 表示全屏横幅；`full-wall` 显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果；`none` 隐藏壁纸。
 - Banner、Navbar 与尚未迁移页面仍使用 viewport 断点：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。首页、分类页和文章详情页的内容布局不使用这些断点，而以 `page-shell` 与 `post-feed` Container Query 为准。
 - 普通 Banner 使用 `--banner-block-size` 同步控制横幅高度与正文起始位置；低高度横屏约为 `60vh` 以优先正文。首页 Fullscreen Banner 始终为 `100dvh`，非首页移动端隐藏 Banner。
 - `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。当前入口只保留 UI 状态预览，不会写入运行时配置。
 - `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 waves。
 - `siteConfig.banner.homeText.switchable`：控制首页 banner 文案设置入口。用户设置会写入 `localStorage.bannerTitleEnabled` 并实时显示/隐藏首页文案。`homeText.subtitle` 在 `typewriter.enable=true` 时交给 Typewriter 轮播；关闭 Typewriter 时渲染第一条副标题作为静态文案。
-- `overlayWallpaperConfig.enable` 和 `overlayWallpaperConfig.switchable`：控制叠加壁纸资源与壁纸模式切换入口。
-- `overlayWallpaperConfig.overlay`：提供叠加壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。用户设置会分别写入 `localStorage.overlayOpacity`、`localStorage.overlayBlur`、`localStorage.overlayCardOpacity`。
-- 横幅模式与全屏模式共用 `siteConfig.banner.carousel`，差异只来自 Banner 几何与页面 Shell 表现；`overlayWallpaperConfig.carousel` 只作用于 `overlay` 模式的 `[data-overlay-wallpaper]` 叠加图层。
+- `wallConfig.enable` 和 `wallConfig.switchable`：控制全屏壁纸资源与壁纸模式切换入口。
+- `wallConfig.effects`：提供全屏壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。用户设置会分别写入 `localStorage.wallOpacity`、`localStorage.wallBlur`、`localStorage.wallCardOpacity`。
+- 横幅模式与全屏横幅共用 `siteConfig.banner.carousel`，差异只来自 Banner 几何与页面 Shell 表现；`wallConfig.carousel` 只作用于 `full-wall` 模式的 `[data-wallpaper]` 全屏壁纸图层。
 - `sakuraConfig.switchable`：控制樱花特效设置入口。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
 - `live2dCompanionConfig.enable` 仅提供 Live2D Companion 的默认页面挂载状态；即使设为 `false`，Floating Tools 的看板娘入口仍可重新挂载组件。访客挂载偏好写入 `localStorage.live2d-companion-mounted`；当前默认 `hiddenOnMobile: false`，中等与小屏宽度也会保留看板娘入口和组件，只有显式改为 `true` 时才把 `max-width: 1280px` 视为设备限制。组件运行时使用 `/live2d-companion/live2d-host.html` 与 `/live2d-companion/l2d-widget.min.js` 的 iframe host 隔离加载 Live2D 模型；`models` 可使用 `.model3.json` 路径，也可使用 `{ path, label, avatar, scale, offset, defaultParameters, expressionMenu, idlePlayback }` 模型条目。`modelSwitch` 控制本地模型切换按钮，当前模型索引写入 `localStorage.live2d-companion-model-index`；全局 `expressionMenu` 只提供默认面板文案、中文 `labels` 与上限，每个模型可通过自己的 `expressionMenu.shortcuts`、`enablePanel`、`maxActions`、`maxPanelItems` 覆盖。iframe action 区按 14jiang 的布局固定最多支持 5 个 expression action，完整 expression 面板固定最多支持 `4 × 6 = 24` 个表情；超过上限的内容不会承诺展示，新模型接入时应删减、分组或关闭面板后只配置 action。完整 expression 面板由父页面组件渲染，不放在 iframe 内，使用无滚动紧凑网格，避免被 Live2D canvas 或模型区域遮挡。`idlePlayback` 控制用户空闲时的随机 expression 播放，可按模型启用并通过 `interval` 拉长播放间隔；触发前会检查鼠标是否仍在 iframe 内或完整表情面板是否打开，若用户正在交互则跳过本轮并等待下一轮，避免抢占手动操作。`avatar` 指向收起与加载状态的默认头像资源，`width` / `height` 控制模型尺寸，`modelScale` / `modelOffset` 只用于模型绘制微调，`defaultParameters` 在对应模型加载完成后设置默认 Live2D 参数，不实现 VTS 的 ToggleExpression 开关状态，也不把仅用于初始姿态的参数注册成 expression 动作。iframe 外层高度会限制为模型高度加少量菜单与提示空间，避免透明层遮挡页面操作。`ui` 配置只控制 iframe 壳层 UI，例如站点语义色同步、消息气泡偏移、本地图标、收起按钮文案和是否隐藏 widget 自带状态面板；Live2D 菜单按钮由 host 使用本地 SVG 渲染，不依赖远程 Iconify 请求。这些配置不得依赖具体模型名称或模型内部节点，后续更换模型时应优先只调整模型资源与绘制参数。页面或其他组件需要控制看板娘时，应通过 `src/features/live2d-companion/events.ts` 发布 show / collapse / toggle / message / expression 命令，不直接操作 iframe DOM。内部收起状态写入 `localStorage.live2d-companion-collapsed`；收起或首次加载时显示圆形头像入口，加载中在头像上叠加 loading ring，不再使用独立休眠交互或休息提示。Floating Tools 关闭时才会卸载组件 DOM、iframe、Canvas 与实例，重新开启时重新初始化。
 - Live2D 完整 expression 面板内点击表情后保持面板打开，方便连续预览多个表情；用户点击快捷表情、切换模型、收起或其他非面板操作时应关闭完整面板，表示意图已经离开表情列表。

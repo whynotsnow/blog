@@ -1,8 +1,9 @@
 <script lang="ts">
 	import {
-		WALLPAPER_BANNER,
-		WALLPAPER_FULLSCREEN,
-		WALLPAPER_NONE,
+		WALL_BANNER,
+		WALL_FULL,
+		WALL_FULL_BANNER,
+		WALL_NONE,
 	} from "@constants/constants";
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
@@ -11,33 +12,38 @@
 		getStoredWallpaperMode,
 		setWallpaperMode,
 	} from "@utils/setting-utils";
-	import type { WALLPAPER_MODE } from "@/types/config";
+	import type { WALL_MODE } from "@/types/config";
 	import { panelManager } from "../utils/panel-manager.js";
 	import { onMount } from "svelte";
 
 	const wallpaperOptions: {
-		mode: WALLPAPER_MODE;
+		mode: WALL_MODE;
 		icon: string;
 		label: I18nKey;
 	}[] = [
 		{
-			mode: WALLPAPER_BANNER,
+			mode: WALL_BANNER,
 			icon: "material-symbols:image-outline",
-			label: I18nKey.wallpaperBanner,
+			label: I18nKey.wallBanner,
 		},
 		{
-			mode: WALLPAPER_FULLSCREEN,
+			mode: WALL_FULL_BANNER,
 			icon: "material-symbols:wallpaper",
-			label: I18nKey.wallpaperFullscreen,
+			label: I18nKey.wallFullBanner,
 		},
 		{
-			mode: WALLPAPER_NONE,
+			mode: WALL_FULL,
+			icon: "material-symbols:full-coverage-outline-rounded",
+			label: I18nKey.wallFull,
+		},
+		{
+			mode: WALL_NONE,
 			icon: "material-symbols:hide-image-outline",
-			label: I18nKey.wallpaperNone,
+			label: I18nKey.wallNone,
 		},
 	];
 
-	let mode: WALLPAPER_MODE = $state(WALLPAPER_BANNER);
+	let mode: WALL_MODE = $state(WALL_BANNER);
 
 	onMount(() => {
 		mode = getStoredWallpaperMode();
@@ -48,7 +54,7 @@
 			wallpaperOptions[0].icon,
 	);
 
-	function switchWallpaperMode(newMode: WALLPAPER_MODE) {
+	function switchWallpaperMode(newMode: WALL_MODE) {
 		mode = newMode;
 		setWallpaperMode(newMode);
 	}

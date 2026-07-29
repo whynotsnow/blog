@@ -60,12 +60,12 @@
   }
 
   .wallpaper-transparent .float-panel,
-  .wallpaper-overlay .float-panel {
+  .wallpaper-full .float-panel {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
 
   .wallpaper-transparent .btn-card,
-  .wallpaper-overlay .btn-card {
+  .wallpaper-full .btn-card {
     @apply bg-(--card-bg-transparent) backdrop-blur-sm;
   }
   .link {

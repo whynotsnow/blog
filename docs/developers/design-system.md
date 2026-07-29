@@ -73,7 +73,7 @@ Navbar 外层高度由 `--navbar-shell-height` 所有；`--main-content-offset` 
 
 Light Theme 在 Semantic 层提供默认值，`:root.dark` 只重映射主题相关 token。Wallpaper 模式通过 body class 重映射 Card Surface；组件不得自行重新计算 Light/Dark 颜色。
 
-文章详情页在普通模式使用透明 Content Surface；Wallpaper transparent/overlay 模式仍由文章 Feature 增加半透明背景、边框、圆角和 blur，以保证复杂背景上的可读性。
+文章详情页在普通模式使用透明 Content Surface；Wallpaper transparent/full-wall 模式仍由文章 Feature 增加半透明背景、边框、圆角和 blur，以保证复杂背景上的可读性。
 
 ## 新增或修改视觉规则
 

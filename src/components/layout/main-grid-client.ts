@@ -11,7 +11,7 @@ import { initializePostCardTagFitting } from "@/features/post-list/controller";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
 import { applyWallpaperVisualSettings } from "@/utils/setting-utils";
-import type { WALLPAPER_MODE } from "@/types/config";
+import type { WALL_MODE } from "@/types/config";
 
 const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 const navbarTransparentMode =
@@ -35,17 +35,17 @@ const PAGE_ENTRY_INITIAL_SCROLL_DURATION_MS = 620;
 const PAGE_ENTRY_HISTORY_SCROLL_DURATION_MS = 520;
 const HOME_INITIAL_ENTRANCE_DURATION_MS = 1320;
 
-function getWallpaperMode(): WALLPAPER_MODE {
+function getWallpaperMode(): WALL_MODE {
 	const stored = localStorage.getItem("wallpaperMode");
 	if (
 		stored === "banner" ||
-		stored === "fullscreen" ||
-		stored === "overlay" ||
+		stored === "full-banner" ||
+		stored === "full-wall" ||
 		stored === "none"
 	) {
 		return stored;
 	}
-	return defaultWallpaperMode as WALLPAPER_MODE;
+	return defaultWallpaperMode as WALL_MODE;
 }
 
 function forceReflow() {
@@ -56,7 +56,7 @@ function getMainContent(): HTMLElement | null {
 	return document.querySelector(".main-content-layer");
 }
 
-function syncMainContentPosition(mode: WALLPAPER_MODE) {
+function syncMainContentPosition(mode: WALL_MODE) {
 	const mainContent = getMainContent();
 	const bannerWrapper = document.getElementById("banner-wrapper");
 	if (!mainContent) return;
@@ -72,9 +72,9 @@ function syncMainContentPosition(mode: WALLPAPER_MODE) {
 		"content-start";
 
 	mainContent.classList.remove("mobile-main-no-banner", "no-banner-layout");
-	mainContent.classList.remove("fullscreen-content");
+	mainContent.classList.remove("full-content");
 
-	if (mode === "fullscreen") {
+	if (mode === "full-banner") {
 		const keepsFullscreenBanner =
 			isHomePage || (targetsContentStart && !isPostPage);
 		if (isMobile && !keepsFullscreenBanner) {
@@ -87,7 +87,7 @@ function syncMainContentPosition(mode: WALLPAPER_MODE) {
 		}
 
 		bannerWrapper?.classList.remove("mobile-hide-banner");
-		mainContent.classList.add("fullscreen-content");
+		mainContent.classList.add("full-content");
 		return;
 	}
 
@@ -165,30 +165,30 @@ function applyInitialPageShell() {
 			body.classList.add("enable-banner");
 			body.classList.remove(
 				"wallpaper-transparent",
-				"wallpaper-overlay",
-				"fullscreen-banner",
+				"wallpaper-full",
+				"full-banner",
 				"no-banner-mode",
 			);
 			break;
-		case "fullscreen":
+		case "full-banner":
 			body.classList.remove(
 				"wallpaper-transparent",
-				"wallpaper-overlay",
+				"wallpaper-full",
 				"no-banner-mode",
 			);
-			body.classList.add("enable-banner", "fullscreen-banner");
+			body.classList.add("enable-banner", "full-banner");
 			break;
-		case "overlay":
+		case "full-wall":
 			body.classList.remove("enable-banner");
-			body.classList.remove("wallpaper-transparent", "fullscreen-banner");
-			body.classList.add("wallpaper-overlay", "no-banner-mode");
+			body.classList.remove("wallpaper-transparent", "full-banner");
+			body.classList.add("wallpaper-full", "no-banner-mode");
 			break;
 		case "none":
 			body.classList.remove(
 				"enable-banner",
 				"wallpaper-transparent",
-				"wallpaper-overlay",
-				"fullscreen-banner",
+				"wallpaper-full",
+				"full-banner",
 			);
 			body.classList.add("no-banner-mode");
 			break;
@@ -203,8 +203,8 @@ function applyInitialPageShell() {
 export function applyWallpaperMode() {
 	const wallpaperMode = getWallpaperMode();
 	const bannerWrapper = document.getElementById("banner-wrapper");
-	const fullscreenWallpaper = document.querySelector(
-		"[data-overlay-wallpaper]",
+	const fullWallpaper = document.querySelector(
+		"[data-wallpaper]",
 	) as HTMLElement | null;
 	const navbar = document.getElementById("navbar");
 	const body = document.body;
@@ -215,7 +215,7 @@ export function applyWallpaperMode() {
 	switch (wallpaperMode) {
 		case "banner":
 			if (bannerWrapper) bannerWrapper.style.display = "block";
-			if (fullscreenWallpaper) fullscreenWallpaper.style.display = "none";
+			if (fullWallpaper) fullWallpaper.style.display = "none";
 			if (tocWrapper) {
 				const scrollTop = document.documentElement.scrollTop;
 				const bannerHeight =
@@ -226,8 +226,8 @@ export function applyWallpaperMode() {
 			}
 			body.classList.remove(
 				"wallpaper-transparent",
-				"wallpaper-overlay",
-				"fullscreen-banner",
+				"wallpaper-full",
+				"full-banner",
 				"no-banner-mode",
 			);
 			forceReflow();
@@ -248,9 +248,9 @@ export function applyWallpaperMode() {
 			forceReflow();
 			break;
 
-		case "fullscreen":
+		case "full-banner":
 			if (bannerWrapper) bannerWrapper.style.display = "block";
-			if (fullscreenWallpaper) fullscreenWallpaper.style.display = "none";
+			if (fullWallpaper) fullWallpaper.style.display = "none";
 			if (tocWrapper) {
 				const scrollTop = document.documentElement.scrollTop;
 				const bannerHeight =
@@ -261,11 +261,11 @@ export function applyWallpaperMode() {
 			}
 			body.classList.remove(
 				"wallpaper-transparent",
-				"wallpaper-overlay",
+				"wallpaper-full",
 				"no-banner-mode",
 			);
 			forceReflow();
-			body.classList.add("enable-banner", "fullscreen-banner");
+			body.classList.add("enable-banner", "full-banner");
 			if (navbar) {
 				navbar.removeAttribute("data-dynamic-transparent");
 				navbar.setAttribute(
@@ -282,15 +282,14 @@ export function applyWallpaperMode() {
 			forceReflow();
 			break;
 
-		case "overlay":
+		case "full-wall":
 			if (bannerWrapper) bannerWrapper.style.display = "none";
-			if (fullscreenWallpaper)
-				fullscreenWallpaper.style.display = "block";
+			if (fullWallpaper) fullWallpaper.style.display = "block";
 			tocWrapper?.classList.remove("toc-hide");
 			body.classList.remove("enable-banner");
-			body.classList.remove("wallpaper-transparent", "fullscreen-banner");
+			body.classList.remove("wallpaper-transparent", "full-banner");
 			forceReflow();
-			body.classList.add("wallpaper-overlay", "no-banner-mode");
+			body.classList.add("wallpaper-full", "no-banner-mode");
 			if (navbar) {
 				navbar.setAttribute("data-dynamic-transparent", "semi");
 				navbar.removeAttribute("data-transparent-mode");
@@ -300,13 +299,13 @@ export function applyWallpaperMode() {
 
 		case "none":
 			if (bannerWrapper) bannerWrapper.style.display = "none";
-			if (fullscreenWallpaper) fullscreenWallpaper.style.display = "none";
+			if (fullWallpaper) fullWallpaper.style.display = "none";
 			tocWrapper?.classList.remove("toc-hide");
 			body.classList.remove(
 				"enable-banner",
 				"wallpaper-transparent",
-				"wallpaper-overlay",
-				"fullscreen-banner",
+				"wallpaper-full",
+				"full-banner",
 			);
 			forceReflow();
 			body.classList.add("no-banner-mode");
@@ -362,7 +361,7 @@ function settleHomeInitialEntrance() {
 type PageEntryScrollBehavior = "instant" | "smooth";
 
 function usesMainRegionEntry(mode = getWallpaperMode()) {
-	return mode === "banner" || mode === "fullscreen";
+	return mode === "banner" || mode === "full-banner";
 }
 
 function getPageEntryTarget(): number | null {
@@ -686,8 +685,8 @@ function bindMainGridClient() {
 		applyWallpaperMode();
 		applyWallpaperVisualSettings();
 	});
-	window.addEventListener("overlay-settings-change", () => {
-		applyWallpaperVisualSettings("overlay");
+	window.addEventListener("wall-settings-change", () => {
+		applyWallpaperVisualSettings("full-wall");
 	});
 	window.addEventListener("waves-toggle", (event) => {
 		const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail

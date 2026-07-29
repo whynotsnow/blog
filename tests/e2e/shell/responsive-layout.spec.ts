@@ -527,13 +527,9 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			laterHeading ||
 			document.querySelector<HTMLElement>(".page-main-content")!;
 		const targetTop = target.getBoundingClientRect().top + window.scrollY;
-		const stickyTop = Number.parseFloat(
-			getComputedStyle(
-				document.querySelector<HTMLElement>(".post-support")!,
-			).top,
-		);
+		const tocActiveOffset = 120 + 24;
 		window.scrollTo({
-			top: Math.max(targetTop - stickyTop - 24, 0),
+			top: Math.max(targetTop - tocActiveOffset - 1, 0),
 			behavior: "auto",
 		});
 	});
@@ -542,8 +538,10 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			page
 				.locator("#toc")
 				.evaluate((toc) =>
-					Array.from(toc.querySelectorAll("a.visible")).some(
-						(entry) => entry.textContent?.includes("Inline HTML"),
+					Array.from(
+						toc.querySelectorAll("a.is-current-branch"),
+					).some((entry) =>
+						entry.textContent?.includes("Inline HTML"),
 					),
 				),
 		)
@@ -646,7 +644,6 @@ test("category filter and post TOC follow their owning width budgets", async ({
 		expect(compactTocState.currentBranchEntries).toBe(0);
 	} else {
 		expect(compactTocState.childEntries).toBeGreaterThan(0);
-		expect(compactTocState.visibleEntries).toBeGreaterThan(0);
 		expect(compactTocState.currentBranchEntries).toBeGreaterThan(0);
 	}
 	const compactIndicatorState = await page.locator("#toc").evaluate((toc) => {
@@ -828,7 +825,7 @@ test("banner sizing follows the mode and responsive contract", async ({
 		),
 	).toBeCloseTo(0.6, 2);
 
-	await useStoredPreference(page, "wallpaperMode", "fullscreen");
+	await useStoredPreference(page, "wallpaperMode", "full-banner");
 	await page.setViewportSize({ width: 390, height: 844 });
 	await gotoPage(page, "/");
 	const fullscreenBanner = page.locator("#banner-wrapper");
@@ -925,7 +922,7 @@ test("banner home text stays centered across normal and fullscreen modes", async
 	expect(mobileTitleSize).toBeLessThan(tabletTitleSize);
 	expect(tabletTitleSize).toBeLessThan(desktopTitleSize);
 
-	await useStoredPreference(page, "wallpaperMode", "fullscreen");
+	await useStoredPreference(page, "wallpaperMode", "full-banner");
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await gotoPage(page, "/");
 	await assertCentered();

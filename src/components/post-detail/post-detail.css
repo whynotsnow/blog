@@ -101,7 +101,7 @@
   min-width: 0;
 }
 
-body:is(.wallpaper-transparent, .wallpaper-overlay).is-post .post-detail__surface {
+body:is(.wallpaper-transparent, .wallpaper-full).is-post .post-detail__surface {
   background: var(--card-bg-transparent);
   border-color: var(--border-subtle);
   border-radius: var(--radius-large);

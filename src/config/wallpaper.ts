@@ -1,7 +1,7 @@
-import type { OverlayWallpaperConfig } from "../types/config";
+import type { WallConfig } from "../types/config";
 import { bannerImageSources } from "./banner-images";
 
-export const overlayWallpaperConfig: OverlayWallpaperConfig = {
+export const wallConfig: WallConfig = {
 	enable: true,
 	src: bannerImageSources, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
@@ -13,7 +13,7 @@ export const overlayWallpaperConfig: OverlayWallpaperConfig = {
 	opacity: 0.8, // 壁纸透明度
 	blur: 1, // 背景模糊程度
 	switchable: true,
-	overlay: {
+	effects: {
 		opacity: 0.8,
 		blur: 1.5,
 		cardOpacity: 0.8,
@@ -24,6 +24,3 @@ export const overlayWallpaperConfig: OverlayWallpaperConfig = {
 		},
 	},
 };
-
-/** @deprecated Use overlayWallpaperConfig for the overlay wallpaper layer. */
-export const fullscreenWallpaperConfig = overlayWallpaperConfig;

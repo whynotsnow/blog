@@ -49,7 +49,7 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 	const normalSurface = await article.evaluate((node) => {
 		document.body.classList.remove(
 			"wallpaper-transparent",
-			"wallpaper-overlay",
+			"wallpaper-full",
 		);
 		const styles = getComputedStyle(node);
 		return {
@@ -61,7 +61,7 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 	expect(normalSurface.radius).toBe("0px");
 
 	const wallpaperSurface = await article.evaluate((node) => {
-		document.body.classList.add("wallpaper-overlay");
+		document.body.classList.add("wallpaper-full");
 		const styles = getComputedStyle(node);
 		return {
 			background: styles.backgroundColor,

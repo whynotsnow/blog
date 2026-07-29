@@ -1,6 +1,6 @@
-import type { WALLPAPER_MODE } from "@/types/config";
+import type { WALL_MODE } from "@/types/config";
 
-export type { WALLPAPER_MODE };
+export type { WALL_MODE };
 
 export interface DisplaySettingsProps {
 	className?: string;
