@@ -2,19 +2,16 @@
 import Comment from "@components/comment/index.astro";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
-import SharePoster from "@components/misc/SharePoster.svelte";
-import I18nKey from "@i18n/i18nKey";
-import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { Icon } from "astro-icon/components";
 import { licenseConfig, shareConfig } from "@/config";
 import ImageWrapper from "@components/misc/ImageWrapper.astro";
-import { profileConfig, siteConfig } from "@/config";
+import { siteConfig } from "@/config";
 import { formatDateToYYYYMMDD } from "@utils/date-utils";
 import Encryptor from "@components/Encryptor.astro";
 import PostHeader from "./PostHeader.astro";
 import PostLastModified from "./PostLastModified.astro";
 import PostNavigation from "./PostNavigation.astro";
+import PostShareCard from "./PostShareCard.astro";
 import PostSupport from "./PostSupport.astro";
 import { buildTocItems } from "@components/post-toc/toc-data";
 import "./post-detail.css";
@@ -127,45 +124,18 @@ const staticTocItems = encryption.enabled
 
 			{
 				shareConfig.enable && (
-					<div
-						id="share-component"
+					<PostShareCard
 						class:list={[
-							"p-6 bg-(--license-block-bg) rounded-xl mb-6",
 							{ "encrypted-hidden": encryption.enabled },
 						]}
-					>
-						<div class="post-detail__share-row flex flex-col items-center justify-between gap-4">
-							<div class="flex items-center gap-3 flex-1">
-								<div class="flex items-center justify-center h-12 w-12 rounded-lg bg-(--enter-btn-bg)">
-									<Icon
-										name="material-symbols:share"
-										class="text-3xl text-(--primary)"
-									/>
-								</div>
-								<div class="flex flex-col gap-1">
-									<div class="text-[1.0rem] leading-tight text-75">
-										{i18n(I18nKey.shareOnSocial)}
-									</div>
-									<p class="text-[0.8rem] leading-tight text-75">
-										{i18n(I18nKey.shareOnSocialDescription)}
-									</p>
-								</div>
-							</div>
-							<div class="flex items-center gap-3">
-								<SharePoster
-									client:visible
-									{title}
-									author={author || profileConfig.name}
-									description={description || ""}
-									pubDate={formatDateToYYYYMMDD(header.published)}
-									coverImage={posterCoverUrl}
-									url={canonicalUrl}
-									siteTitle={siteConfig.title}
-									avatar={posterAvatarUrl}
-								/>
-							</div>
-						</div>
-					</div>
+						{title}
+						{author}
+						description={description || ""}
+						pubDate={formatDateToYYYYMMDD(header.published)}
+						coverImage={posterCoverUrl}
+						url={canonicalUrl}
+						avatar={posterAvatarUrl}
+					/>
 				)
 			}
 

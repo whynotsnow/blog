@@ -32,7 +32,6 @@
 }
 
 #post-cover,
-#share-component,
 #license-component {
   width: min(100%, var(--width-reading-wide));
   margin-inline: auto;
@@ -50,6 +49,53 @@
 
 .post-detail__share-row {
   flex-direction: column;
+}
+
+.post-detail__share {
+  width: min(100%, var(--width-reading-wide));
+  margin-inline: auto;
+  margin-bottom: var(--space-content);
+  padding: var(--space-card);
+}
+
+.post-detail__share-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.post-detail__share-icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--accent) 12%, var(--surface-card));
+  color: var(--accent);
+  font-size: 1.875rem;
+}
+
+.post-detail__share-text {
+  display: grid;
+  gap: var(--size-1);
+  min-width: 0;
+}
+
+.post-detail__share-text h2 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.post-detail__share-text p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.post-detail__share-actions {
+  flex: 0 0 auto;
 }
 
 .post-detail__navigation {

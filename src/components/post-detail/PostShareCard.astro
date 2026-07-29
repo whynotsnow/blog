@@ -1,0 +1,60 @@
+---
+import SharePoster from "@components/misc/SharePoster.svelte";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { Icon } from "astro-icon/components";
+import { profileConfig, siteConfig } from "@/config";
+
+interface Props {
+	title: string;
+	author?: string;
+	description?: string;
+	pubDate: string;
+	coverImage?: string;
+	url: string;
+	avatar?: string;
+	class?: string;
+}
+
+const {
+	title,
+	author,
+	description = "",
+	pubDate,
+	coverImage,
+	url,
+	avatar,
+	class: className,
+} = Astro.props;
+---
+
+<section
+	id="share-component"
+	class:list={["post-detail__share ds-surface-card", className]}
+	aria-label={i18n(I18nKey.shareOnSocial)}
+>
+	<div class="post-detail__share-row flex items-center justify-between gap-4">
+		<div class="post-detail__share-copy flex items-center gap-3">
+			<div class="post-detail__share-icon">
+				<Icon name="material-symbols:share" />
+			</div>
+			<div class="post-detail__share-text">
+				<h2>{i18n(I18nKey.shareOnSocial)}</h2>
+				<p>{i18n(I18nKey.shareOnSocialDescription)}</p>
+			</div>
+		</div>
+		<div class="post-detail__share-actions flex items-center gap-3">
+			<SharePoster
+				client:visible
+				{title}
+				author={author || profileConfig.name}
+				{description}
+				{pubDate}
+				coverImage={coverImage}
+				{url}
+				siteTitle={siteConfig.title}
+				avatar={avatar}
+			/>
+		</div>
+	</div>
+</section>
