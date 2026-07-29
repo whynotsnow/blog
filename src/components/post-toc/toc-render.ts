@@ -25,7 +25,7 @@ export function renderDesktopTocItem(item: TocItem, index = -1) {
 		<div class="toc-entry-badge transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${rootBadgeClass}">
 			${badgeContent}
 		</div>
-		<div class="transition text-sm ${textClass}">${escapeHtml(item.text)}</div>
+		<div class="toc-entry-label transition text-sm ${textClass}">${escapeHtml(item.text)}</div>
 	</a>`;
 }
 

@@ -436,6 +436,19 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 		margin-left: calc(var(--toc-level, 0) * 1rem);
 	}
 
+	table-of-contents#toc :global(.toc-entry-label) {
+		min-width: 0;
+		overflow: hidden;
+		line-height: 1.35;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	table-of-contents#toc :global(a:focus-visible) {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
 	table-of-contents#toc :global(a.is-read) {
 		opacity: 0.52;
 	}

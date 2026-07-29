@@ -93,7 +93,8 @@
     font-weight: inherit;
 
     &:before {
-      @apply content-[''] absolute left-0 block transition bg-(--btn-regular-bg) h-full w-1 rounded-full;
+      @apply content-[''] absolute left-0 block transition h-full w-1 rounded-full;
+      background: color-mix(in oklab, var(--accent) 45%, var(--surface-card));
     }
 
     p:before,
@@ -129,10 +130,10 @@
   }
 
   table {
-    @apply w-full border-separate m-0 bg-[var(--card-bg)];
+    @apply w-full border-separate m-0 bg-[var(--surface-card)];
     border-spacing: 0;
 
-    border: 1px solid var(--line-divider);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-large);
 
     overflow: hidden;
@@ -141,14 +142,14 @@
   th,
   td {
     @apply px-4 py-3 whitespace-nowrap;
-    border-bottom: 1px solid var(--line-divider);
-    border-right: 1px solid var(--line-divider);
+    border-bottom: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
     transition: none;
   }
 
   th {
-    background-color: var(--btn-regular-bg);
-    color: var(--btn-content);
+    background-color: var(--surface-raised);
+    color: var(--text-primary);
     font-weight: 600;
     text-align: left;
   }
@@ -162,10 +163,10 @@
   }
 
   tr:nth-child(even) {
-    background-color: var(--codeblock-bg);
+    background-color: color-mix(in oklab, var(--surface-raised) 54%, transparent);
   }
   tr:hover td {
-    background-color: var(--btn-plain-bg-hover);
+    background-color: var(--surface-raised);
     transition: none;
   }
 
