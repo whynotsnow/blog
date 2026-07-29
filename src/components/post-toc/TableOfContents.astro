@@ -113,10 +113,21 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 
 		getReadingContentRoot() {
 			return (
-				document.querySelector<HTMLElement>(
+				document.querySelector(
 					"#post-container .post-detail__content",
-				) ??
-				document.querySelector<HTMLElement>("#post-container")
+				) as HTMLElement | null
+			) ?? (document.querySelector("#post-container") as HTMLElement | null);
+		}
+
+		getTocDataElement() {
+			return this.querySelector(
+				"script[data-toc-items]",
+			) as HTMLScriptElement | null;
+		}
+
+		getTocBody() {
+			return (
+				this.closest(".post-support__toc-body") as HTMLElement | null
 			);
 		}
 
@@ -196,9 +207,7 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 		}
 
 		readTocItems() {
-			const dataElement = this.querySelector<HTMLScriptElement>(
-				"script[data-toc-items]",
-			);
+			const dataElement = this.getTocDataElement();
 			if (!dataElement?.textContent) return [];
 			try {
 				return JSON.parse(dataElement.textContent) as TocItem[];
@@ -295,15 +304,15 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 		init() {
 			this.resetRuntimeState();
 
-			this.tocEl =
-				this.closest<HTMLElement>(".post-support__toc-body") ?? this;
+			this.tocEl = this.getTocBody() ?? this;
 
 			this.tocEl.addEventListener("click", this.handleAnchorClick, {
 				capture: true,
 			});
 
-			this.activeIndicator =
-				this.querySelector<HTMLElement>("#active-indicator");
+			this.activeIndicator = this.querySelector(
+				"#active-indicator",
+			) as HTMLElement | null;
 
 			this.tocItems = this.readTocItems();
 
@@ -395,11 +404,10 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 	}
 
 	onPostTocRefresh(({ root }) => {
-		document
-			.querySelector<HTMLElementTagNameMap["table-of-contents"]>(
-				"table-of-contents",
-			)
-			?.refreshRuntimeHeadings?.(root);
+		const toc = document.querySelector(
+			"table-of-contents",
+		) as TableOfContents | null;
+		toc?.refreshRuntimeHeadings(root);
 	});
 </script>
 
