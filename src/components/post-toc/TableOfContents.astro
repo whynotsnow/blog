@@ -62,7 +62,7 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 
 	class TableOfContents extends HTMLElement {
 		tocEl: HTMLElement | null = null;
-		headingIdxMap = new Map<string, number>();
+		headingIdxMap: Map<string, number> = new Map();
 		tocItems: TocItem[] = [];
 		headings: Array<HTMLElement | undefined> = [];
 		store = getPostTocStore();
