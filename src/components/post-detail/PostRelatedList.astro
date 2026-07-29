@@ -1,0 +1,62 @@
+---
+import { Icon } from "astro-icon/components";
+import { formatDateToYYYYMMDD } from "@utils/date-utils";
+import type { PostDetailPageProps } from "@/services/post-detail/types";
+
+interface Props {
+	support: PostDetailPageProps["support"];
+}
+
+const { support } = Astro.props;
+const groups = [
+	{
+		key: "continue",
+		title: "继续阅读",
+		icon: "material-symbols:swap-horiz-rounded",
+		posts: support.continueReading.map((post) => ({
+			id: post.id,
+			title: post.title,
+			url: post.url,
+			meta: formatDateToYYYYMMDD(post.published),
+		})),
+	},
+	{
+		key: "recommended",
+		title: "推荐阅读",
+		icon: "material-symbols:bookmark-star-outline-rounded",
+		posts: support.recommendedPosts.map((post) => ({
+			id: post.id,
+			title: post.title,
+			url: post.url,
+			meta: post.category.name,
+		})),
+	},
+].filter((group) => group.posts.length > 0);
+---
+
+{
+	groups.length > 0 && (
+		<section class="post-detail__related-mobile" aria-label="相关文章">
+			{groups.map((group) => (
+				<div class="post-detail__related-group">
+					<h2 class="post-detail__related-heading">
+						<Icon name={group.icon} />
+						{group.title}
+					</h2>
+					<div class="post-detail__related-list">
+						{group.posts.map((post, index) => (
+							<a href={post.url} class="post-detail__related-link">
+								<span class="post-detail__related-index">{index + 1}</span>
+								<span class="post-detail__related-copy">
+									<strong>{post.title}</strong>
+									<span>{post.meta}</span>
+								</span>
+								<Icon name="material-symbols:chevron-right-rounded" />
+							</a>
+						))}
+					</div>
+				</div>
+			))}
+		</section>
+	)
+}
