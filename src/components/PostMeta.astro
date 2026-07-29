@@ -167,7 +167,7 @@ const {
 	{
 		!isHome && id && (
 			<div
-				class="flex items-center umami-page-views"
+				class="hidden items-center umami-page-views"
 				data-id={id}
 				data-page-views-label={i18n(I18nKey.profileStatsPageViews)}
 				data-visits-label={i18n(I18nKey.profileStatsVisits)}
@@ -209,7 +209,13 @@ const {
 			const pageViews = stats.pageviews || 0;
 			const visits = stats.visits || 0;
 
+			if (pageViews === 0 && visits === 0) {
+				container?.classList.add("hidden");
+				return;
+			}
+
 			container?.classList.remove("hidden");
+			container?.classList.add("flex");
 			container.querySelector(".page-views-display").textContent =
 				generateStatsText(container, pageViews, visits);
 		} catch (error) {
