@@ -260,12 +260,19 @@ test("post support TOC collapses to root list at document boundaries", async ({
 
 	await page.evaluate(() => {
 		document.documentElement.style.scrollBehavior = "auto";
-		window.scrollTo(0, document.documentElement.scrollHeight);
+		const content = document.querySelector<HTMLElement>(
+			"#post-container .post-detail__content",
+		)!;
+		window.scrollTo({
+			top:
+				content.getBoundingClientRect().bottom +
+				window.scrollY -
+				window.innerHeight +
+				120,
+		});
 	});
 	await page.waitForFunction(
 		() =>
-			window.scrollY + window.innerHeight >=
-				document.documentElement.scrollHeight - 1 &&
 			document.querySelector<HTMLElement>("#toc")?.dataset
 				.tocRootsOnlyReason === "bottom",
 	);
@@ -286,6 +293,9 @@ test("post support TOC collapses to root list at document boundaries", async ({
 				.length,
 			childCount: childEntries.length,
 			tocScrollTop: scrollContainer.scrollTop,
+			reachedPageBottom:
+				window.scrollY + window.innerHeight >=
+				document.documentElement.scrollHeight - 1,
 			transition: (toc as HTMLElement).dataset.tocTransition ?? "",
 			mode: (toc as HTMLElement).dataset.tocMode ?? "",
 			rootsOnlyReason:
@@ -296,6 +306,7 @@ test("post support TOC collapses to root list at document boundaries", async ({
 	expect(bottomState.visibleCount).toBe(0);
 	expect(bottomState.currentBranchCount).toBe(0);
 	expect(bottomState.childCount).toBe(0);
+	expect(bottomState.reachedPageBottom).toBe(false);
 	expect(bottomState.transition).toBe("roots-only");
 	expect(bottomState.mode).toBe("roots-only");
 	expect(bottomState.rootsOnlyReason).toBe("bottom");
@@ -489,8 +500,6 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		for (let step = 0; step < 20; step += 1) {
 			await wait(100);
 			if (
-				window.scrollY + window.innerHeight >=
-					document.documentElement.scrollHeight - 1 &&
 				document.querySelector<HTMLElement>("#toc")?.dataset
 					.tocRootsOnlyReason === "bottom"
 			) {
@@ -534,6 +543,7 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 					)?.scrollTop ?? 0,
 			});
 		}
+		await wait(260);
 		documentElement.style.scrollBehavior = previousScrollBehavior;
 
 		const scrollContainer = document.querySelector<HTMLElement>(
@@ -550,6 +560,12 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 
 		return {
 			samples,
+			finalMode:
+				document.querySelector<HTMLElement>("#toc")?.dataset.tocMode ??
+				"",
+			finalRootsOnlyReason:
+				document.querySelector<HTMLElement>("#toc")?.dataset
+					.tocRootsOnlyReason ?? "",
 			activeText: normalize(activeEntry?.textContent),
 			activeLevel: activeEntry?.dataset.tocLevel ?? "",
 			activeRootText: normalize(activeRoot?.textContent),
@@ -572,6 +588,8 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 		),
 	).toBe(true);
 	expect(bottomUpState.activeText.length).toBeGreaterThan(0);
+	expect(bottomUpState.finalMode).toBe("normal");
+	expect(bottomUpState.finalRootsOnlyReason).toBe("none");
 	expect(bottomUpState.activeLevel).toBe("1");
 	expect(bottomUpState.activeRootText).toContain("4 This is an H1");
 	expect(bottomUpState.activeFullyVisible).toBe(true);

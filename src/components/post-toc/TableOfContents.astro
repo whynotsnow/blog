@@ -55,6 +55,11 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 		type TocStoreSnapshot,
 	} from "./toc-store";
 
+	const TOC_BOUNDARY_MIN_ITEMS = 6;
+	const TOC_BOUNDARY_MIN_ROOTS = 2;
+	const TOC_BOUNDARY_MIN_VIEWPORTS = 1.5;
+	const TOC_BOTTOM_BOUNDARY_OFFSET = 160;
+
 	class TableOfContents extends HTMLElement {
 		tocEl: HTMLElement | null = null;
 		headingIdxMap = new Map<string, number>();
@@ -83,18 +88,55 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 			currentIndex: number,
 		): DesktopTocRootsOnlyReason | null {
 			if (!this.activeTracker.nodes.length) return "empty";
+			if (!this.canUseRootsOnlyBoundary()) return null;
 			if (window.scrollY <= 1) return "top";
 			if (currentIndex < 0) return "top";
 
-			if (
+			const isBottomBoundary =
 				window.scrollY + window.innerHeight >=
-					document.documentElement.scrollHeight - 1 &&
-				this.activeTracker.scrollDirection !== "up"
-			) {
+				this.getReadingContentBottomY() - TOC_BOTTOM_BOUNDARY_OFFSET;
+			const wasBottomRootsOnly =
+				this.viewportState?.mode === "roots-only" &&
+				this.viewportState.rootsOnlyReason === "bottom";
+			const canEnterBottomBoundary =
+				this.activeTracker.scrollDirection === "down" ||
+				this.activeTracker.scrollDirection === "jump" ||
+				(this.activeTracker.scrollDirection === "still" &&
+					wasBottomRootsOnly);
+
+			if (isBottomBoundary && canEnterBottomBoundary) {
 				return "bottom";
 			}
 
 			return null;
+		}
+
+		getReadingContentRoot() {
+			return (
+				document.querySelector<HTMLElement>(
+					"#post-container .post-detail__content",
+				) ??
+				document.querySelector<HTMLElement>("#post-container")
+			);
+		}
+
+		getReadingContentBottomY() {
+			const root = this.getReadingContentRoot();
+			if (!root) return document.documentElement.scrollHeight;
+			return root.getBoundingClientRect().bottom + window.scrollY;
+		}
+
+		canUseRootsOnlyBoundary() {
+			const root = this.getReadingContentRoot();
+			const contentHeight =
+				root?.getBoundingClientRect().height ??
+				document.documentElement.scrollHeight;
+			return (
+				this.tocItems.length >= TOC_BOUNDARY_MIN_ITEMS &&
+				this.activeTracker.graph.rootIndexes.length >=
+					TOC_BOUNDARY_MIN_ROOTS &&
+				contentHeight >= window.innerHeight * TOC_BOUNDARY_MIN_VIEWPORTS
+			);
 		}
 
 		toDesktopReason(reason: TocStoreReason): DesktopTocTransitionType | undefined {
