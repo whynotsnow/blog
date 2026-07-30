@@ -142,12 +142,14 @@ const staticTocItems = encryption.enabled
 
 			{
 				licenseConfig.enable && (
-					<div
+					<section
 						id="license-component"
 						class:list={[
+							"post-detail__block post-detail__aux-card",
 							"encrypted-hidden-wrapper",
 							{ "encrypted-hidden": encryption.enabled },
 						]}
+						aria-label="许可信息"
 					>
 						<License
 							{title}
@@ -157,9 +159,9 @@ const staticTocItems = encryption.enabled
 							sourceLink={license.sourceLink}
 							licenseName={license.licenseName}
 							licenseUrl={license.licenseUrl}
-							class="mb-6 rounded-xl license-container"
+							class="post-detail__license-content license-container"
 						/>
-					</div>
+					</section>
 				)
 			}
 		</div>

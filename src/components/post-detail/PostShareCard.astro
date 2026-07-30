@@ -30,7 +30,10 @@ const {
 
 <section
 	id="share-component"
-	class:list={["post-detail__share ds-surface-card", className]}
+	class:list={[
+		"post-detail__block post-detail__aux-card post-detail__share",
+		className,
+	]}
 	aria-label={i18n(I18nKey.shareOnSocial)}
 >
 	<div class="post-detail__share-row flex items-center justify-between gap-4">
