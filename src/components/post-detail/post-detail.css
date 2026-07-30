@@ -12,9 +12,15 @@
 }
 
 .post-detail__surface {
-  --post-reader-bg: rgb(255 255 255 / 0.96);
+  --post-reader-bg: #fff;
   --post-reader-border: rgb(15 23 42 / 0.08);
   --post-reader-shadow: 0 0.75rem 2rem rgb(15 23 42 / 0.06);
+  --post-reader-text-primary: rgb(24 24 27);
+  --post-reader-text-secondary: rgb(71 85 105);
+  --post-reader-text-muted: rgb(100 116 139);
+  --text-primary: var(--post-reader-text-primary);
+  --text-secondary: var(--post-reader-text-secondary);
+  --text-muted: var(--post-reader-text-muted);
 
   background: var(--post-reader-bg);
   color: var(--text-primary);
@@ -282,8 +288,8 @@
 }
 
 body:is(.wallpaper-transparent, .wallpaper-full).is-post .post-detail__surface {
-  --post-reader-bg: rgb(255 255 255 / 0.72);
-  --post-reader-border: rgb(255 255 255 / 0.24);
+  --post-reader-bg: #fff;
+  --post-reader-border: rgb(15 23 42 / 0.08);
   --post-reader-shadow: 0 1rem 2.5rem rgb(15 23 42 / 0.12);
 
   background: var(--post-reader-bg);
@@ -292,12 +298,12 @@ body:is(.wallpaper-transparent, .wallpaper-full).is-post .post-detail__surface {
 }
 
 :root.dark body.is-post .post-detail__surface {
-  --post-reader-bg: rgb(24 24 27 / 0.96);
-  --post-reader-border: rgb(255 255 255 / 0.1);
+  --post-reader-bg: #fff;
+  --post-reader-border: rgb(15 23 42 / 0.08);
   --post-reader-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.22);
 }
 
 :root.dark body:is(.wallpaper-transparent, .wallpaper-full).is-post .post-detail__surface {
-  --post-reader-bg: rgb(24 24 27 / 0.72);
-  --post-reader-border: rgb(255 255 255 / 0.14);
+  --post-reader-bg: #fff;
+  --post-reader-border: rgb(15 23 42 / 0.08);
 }
