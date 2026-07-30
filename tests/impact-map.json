@@ -258,6 +258,8 @@
 		},
 		{
 			"patterns": [
+				"public/assets/js/twikoo.all.min.js",
+				"src/components/comment/**",
 				"src/components/post-detail/**",
 				"src/components/password-protection/**",
 				"src/components/Encryptor.astro",

@@ -405,24 +405,6 @@ const setup = () => {
 				}
 			});
 		}
-
-		// 检查当前页面是否为文章页面，如果是则触发自定义事件用于初始化评论系统
-		setTimeout(() => {
-			if (document.getElementById("tcomment")) {
-				// 触发自定义事件，通知评论系统页面已完全加载
-				const pageLoadedEvent = new CustomEvent("mizuki:page:loaded", {
-					detail: {
-						path: window.location.pathname,
-						timestamp: Date.now(),
-					},
-				});
-				document.dispatchEvent(pageLoadedEvent);
-				console.log(
-					"Layout: 触发 mizuki:page:loaded 事件，路径:",
-					window.location.pathname,
-				);
-			}
-		}, 300);
 	});
 
 	onPageLifecycle("visit-end", () => {

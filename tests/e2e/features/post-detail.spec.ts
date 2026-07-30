@@ -55,6 +55,99 @@ test("post content shares markdown styles and copy behavior", async ({
 	await expect(copyButton).toHaveClass(/success/);
 });
 
+test("Twikoo comment actions keep canonical path and do not jump to page top", async ({
+	page,
+}) => {
+	await page.route("**/assets/js/twikoo.all.min.js", async (route) => {
+		await route.fulfill({
+			contentType: "application/javascript",
+			body: `
+				window.__twikooInitCalls = [];
+				window.twikoo = {
+					init(config) {
+						window.__twikooInitCalls.push({ ...config });
+						const root = document.querySelector(config.el);
+						if (!root) throw new Error("Missing Twikoo root");
+						root.innerHTML = [
+							'<div class="tk-comments">',
+							'  <article id="mock-comment-target" class="tk-comment">',
+							'    <p>Mock comment</p>',
+							'    <a class="tk-ruser" href="#" data-reply-ref>@reader</a>',
+							'    <button class="tk-action-link" data-like>Like</button>',
+							'  </article>',
+							'</div>'
+						].join("");
+						root.querySelector("[data-reply-ref]").addEventListener("click", (event) => {
+							event.preventDefault();
+							document.getElementById("mock-comment-target").scrollIntoView({
+								behavior: "instant",
+								block: "center"
+							});
+						});
+						return Promise.resolve();
+					}
+				};
+			`,
+		});
+	});
+
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(
+		page.locator("#tcomment[data-twikoo-state='ready']"),
+	).toBeVisible();
+	await expect(page.locator("#mock-comment-target")).toBeVisible();
+
+	const initCalls = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__twikooInitCalls?: Array<{ path?: string; el?: string }>;
+				}
+			).__twikooInitCalls ?? [],
+	);
+	expect(initCalls).toHaveLength(1);
+	expect(initCalls[0]).toMatchObject({
+		el: "#tcomment",
+		path: "/posts/markdown-tutorial/",
+	});
+
+	await page.evaluate(() => {
+		const comment = document.getElementById("mock-comment-target");
+		if (!comment) throw new Error("Missing mock comment target");
+		window.scrollTo({
+			top:
+				comment.getBoundingClientRect().top +
+				window.scrollY -
+				window.innerHeight * 0.45,
+			behavior: "instant",
+		});
+	});
+
+	const beforeClick = await page.evaluate(() => ({
+		hash: window.location.hash,
+		scrollY: window.scrollY,
+	}));
+	expect(beforeClick.scrollY).toBeGreaterThan(100);
+
+	await page.locator("[data-reply-ref]").click();
+
+	const afterReplyClick = await page.evaluate(() => ({
+		hash: window.location.hash,
+		scrollY: window.scrollY,
+	}));
+	expect(afterReplyClick.hash).toBe(beforeClick.hash);
+	expect(afterReplyClick.scrollY).toBeGreaterThan(100);
+
+	await page.locator("[data-like]").click();
+
+	const afterButtonClick = await page.evaluate(() => ({
+		hash: window.location.hash,
+		scrollY: window.scrollY,
+	}));
+	expect(afterButtonClick.hash).toBe(beforeClick.hash);
+	expect(afterButtonClick.scrollY).toBeGreaterThan(100);
+});
+
 test("post TOC ignores headings outside article content", async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 720 });
 	await gotoPage(page, "/posts/markdown-tutorial/");

@@ -98,7 +98,10 @@ function isUnder(file, directory) {
 }
 
 function isVendorStaticAsset(file) {
-	return file === "public/live2d-companion/l2d-widget.min.js";
+	return [
+		"public/assets/js/twikoo.all.min.js",
+		"public/live2d-companion/l2d-widget.min.js",
+	].includes(file);
 }
 
 function localBin(name) {
