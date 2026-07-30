@@ -23,6 +23,13 @@
 				overflow: hidden;
 				background: transparent;
 			}
+			canvas,
+			body
+				> div:not(#live2d-companion-message):not(
+					#live2d-companion-drag-indicator
+				) {
+				background: transparent !important;
+			}
 			.live2d-companion-message {
 				position: absolute;
 				left: 50%;
@@ -153,6 +160,52 @@
 				opacity: 1 !important;
 				pointer-events: auto !important;
 			}
+			body.live2d-companion-theme-dark {
+				color-scheme: dark;
+			}
+			body.live2d-companion-drag-ready {
+				cursor: grab;
+			}
+			body.live2d-companion-dragging {
+				cursor: grabbing;
+				user-select: none;
+			}
+			body.live2d-companion-drag-ready canvas,
+			body.live2d-companion-dragging canvas {
+				cursor: inherit !important;
+			}
+			.live2d-companion-drag-indicator {
+				position: absolute;
+				right: 12px;
+				top: 12px;
+				z-index: 10003;
+				display: flex;
+				width: 28px;
+				height: 28px;
+				align-items: center;
+				justify-content: center;
+				border: 1px solid var(--live2d-companion-border);
+				border-radius: 999px;
+				background: var(--live2d-companion-control-surface);
+				box-shadow: var(--live2d-companion-shadow);
+				color: var(--live2d-companion-accent);
+				opacity: 0;
+				pointer-events: none;
+				transform: translateY(4px) scale(0.92);
+				backdrop-filter: blur(12px);
+				transition:
+					opacity 0.16s ease,
+					transform 0.16s ease;
+			}
+			.live2d-companion-drag-indicator svg {
+				width: 1rem;
+				height: 1rem;
+			}
+			body.live2d-companion-drag-ready .live2d-companion-drag-indicator,
+			body.live2d-companion-dragging .live2d-companion-drag-indicator {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
 		</style>
 	</head>
 	<body>
@@ -173,6 +226,10 @@
 			var expressionsReady = false;
 			var availableExpressionsCache = [];
 			var pointerInsideCompanion = false;
+			var dragReady = false;
+			var dragging = false;
+			var dragHoverTimer = null;
+			var dragHoverDelay = 1500;
 			var idlePlaybackTimer = null;
 			var lastIdlePlaybackExpression = "";
 			var maxExpressionActions = 5;
@@ -193,6 +250,8 @@
 			var localIcons = {
 				"material-symbols:visibility-off-rounded":
 					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="m19.1 21.9l-3.5-3.45q-.875.275-1.775.413T12 19q-3.35 0-6.125-1.8t-4.35-4.75q-.125-.225-.187-.462t-.063-.488t.063-.488t.187-.462q.55-.975 1.175-1.9T4.15 7L2.075 4.9Q1.8 4.625 1.8 4.213t.3-.713q.275-.275.7-.275t.7.275l17 17q.275.275.288.688t-.288.712q-.275.275-.7.275t-.7-.275M12 16q.275 0 .525-.025t.5-.1l-5.4-5.4q-.075.25-.1.5T7.5 11.5q0 1.875 1.313 3.188T12 16m0-12q3.35 0 6.138 1.813t4.362 4.762q.125.2.188.438t.062.487t-.05.488t-.175.437q-.475.925-1.062 1.75t-1.313 1.55q-.35.35-.825.325t-.825-.375l-2-2q-.175-.175-.225-.413t.025-.487q.1-.325.15-.625t.05-.65q0-1.875-1.312-3.187T12 7q-.35 0-.65.05t-.625.15q-.25.075-.5.025T9.8 7l-.825-.825q-.475-.475-.312-1.1t.787-.8q.625-.125 1.263-.2T12 4m1.975 5.65q.275.325.462.713t.238.812q.025.2-.15.275t-.325-.075l-2.05-2.05Q12 9.175 12.088 9t.287-.175q.475.05.875.263t.725.562"/></svg>',
+				"local:move-four-way":
+					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 3v18M12 3L9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12h18M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>',
 				"material-symbols:collapse-content-rounded":
 					'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9 15H6q-.425 0-.712-.288T5 14t.288-.712T6 13h4q.425 0 .713.288T11 14v4q0 .425-.288.713T10 19t-.712-.288T9 18zm6-6h3q.425 0 .713.288T19 10t-.288.713T18 11h-4q-.425 0-.712-.288T13 10V6q0-.425.288-.712T14 5t.713.288T15 6z"/></svg>',
 				"material-symbols:close-rounded":
@@ -257,9 +316,45 @@
 				);
 			}
 
+			function syncTransparentWidgetBackgrounds() {
+				document.body.style.setProperty(
+					"background",
+					"transparent",
+					"important",
+				);
+				Array.prototype.forEach.call(
+					document.querySelectorAll("canvas, body > div"),
+					function (el) {
+						if (
+							el.id === "live2d-companion-message" ||
+							el.id === "live2d-companion-drag-indicator"
+						) {
+							return;
+						}
+						el.style.setProperty(
+							"background",
+							"transparent",
+							"important",
+						);
+						el.style.setProperty(
+							"background-color",
+							"transparent",
+							"important",
+						);
+					},
+				);
+			}
+
 			function applyTheme(theme) {
 				if (!theme) return;
 				var root = document.documentElement;
+				var isDark = theme.isDark === true;
+				root.dataset.live2dTheme = isDark ? "dark" : "light";
+				root.style.colorScheme = isDark ? "dark" : "light";
+				document.body.classList.toggle(
+					"live2d-companion-theme-dark",
+					isDark,
+				);
 				if (theme.surface) {
 					root.style.setProperty(
 						"--live2d-companion-surface-hover",
@@ -306,6 +401,7 @@
 						theme.shadow,
 					);
 				}
+				syncTransparentWidgetBackgrounds();
 			}
 
 			function configureCollapseButton(button) {
@@ -331,6 +427,9 @@
 						top + "px",
 					);
 				}
+				var delay = Number(live2dCompanionUi.dragHoverDelay);
+				dragHoverDelay =
+					Number.isFinite(delay) && delay >= 0 ? delay : 1500;
 				var button = document.getElementById(
 					"live2d-companion-collapse",
 				);
@@ -400,10 +499,12 @@
 			}
 
 			function observeWidgetUi() {
+				syncTransparentWidgetBackgrounds();
 				hideWidgetStatusPanel();
 				tuneWidgetTips();
 				if (widgetUiObserver) return;
 				widgetUiObserver = new MutationObserver(function () {
+					syncTransparentWidgetBackgrounds();
 					hideWidgetStatusPanel();
 					tuneWidgetTips();
 				});
@@ -626,7 +727,12 @@
 			}
 
 			function isCompanionInteractionActive() {
-				return pointerInsideCompanion || expressionPanelOpen;
+				return (
+					pointerInsideCompanion ||
+					expressionPanelOpen ||
+					dragReady ||
+					dragging
+				);
 			}
 
 			function setPointerInsideCompanion(nextInside) {
@@ -635,6 +741,126 @@
 					"live2d-companion-pointer-inside",
 					pointerInsideCompanion,
 				);
+			}
+
+			function ensureDragIndicator() {
+				var indicator = document.getElementById(
+					"live2d-companion-drag-indicator",
+				);
+				if (indicator) return indicator;
+				indicator = document.createElement("div");
+				indicator.id = "live2d-companion-drag-indicator";
+				indicator.className = "live2d-companion-drag-indicator";
+				indicator.setAttribute("aria-hidden", "true");
+				indicator.innerHTML = getLocalIcon(
+					live2dCompanionUi.dragIndicatorIcon ||
+						"local:move-four-way",
+				);
+				document.body.appendChild(indicator);
+				return indicator;
+			}
+
+			function postDragReady() {
+				parent.postMessage(
+					{
+						type: "l2d-drag-ready",
+						ready: dragReady,
+					},
+					"*",
+				);
+			}
+
+			function setDragReady(nextReady) {
+				dragReady = Boolean(nextReady);
+				document.body.classList.toggle(
+					"live2d-companion-drag-ready",
+					dragReady,
+				);
+				if (dragReady) ensureDragIndicator();
+				postDragReady();
+			}
+
+			function clearDragHoverTimer() {
+				if (!dragHoverTimer) return;
+				clearTimeout(dragHoverTimer);
+				dragHoverTimer = null;
+			}
+
+			function scheduleDragReady() {
+				clearDragHoverTimer();
+				if (dragging || expressionPanelOpen) return;
+				dragHoverTimer = setTimeout(function () {
+					setDragReady(true);
+				}, dragHoverDelay);
+			}
+
+			function resetDragReady() {
+				clearDragHoverTimer();
+				if (!dragging) setDragReady(false);
+			}
+
+			function pointFromPointerEvent(event) {
+				return {
+					x: event.clientX,
+					y: event.clientY,
+					pointerId: event.pointerId,
+				};
+			}
+
+			function isNativeControlTarget(target) {
+				return (
+					target &&
+					target.closest &&
+					target.closest(
+						"button, a, input, textarea, select, [role='button']",
+					)
+				);
+			}
+
+			function postDragEvent(type, event) {
+				parent.postMessage(
+					{
+						type: type,
+						point: pointFromPointerEvent(event),
+					},
+					"*",
+				);
+			}
+
+			function startDrag(event) {
+				if (!dragReady || event.button !== 0) return;
+				if (isNativeControlTarget(event.target)) return;
+				dragging = true;
+				clearDragHoverTimer();
+				document.body.classList.add("live2d-companion-dragging");
+				ensureDragIndicator();
+				if (event.target && event.target.setPointerCapture) {
+					try {
+						event.target.setPointerCapture(event.pointerId);
+					} catch (err) {
+						console.warn("Failed to capture drag pointer:", err);
+					}
+				}
+				event.preventDefault();
+				event.stopPropagation();
+				postDragEvent("l2d-drag-start", event);
+			}
+
+			function updateDrag(event) {
+				if (!dragging) return;
+				event.preventDefault();
+				event.stopPropagation();
+				postDragEvent("l2d-drag-move", event);
+			}
+
+			function endDrag(event) {
+				if (!dragging) return;
+				dragging = false;
+				document.body.classList.remove("live2d-companion-dragging");
+				event.preventDefault();
+				event.stopPropagation();
+				parent.postMessage({ type: "l2d-drag-end" }, "*");
+				setDragReady(pointerInsideCompanion);
 			}
 
 			function pickIdlePlaybackExpression(pool) {
@@ -679,11 +905,18 @@
 
 			document.addEventListener("pointerenter", function () {
 				setPointerInsideCompanion(true);
+				scheduleDragReady();
 			});
 
 			document.addEventListener("pointerleave", function () {
 				setPointerInsideCompanion(false);
+				resetDragReady();
 			});
+
+			document.addEventListener("pointerdown", startDrag, true);
+			document.addEventListener("pointermove", updateDrag, true);
+			document.addEventListener("pointerup", endDrag, true);
+			document.addEventListener("pointercancel", endDrag, true);
 
 			function getAvailableExpressions() {
 				return availableExpressionsCache;
@@ -787,6 +1020,7 @@
 
 			function syncExpressionPanelState(open) {
 				expressionPanelOpen = Boolean(open);
+				if (expressionPanelOpen) resetDragReady();
 				document.body.classList.toggle(
 					"live2d-companion-expression-panel-open",
 					expressionPanelOpen,
@@ -1210,6 +1444,15 @@
 
 				if (e.data.type === "live2d-companion-sync-pointer") {
 					syncPointerState(e.data.point);
+					return;
+				}
+
+				if (e.data.type === "live2d-companion-drag-state") {
+					dragging = e.data.dragging === true;
+					document.body.classList.toggle(
+						"live2d-companion-dragging",
+						dragging,
+					);
 					return;
 				}
 

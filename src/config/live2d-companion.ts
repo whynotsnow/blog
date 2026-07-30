@@ -142,7 +142,9 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 		messageOffset: { top: 32 }, // 只调整壳层气泡，不依赖具体模型
 		collapseIcon: "material-symbols:collapse-content-rounded", // 使用本地图标
 		collapseLabel: "收起看板娘",
+		dragIndicatorIcon: "local:move-four-way",
 		hideWidgetStatusPanel: true,
+		dragHoverDelay: 1500, // 长悬停后进入拖拽准备状态
 	},
 	dialog: {
 		welcome: "欢迎来到 Snow 的博客！希望你能找到有用的内容～", // 欢迎词

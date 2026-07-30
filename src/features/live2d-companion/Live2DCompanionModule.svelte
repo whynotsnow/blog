@@ -76,12 +76,25 @@
 			};
 			collapseIcon?: string;
 			collapseLabel?: string;
+			dragIndicatorIcon?: string;
 			hideWidgetStatusPanel?: boolean;
+			dragHoverDelay?: number;
 		};
 		_hideAbout: boolean;
 		menus?: {
 			items: [];
 		};
+	};
+
+	type Live2DCompanionStoredPosition = {
+		left: number;
+		top: number;
+	};
+
+	type Live2DCompanionDragPointer = {
+		x: number;
+		y: number;
+		pointerId?: number;
 	};
 
 	let iframeEl: HTMLIFrameElement;
@@ -98,7 +111,14 @@
 	let availableExpressions: string[] = [];
 	let expressionPanelAnchor: { x: number; y: number } | undefined;
 	let expressionPanelEl: HTMLDivElement | undefined;
+	let rootEl: HTMLDivElement | undefined;
+	let dragReady = false;
+	let dragging = false;
+	let storedPosition: Live2DCompanionStoredPosition | undefined;
+	let dragOffset = { x: 0, y: 0 };
 	const modelStorageKey = "live2d-companion-model-index";
+	const positionStorageKey = "live2d-companion-position";
+	const defaultDragHoverDelay = 1500;
 	const defaultAvatarSrc =
 		live2dCompanionConfig.avatar ??
 		"/live2d-companion/models/NOIR/avatar.png";
@@ -204,8 +224,14 @@
 					live2dCompanionConfig.ui?.collapseLabel ??
 					live2dCompanionConfig.dialog?.close ??
 					"Collapse companion",
+				dragIndicatorIcon:
+					live2dCompanionConfig.ui?.dragIndicatorIcon ??
+					"local:move-four-way",
 				hideWidgetStatusPanel:
 					live2dCompanionConfig.ui?.hideWidgetStatusPanel ?? true,
+				dragHoverDelay:
+					live2dCompanionConfig.ui?.dragHoverDelay ??
+					defaultDragHoverDelay,
 			},
 			_hideAbout: live2dCompanionConfig.hideAboutMenu ?? true,
 			...(live2dCompanionConfig.modelSwitch && {
@@ -264,6 +290,7 @@
 		return {
 			accent: read("--accent"),
 			border: read("--border-default"),
+			isDark,
 			controlSurface: isDark
 				? "rgb(30 30 30 / 86%)"
 				: "rgb(255 255 255 / 88%)",
@@ -300,6 +327,117 @@
 
 	function closeExpressionPanel() {
 		setExpressionPanelOpen(false);
+	}
+
+	function readStoredPosition() {
+		try {
+			const raw = localStorage.getItem(positionStorageKey);
+			if (!raw) return undefined;
+			const value = JSON.parse(
+				raw,
+			) as Partial<Live2DCompanionStoredPosition>;
+			if (
+				typeof value.left !== "number" ||
+				typeof value.top !== "number" ||
+				!Number.isFinite(value.left) ||
+				!Number.isFinite(value.top)
+			) {
+				return undefined;
+			}
+			return clampPosition({ left: value.left, top: value.top });
+		} catch {
+			return undefined;
+		}
+	}
+
+	function saveStoredPosition(position: Live2DCompanionStoredPosition) {
+		localStorage.setItem(positionStorageKey, JSON.stringify(position));
+	}
+
+	function getRootSize() {
+		const fallbackSize = collapsed ? 48 : widgetWidth;
+		const rect = rootEl?.getBoundingClientRect();
+		return {
+			width: rect?.width || fallbackSize,
+			height: rect?.height || (collapsed ? 48 : frameHeight),
+		};
+	}
+
+	function clampPosition(position: Live2DCompanionStoredPosition) {
+		const size = getRootSize();
+		const minLeft = -size.width * 0.5;
+		const minTop = -size.height * 0.5;
+		const maxLeft = window.innerWidth - size.width * 0.5;
+		const maxTop = window.innerHeight - size.height * 0.5;
+		return {
+			left: Math.min(Math.max(position.left, minLeft), maxLeft),
+			top: Math.min(Math.max(position.top, minTop), maxTop),
+		};
+	}
+
+	function getParentClientPoint(point: Live2DCompanionDragPointer) {
+		const rect = iframeEl?.getBoundingClientRect();
+		if (!rect) return undefined;
+		return {
+			x: rect.left + point.x,
+			y: rect.top + point.y,
+		};
+	}
+
+	function startDrag(point: Live2DCompanionDragPointer) {
+		const clientPoint = getParentClientPoint(point);
+		const rect = rootEl?.getBoundingClientRect();
+		if (!clientPoint || !rect) return;
+		closeExpressionPanel();
+		dragging = true;
+		dragReady = true;
+		dragOffset = {
+			x: clientPoint.x - rect.left,
+			y: clientPoint.y - rect.top,
+		};
+		storedPosition = {
+			left: rect.left,
+			top: rect.top,
+		};
+		postToFrame({ type: "live2d-companion-drag-state", dragging: true });
+	}
+
+	function updateDragFromClientPoint(clientX: number, clientY: number) {
+		if (!dragging) return;
+		storedPosition = clampPosition({
+			left: clientX - dragOffset.x,
+			top: clientY - dragOffset.y,
+		});
+	}
+
+	function updateDrag(point: Live2DCompanionDragPointer) {
+		const clientPoint = getParentClientPoint(point);
+		if (!clientPoint) return;
+		updateDragFromClientPoint(clientPoint.x, clientPoint.y);
+	}
+
+	function endDrag() {
+		if (!dragging) return;
+		dragging = false;
+		if (storedPosition) {
+			storedPosition = clampPosition(storedPosition);
+			saveStoredPosition(storedPosition);
+		}
+		postToFrame({ type: "live2d-companion-drag-state", dragging: false });
+	}
+
+	function handleWindowPointerMove(event: PointerEvent) {
+		updateDragFromClientPoint(event.clientX, event.clientY);
+	}
+
+	function handleWindowPointerUp() {
+		endDrag();
+	}
+
+	function clampStoredPositionToViewport() {
+		if (!storedPosition) return;
+		storedPosition = clampPosition(storedPosition);
+		saveStoredPosition(storedPosition);
 	}
 
 	function toggleExpressionPanel(anchor?: { x: number; y: number }) {
@@ -428,6 +566,24 @@
 				closeExpressionPanel();
 			}
 		}
+		if (event.data?.type === "l2d-drag-ready") {
+			dragReady = event.data.ready === true;
+		}
+		if (event.data?.type === "l2d-drag-start") {
+			const point = event.data.point;
+			if (typeof point?.x === "number" && typeof point?.y === "number") {
+				startDrag(point);
+			}
+		}
+		if (event.data?.type === "l2d-drag-move") {
+			const point = event.data.point;
+			if (typeof point?.x === "number" && typeof point?.y === "number") {
+				updateDrag(point);
+			}
+		}
+		if (event.data?.type === "l2d-drag-end") {
+			endDrag();
+		}
 	}
 
 	function collapseCompanion() {
@@ -501,7 +657,11 @@
 		disposed = false;
 		collapsed = getLive2DCompanionCollapsed(false);
 		activeAvatarSrc = getModelAvatarByStoredIndex();
+		storedPosition = readStoredPosition();
 		window.addEventListener("message", handleMessage);
+		window.addEventListener("pointermove", handleWindowPointerMove);
+		window.addEventListener("pointerup", handleWindowPointerUp);
+		window.addEventListener("resize", clampStoredPositionToViewport);
 		window.addEventListener(LIVE2D_COMPANION_COMMAND_EVENT, handleCommand);
 		themeObserver = new MutationObserver(postTheme);
 		themeObserver.observe(document.documentElement, {
@@ -520,6 +680,9 @@
 			window.clearTimeout(pendingFrameMount);
 			window.clearTimeout(pendingCollapse);
 			window.removeEventListener("message", handleMessage);
+			window.removeEventListener("pointermove", handleWindowPointerMove);
+			window.removeEventListener("pointerup", handleWindowPointerUp);
+			window.removeEventListener("resize", clampStoredPositionToViewport);
 			window.removeEventListener(
 				LIVE2D_COMPANION_COMMAND_EVENT,
 				handleCommand,
@@ -538,18 +701,24 @@
 		window.clearTimeout(pendingFrameMount);
 		window.clearTimeout(pendingCollapse);
 		themeObserver?.disconnect();
+		window.removeEventListener("pointermove", handleWindowPointerMove);
+		window.removeEventListener("pointerup", handleWindowPointerUp);
+		window.removeEventListener("resize", clampStoredPositionToViewport);
 		closeExpressionPanel();
 	});
 </script>
 
 <div
+	bind:this={rootEl}
 	class={`live2d-companion ${live2dCompanionConfig.position || "right"}`}
 	class:live2d-companion--collapsed={collapsed}
 	class:live2d-companion--collapsing={collapsing}
+	class:live2d-companion--drag-ready={dragReady}
+	class:live2d-companion--dragging={dragging}
 	class:live2d-companion--loaded={loaded}
 	class:live2d-companion--loading={!loaded}
 	data-live2d-companion-mounted="true"
-	style={`--live2d-companion-width: ${widgetWidth}px; --live2d-companion-height: ${frameHeight}px;`}
+	style={`--live2d-companion-width: ${widgetWidth}px; --live2d-companion-height: ${frameHeight}px;${storedPosition ? ` --live2d-companion-left: ${storedPosition.left}px; --live2d-companion-top: ${storedPosition.top}px;` : ""}`}
 >
 	{#if frameMounted}
 		<iframe
@@ -622,6 +791,11 @@
 		opacity: 1;
 	}
 
+	.live2d-companion--dragging {
+		cursor: grabbing;
+		user-select: none;
+	}
+
 	.live2d-companion--loading,
 	.live2d-companion--collapsed {
 		width: 3rem;
@@ -639,6 +813,13 @@
 	.live2d-companion.right.live2d-companion--collapsed {
 		right: 1rem;
 		bottom: 0.75rem;
+	}
+
+	.live2d-companion[style*="--live2d-companion-left"] {
+		left: var(--live2d-companion-left);
+		right: auto;
+		top: var(--live2d-companion-top);
+		bottom: auto;
 	}
 
 	#l2d-iframe {
@@ -698,7 +879,7 @@
 		width: max-content;
 		max-width: calc(100vw - 2rem);
 		padding: 0.35rem;
-		border: 1px solid var(--border);
+		border: 1px solid var(--border-default);
 		border-radius: 8px;
 		background: var(--surface-overlay);
 		box-shadow: var(--shadow-raised);
@@ -724,10 +905,10 @@
 		height: 1.65rem;
 		min-width: 0;
 		padding: 0 0.2rem;
-		border: 1px solid var(--border);
+		border: 1px solid var(--border-default);
 		border-radius: 6px;
 		background: color-mix(in srgb, var(--surface-overlay) 88%, transparent);
-		color: var(--text);
+		color: var(--text-primary);
 		font:
 			600 0.68rem/1 system-ui,
 			-apple-system,
@@ -747,7 +928,7 @@
 	}
 
 	.live2d-companion__expression-option:hover {
-		background: var(--surface);
+		background: var(--surface-raised);
 		color: var(--accent);
 		transform: translateY(-1px);
 	}

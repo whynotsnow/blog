@@ -411,7 +411,9 @@ export type Live2DCompanionConfig = {
 		};
 		collapseIcon?: string; // 本地图标名称
 		collapseLabel?: string; // 收起按钮无障碍文案
+		dragIndicatorIcon?: string; // 拖拽准备状态提示图标的本地图标名称
 		hideWidgetStatusPanel?: boolean; // 是否隐藏 widget 自带加载/休息侧栏
+		dragHoverDelay?: number; // 鼠标悬停多久后进入拖拽准备状态（ms）
 	};
 	dialog?: {
 		welcome?: string | string[]; // 欢迎词
