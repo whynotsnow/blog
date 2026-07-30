@@ -5,9 +5,11 @@ import Twikoo from "./Twikoo.astro";
 interface Props {
 	enabled: boolean;
 	path: string;
+	class?: string;
+	bare?: boolean;
 }
 
-const { enabled, path } = Astro.props;
+const { enabled, path, class: className, bare = false } = Astro.props;
 
 let commentService = "";
 if (commentConfig?.enable && commentConfig?.twikoo) {
@@ -16,8 +18,15 @@ if (commentConfig?.enable && commentConfig?.twikoo) {
 
 ---
 {commentConfig?.enable && enabled && (
-  <div class="card-base ds-surface-card p-6 mb-4">
+  <div class:list={[!bare && "comment-card card-base ds-surface-card", className]}>
     {commentService === 'twikoo' && <Twikoo path={path} />}
     {commentService === '' && null}
   </div>
 )}
+
+<style>
+  .comment-card {
+    padding: var(--space-card);
+    margin-bottom: var(--space-content);
+  }
+</style>

@@ -84,95 +84,100 @@ const staticTocItems = encryption.enabled
 			/>
 		)
 	}
-		<div class="post-detail__shell flex relative">
-			<div
-				id="post-container"
-				class="post-detail__article post-detail__surface ds-surface-content z-10"
-				data-reading-title={title}
-				data-reading-minutes={header.minutes}
-			>
-			<PostHeader post={header} />
+	<div class="post-detail__shell flex relative">
+		<div
+			id="post-container"
+			class="post-detail__article post-detail__surface ds-surface-card z-10"
+			data-reading-title={title}
+			data-reading-minutes={header.minutes}
+		>
+			<div class="post-detail__reader-flow">
+				<PostHeader post={header} />
 
-			<!-- always show cover as long as it has one -->
+				<!-- always show cover as long as it has one -->
 
-			{
-				cover && siteConfig.showCoverInContent && (
-					<>
-						<div class="mt-4" />
+				{
+					cover && siteConfig.showCoverInContent && (
 						<ImageWrapper
 							id="post-cover"
 							src={cover.src}
 							basePath={cover.basePath}
-							class="mb-8 rounded-xl banner-container"
+							class="post-detail__wide-block rounded-xl banner-container"
 						/>
-					</>
-				)
-			}
+					)
+				}
 
-			{
-				encryption.enabled ? (
-					<Encryptor password={encryption.password}>
-						<Markdown class="post-detail__content mb-6 markdown-content">
+				{
+					encryption.enabled ? (
+						<Encryptor password={encryption.password}>
+							<Markdown class="post-detail__content post-detail__reading-block markdown-content">
+								<Content />
+							</Markdown>
+						</Encryptor>
+					) : (
+						<Markdown class="post-detail__content post-detail__reading-block markdown-content">
 							<Content />
 						</Markdown>
-					</Encryptor>
-				) : (
-					<Markdown class="post-detail__content mb-6 markdown-content">
-						<Content />
-					</Markdown>
-				)
-			}
+					)
+				}
 
-			{
-				shareConfig.enable && (
-					<PostShareCard
-						class:list={[
-							{ "encrypted-hidden": encryption.enabled },
-						]}
-						{title}
-						{author}
-						description={description || ""}
-						pubDate={formatDateToYYYYMMDD(header.published)}
-						coverImage={posterCoverUrl}
-						url={canonicalUrl}
-						avatar={posterAvatarUrl}
-					/>
-				)
-			}
-
-			{
-				licenseConfig.enable && (
-					<section
-						id="license-component"
-						class:list={[
-							"post-detail__block post-detail__aux-card",
-							"encrypted-hidden-wrapper",
-							{ "encrypted-hidden": encryption.enabled },
-						]}
-						aria-label="许可信息"
-					>
-						<License
+				{
+					shareConfig.enable && (
+						<PostShareCard
+							class:list={[{ "encrypted-hidden": encryption.enabled }]}
 							{title}
-							{id}
-							pubDate={header.published}
 							{author}
-							sourceLink={license.sourceLink}
-							licenseName={license.licenseName}
-							licenseUrl={license.licenseUrl}
-							class="post-detail__license-content license-container"
+							description={description || ""}
+							pubDate={formatDateToYYYYMMDD(header.published)}
+							coverImage={posterCoverUrl}
+							url={canonicalUrl}
+							avatar={posterAvatarUrl}
 						/>
-					</section>
-				)
-			}
+					)
+				}
+
+				{
+					licenseConfig.enable && (
+						<section
+							id="license-component"
+							class:list={[
+								"post-detail__wide-block post-detail__aux-card",
+								"encrypted-hidden-wrapper",
+								{ "encrypted-hidden": encryption.enabled },
+							]}
+							aria-label="许可信息"
+						>
+							<License
+								{title}
+								{id}
+								pubDate={header.published}
+								{author}
+								sourceLink={license.sourceLink}
+								licenseName={license.licenseName}
+								licenseUrl={license.licenseUrl}
+								class="post-detail__license-content license-container"
+								bare
+							/>
+						</section>
+					)
+				}
+			</div>
 		</div>
 	</div>
 
-	<PostRelatedList {support} />
+	<div class="post-detail__after-flow">
+		<PostRelatedList {support} />
 
-	<!-- 评论 -->
-	<Comment enabled={comment.enabled} path={comment.path} />
+		<!-- 评论 -->
+		<Comment
+			enabled={comment.enabled}
+			path={comment.path}
+			class="post-detail__wide-block post-detail__aux-card"
+			bare
+		/>
 
-	{siteConfig.showLastModified && <PostLastModified {lastModified} />}
+		{siteConfig.showLastModified && <PostLastModified {lastModified} />}
 
-	<PostNavigation next={navigation.next} prev={navigation.prev} />
+		<PostNavigation next={navigation.next} prev={navigation.prev} />
+	</div>
 </MainGridLayout>
