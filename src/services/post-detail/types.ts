@@ -92,6 +92,7 @@ export type PostDetailPageProps = {
 	support: {
 		continueReading: SupportPostLink[];
 		recommendedPosts: SupportPostLink[];
+		randomPosts: SupportPostLink[];
 	};
 	canonicalUrl: string;
 	canonicalOgSlug: string;

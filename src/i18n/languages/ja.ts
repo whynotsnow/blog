@@ -54,6 +54,10 @@ export const ja: Translation = {
 	[Key.resumeReading]: "前回の位置から再開",
 
 	[Key.comments]: "コメント",
+	[Key.relatedPosts]: "関連記事",
+	[Key.randomPosts]: "ランダム記事",
+	[Key.smartRecommend]: "おすすめ",
+	[Key.randomRecommend]: "見てみる",
 	[Key.friends]: "友達",
 	[Key.friendsSubtitle]: "もっと素敵なウェブサイトを見つける",
 	[Key.friendsSearchPlaceholder]: "友達の名前または説明を検索...",

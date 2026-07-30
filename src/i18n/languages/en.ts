@@ -54,6 +54,10 @@ export const en: Translation = {
 	[Key.resumeReading]: "Resume reading",
 
 	[Key.comments]: "Comments",
+	[Key.relatedPosts]: "Related Posts",
+	[Key.randomPosts]: "Random Posts",
+	[Key.smartRecommend]: "Smart Picks",
+	[Key.randomRecommend]: "Explore",
 	[Key.friends]: "Friends",
 	[Key.friendsSubtitle]: "Discover more great websites",
 	[Key.friendsSearchPlaceholder]: "Search friend's name or description...",

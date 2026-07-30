@@ -51,6 +51,10 @@ enum I18nKey {
 	resumeReading = "resumeReading",
 
 	comments = "comments",
+	relatedPosts = "relatedPosts",
+	randomPosts = "randomPosts",
+	smartRecommend = "smartRecommend",
+	randomRecommend = "randomRecommend",
 
 	untitled = "untitled",
 	uncategorized = "uncategorized",

@@ -13,7 +13,11 @@ import { getRawPostById } from "../core/source";
 import { getRenderedPost } from "../core/post-renderer";
 import { runPostBuildTask } from "../core/concurrency";
 import { buildPostDetailStaticPathItems } from "./static-paths";
-import { buildRecommendedPostLinks, toSupportPostLink } from "../support";
+import {
+	buildDeterministicRandomPostLinks,
+	buildRecommendedPostLinks,
+	toSupportPostLink,
+} from "../support";
 
 dayjs.extend(utc);
 
@@ -83,6 +87,17 @@ export async function getPostDetailPageData(
 		(post) =>
 			!continueReading.some((continued) => continued.id === post.id),
 	);
+	const visibleRecommendedPosts = recommendedPosts.slice(0, 3);
+	const randomPosts = buildDeterministicRandomPostLinks({
+		seed: index.id,
+		posts: store.posts,
+		excludeIds: [
+			index.id,
+			...continueReading.map((post) => post.id),
+			...visibleRecommendedPosts.map((post) => post.id),
+		],
+		limit: 3,
+	});
 
 	return {
 		id: index.id,
@@ -126,7 +141,8 @@ export async function getPostDetailPageData(
 		navigation: { prev: index.prev, next: index.next },
 		support: {
 			continueReading,
-			recommendedPosts: recommendedPosts.slice(0, 3),
+			recommendedPosts: visibleRecommendedPosts,
+			randomPosts,
 		},
 		canonicalUrl,
 		canonicalOgSlug: index.route.canonicalSlug,

@@ -8,6 +8,7 @@ export type SupportPostLink = {
 	id: string;
 	title: string;
 	url: string;
+	summary: string;
 	published: string;
 	category: {
 		name: string;
@@ -32,6 +33,7 @@ export function toSupportPostLink(post: PostIndexEntry): SupportPostLink {
 		id: post.id,
 		title: post.title,
 		url: post.route.canonicalUrl,
+		summary: post.description.trim() || post.excerpt.trim(),
 		published: post.published.toISOString(),
 		category: {
 			name: post.category.name,
@@ -87,7 +89,9 @@ export function buildRecommendedPostLinks(params: {
 	const currentTags = new Set(current.tags.map((tag) => tag.slug));
 
 	return posts
-		.filter((post) => post.id !== current.id)
+		.filter(
+			(post) => post.id !== current.id && !post.draft && !post.encrypted,
+		)
 		.map((post) => {
 			const sharedTagCount = post.tags.filter((tag) =>
 				currentTags.has(tag.slug),
@@ -113,6 +117,42 @@ export function buildRecommendedPostLinks(params: {
 				return b.post.score - a.post.score;
 			}
 			return b.activity - a.activity;
+		})
+		.slice(0, limit)
+		.map(({ post }) => toSupportPostLink(post));
+}
+
+function hashPostSeed(value: string): number {
+	let hash = 2166136261;
+
+	for (let index = 0; index < value.length; index += 1) {
+		hash ^= value.charCodeAt(index);
+		hash = Math.imul(hash, 16777619);
+	}
+
+	return hash >>> 0;
+}
+
+export function buildDeterministicRandomPostLinks(params: {
+	seed: string;
+	posts: PostIndexEntry[];
+	excludeIds: Iterable<string>;
+	limit: number;
+}): SupportPostLink[] {
+	const { seed, posts, excludeIds, limit } = params;
+	const excluded = new Set(excludeIds);
+
+	return posts
+		.filter(
+			(post) => !excluded.has(post.id) && !post.draft && !post.encrypted,
+		)
+		.map((post) => ({
+			post,
+			rank: hashPostSeed(`${seed}:${post.id}`),
+		}))
+		.sort((a, b) => {
+			if (a.rank !== b.rank) return a.rank - b.rank;
+			return b.post.published.getTime() - a.post.published.getTime();
 		})
 		.slice(0, limit)
 		.map(({ post }) => toSupportPostLink(post));

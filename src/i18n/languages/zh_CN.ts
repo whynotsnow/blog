@@ -54,6 +54,10 @@ export const zh_CN: Translation = {
 	[Key.resumeReading]: "回到上次位置",
 
 	[Key.comments]: "评论",
+	[Key.relatedPosts]: "相关文章",
+	[Key.randomPosts]: "随机文章",
+	[Key.smartRecommend]: "智能推荐",
+	[Key.randomRecommend]: "随便看看",
 	[Key.friends]: "友链",
 	[Key.friendsSubtitle]: "发现更多优质网站",
 	[Key.friendsSearchPlaceholder]: "搜索友链名称或描述...",

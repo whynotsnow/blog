@@ -1,5 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
 import { formatDateToYYYYMMDD } from "@utils/date-utils";
 import type { PostDetailPageProps } from "@/services/post-detail/types";
 
@@ -10,25 +12,29 @@ interface Props {
 const { support } = Astro.props;
 const groups = [
 	{
-		key: "continue",
-		title: "继续阅读",
-		icon: "material-symbols:swap-horiz-rounded",
-		posts: support.continueReading.map((post) => ({
-			id: post.id,
-			title: post.title,
-			url: post.url,
-			meta: formatDateToYYYYMMDD(post.published),
-		})),
-	},
-	{
-		key: "recommended",
-		title: "推荐阅读",
+		key: "related",
+		title: i18n(I18nKey.relatedPosts),
+		badge: i18n(I18nKey.smartRecommend),
 		icon: "material-symbols:bookmark-star-outline-rounded",
 		posts: support.recommendedPosts.map((post) => ({
 			id: post.id,
 			title: post.title,
 			url: post.url,
-			meta: post.category.name,
+			category: post.category.name,
+			meta: post.summary || formatDateToYYYYMMDD(post.published),
+		})),
+	},
+	{
+		key: "random",
+		title: i18n(I18nKey.randomPosts),
+		badge: i18n(I18nKey.randomRecommend),
+		icon: "material-symbols:recommend",
+		posts: support.randomPosts.map((post) => ({
+			id: post.id,
+			title: post.title,
+			url: post.url,
+			category: post.category.name,
+			meta: formatDateToYYYYMMDD(post.published),
 		})),
 	},
 ].filter((group) => group.posts.length > 0);
@@ -38,21 +44,32 @@ const groups = [
 	groups.length > 0 && (
 		<section class="post-detail__related-mobile post-detail__wide-block" aria-label="相关文章">
 			{groups.map((group) => (
-				<div class="post-detail__related-group">
-					<h2 class="post-detail__related-heading">
-						<Icon name={group.icon} />
-						{group.title}
-					</h2>
+				<div class="post-detail__related-card post-detail__aux-card">
+					<div class="post-detail__related-heading">
+						<h2>
+							<Icon name={group.icon} />
+							<span>{group.title}</span>
+						</h2>
+						<span class="post-detail__related-badge">{group.badge}</span>
+					</div>
 					<div class="post-detail__related-list">
 						{group.posts.map((post, index) => (
-							<a href={post.url} class="post-detail__related-link">
-								<span class="post-detail__related-index">{index + 1}</span>
-								<span class="post-detail__related-copy">
-									<strong>{post.title}</strong>
-									<span>{post.meta}</span>
-								</span>
-								<Icon name="material-symbols:chevron-right-rounded" />
-							</a>
+							<>
+								<a href={post.url} class="post-detail__related-link">
+									<span class="post-detail__related-index">{index + 1}</span>
+									<span class="post-detail__related-copy">
+										<strong>{post.title}</strong>
+										<span>
+											<em>{post.category}</em>
+											<small>{post.meta}</small>
+										</span>
+									</span>
+									<Icon name="material-symbols:chevron-right-rounded" />
+								</a>
+								{index < group.posts.length - 1 && (
+									<div class="post-detail__related-divider" />
+								)}
+							</>
 						))}
 					</div>
 				</div>
