@@ -90,6 +90,10 @@
   color: var(--text-primary);
 }
 
+.post-detail__comment-card:has(> #tcomment:empty) {
+  display: none;
+}
+
 .post-detail__license-content {
   padding: 0;
   border-radius: 0;

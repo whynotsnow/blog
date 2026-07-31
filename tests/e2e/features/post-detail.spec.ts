@@ -289,6 +289,62 @@ test("Twikoo receives encoded canonical path for non-ascii post routes", async (
 	});
 });
 
+test("Twikoo comment card stays collapsed until the widget renders", async ({
+	page,
+}) => {
+	let releaseScript!: () => void;
+	const scriptCanLoad = new Promise<void>((resolve) => {
+		releaseScript = resolve;
+	});
+
+	await page.route("**/assets/css/twikoo.css", async (route) => {
+		await route.fulfill({
+			contentType: "text/css",
+			body: ".tk-comments { display: block; }",
+		});
+	});
+	await page.route("**/assets/js/twikoo.nocss.js", async (route) => {
+		await scriptCanLoad;
+		await route.fulfill({
+			contentType: "application/javascript",
+			body: `
+				window.twikoo = {
+					init(config) {
+						const root = document.querySelector(config.el);
+						if (!root) throw new Error("Missing Twikoo root");
+						root.innerHTML = '<div class="tk-comments">Rendered comments</div>';
+						return Promise.resolve();
+					}
+				};
+			`,
+		});
+	});
+
+	await page.addInitScript(() => {
+		localStorage.setItem("site-notice:read:site-building-2026-07", "true");
+		localStorage.setItem(
+			"site-notice:read:site-content-updates-2026-07",
+			"true",
+		);
+	});
+	await page.goto("/posts/markdown-tutorial/", {
+		waitUntil: "domcontentloaded",
+		timeout: 60_000,
+	});
+	const commentCard = page.locator(".post-detail__comment-card");
+	await expect(commentCard).toHaveCount(1);
+	await expect(commentCard).toHaveCSS("display", "none");
+
+	releaseScript();
+	await expect(
+		page.locator("#tcomment[data-twikoo-state='ready']"),
+	).toBeVisible();
+	await expect(commentCard).not.toHaveCSS("display", "none");
+	await expect(commentCard.locator(".tk-comments")).toHaveText(
+		"Rendered comments",
+	);
+});
+
 test("Twikoo theme styles are available after Swup post navigation", async ({
 	page,
 }) => {
