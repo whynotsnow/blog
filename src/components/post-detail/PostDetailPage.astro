@@ -84,7 +84,7 @@ const staticTocItems = encryption.enabled
 			/>
 		)
 	}
-	<div class="post-detail__shell flex relative">
+	<div class="post-detail__shell relative">
 		<div
 			id="post-container"
 			class="post-detail__article post-detail__surface ds-surface-card z-10"
@@ -163,21 +163,23 @@ const staticTocItems = encryption.enabled
 				}
 			</div>
 		</div>
-	</div>
 
-	<div class="post-detail__after-flow">
-		<PostRelatedList {support} />
+		<div class="post-detail__after-flow post-detail__surface ds-surface-card">
+			<div class="post-detail__after-flow-inner">
+				<PostRelatedList {support} />
 
-		<!-- 评论 -->
-		<Comment
-			enabled={comment.enabled}
-			path={comment.path}
-			className="post-detail__comment-card post-detail__aux-card"
-			bare
-		/>
+				<!-- 评论 -->
+				<Comment
+					enabled={comment.enabled}
+					path={comment.path}
+					className="post-detail__comment-card post-detail__aux-card"
+					bare
+				/>
 
-		{siteConfig.showLastModified && <PostLastModified {lastModified} />}
+				{siteConfig.showLastModified && <PostLastModified {lastModified} />}
 
-		<PostNavigation next={navigation.next} prev={navigation.prev} />
+				<PostNavigation next={navigation.next} prev={navigation.prev} />
+			</div>
+		</div>
 	</div>
 </MainGridLayout>

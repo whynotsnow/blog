@@ -55,6 +55,91 @@ test("post content shares markdown styles and copy behavior", async ({
 	await expect(copyButton).toHaveClass(/success/);
 });
 
+test("post detail flow keeps article blocks on one content rail", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await gotoPage(page, "/posts/markdown-tutorial/");
+
+	const railState = await page.evaluate(() => {
+		const railSelectors = [
+			".post-detail__header",
+			"#post-cover",
+			".post-detail__content",
+			"#share-component",
+			"#license-component",
+			".post-detail__after-flow-inner > .post-detail__comment-card",
+			".post-detail__navigation",
+		];
+		const readRects = (selectors: string[]) =>
+			selectors
+				.map((selector) => {
+					const element = document.querySelector(selector);
+					if (!element) return null;
+					const rect = element.getBoundingClientRect();
+					return {
+						selector,
+						x: Math.round(rect.x),
+						width: Math.round(rect.width),
+					};
+				})
+				.filter((rect): rect is NonNullable<typeof rect> =>
+					Boolean(rect),
+				);
+		const railRects = readRects(railSelectors);
+
+		const article = document
+			.querySelector(".post-detail__article")
+			?.getBoundingClientRect();
+		const afterFlow = document
+			.querySelector(".post-detail__after-flow")
+			?.getBoundingClientRect();
+		const afterFlowInner = document
+			.querySelector(".post-detail__after-flow-inner")
+			?.getBoundingClientRect();
+		const navigationCard = document.querySelector(
+			".post-detail__navigation-card",
+		);
+		const navigationCardStyle = navigationCard
+			? getComputedStyle(navigationCard)
+			: null;
+
+		return {
+			railRects,
+			articleX: article ? Math.round(article.x) : null,
+			articleWidth: article ? Math.round(article.width) : null,
+			afterFlowX: afterFlow ? Math.round(afterFlow.x) : null,
+			afterFlowWidth: afterFlow ? Math.round(afterFlow.width) : null,
+			afterFlowInnerX: afterFlowInner
+				? Math.round(afterFlowInner.x)
+				: null,
+			afterFlowInnerWidth: afterFlowInner
+				? Math.round(afterFlowInner.width)
+				: null,
+			navigationCardBorderWidth: navigationCardStyle
+				? Number.parseFloat(navigationCardStyle.borderTopWidth)
+				: 0,
+			navigationCardBackground:
+				navigationCardStyle?.backgroundColor ?? "",
+			overflow: document.documentElement.scrollWidth - window.innerWidth,
+		};
+	});
+
+	expect(railState.railRects.length).toBeGreaterThanOrEqual(4);
+	const [firstRailRect] = railState.railRects;
+	for (const rect of railState.railRects) {
+		expect(rect.x, rect.selector).toBe(firstRailRect.x);
+		expect(rect.width, rect.selector).toBe(firstRailRect.width);
+	}
+	expect(railState.afterFlowX).toBe(railState.articleX);
+	expect(railState.afterFlowWidth).toBe(railState.articleWidth);
+	expect(railState.afterFlowInnerX).toBe(firstRailRect.x);
+	expect(railState.afterFlowInnerWidth).toBe(firstRailRect.width);
+	expect(railState.navigationCardBorderWidth).toBeGreaterThan(0);
+	expect(railState.navigationCardBackground).not.toBe("rgba(0, 0, 0, 0)");
+	expect(railState.overflow).toBeLessThanOrEqual(0);
+});
+
 test("Twikoo comment actions keep canonical path and do not jump to page top", async ({
 	page,
 }) => {
@@ -535,12 +620,25 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 		const supportToc =
 			document.querySelector<HTMLElement>(".post-support__toc")!;
 		const supportTocStyle = getComputedStyle(supportToc);
+		const resolveLength = (value: string) => {
+			const probe = document.createElement("div");
+			probe.style.position = "fixed";
+			probe.style.top = value;
+			probe.style.visibility = "hidden";
+			document.body.append(probe);
+			const pixels = parseFloat(getComputedStyle(probe).top);
+			probe.remove();
+			return pixels;
+		};
 		const expandedRegion = toc.querySelector<HTMLElement>(
 			".toc-expanded-region",
 		)!;
 		const expandedRegionStyle = getComputedStyle(expandedRegion);
 
 		return {
+			supportStickyTop: parseFloat(supportStyle.top),
+			mainContentOffset: resolveLength("var(--main-content-offset)"),
+			pageEntryClearance: resolveLength("var(--page-entry-clearance)"),
 			supportTocHeight: supportToc.getBoundingClientRect().height,
 			supportTocTransition: supportTocStyle.transitionProperty,
 			expandedRegionTransition: expandedRegionStyle.transitionProperty,
@@ -555,6 +653,13 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 				.length,
 		};
 	});
+	expect(overflowState.supportStickyTop).toBeCloseTo(
+		overflowState.mainContentOffset,
+		0,
+	);
+	expect(overflowState.supportStickyTop).toBeLessThan(
+		overflowState.pageEntryClearance,
+	);
 	expect(overflowState.supportTocHeight).toBeLessThan(330);
 	expect(overflowState.supportTocTransition).toContain("max-height");
 	expect(overflowState.expandedRegionTransition).toContain("height");
@@ -929,7 +1034,7 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 			}
 		}
 		window.scrollTo({
-			top: heading.getBoundingClientRect().top + window.scrollY - 120,
+			top: heading.getBoundingClientRect().top + window.scrollY - 48,
 		});
 		const samples: Array<{
 			visible: string;

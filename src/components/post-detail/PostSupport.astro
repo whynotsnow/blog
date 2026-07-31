@@ -76,10 +76,10 @@ const hasHeadings = headings.length > 0;
 		--stack-space: var(--space-grid-gap);
 		--post-support-toc-height: min(
 			24rem,
-			calc(100dvh - var(--page-entry-clearance) - var(--size-6))
+			calc(100dvh - var(--main-content-offset) - var(--space-grid-gap))
 		);
 		position: sticky;
-		top: calc(var(--page-entry-clearance) + var(--size-3));
+		top: var(--main-content-offset);
 		width: 100%;
 		align-items: stretch;
 		overflow: visible;

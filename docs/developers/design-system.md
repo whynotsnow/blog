@@ -65,7 +65,7 @@ Pattern 不包含路由、业务 ID、组件状态或交互逻辑。Astro 与 Sv
 
 Footer 不设置固定 Shell 高度，而是由内容自然撑开；外层间距、Stats 的横向与换行间距、Meta 行间距统一消费 Footer Feature-local token，并随同一 Desktop Landscape 补偿曲线变化。Banner 的容器高度仍只由 `--banner-block-size` 的 `vh`/`svh`/`dvh` 几何决定，文字补偿不得反向改变首屏比例。
 
-Navbar 外层高度由 `--navbar-shell-height` 所有；`--main-content-offset` 与 Page Entry Clearance 从该高度和 `--navbar-shell-clearance` 推导。`container-content` 在同一 Desktop Landscape 范围内将 Shell 高度从 `1536px` viewport 的约 `64.8px` 平滑恢复到 `2000px` 的 `72px`，但 Navigation Button 继续保留 `44px` 点击区域，Logo 高度也不随这轮补偿变化。Navbar 滚动阈值必须消费同一高度契约，不得重新写入固定 `72px` 或 `88px`。
+Navbar 外层高度由 `--navbar-shell-height` 所有；`--main-content-offset` 与 Page Entry Clearance 从该高度和 `--navbar-shell-clearance` 推导。`container-content` 在同一 Desktop Landscape 范围内将 Shell 高度从 `1536px` viewport 的约 `64.8px` 平滑恢复到 `2000px` 的 `72px`，但 Navigation Button 继续保留 `44px` 点击区域，Logo 高度也不随这轮补偿变化。Navbar 滚动阈值必须消费同一高度契约，不得重新写入固定 `72px` 或 `88px`。右侧文章 TOC 的 sticky top 使用 `--main-content-offset`，不要使用更大的 `--page-entry-clearance`，否则会把 navbar clearance 叠加两次。
 
 顶部 Navigation Progress 是 Shell-local Pattern：颜色消费 `--accent`，过渡消费 `--motion-*`，固定覆盖在页面顶部且不占文档流高度。它消费 Swup 生命周期并保证快速导航仍有短暂的可见反馈，但不作为内容、图片或 Svelte hydration 的完成状态。
 
@@ -73,7 +73,7 @@ Navbar 外层高度由 `--navbar-shell-height` 所有；`--main-content-offset` 
 
 Light Theme 在 Semantic 层提供默认值，`:root.dark` 只重映射主题相关 token。Wallpaper 模式通过 body class 重映射 Card Surface；组件不得自行重新计算 Light/Dark 颜色。
 
-文章详情页在普通模式使用透明 Content Surface；Wallpaper transparent/full-wall 模式仍由文章 Feature 增加半透明背景、边框、圆角和 blur，以保证复杂背景上的可读性。
+文章详情页在普通模式使用 `ds-surface-card` 作为阅读卡片边界。上方文章卡片与 `post-detail__after-flow` 后置卡片共享同一外层宽度；两张卡片内部的 Header、正文、封面、分享、许可、评论、最后修改和上下篇导航共享同一条 `--width-reading-wide` rail，以减少大屏时阅读内容与右侧 support aside 的空隙，并避免正文流与后置区块左右漂移。Wallpaper transparent/full-wall 模式在同一阅读卡片上额外增加 blur，以保证复杂背景上的可读性。
 
 ## 新增或修改视觉规则
 

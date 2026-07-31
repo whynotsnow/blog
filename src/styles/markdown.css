@@ -211,10 +211,10 @@
 
 body.is-post .post-detail__content > :is(.expressive-code, .table-wrapper, .katex-display, figure, p:has(> img:only-child)) {
   position: relative;
-  left: 50%;
-  width: min(var(--width-reading-wide), calc(100vw - var(--space-page-x) - var(--space-page-x)));
-  max-width: none;
-  transform: translateX(-50%);
+  left: auto;
+  width: 100%;
+  max-width: 100%;
+  transform: none;
 }
 
 /* 外部覆盖样式 */

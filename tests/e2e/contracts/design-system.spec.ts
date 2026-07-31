@@ -43,7 +43,7 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 	await gotoPage(page, "/posts/markdown-tutorial/");
 	const article = page.locator(".post-detail__article");
 	const readingFlow = page.locator(".post-detail__content");
-	await expect(article).toHaveClass(/ds-surface-content/);
+	await expect(article).toHaveClass(/ds-surface-card/);
 	await expect(readingFlow).toHaveClass(/ds-reading-flow/);
 
 	const normalSurface = await article.evaluate((node) => {
@@ -57,8 +57,8 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 			radius: styles.borderRadius,
 		};
 	});
-	expect(normalSurface.background).toBe("rgba(0, 0, 0, 0)");
-	expect(normalSurface.radius).toBe("0px");
+	expect(normalSurface.background).not.toBe("rgba(0, 0, 0, 0)");
+	expect(normalSurface.radius).not.toBe("0px");
 
 	const wallpaperSurface = await article.evaluate((node) => {
 		document.body.classList.add("wallpaper-full");
@@ -79,7 +79,7 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 		);
 		return {
 			reading: node.getBoundingClientRect().width,
-			readingLimit: 48 * rootSize,
+			readingLimit: 52 * rootSize,
 			wide:
 				document
 					.querySelector(".expressive-code")
