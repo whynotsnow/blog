@@ -1,9 +1,10 @@
 ---
 import Comment from "@components/comment/index.astro";
+import TwikooHead from "@components/comment/TwikooHead.astro";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { licenseConfig, shareConfig } from "@/config";
+import { commentConfig, licenseConfig, shareConfig } from "@/config";
 import ImageWrapper from "@components/misc/ImageWrapper.astro";
 import { siteConfig } from "@/config";
 import { formatDateToYYYYMMDD } from "@utils/date-utils";
@@ -48,6 +49,8 @@ const staticTocItems = encryption.enabled
 			maxDepth: siteConfig.toc?.depth || 3,
 			useJapaneseBadge: siteConfig.toc?.useJapaneseBadge || false,
 		});
+const shouldLoadTwikooAssets =
+	comment.enabled && commentConfig?.enable && Boolean(commentConfig?.twikoo);
 ---
 
 <MainGridLayout
@@ -67,6 +70,7 @@ const staticTocItems = encryption.enabled
 		type="application/ld+json"
 		set:html={JSON.stringify(jsonLd)}
 	/>
+	{shouldLoadTwikooAssets && <TwikooHead slot="head" />}
 	<PostSupport
 		slot="support"
 		headings={headings}

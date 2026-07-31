@@ -1,0 +1,16 @@
+---
+import { TWIKOO_SCRIPT_SRC, TWIKOO_STYLE_SRC } from "./twikoo-assets";
+---
+
+<link
+	rel="stylesheet"
+	href={TWIKOO_STYLE_SRC}
+	data-twikoo-stylesheet="official"
+/>
+<script
+	is:inline
+	async
+	src={TWIKOO_SCRIPT_SRC}
+	data-twikoo-runtime
+	data-swup-ignore-script
+></script>

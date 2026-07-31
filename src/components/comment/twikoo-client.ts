@@ -1,4 +1,5 @@
 import { onPageLifecycle } from "@/utils/page-lifecycle";
+import { TWIKOO_SCRIPT_SRC, TWIKOO_STYLE_SRC } from "./twikoo-assets";
 import twikooThemeCss from "./twikoo-theme.css?raw";
 
 type TwikooConfig = {
@@ -25,8 +26,6 @@ declare global {
 }
 
 const ROOT_SELECTOR = "[data-twikoo-root]";
-const SCRIPT_SRC = "/assets/js/twikoo.nocss.js";
-const STYLE_SRC = "/assets/css/twikoo.css";
 const INIT_KEY_ATTR = "twikooInitializedKey";
 const THEME_STYLE_ID = "twikoo-theme-overrides";
 
@@ -60,29 +59,59 @@ function buildInitKey(config: TwikooConfig) {
 	].join("|");
 }
 
+function createTwikooScript() {
+	const script = document.createElement("script");
+	script.src = TWIKOO_SCRIPT_SRC;
+	script.async = true;
+	script.dataset.twikooRuntime = "";
+	script.dataset.swupIgnoreScript = "";
+	return script;
+}
+
 function ensureTwikooScript() {
 	if (window.twikoo) return Promise.resolve();
 	if (scriptLoadPromise) return scriptLoadPromise;
 
-	const existingScript = document.querySelector<HTMLScriptElement>(
-		`script[src="${SCRIPT_SRC}"]`,
+	let existingScript = document.querySelector<HTMLScriptElement>(
+		`script[src="${TWIKOO_SCRIPT_SRC}"]`,
 	);
+	if (existingScript && document.readyState === "complete") {
+		existingScript.remove();
+		existingScript = null;
+	}
 
 	scriptLoadPromise = new Promise<void>((resolve, reject) => {
+		if (existingScript?.dataset.loaded === "true") {
+			resolve();
+			return;
+		}
+
 		if (existingScript) {
-			existingScript.addEventListener("load", () => resolve(), {
-				once: true,
-			});
+			existingScript.addEventListener(
+				"load",
+				() => {
+					existingScript.dataset.loaded = "true";
+					resolve();
+				},
+				{
+					once: true,
+				},
+			);
 			existingScript.addEventListener("error", () => reject(), {
 				once: true,
 			});
 			return;
 		}
 
-		const script = document.createElement("script");
-		script.src = SCRIPT_SRC;
-		script.async = true;
-		script.addEventListener("load", () => resolve(), { once: true });
+		const script = createTwikooScript();
+		script.addEventListener(
+			"load",
+			() => {
+				script.dataset.loaded = "true";
+				resolve();
+			},
+			{ once: true },
+		);
 		script.addEventListener("error", () => reject(), { once: true });
 		document.head.append(script);
 	});
@@ -92,7 +121,7 @@ function ensureTwikooScript() {
 
 function ensureTwikooStylesheet() {
 	const existingLink = document.querySelector<HTMLLinkElement>(
-		`link[rel="stylesheet"][href="${STYLE_SRC}"]`,
+		`link[rel="stylesheet"][href="${TWIKOO_STYLE_SRC}"]`,
 	);
 
 	if (existingLink?.dataset.loaded === "true") {
@@ -130,7 +159,7 @@ function ensureTwikooStylesheet() {
 
 		const link = document.createElement("link");
 		link.rel = "stylesheet";
-		link.href = STYLE_SRC;
+		link.href = TWIKOO_STYLE_SRC;
 		link.dataset.twikooStylesheet = "official";
 		link.addEventListener(
 			"load",
@@ -225,7 +254,11 @@ function initTwikoo(reason = "page-view") {
 	root.dataset.twikooState = "loading";
 	root.dataset[INIT_KEY_ATTR] = initKey;
 
-	Promise.all([ensureTwikooStylesheet(), ensureTwikooScript()])
+	ensureTwikooStylesheet().catch((error) => {
+		console.warn("[Twikoo] Failed to load official styles.", error);
+	});
+
+	ensureTwikooScript()
 		.then(() => {
 			if (currentVersion !== initVersion) return;
 			if (!window.twikoo) {
@@ -268,22 +301,25 @@ function scheduleInit(reason: string) {
 	window.setTimeout(() => initTwikoo(reason), 0);
 }
 
+function scheduleEarlyInit(reason: string) {
+	window.queueMicrotask(() => initTwikoo(reason));
+}
+
 if (!window.__twikooCommentManager) {
 	window.__twikooCommentManager = {
 		init: scheduleInit,
 	};
 
-	if (document.readyState === "loading") {
-		document.addEventListener(
-			"DOMContentLoaded",
-			() => scheduleInit("dom-ready"),
-			{
-				once: true,
-			},
-		);
-	} else {
-		scheduleInit("initial");
-	}
+	scheduleEarlyInit(
+		document.readyState === "loading" ? "initial-parse" : "initial",
+	);
+	document.addEventListener(
+		"DOMContentLoaded",
+		() => scheduleInit("dom-ready"),
+		{
+			once: true,
+		},
+	);
 
 	onPageLifecycle("content-replace", () => scheduleInit("content-replace"));
 	onPageLifecycle("page-view", () => scheduleInit("page-view"));

@@ -239,6 +239,84 @@ test("Twikoo comment actions keep canonical path and do not jump to page top", a
 	expect(afterButtonClick.scrollY).toBeGreaterThan(100);
 });
 
+test("Twikoo assets are discoverable in head and init before DOMContentLoaded", async ({
+	page,
+	request,
+}) => {
+	const response = await request.get("/posts/markdown-tutorial/");
+	expect(response.ok()).toBe(true);
+	const html = await response.text();
+	const headHtml = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? "";
+	expect(headHtml).toContain('href="/assets/css/twikoo.css"');
+	expect(headHtml).toContain('src="/assets/js/twikoo.nocss.js"');
+	expect(headHtml).toContain("data-twikoo-stylesheet");
+	expect(headHtml).toContain("data-twikoo-runtime");
+	expect(headHtml).toContain("data-swup-ignore-script");
+
+	await page.route("**/assets/css/twikoo.css", async (route) => {
+		await route.fulfill({
+			contentType: "text/css",
+			body: ".tk-comments { display: block; }",
+		});
+	});
+	await page.route("**/assets/js/twikoo.nocss.js", async (route) => {
+		await route.fulfill({
+			contentType: "application/javascript",
+			body: "window.__twikooRuntimeAssetLoaded = true;",
+		});
+	});
+	await page.addInitScript(() => {
+		const eventWindow = window as typeof window & {
+			__twikooLifecycleEvents?: string[];
+			twikoo?: {
+				init: (config: { el: string }) => Promise<void>;
+			};
+		};
+		eventWindow.__twikooLifecycleEvents = [];
+		eventWindow.twikoo = {
+			async init(config) {
+				eventWindow.__twikooLifecycleEvents?.push("init");
+				const root = document.querySelector(config.el);
+				if (!root) throw new Error("Missing Twikoo root");
+				root.innerHTML =
+					'<div class="tk-comments">Early comments</div>';
+			},
+		};
+		document.addEventListener(
+			"DOMContentLoaded",
+			() => {
+				eventWindow.__twikooLifecycleEvents?.push("domcontentloaded");
+			},
+			{ once: true },
+		);
+	});
+
+	await page.goto("/posts/markdown-tutorial/", {
+		waitUntil: "domcontentloaded",
+		timeout: 60_000,
+	});
+
+	const lifecycleEvents = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__twikooLifecycleEvents?: string[];
+				}
+			).__twikooLifecycleEvents ?? [],
+	);
+	expect(lifecycleEvents).toContain("init");
+	expect(lifecycleEvents).toContain("domcontentloaded");
+	expect(lifecycleEvents.indexOf("init")).toBeLessThan(
+		lifecycleEvents.indexOf("domcontentloaded"),
+	);
+	await expect(
+		page.locator("#tcomment[data-twikoo-state='ready']"),
+	).toBeVisible();
+	await expect(page.locator("#tcomment .tk-comments")).toHaveText(
+		"Early comments",
+	);
+});
+
 test("Twikoo receives encoded canonical path for non-ascii post routes", async ({
 	page,
 }) => {
