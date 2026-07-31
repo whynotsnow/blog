@@ -19,27 +19,29 @@ const { lastModified } = Astro.props;
 </aside>
 
 <script is:inline>
-	function updatePostModifiedTime() {
-		const source = document.getElementById("last-modified");
-		const target = document.getElementById("modifiedtime");
-		if (!source || !target) return;
-		const seconds = Math.max(0, Math.floor((Date.now() - new Date(source.dataset.lastModified).getTime()) / 1000));
-		const days = Math.floor(seconds / 86400);
-		const years = Math.floor(days / 365);
-		const months = Math.floor((days % 365) / 30);
-		const remainingDays = days % 30;
-		const hours = Math.floor((seconds % 86400) / 3600);
-		const minutes = Math.floor((seconds % 3600) / 60);
-		const remainingSeconds = seconds % 60;
-		const parts = [];
-		if (years > 0) parts.push(`${years} ${source.dataset.year}`);
-		if (months > 0) parts.push(`${months} ${source.dataset.month}`);
-		if (remainingDays > 0) parts.push(`${remainingDays} ${source.dataset.day}`);
-		parts.push(`${hours} ${source.dataset.hour}`);
-		parts.push(`${String(minutes).padStart(2, "0")} ${source.dataset.minute}`);
-		parts.push(`${String(remainingSeconds).padStart(2, "0")} ${source.dataset.second}`);
-		target.textContent = `${source.dataset.prefix} ${parts.join(" ")}`;
-	}
-	updatePostModifiedTime();
-	window.setInterval(updatePostModifiedTime, 1000);
+	(() => {
+		function updatePostModifiedTime() {
+			const source = document.getElementById("last-modified");
+			const target = document.getElementById("modifiedtime");
+			if (!source || !target) return;
+			const seconds = Math.max(0, Math.floor((Date.now() - new Date(source.dataset.lastModified).getTime()) / 1000));
+			const days = Math.floor(seconds / 86400);
+			const years = Math.floor(days / 365);
+			const months = Math.floor((days % 365) / 30);
+			const remainingDays = days % 30;
+			const hours = Math.floor((seconds % 86400) / 3600);
+			const minutes = Math.floor((seconds % 3600) / 60);
+			const remainingSeconds = seconds % 60;
+			const parts = [];
+			if (years > 0) parts.push(`${years} ${source.dataset.year}`);
+			if (months > 0) parts.push(`${months} ${source.dataset.month}`);
+			if (remainingDays > 0) parts.push(`${remainingDays} ${source.dataset.day}`);
+			parts.push(`${hours} ${source.dataset.hour}`);
+			parts.push(`${String(minutes).padStart(2, "0")} ${source.dataset.minute}`);
+			parts.push(`${String(remainingSeconds).padStart(2, "0")} ${source.dataset.second}`);
+			target.textContent = `${source.dataset.prefix} ${parts.join(" ")}`;
+		}
+		updatePostModifiedTime();
+		window.setInterval(updatePostModifiedTime, 1000);
+	})();
 </script>

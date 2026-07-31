@@ -219,6 +219,16 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Preserved viewport-based Banner geometry, Main Grid and shared component widths, Card dimensions, Container Query thresholds, Navbar control heights, and post TOC behavior for later layout-specific work.
 - Added a shared Navbar Shell height and clearance contract for outer height, Main Content offset, Page Entry alignment, Site Notice positioning, and runtime Banner thresholds while preserving the `44px` Navigation targets.
 
+## 2026-07-31
+
+### Stabilized Twikoo styles after Swup navigation
+
+- Split Twikoo v1.7.15 script and stylesheet loading so the site owns the official stylesheet order explicitly.
+- Added a head observer and scheduled refreshes to keep site theme overrides after Twikoo or Vue-injected styles.
+- Made stylesheet loading document-aware because Swup can remove a dynamically appended Twikoo CSS link while a resolved module-level load promise still exists.
+- Marked a Twikoo root as initialized while async setup is still pending so `content:replace` and `page:view` cannot double-init the same comment tree.
+- Added post-detail E2E coverage for delayed Twikoo styles, Swup article navigation, computed theme values, and single initialization.
+
 ### Refined Banner and Navbar responsive interaction
 
 - Kept the existing Page Shell and entry-scroll policies while moving carousel runtime ownership beside the Banner component.

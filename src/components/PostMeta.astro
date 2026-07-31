@@ -187,46 +187,48 @@ const {
 </div>
 
 <script is:inline>
-	const container = document.querySelector(".umami-page-views");
+	(() => {
+		const container = document.querySelector(".umami-page-views");
 
-	function generateStatsText(container, pageViews, visits) {
-		const pageViewsText = container.dataset.pageViewsLabel ?? "";
-		const visitsText = container.dataset.visitsLabel ?? "";
-		return `${pageViewsText} ${pageViews} · ${visitsText} ${visits}`;
-	}
-
-	async function fetchPageViews() {
-		if (!container) return;
-		if (!window.oddmisc) {
-			container?.classList.add("hidden");
-			return;
+		function generateStatsText(container, pageViews, visits) {
+			const pageViewsText = container.dataset.pageViewsLabel ?? "";
+			const visitsText = container.dataset.visitsLabel ?? "";
+			return `${pageViewsText} ${pageViews} · ${visitsText} ${visits}`;
 		}
 
-		try {
-			const stats = await window.oddmisc.getStats(
-				`/posts/${container.dataset.id}/`,
-			);
-			const pageViews = stats.pageviews || 0;
-			const visits = stats.visits || 0;
-
-			if (pageViews === 0 && visits === 0) {
+		async function fetchPageViews() {
+			if (!container) return;
+			if (!window.oddmisc) {
 				container?.classList.add("hidden");
 				return;
 			}
 
-			container?.classList.remove("hidden");
-			container?.classList.add("flex");
-			container.querySelector(".page-views-display").textContent =
-				generateStatsText(container, pageViews, visits);
-		} catch (error) {
-			console.error("Error fetching page views:", error);
-			container?.classList.add("hidden");
-		}
-	}
+			try {
+				const stats = await window.oddmisc.getStats(
+					`/posts/${container.dataset.id}/`,
+				);
+				const pageViews = stats.pageviews || 0;
+				const visits = stats.visits || 0;
 
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", fetchPageViews);
-	} else {
-		fetchPageViews();
-	}
+				if (pageViews === 0 && visits === 0) {
+					container?.classList.add("hidden");
+					return;
+				}
+
+				container?.classList.remove("hidden");
+				container?.classList.add("flex");
+				container.querySelector(".page-views-display").textContent =
+					generateStatsText(container, pageViews, visits);
+			} catch (error) {
+				console.error("Error fetching page views:", error);
+				container?.classList.add("hidden");
+			}
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", fetchPageViews);
+		} else {
+			fetchPageViews();
+		}
+	})();
 </script>

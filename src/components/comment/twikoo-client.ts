@@ -1,4 +1,5 @@
 import { onPageLifecycle } from "@/utils/page-lifecycle";
+import twikooThemeCss from "./twikoo-theme.css?raw";
 
 type TwikooConfig = {
 	envId?: string;
@@ -24,11 +25,15 @@ declare global {
 }
 
 const ROOT_SELECTOR = "[data-twikoo-root]";
-const SCRIPT_SRC = "/assets/js/twikoo.all.min.js";
+const SCRIPT_SRC = "/assets/js/twikoo.nocss.js";
+const STYLE_SRC = "/assets/css/twikoo.css";
 const INIT_KEY_ATTR = "twikooInitializedKey";
+const THEME_STYLE_ID = "twikoo-theme-overrides";
 
 let scriptLoadPromise: Promise<void> | null = null;
+let styleLoadPromise: Promise<void> | null = null;
 let initVersion = 0;
+let themeStyleObserver: MutationObserver | null = null;
 
 function findRoot(): HTMLElement | null {
 	return document.querySelector<HTMLElement>(ROOT_SELECTOR);
@@ -85,9 +90,122 @@ function ensureTwikooScript() {
 	return scriptLoadPromise;
 }
 
+function ensureTwikooStylesheet() {
+	const existingLink = document.querySelector<HTMLLinkElement>(
+		`link[rel="stylesheet"][href="${STYLE_SRC}"]`,
+	);
+
+	if (existingLink?.dataset.loaded === "true") {
+		return Promise.resolve();
+	}
+	if (existingLink && styleLoadPromise) return styleLoadPromise;
+
+	if (!existingLink) {
+		styleLoadPromise = null;
+	}
+
+	styleLoadPromise = new Promise<void>((resolve, reject) => {
+		if (existingLink) {
+			existingLink.addEventListener(
+				"load",
+				() => {
+					existingLink.dataset.loaded = "true";
+					styleLoadPromise = null;
+					resolve();
+				},
+				{ once: true },
+			);
+			existingLink.addEventListener(
+				"error",
+				() => {
+					styleLoadPromise = null;
+					reject();
+				},
+				{
+					once: true,
+				},
+			);
+			return;
+		}
+
+		const link = document.createElement("link");
+		link.rel = "stylesheet";
+		link.href = STYLE_SRC;
+		link.dataset.twikooStylesheet = "official";
+		link.addEventListener(
+			"load",
+			() => {
+				link.dataset.loaded = "true";
+				styleLoadPromise = null;
+				resolve();
+			},
+			{ once: true },
+		);
+		link.addEventListener(
+			"error",
+			() => {
+				styleLoadPromise = null;
+				reject();
+			},
+			{ once: true },
+		);
+		document.head.append(link);
+	});
+
+	return styleLoadPromise;
+}
+
 function markError(root: HTMLElement, message = "评论加载失败") {
 	root.dataset.twikooState = "error";
 	root.textContent = message;
+}
+
+function ensureTwikooThemeStyle() {
+	let style = document.getElementById(
+		THEME_STYLE_ID,
+	) as HTMLStyleElement | null;
+	if (!style) {
+		style = document.createElement("style");
+		style.id = THEME_STYLE_ID;
+		style.dataset.twikooTheme = "site";
+	}
+
+	if (style.textContent !== twikooThemeCss) {
+		style.textContent = twikooThemeCss;
+	}
+
+	if (style.parentElement !== document.head || style.nextSibling) {
+		document.head.append(style);
+	}
+}
+
+function scheduleThemeStyleRefresh() {
+	ensureTwikooThemeStyle();
+	window.requestAnimationFrame(ensureTwikooThemeStyle);
+	window.setTimeout(ensureTwikooThemeStyle, 0);
+	window.setTimeout(ensureTwikooThemeStyle, 120);
+	window.setTimeout(ensureTwikooThemeStyle, 500);
+	window.setTimeout(ensureTwikooThemeStyle, 1500);
+	window.setTimeout(ensureTwikooThemeStyle, 3000);
+}
+
+function watchTwikooThemeStyleOrder() {
+	if (themeStyleObserver) return;
+
+	themeStyleObserver = new MutationObserver((mutations) => {
+		const addedStyle = mutations.some((mutation) =>
+			Array.from(mutation.addedNodes).some(
+				(node) =>
+					node instanceof HTMLStyleElement ||
+					(node instanceof HTMLLinkElement &&
+						node.rel === "stylesheet"),
+			),
+		);
+		if (!addedStyle) return;
+
+		window.queueMicrotask(ensureTwikooThemeStyle);
+	});
+	themeStyleObserver.observe(document.head, { childList: true });
 }
 
 function initTwikoo(reason = "page-view") {
@@ -105,8 +223,9 @@ function initTwikoo(reason = "page-view") {
 
 	const currentVersion = ++initVersion;
 	root.dataset.twikooState = "loading";
+	root.dataset[INIT_KEY_ATTR] = initKey;
 
-	ensureTwikooScript()
+	Promise.all([ensureTwikooStylesheet(), ensureTwikooScript()])
 		.then(() => {
 			if (currentVersion !== initVersion) return;
 			if (!window.twikoo) {
@@ -119,8 +238,13 @@ function initTwikoo(reason = "page-view") {
 			if (activeRoot !== root) return;
 
 			root.innerHTML = "";
+			watchTwikooThemeStyleOrder();
+			ensureTwikooThemeStyle();
 			const result = window.twikoo.init(config);
-			return Promise.resolve(result);
+			scheduleThemeStyleRefresh();
+			return Promise.resolve(result).then(() => {
+				scheduleThemeStyleRefresh();
+			});
 		})
 		.then(() => {
 			if (currentVersion !== initVersion) return;
@@ -128,7 +252,6 @@ function initTwikoo(reason = "page-view") {
 			if (activeRoot !== root) return;
 
 			root.dataset.twikooState = "ready";
-			root.dataset[INIT_KEY_ATTR] = initKey;
 		})
 		.catch((error) => {
 			if (currentVersion !== initVersion) return;
@@ -136,6 +259,7 @@ function initTwikoo(reason = "page-view") {
 				`[Twikoo] Failed to initialize during ${reason}.`,
 				error,
 			);
+			delete root.dataset[INIT_KEY_ATTR];
 			markError(root);
 		});
 }

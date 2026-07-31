@@ -20,6 +20,7 @@
 | [内容编写指南](./developers/content-guide.md) | 文章 schema、frontmatter、分类标签、草稿和资源规则。 |
 | [配置说明](./developers/configuration.md) | 站点配置、环境变量、特色页面和 URL 工具。 |
 | [维护指南](./developers/maintenance.md) | 定期检查、依赖更新、生成文件和高风险区域。 |
+| [Twikoo 评论组件维护方案](./developers/twikoo-maintenance.md) | Twikoo vendored CSS、主题变量桥接、升级和验证流程。 |
 | [内容分离](./developers/content-separation.md) | 外部内容仓库配置、私有仓库和故障排查。 |
 | [内容仓库结构](./developers/content-repository.md) | 分离内容仓库的推荐目录和写作规范。 |
 | [内容迁移指南](./developers/migration-guide.md) | 从单仓库迁移到分离内容仓库。 |

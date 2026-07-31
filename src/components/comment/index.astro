@@ -5,28 +5,35 @@ import Twikoo from "./Twikoo.astro";
 interface Props {
 	enabled: boolean;
 	path: string;
-	class?: string;
+	className?: string;
 	bare?: boolean;
 }
 
-const { enabled, path, class: className, bare = false } = Astro.props;
+const { enabled, path, className, bare = false } = Astro.props;
 
 let commentService = "";
 if (commentConfig?.enable && commentConfig?.twikoo) {
 	commentService = "twikoo";
 }
 
+const commentClass = [!bare && "comment-card card-base ds-surface-card", className]
+	.filter(Boolean)
+	.join(" ");
 ---
 {commentConfig?.enable && enabled && (
-  <div class:list={[!bare && "comment-card card-base ds-surface-card", className]}>
-    {commentService === 'twikoo' && <Twikoo path={path} />}
-    {commentService === '' && null}
-  </div>
+	<div
+		data-comment-root
+		data-comment-service={commentService || undefined}
+		class={commentClass}
+	>
+		{commentService === "twikoo" && <Twikoo path={path} />}
+		{commentService === "" && null}
+	</div>
 )}
 
 <style>
-  .comment-card {
-    padding: var(--space-card);
-    margin-bottom: var(--space-content);
-  }
+	.comment-card {
+		padding: var(--space-card);
+		margin-bottom: var(--space-content);
+	}
 </style>

@@ -58,7 +58,13 @@ test("post content shares markdown styles and copy behavior", async ({
 test("Twikoo comment actions keep canonical path and do not jump to page top", async ({
 	page,
 }) => {
-	await page.route("**/assets/js/twikoo.all.min.js", async (route) => {
+	await page.route("**/assets/css/twikoo.css", async (route) => {
+		await route.fulfill({
+			contentType: "text/css",
+			body: ".tk-input .el-textarea__inner { border-radius: 0; }",
+		});
+	});
+	await page.route("**/assets/js/twikoo.nocss.js", async (route) => {
 		await route.fulfill({
 			contentType: "application/javascript",
 			body: `
@@ -146,6 +152,329 @@ test("Twikoo comment actions keep canonical path and do not jump to page top", a
 	}));
 	expect(afterButtonClick.hash).toBe(beforeClick.hash);
 	expect(afterButtonClick.scrollY).toBeGreaterThan(100);
+});
+
+test("Twikoo theme styles are available after Swup post navigation", async ({
+	page,
+}) => {
+	await page.route("**/assets/css/twikoo.css", async (route) => {
+		await route.fulfill({
+			contentType: "text/css",
+			body: [
+				".tk-comments-title { font-size: 28px; }",
+				".tk-action-link:hover { color: var(--twikoo-accent); }",
+				".tk-action-icon { color: var(--twikoo-accent); }",
+				".tk-input .el-textarea__inner { border-radius: 0; }",
+				".el-input.is-active .el-input__inner, .el-input__inner:focus { border-color: var(--twikoo-accent); }",
+				".el-button--primary { color: #fff; background: var(--twikoo-accent); border-color: var(--twikoo-accent); }",
+				".el-button--text { color: var(--twikoo-accent); }",
+				".tk-sort-item.__active { color: var(--twikoo-accent); }",
+				".tk-icon.__comments { color: var(--twikoo-accent); }",
+				".tk-pagination-pager.__current { color: var(--text-on-accent); background-color: var(--twikoo-accent); }",
+				".el-loading-spinner .el-loading-text { color: var(--twikoo-accent); }",
+				".el-loading-spinner .path { stroke: var(--twikoo-accent); }",
+				".tk-replies { border-radius: 0; }",
+				".tk-content { line-height: 1; }",
+			].join("\n"),
+		});
+	});
+	await page.route("**/assets/js/twikoo.nocss.js", async (route) => {
+		await route.fulfill({
+			contentType: "application/javascript",
+			body: `
+				window.__twikooInitCalls = [];
+				window.twikoo = {
+					init(config) {
+						window.__twikooInitCalls.push({ ...config });
+						const root = document.querySelector(config.el);
+						if (!root) throw new Error("Missing Twikoo root");
+						const officialStyle = document.createElement("style");
+						officialStyle.dataset.mockTwikooOfficialStyle = "true";
+						officialStyle.textContent = [
+							'.tk-comments-title { font-size: 32px; }',
+							'.tk-replies { border-radius: 0; }',
+							'.tk-content { line-height: 1; }',
+							'.el-textarea__inner { border-radius: 0; }'
+						].join("\\n");
+						document.head.append(officialStyle);
+						window.setTimeout(() => {
+							const delayedStyle = document.createElement("style");
+							delayedStyle.dataset.mockTwikooDelayedStyle = "true";
+							delayedStyle.textContent = [
+								'.tk-comments-title { font-size: 40px; }',
+								'.tk-replies { border-radius: 0; }',
+								'.tk-content { line-height: 1; }',
+								'.tk-input .el-textarea__inner { border-radius: 0; }'
+							].join("\\n");
+							document.head.append(delayedStyle);
+						}, 300);
+						const twikooRoot = document.createElement("div");
+						twikooRoot.id = "twikoo";
+						twikooRoot.className = "twikoo";
+						twikooRoot.innerHTML = [
+							'<section class="tk-comments">',
+							'  <h2 class="tk-comments-title">Comments</h2>',
+							'  <div class="tk-meta-input">',
+							'    <div class="el-input is-active"><input class="el-input__inner" value="Reader"></div>',
+							'  </div>',
+							'  <div class="tk-input">',
+							'    <textarea class="el-textarea__inner" placeholder="Comment"></textarea>',
+							'  </div>',
+							'  <div class="tk-submit">',
+							'    <button class="el-button el-button--primary tk-send">Send</button>',
+							'    <button class="el-button el-button--text tk-preview">Preview</button>',
+							'  </div>',
+							'  <button class="tk-sort-item __active" type="button">Newest</button>',
+							'  <span class="tk-icon __comments"><svg viewBox="0 0 10 10"><path d="M0 0h10v10H0z"></path></svg></span>',
+							'  <button class="tk-action-link" type="button"><span class="tk-action-icon">Like</span></button>',
+							'  <button class="tk-action-link tk-liked" type="button"><span class="tk-action-icon">Like</span><span class="tk-action-icon-solid">Liked</span></button>',
+							'  <div class="tk-pagination-pager __current">1</div>',
+							'  <div class="el-loading-spinner"><svg><path class="path" d="M0 0h10"></path></svg><i>i</i><span class="el-loading-text">Loading</span></div>',
+							'  <article class="tk-comment">',
+							'    <a class="tk-nick" href="#">Reader</a>',
+							'    <div class="tk-time">now</div>',
+							'    <div class="tk-content"><p>Mock comment <a href="https://example.com">link</a></p></div>',
+							'    <div class="tk-replies">Reply</div>',
+							'  </article>',
+							'</section>'
+						].join("");
+						root.replaceWith(twikooRoot);
+						return new Promise((resolve) => window.setTimeout(resolve, 600));
+					}
+				};
+			`,
+		});
+	});
+
+	await gotoPage(page, "/");
+	await expect
+		.poll(() => page.evaluate(() => Boolean(window.swup)))
+		.toBe(true);
+
+	await page.evaluate(() => {
+		window.swup.navigate("/posts/markdown-tutorial/");
+	});
+
+	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	await expect(
+		page.locator('[data-comment-service="twikoo"] #twikoo'),
+	).toBeVisible();
+	await expect
+		.poll(() =>
+			page.evaluate(() =>
+				Boolean(
+					document.head.querySelector(
+						"style[data-mock-twikoo-delayed-style='true']",
+					),
+				),
+			),
+		)
+		.toBe(true);
+
+	const themeState = await page
+		.locator('[data-comment-service="twikoo"]')
+		.evaluate((root) => {
+			function computeCustomValue(property: string) {
+				const probe = document.createElement("div");
+				probe.style.width = `var(${property})`;
+				probe.style.borderRadius = `var(${property})`;
+				probe.style.fontSize = `var(${property})`;
+				document.body.append(probe);
+				const style = getComputedStyle(probe);
+				const value = property.includes("radius")
+					? style.borderRadius
+					: property.includes("text")
+						? style.fontSize
+						: style.width;
+				probe.remove();
+				return value;
+			}
+
+			function computeCustomColor(property: string) {
+				const probe = document.createElement("div");
+				probe.style.color = `var(${property})`;
+				document.body.append(probe);
+				const value = getComputedStyle(probe).color;
+				probe.remove();
+				return value;
+			}
+
+			function computeCssValue(
+				property: "borderColor" | "boxShadow",
+				value: string,
+			) {
+				const probe = document.createElement("div");
+				probe.style[property] = value;
+				root.append(probe);
+				const computedValue = getComputedStyle(probe)[property];
+				probe.remove();
+				return computedValue;
+			}
+
+			const input = root.querySelector<HTMLElement>(
+				".el-textarea__inner",
+			);
+			const activeInput = root.querySelector<HTMLElement>(
+				".el-input.is-active .el-input__inner",
+			);
+			const replies = root.querySelector<HTMLElement>(".tk-replies");
+			const content = root.querySelector<HTMLElement>(".tk-content");
+			const primaryButton = root.querySelector<HTMLElement>(
+				".el-button--primary",
+			);
+			const textButton =
+				root.querySelector<HTMLElement>(".el-button--text");
+			const sortButton = root.querySelector<HTMLElement>(
+				".tk-sort-item.__active",
+			);
+			const commentsIcon = root.querySelector<HTMLElement>(
+				".tk-icon.__comments",
+			);
+			const actionIcon = root.querySelector<HTMLElement>(
+				".tk-action-link:not(.tk-liked) .tk-action-icon",
+			);
+			const pager = root.querySelector<HTMLElement>(
+				".tk-pagination-pager.__current",
+			);
+			const loadingPath = root.querySelector<SVGPathElement>(
+				".el-loading-spinner .path",
+			);
+			const loadingText = root.querySelector<HTMLElement>(
+				".el-loading-spinner .el-loading-text",
+			);
+			if (
+				!input ||
+				!activeInput ||
+				!replies ||
+				!content ||
+				!primaryButton ||
+				!textButton ||
+				!sortButton ||
+				!commentsIcon ||
+				!actionIcon ||
+				!pager ||
+				!loadingPath ||
+				!loadingText
+			) {
+				throw new Error("Missing mocked Twikoo nodes");
+			}
+
+			return {
+				themeStyleAfterOfficialStyle:
+					Array.from(
+						document.head.querySelectorAll("style"),
+					).findIndex(
+						(node) => node.id === "twikoo-theme-overrides",
+					) >
+					Math.max(
+						Array.from(
+							document.head.querySelectorAll("style"),
+						).findIndex(
+							(node) =>
+								node instanceof HTMLElement &&
+								node.dataset.mockTwikooOfficialStyle === "true",
+						),
+						Array.from(
+							document.head.querySelectorAll("style"),
+						).findIndex(
+							(node) =>
+								node instanceof HTMLElement &&
+								node.dataset.mockTwikooDelayedStyle === "true",
+						),
+					),
+				rootFontSize: getComputedStyle(root).fontSize,
+				expectedSmallText: computeCustomValue("--text-small"),
+				inputRadius: getComputedStyle(input).borderRadius,
+				activeInputBorderColor:
+					getComputedStyle(activeInput).borderColor,
+				expectedFocusBorderColor: computeCssValue(
+					"borderColor",
+					"var(--twikoo-accent-border-strong)",
+				),
+				repliesRadius: getComputedStyle(replies).borderRadius,
+				expectedMediumRadius: computeCustomValue("--radius-md"),
+				contentLineHeight: getComputedStyle(content).lineHeight,
+				accentColor: computeCustomColor("--accent"),
+				textOnAccentColor: computeCustomColor("--text-on-accent"),
+				primaryButtonColor: getComputedStyle(primaryButton).color,
+				textButtonColor: getComputedStyle(textButton).color,
+				sortButtonColor: getComputedStyle(sortButton).color,
+				commentsIconColor: getComputedStyle(commentsIcon).color,
+				actionIconColor: getComputedStyle(actionIcon).color,
+				pagerColor: getComputedStyle(pager).color,
+				loadingPathStroke: getComputedStyle(loadingPath).stroke,
+				loadingTextColor: getComputedStyle(loadingText).color,
+			};
+		});
+
+	expect(themeState.themeStyleAfterOfficialStyle).toBe(true);
+	expect(themeState.rootFontSize).toBe(themeState.expectedSmallText);
+	expect(themeState.inputRadius).toBe(themeState.expectedMediumRadius);
+	expect(themeState.activeInputBorderColor).toBe(
+		themeState.expectedFocusBorderColor,
+	);
+	expect(themeState.repliesRadius).toBe(themeState.expectedMediumRadius);
+	expect(Number.parseFloat(themeState.contentLineHeight)).toBeGreaterThan(20);
+	expect(themeState.primaryButtonColor).toBe(themeState.textOnAccentColor);
+	expect(themeState.textButtonColor).toBe(themeState.accentColor);
+	expect(themeState.sortButtonColor).toBe(themeState.accentColor);
+	expect(themeState.commentsIconColor).toBe(themeState.accentColor);
+	expect(themeState.actionIconColor).toBe(themeState.accentColor);
+	expect(themeState.pagerColor).toBe(themeState.textOnAccentColor);
+	expect(themeState.loadingPathStroke).toBe(themeState.accentColor);
+	expect(themeState.loadingTextColor).toBe(themeState.accentColor);
+
+	const initCalls = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__twikooInitCalls?: Array<{ path?: string; el?: string }>;
+				}
+			).__twikooInitCalls ?? [],
+	);
+	expect(initCalls).toHaveLength(1);
+	expect(initCalls[0]).toMatchObject({
+		el: "#tcomment",
+		path: "/posts/markdown-tutorial/",
+	});
+
+	await page.evaluate(() => {
+		document
+			.querySelector<HTMLLinkElement>(
+				'link[href$="/assets/css/twikoo.css"]',
+			)
+			?.remove();
+		window.swup.navigate("/posts/markdown-extended/");
+	});
+
+	await expect(page).toHaveURL(/\/posts\/markdown-extended\/$/);
+	await expect(
+		page.locator('[data-comment-service="twikoo"] #twikoo'),
+	).toBeVisible();
+	await expect
+		.poll(() =>
+			page.evaluate(
+				() =>
+					document.querySelectorAll(
+						'link[href$="/assets/css/twikoo.css"]',
+					).length,
+			),
+		)
+		.toBe(1);
+
+	const afterSecondPostInitCalls = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__twikooInitCalls?: Array<{ path?: string; el?: string }>;
+				}
+			).__twikooInitCalls ?? [],
+	);
+	expect(afterSecondPostInitCalls).toHaveLength(2);
+	expect(afterSecondPostInitCalls[1]).toMatchObject({
+		el: "#tcomment",
+		path: "/posts/markdown-extended/",
+	});
 });
 
 test("post TOC ignores headings outside article content", async ({ page }) => {
