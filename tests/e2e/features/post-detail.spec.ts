@@ -256,6 +256,10 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 				".tk-sort-item.__active { color: var(--twikoo-accent); }",
 				".tk-icon.__comments { color: var(--twikoo-accent); }",
 				".tk-pagination-pager.__current { color: var(--text-on-accent); background-color: var(--twikoo-accent); }",
+				".tk-comments { display: flex; flex-direction: column; }",
+				".tk-comments-no { flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; }",
+				".el-loading-mask { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }",
+				".el-loading-spinner { position: absolute; top: 50%; width: 100%; text-align: center; }",
 				".el-loading-spinner .el-loading-text { color: var(--twikoo-accent); }",
 				".el-loading-spinner .path { stroke: var(--twikoo-accent); }",
 				".tk-replies { border-radius: 0; }",
@@ -314,7 +318,8 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 							'  <button class="tk-action-link" type="button"><span class="tk-action-icon">Like</span></button>',
 							'  <button class="tk-action-link tk-liked" type="button"><span class="tk-action-icon">Like</span><span class="tk-action-icon-solid">Liked</span></button>',
 							'  <div class="tk-pagination-pager __current">1</div>',
-							'  <div class="el-loading-spinner"><svg><path class="path" d="M0 0h10"></path></svg><i>i</i><span class="el-loading-text">Loading</span></div>',
+							'  <div class="tk-comments-no"><span>没有评论</span></div>',
+							'  <div class="el-loading-mask"><div class="el-loading-spinner"><svg><path class="path" d="M0 0h10"></path></svg><i>i</i><span class="el-loading-text">Loading</span></div></div>',
 							'  <article class="tk-comment">',
 							'    <a class="tk-nick" href="#">Reader</a>',
 							'    <div class="tk-time">now</div>',
@@ -427,6 +432,13 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 			const loadingText = root.querySelector<HTMLElement>(
 				".el-loading-spinner .el-loading-text",
 			);
+			const loadingMask =
+				root.querySelector<HTMLElement>(".el-loading-mask");
+			const loadingSpinner = root.querySelector<HTMLElement>(
+				".el-loading-spinner",
+			);
+			const noComments =
+				root.querySelector<HTMLElement>(".tk-comments-no");
 			if (
 				!input ||
 				!activeInput ||
@@ -439,10 +451,18 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 				!actionIcon ||
 				!pager ||
 				!loadingPath ||
-				!loadingText
+				!loadingText ||
+				!loadingMask ||
+				!loadingSpinner ||
+				!noComments
 			) {
 				throw new Error("Missing mocked Twikoo nodes");
 			}
+			const loadingMaskRect = loadingMask.getBoundingClientRect();
+			const loadingSpinnerRect = loadingSpinner.getBoundingClientRect();
+			const loadingMaskStyle = getComputedStyle(loadingMask);
+			const noCommentsStyle = getComputedStyle(noComments);
+			const loadingSpinnerStyle = getComputedStyle(loadingSpinner);
 
 			return {
 				themeStyleAfterOfficialStyle:
@@ -489,6 +509,25 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 				pagerColor: getComputedStyle(pager).color,
 				loadingPathStroke: getComputedStyle(loadingPath).stroke,
 				loadingTextColor: getComputedStyle(loadingText).color,
+				loadingMaskPosition: loadingMaskStyle.position,
+				loadingMaskDisplay: loadingMaskStyle.display,
+				loadingMaskAlignItems: loadingMaskStyle.alignItems,
+				loadingMaskJustifyContent: loadingMaskStyle.justifyContent,
+				loadingMaskFlexGrow: loadingMaskStyle.flexGrow,
+				loadingMaskAnimationName: loadingMaskStyle.animationName,
+				noCommentsDisplay: noCommentsStyle.display,
+				noCommentsAlignItems: noCommentsStyle.alignItems,
+				noCommentsJustifyContent: noCommentsStyle.justifyContent,
+				noCommentsFlexGrow: noCommentsStyle.flexGrow,
+				noCommentsAnimationName: noCommentsStyle.animationName,
+				loadingSpinnerPosition: loadingSpinnerStyle.position,
+				loadingSpinnerWidth: loadingSpinnerStyle.width,
+				loadingSpinnerMarginTop: loadingSpinnerStyle.marginTop,
+				loadingSpinnerCenterOffset: Math.abs(
+					loadingSpinnerRect.left +
+						loadingSpinnerRect.width / 2 -
+						(loadingMaskRect.left + loadingMaskRect.width / 2),
+				),
 			};
 		});
 
@@ -508,6 +547,21 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 	expect(themeState.pagerColor).toBe(themeState.textOnAccentColor);
 	expect(themeState.loadingPathStroke).toBe(themeState.accentColor);
 	expect(themeState.loadingTextColor).toBe(themeState.accentColor);
+	expect(themeState.loadingMaskPosition).toBe("static");
+	expect(themeState.loadingMaskDisplay).toBe(themeState.noCommentsDisplay);
+	expect(themeState.loadingMaskAlignItems).toBe(
+		themeState.noCommentsAlignItems,
+	);
+	expect(themeState.loadingMaskJustifyContent).toBe(
+		themeState.noCommentsJustifyContent,
+	);
+	expect(themeState.loadingMaskFlexGrow).toBe(themeState.noCommentsFlexGrow);
+	expect(themeState.loadingMaskAnimationName).toBe("twikoo-state-enter");
+	expect(themeState.noCommentsAnimationName).toBe("twikoo-state-enter");
+	expect(themeState.loadingSpinnerPosition).toBe("static");
+	expect(themeState.loadingSpinnerWidth).not.toBe("100%");
+	expect(themeState.loadingSpinnerMarginTop).toBe("0px");
+	expect(themeState.loadingSpinnerCenterOffset).toBeLessThanOrEqual(1);
 
 	const initCalls = await page.evaluate(
 		() =>
