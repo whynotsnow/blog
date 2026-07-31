@@ -18,6 +18,7 @@ import {
 	buildRecommendedPostLinks,
 	toSupportPostLink,
 } from "../support";
+import { buildTwikooCommentPath } from "./comment-path";
 
 dayjs.extend(utc);
 
@@ -131,7 +132,7 @@ export async function getPostDetailPageData(
 		},
 		comment: {
 			enabled: raw.data.comment,
-			path: index.route.canonicalUrl,
+			path: buildTwikooCommentPath(index.route.canonicalUrl),
 		},
 		license: {
 			sourceLink: raw.data.sourceLink,

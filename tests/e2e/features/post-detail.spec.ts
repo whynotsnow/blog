@@ -239,6 +239,56 @@ test("Twikoo comment actions keep canonical path and do not jump to page top", a
 	expect(afterButtonClick.scrollY).toBeGreaterThan(100);
 });
 
+test("Twikoo receives encoded canonical path for non-ascii post routes", async ({
+	page,
+}) => {
+	await page.route("**/assets/css/twikoo.css", async (route) => {
+		await route.fulfill({
+			contentType: "text/css",
+			body: ".tk-comments { display: block; }",
+		});
+	});
+	await page.route("**/assets/js/twikoo.nocss.js", async (route) => {
+		await route.fulfill({
+			contentType: "application/javascript",
+			body: `
+				window.__twikooInitCalls = [];
+				window.twikoo = {
+					init(config) {
+						window.__twikooInitCalls.push({ ...config });
+						const root = document.querySelector(config.el);
+						if (!root) throw new Error("Missing Twikoo root");
+						root.innerHTML = '<div id="mock-comment-target" class="tk-comments">Mock comments</div>';
+						return Promise.resolve();
+					}
+				};
+			`,
+		});
+	});
+
+	await gotoPage(
+		page,
+		"/posts/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0-3/",
+	);
+	await expect(
+		page.locator("#tcomment[data-twikoo-state='ready']"),
+	).toBeVisible();
+
+	const initCalls = await page.evaluate(
+		() =>
+			(
+				window as typeof window & {
+					__twikooInitCalls?: Array<{ path?: string; el?: string }>;
+				}
+			).__twikooInitCalls ?? [],
+	);
+	expect(initCalls).toHaveLength(1);
+	expect(initCalls[0]).toMatchObject({
+		el: "#tcomment",
+		path: "/posts/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0-3/",
+	});
+});
+
 test("Twikoo theme styles are available after Swup post navigation", async ({
 	page,
 }) => {
