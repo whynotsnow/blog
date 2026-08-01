@@ -67,6 +67,7 @@ jobs:
             contains(needs.plan.outputs.groups, '"markdown"') ||
             contains(needs.plan.outputs.groups, '"lint"') ||
             contains(needs.plan.outputs.groups, '"type"') ||
+            contains(needs.plan.outputs.groups, '"declaration-type"') ||
             contains(needs.plan.outputs.groups, '"test-type"') ||
             contains(needs.plan.outputs.groups, '"astro"') ||
             contains(needs.plan.outputs.groups, '"design"')
@@ -99,6 +100,9 @@ jobs:
             - name: Run source TypeScript Check
               if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"type"')
               run: pnpm type-check
+            - name: Run declaration TypeScript Check
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"declaration-type"')
+              run: pnpm type-check:declarations
             - name: Run test TypeScript Check
               if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"test-type"')
               run: pnpm type-check:tests

@@ -85,7 +85,8 @@
 			"tests/e2e/contracts/design-system.spec.ts"
 		],
 		"astro-build": ["pnpm", "build:astro"],
-		"full": ["pnpm", "verify:full"]
+		"full": ["pnpm", "verify:full"],
+		"declaration-type": ["pnpm", "type-check:declarations"]
 	},
 	"coverage": ["src/features/**", "tests/e2e/**"],
 	"rules": [
@@ -119,6 +120,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"astro",
 				"unit",
 				"integration",
@@ -131,6 +133,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"svelte-type",
 				"astro",
 				"design",
@@ -151,6 +154,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"svelte-type",
 				"astro",
 				"design",
@@ -166,6 +170,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"svelte-type",
 				"astro",
 				"design",
@@ -187,7 +192,15 @@
 				"src/utils/page-lifecycle.ts",
 				"src/services/layout/**"
 			],
-			"groups": ["lint", "type", "astro", "unit", "shell", "smoke"]
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"unit",
+				"shell",
+				"smoke"
+			]
 		},
 		{
 			"patterns": [
@@ -209,6 +222,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"astro",
 				"home",
 				"post-list",
@@ -225,6 +239,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"astro",
 				"integration",
 				"activity-center"
@@ -239,7 +254,7 @@
 				"src/features/post-list/**",
 				"src/services/category-page.ts"
 			],
-			"groups": ["lint", "type", "astro", "post-list"]
+			"groups": ["lint", "type", "declaration-type", "astro", "post-list"]
 		},
 		{
 			"patterns": [
@@ -250,6 +265,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"astro",
 				"unit",
 				"integration",
@@ -271,14 +287,27 @@
 				"src/services/post-detail/**",
 				"src/pages/posts/**"
 			],
-			"groups": ["lint", "type", "astro", "post-detail"]
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"post-detail"
+			]
 		},
 		{
 			"patterns": [
 				"src/components/MobileTOC.svelte",
 				"src/components/post-toc/**"
 			],
-			"groups": ["lint", "type", "svelte-type", "astro", "post-detail"]
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"svelte-type",
+				"astro",
+				"post-detail"
+			]
 		},
 		{
 			"patterns": ["tests/unit/**"],
@@ -347,6 +376,7 @@
 			"groups": [
 				"lint",
 				"type",
+				"declaration-type",
 				"svelte-type",
 				"test-type",
 				"unit",

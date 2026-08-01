@@ -32,6 +32,7 @@ describe("impact-based validation selection", () => {
 		expect(sourcePlan.groups).toEqual([
 			"lint",
 			"type",
+			"declaration-type",
 			"svelte-type",
 			"astro",
 			"design",
@@ -48,6 +49,7 @@ describe("impact-based validation selection", () => {
 		expect(plan.groups).toEqual([
 			"lint",
 			"type",
+			"declaration-type",
 			"svelte-type",
 			"astro",
 			"design",
@@ -74,6 +76,7 @@ describe("impact-based validation selection", () => {
 			expect(plan.groups).toEqual([
 				"lint",
 				"type",
+				"declaration-type",
 				"svelte-type",
 				"astro",
 				"post-detail",
@@ -88,6 +91,7 @@ describe("impact-based validation selection", () => {
 		expect(plan.groups).toEqual([
 			"lint",
 			"type",
+			"declaration-type",
 			"svelte-type",
 			"test-type",
 			"unit",
