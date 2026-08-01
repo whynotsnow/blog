@@ -145,6 +145,14 @@ export const live2dCompanionConfig: Live2DCompanionConfig = {
 		dragIndicatorIcon: "local:move-four-way",
 		hideWidgetStatusPanel: true,
 		dragHoverDelay: 1500, // 长悬停后进入拖拽准备状态
+		positionBounds: {
+			viewportMargin: 16,
+			horizontalInset: 0,
+			horizontalDock: "configured-edge",
+			expandedHorizontalOverflowRatio: 0.5,
+			expandedVerticalOverflowRatio: 0,
+			collapsedCornerSnapTolerance: 8,
+		},
 	},
 	dialog: {
 		welcome: "欢迎来到 Snow 的博客！希望你能找到有用的内容～", // 欢迎词

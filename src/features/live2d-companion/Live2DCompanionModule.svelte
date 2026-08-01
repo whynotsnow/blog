@@ -27,6 +27,7 @@
 	class:live2d-companion--drag-ready={$view.dragReady}
 	class:live2d-companion--dragging={$view.dragging}
 	class:live2d-companion--collapsed-avatar-dragging={$view.collapsedAvatarDragging}
+	class:live2d-companion--collapsed-avatar-snapping={$view.collapsedAvatarSnapping}
 	class:live2d-companion--loaded={$view.loaded}
 	class:live2d-companion--loading={!$view.loaded}
 	data-live2d-companion-mounted="true"
@@ -52,16 +53,16 @@
 		aria-label={expandLabel}
 		title={expandLabel}
 		onpointerdown={companion.beginCollapsedAvatarPointer}
-		onpointermove={companion.updateCollapsedAvatarDrag}
-		onpointerup={companion.endCollapsedAvatarPointer}
-		onpointercancel={companion.cancelCollapsedAvatarPointer}
+		ondragstart={companion.preventCollapsedAvatarNativeDrag}
 		onclick={companion.handleCollapsedAvatarClick}
 	>
 		<img
 			src={$view.activeAvatarSrc}
 			alt=""
 			decoding="async"
+			draggable={false}
 			loading="eager"
+			ondragstart={companion.preventCollapsedAvatarNativeDrag}
 		/>
 	</button>
 	{#if $view.expressionPanelOpen && $view.availableExpressions.length > 0}
@@ -122,6 +123,14 @@
 		user-select: none;
 	}
 
+	.live2d-companion--collapsed-avatar-snapping {
+		transition:
+			opacity 0.2s ease,
+			left 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+			right 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+			top 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
 	.live2d-companion--loading,
 	.live2d-companion--collapsed {
 		width: 3rem;
@@ -129,18 +138,18 @@
 		opacity: 1;
 	}
 
-	.live2d-companion.left.live2d-companion--loading,
-	.live2d-companion.left.live2d-companion--collapsed {
-		left: 1rem;
+	.live2d-companion.left.live2d-companion--loading {
+		left: 0;
 		bottom: 0.75rem;
 	}
 
-	.live2d-companion.right.live2d-companion--loading,
-	.live2d-companion.right.live2d-companion--collapsed {
-		right: 1rem;
+	.live2d-companion.right.live2d-companion--loading {
+		right: 0;
 		bottom: 0.75rem;
 	}
 
+	.live2d-companion.left.live2d-companion--collapsed,
+	.live2d-companion.right.live2d-companion--collapsed,
 	.live2d-companion.live2d-companion--collapsed {
 		left: var(--live2d-companion-collapsed-left, auto);
 		right: var(--live2d-companion-collapsed-right, auto);
@@ -179,8 +188,11 @@
 		border-radius: 999px;
 		background: var(--surface-overlay);
 		box-shadow: var(--shadow-raised);
-		cursor: pointer;
+		cursor: grab;
 		pointer-events: auto;
+		touch-action: none;
+		user-select: none;
+		-webkit-user-drag: none;
 		overflow: hidden;
 		transition:
 			box-shadow 0.2s ease,
@@ -194,11 +206,24 @@
 			0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 	}
 
+	.live2d-companion__avatar:active,
+	.live2d-companion--collapsed-avatar-dragging .live2d-companion__avatar {
+		cursor: grabbing;
+	}
+
+	.live2d-companion--collapsed-avatar-dragging
+		.live2d-companion__avatar:hover {
+		transform: none;
+	}
+
 	.live2d-companion__avatar img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		display: block;
+		pointer-events: none;
+		user-select: none;
+		-webkit-user-drag: none;
 	}
 
 	.live2d-companion__expression-panel {

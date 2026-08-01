@@ -74,9 +74,11 @@ export type Live2DCompanionStoredPosition = {
 	top: number;
 };
 
-export type Live2DCompanionCollapsedPosition = {
+export type Live2DCompanionCollapsedSnapEdge = "top" | "bottom";
+
+export type Live2DCompanionAnchor = {
 	edge: "left" | "right";
-	top: number;
+	centerY: number;
 };
 
 export type Live2DCompanionDragPointer = {

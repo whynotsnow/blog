@@ -76,11 +76,11 @@ public/live2d-companion/
 
 `live2d-companion-position.ts` 负责位置状态：
 
-- 展开态位置：`localStorage.live2d-companion-position`，结构为 `{ left, top }`。
-- 收起头像位置：`localStorage.live2d-companion-collapsed-position`，结构为 `{ edge, top }`。
-- 展开态恢复时最多允许组件自身 `50%` 移出 viewport，避免完全找不回。
-- 收起头像只能吸附左/右 viewport 边缘，垂直方向完全限制在 viewport 内。
-- 收起时会从当前展开位置投影出收起头像位置；从收起态展开时会根据头像边缘和 `top` 生成展开位置。
+- 统一位置锚点：`localStorage.live2d-companion-anchor`，结构为 `{ edge, centerY }`。
+- `edge` 只能是 `"left"` 或 `"right"`，`centerY` 表示展开态和收起态共享的垂直视觉中心。
+- 展开态拖拽边界由 `ui.positionBounds` 控制；默认只允许停靠在 `live2dCompanionConfig.position` 配置侧，允许向配置侧外最多移出组件自身 `50%`，不允许向另一侧自由移动，上下不允许移出 viewport。
+- 收起头像拖拽时临时位置完全限制在 viewport 内；拖拽过程中只跟随指针，不触发角落吸附。松手后按“此处展开后是否贴顶/贴底”的同一判定吸附到角落位置，再按横向停靠策略保存同一个 anchor。
+- 收起和展开互相切换时都从 anchor 派生具体 rect，不再维护两套独立位置状态。
 - `buildRootPositionStyle()` 是外层 CSS custom properties 的唯一构造入口。
 
 ### Runtime 模块
@@ -127,7 +127,7 @@ public/live2d-companion/
 | `modelSwitch` | 本地模型切换按钮图标和文案。 |
 | `expressionMenu` | 全局 expression action 和完整面板配置。 |
 | `idlePlayback` | 用户空闲时随机播放 expression 的配置。 |
-| `ui` | iframe 壳层 UI 配置，如主题来源、消息偏移、收起按钮、拖拽提示。 |
+| `ui` | iframe 壳层 UI 配置，如主题来源、消息偏移、收起按钮、拖拽提示和 `positionBounds`。 |
 | `dialog` / `tips` | 旧 widget tips 的文案来源。 |
 
 ## LocalStorage 契约
@@ -136,8 +136,7 @@ public/live2d-companion/
 | --- | --- | --- |
 | `live2d-companion-mounted` | `preferences.ts` | Floating Tools 控制的外层挂载状态，`"1"` 表示挂载。 |
 | `live2d-companion-collapsed` | `preferences.ts` | 组件内部收起状态，`"1"` 表示收起。 |
-| `live2d-companion-position` | `live2d-companion-position.ts` | 展开态 `{ left, top }` viewport 坐标。 |
-| `live2d-companion-collapsed-position` | `live2d-companion-position.ts` | 收起头像 `{ edge, top }`，`edge` 只能是 `"left"` 或 `"right"`。 |
+| `live2d-companion-anchor` | `live2d-companion-position.ts` | 统一位置 `{ edge, centerY }`，展开态和收起态都由它派生。 |
 | `live2d-companion-model-index` | `widget-config.ts` / iframe host | 当前模型索引。 |
 
 外层挂载状态和内部收起状态必须保持独立。收起按钮只改变内部状态，不卸载组件；Floating Tools 关闭才卸载组件 DOM、iframe、Canvas 和实例。
@@ -180,14 +179,22 @@ setLive2DCompanionExpression("...");
 - iframe host 负责长悬停识别和拖拽消息上报。
 - 默认 `dragHoverDelay` 是 `1500ms`。
 - 父页面 controller 负责实际 viewport 坐标、clamp 和持久化。
-- 恢复时允许最多 `50%` 移出 viewport，保证仍可找回。
+- 展开态默认锁定在配置侧，只允许向配置侧外最多 `50%` 移出 viewport；上下默认完全限制在 viewport 内。
+- `ui.positionBounds.expandedHorizontalOverflowRatio` 和 `expandedVerticalOverflowRatio` 可调整展开态水平/垂直越界比例。
+- `ui.positionBounds.horizontalDock` 控制横向停靠策略：默认 `"configured-edge"`，只停靠到 `live2dCompanionConfig.position`；需要恢复左右自由吸附时可改成 `"nearest-edge"`。
+- `ui.positionBounds.horizontalInset` 控制收起头像和展开态距离配置侧左右边缘的距离，默认 `0`。
+- `ui.positionBounds.viewportMargin` 控制收起头像和展开态距离 viewport 上下边缘的边距。
+- `ui.positionBounds.collapsedCornerSnapTolerance` 控制收起头像与展开态角落判定之间的额外吸附容差。
 
 收起态拖拽：
 
 - 只作用于圆形头像按钮，不经过 iframe。
 - pointer 移动超过阈值后才进入拖拽，避免和点击展开冲突。
-- 拖拽结束保存 `{ edge, top }`。
-- `edge` 根据指针在 viewport 左右半区吸附，垂直位置限制在 viewport 内。
+- 拖拽结束保存 `{ edge, centerY }`。
+- `edge` 由 `horizontalDock` 决定；默认跟随配置侧，`nearest-edge` 模式下才根据头像中心在 viewport 左右半区吸附。
+- 靠近顶部或底部边界时，拖拽中仍保持指针跟随；松手后才吸附到对应角落。吸附起点和展开态点击收起时能收起到角落的判定保持一致，确保最终位置和后续展开/收起映射一致。
+- 角落吸附只在 `pointerup` 后触发，避免大吸附范围造成拖不动。
+- 松手进入角落吸附时会短暂启用位置过渡，使用 `0.32s cubic-bezier(0.16, 1, 0.3, 1)`，自由拖拽时不启用位置过渡。
 - 拖拽结束会抑制同一轮 click，避免拖完误展开。
 
 ## Expression 面板

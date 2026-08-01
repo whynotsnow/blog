@@ -12,7 +12,7 @@ import {
 	setLive2DCompanionCollapsed,
 } from "./preferences";
 import type {
-	Live2DCompanionCollapsedPosition,
+	Live2DCompanionAnchor,
 	Live2DCompanionStoredPosition,
 } from "./types";
 import {
@@ -30,6 +30,7 @@ type Live2DCompanionModuleView = {
 	dragReady: boolean;
 	dragging: boolean;
 	collapsedAvatarDragging: boolean;
+	collapsedAvatarSnapping: boolean;
 	activeAvatarSrc: string;
 	expressionPanelOpen: boolean;
 	availableExpressions: string[];
@@ -59,6 +60,7 @@ function createInitialView(): Live2DCompanionModuleView {
 		dragReady: false,
 		dragging: false,
 		collapsedAvatarDragging: false,
+		collapsedAvatarSnapping: false,
 		activeAvatarSrc: defaultAvatarSrc,
 		expressionPanelOpen: false,
 		availableExpressions: [],
@@ -83,8 +85,12 @@ export function useLive2DCompanionModule() {
 	let dragReady = false;
 	let dragging = false;
 	let storedPosition: Live2DCompanionStoredPosition | undefined;
-	let collapsedPosition: Live2DCompanionCollapsedPosition | undefined;
+	let anchor: Live2DCompanionAnchor | undefined;
+	let collapsedAvatarPreviewPosition:
+		| Live2DCompanionStoredPosition
+		| undefined;
 	let collapsedAvatarDragging = false;
+	let collapsedAvatarSnapping = false;
 	let activeAvatarSrc = defaultAvatarSrc;
 
 	const view = writable<Live2DCompanionModuleView>(createInitialView());
@@ -94,13 +100,17 @@ export function useLive2DCompanionModule() {
 		getRootEl: () => rootEl,
 		getCollapsed: () => collapsed,
 		getCollapsedAvatarDragging: () => collapsedAvatarDragging,
+		getAnchor: () => anchor,
+		setAnchor: (positionAnchor) => {
+			anchor = positionAnchor;
+		},
 		getStoredPosition: () => storedPosition,
 		setStoredPosition: (position) => {
 			storedPosition = position;
 		},
-		getCollapsedPosition: () => collapsedPosition,
-		setCollapsedPosition: (position) => {
-			collapsedPosition = position;
+		getCollapsedAvatarPreviewPosition: () => collapsedAvatarPreviewPosition,
+		setCollapsedAvatarPreviewPosition: (position) => {
+			collapsedAvatarPreviewPosition = position;
 		},
 	});
 	const runtime = createLive2DCompanionRuntime({
@@ -146,13 +156,20 @@ export function useLive2DCompanionModule() {
 			storedPosition = position;
 		},
 		getStoredPosition: () => storedPosition,
-		getCollapsedPosition: () => collapsedPosition,
-		setCollapsedPosition: (position) => {
-			collapsedPosition = position;
+		getAnchor: () => anchor,
+		setAnchor: (positionAnchor) => {
+			anchor = positionAnchor;
+		},
+		getCollapsedAvatarPreviewPosition: () => collapsedAvatarPreviewPosition,
+		setCollapsedAvatarPreviewPosition: (position) => {
+			collapsedAvatarPreviewPosition = position;
 		},
 		getCollapsedAvatarDragging: () => collapsedAvatarDragging,
 		setCollapsedAvatarDragging: (nextDragging) => {
 			collapsedAvatarDragging = nextDragging;
+		},
+		setCollapsedAvatarSnapping: (nextSnapping) => {
+			collapsedAvatarSnapping = nextSnapping;
 		},
 		position: positionController,
 		commitView,
@@ -167,6 +184,7 @@ export function useLive2DCompanionModule() {
 			dragReady,
 			dragging,
 			collapsedAvatarDragging,
+			collapsedAvatarSnapping,
 			activeAvatarSrc,
 			expressionPanelOpen,
 			availableExpressions,
@@ -189,7 +207,8 @@ export function useLive2DCompanionModule() {
 	function collapseCompanion() {
 		if (collapsed || collapsing) return;
 		runtime.closeExpressionPanel();
-		positionController.ensureCollapsedPositionFromRoot();
+		positionController.ensureAnchorFromRoot();
+		storedPosition = undefined;
 		collapsing = true;
 		commitView();
 		window.clearTimeout(pendingCollapse);
@@ -202,9 +221,11 @@ export function useLive2DCompanionModule() {
 
 	function expandCompanion(event?: MouseEvent) {
 		if (collapsed) {
+			const nextAnchor = anchor ?? positionController.getDefaultAnchor();
+			anchor = nextAnchor;
+			positionController.saveAnchor(nextAnchor);
 			storedPosition =
-				positionController.getExpandedPositionFromCollapsed();
-			positionController.saveStoredPosition(storedPosition);
+				positionController.getExpandedPositionFromAnchor(nextAnchor);
 		}
 		window.clearTimeout(pendingCollapse);
 		collapsing = false;
@@ -312,23 +333,39 @@ export function useLive2DCompanionModule() {
 
 	function handleWindowPointerMove(event: PointerEvent) {
 		runtime.updateDragFromClientPoint(event.clientX, event.clientY);
+		runtime.updateCollapsedAvatarDrag(event);
+	}
+
+	function handleWindowPointerUp(event: PointerEvent) {
+		runtime.endDrag();
+		runtime.endCollapsedAvatarPointer(event, expandCompanion);
+	}
+
+	function handleWindowPointerCancel(event: PointerEvent) {
+		runtime.cancelCollapsedAvatarPointer(event);
+	}
+
+	function preventCollapsedAvatarNativeDrag(event: DragEvent) {
+		event.preventDefault();
 	}
 
 	onMount(() => {
 		disposed = false;
 		collapsed = getLive2DCompanionCollapsed(false);
 		activeAvatarSrc = getModelAvatarByStoredIndex();
-		storedPosition = positionController.readStoredPosition();
-		collapsedPosition = positionController.readCollapsedPosition();
-		if (collapsed && !collapsedPosition) {
-			collapsedPosition =
-				positionController.getDefaultCollapsedPosition();
-			positionController.saveCollapsedPosition(collapsedPosition);
+		anchor = positionController.readAnchor();
+		if (!anchor) {
+			anchor = positionController.getDefaultAnchor();
+			positionController.saveAnchor(anchor);
 		}
+		storedPosition = collapsed
+			? undefined
+			: positionController.getExpandedPositionFromAnchor(anchor);
 		commitView();
 		window.addEventListener("message", handleMessage);
 		window.addEventListener("pointermove", handleWindowPointerMove);
-		window.addEventListener("pointerup", runtime.endDrag);
+		window.addEventListener("pointerup", handleWindowPointerUp);
+		window.addEventListener("pointercancel", handleWindowPointerCancel);
 		window.addEventListener("resize", clampPositionsToViewport);
 		window.addEventListener(LIVE2D_COMPANION_COMMAND_EVENT, handleCommand);
 		themeObserver = new MutationObserver(runtime.postTheme);
@@ -349,7 +386,11 @@ export function useLive2DCompanionModule() {
 			window.clearTimeout(pendingCollapse);
 			window.removeEventListener("message", handleMessage);
 			window.removeEventListener("pointermove", handleWindowPointerMove);
-			window.removeEventListener("pointerup", runtime.endDrag);
+			window.removeEventListener("pointerup", handleWindowPointerUp);
+			window.removeEventListener(
+				"pointercancel",
+				handleWindowPointerCancel,
+			);
 			window.removeEventListener("resize", clampPositionsToViewport);
 			window.removeEventListener(
 				LIVE2D_COMPANION_COMMAND_EVENT,
@@ -369,7 +410,8 @@ export function useLive2DCompanionModule() {
 		runtime.cleanupFrameTimers();
 		themeObserver?.disconnect();
 		window.removeEventListener("pointermove", handleWindowPointerMove);
-		window.removeEventListener("pointerup", runtime.endDrag);
+		window.removeEventListener("pointerup", handleWindowPointerUp);
+		window.removeEventListener("pointercancel", handleWindowPointerCancel);
 		window.removeEventListener("resize", clampPositionsToViewport);
 		runtime.closeExpressionPanel();
 	});
@@ -390,10 +432,7 @@ export function useLive2DCompanionModule() {
 			runtime.handleExpressionControlMouseLeave,
 		selectExpression: runtime.selectExpression,
 		beginCollapsedAvatarPointer: runtime.beginCollapsedAvatarPointer,
-		updateCollapsedAvatarDrag: runtime.updateCollapsedAvatarDrag,
-		endCollapsedAvatarPointer: (event: PointerEvent) =>
-			runtime.endCollapsedAvatarPointer(event, expandCompanion),
-		cancelCollapsedAvatarPointer: runtime.cancelCollapsedAvatarPointer,
+		preventCollapsedAvatarNativeDrag,
 		handleCollapsedAvatarClick: (event: MouseEvent) =>
 			runtime.handleCollapsedAvatarClick(event, expandCompanion),
 	};

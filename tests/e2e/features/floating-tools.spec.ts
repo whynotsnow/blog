@@ -798,6 +798,7 @@ test("floating tools controls the Live2D companion preference", async ({
 		if (window.top !== window) return;
 		localStorage.removeItem("live2d-companion-mounted");
 		localStorage.removeItem("live2d-companion-collapsed");
+		localStorage.removeItem("live2d-companion-anchor");
 		localStorage.removeItem("live2d-companion-model-index");
 	});
 	await gotoPage(page, "/");
@@ -1372,6 +1373,49 @@ test("floating tools controls the Live2D companion preference", async ({
 	expect(messageChrome.width).toBeLessThanOrEqual(256);
 	expect(messageChrome.height).toBeLessThanOrEqual(108);
 
+	const postLive2DDragEvent = async (
+		type: "l2d-drag-start" | "l2d-drag-move" | "l2d-drag-end",
+		point?: { x: number; y: number },
+	) => {
+		const live2dFrame = page
+			.frames()
+			.find((frame) =>
+				frame.url().includes("/live2d-companion/live2d-host.html"),
+			);
+		if (!live2dFrame) {
+			throw new Error("Live2D iframe was not available for drag test.");
+		}
+		await live2dFrame.evaluate(
+			({ dragType, dragPoint }) => {
+				parent.postMessage(
+					{
+						type: dragType,
+						...(dragPoint ? { point: dragPoint } : {}),
+					},
+					"*",
+				);
+			},
+			{ dragType: type, dragPoint: point },
+		);
+	};
+	await postLive2DDragEvent("l2d-drag-start", { x: 140, y: 240 });
+	await postLive2DDragEvent("l2d-drag-move", { x: 140, y: -1000 });
+	await postLive2DDragEvent("l2d-drag-end");
+	const topClampedExpandedState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => element.getBoundingClientRect().top);
+	expect(topClampedExpandedState).toBeGreaterThanOrEqual(0);
+	await postLive2DDragEvent("l2d-drag-start", { x: 140, y: 120 });
+	await postLive2DDragEvent("l2d-drag-move", { x: 140, y: 2000 });
+	await postLive2DDragEvent("l2d-drag-end");
+	const bottomClampedExpandedState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return window.innerHeight - rect.bottom;
+		});
+	expect(bottomClampedExpandedState).toBeGreaterThanOrEqual(0);
+
 	await page.locator("#l2d-iframe").evaluate((iframe) => {
 		const frame = iframe as HTMLIFrameElement;
 		frame.contentDocument
@@ -1387,6 +1431,20 @@ test("floating tools controls the Live2D companion preference", async ({
 		"src",
 		"/live2d-companion/models/NOIR/avatar.png",
 	);
+	await expect(page.locator(".live2d-companion__avatar img")).toHaveAttribute(
+		"draggable",
+		"false",
+	);
+	const nativeDragPrevented = await page
+		.locator(".live2d-companion__avatar img")
+		.evaluate((element) => {
+			const event = new DragEvent("dragstart", {
+				bubbles: true,
+				cancelable: true,
+			});
+			return !element.dispatchEvent(event);
+		});
+	expect(nativeDragPrevented).toBe(true);
 	const collapsedIframeGeometry = await page
 		.locator("#l2d-iframe")
 		.evaluate((iframe) => {
@@ -1419,6 +1477,138 @@ test("floating tools controls the Live2D companion preference", async ({
 		)
 		.toBe("1");
 
+	const avatarBox = await page
+		.locator(".live2d-companion__avatar")
+		.boundingBox();
+	expect(avatarBox).not.toBeNull();
+	if (!avatarBox) return;
+	const dragStart = {
+		x: avatarBox.x + avatarBox.width / 2,
+		y: avatarBox.y + avatarBox.height / 2,
+	};
+	await page.mouse.move(dragStart.x, dragStart.y);
+	await page.mouse.down();
+	await page.mouse.move(360, 260, { steps: 8 });
+	const draggingGeometry = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { left: rect.left, top: rect.top };
+		});
+	expect(draggingGeometry.left).toBe(0);
+	expect(draggingGeometry.top).toBeGreaterThanOrEqual(16);
+	expect(draggingGeometry.top).toBeLessThanOrEqual(260);
+	await page.mouse.up();
+	await expect
+		.poll(() =>
+			page.evaluate(() =>
+				localStorage.getItem("live2d-companion-anchor"),
+			),
+		)
+		.toBeTruthy();
+	const collapsedDragState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			const stored = localStorage.getItem("live2d-companion-anchor");
+			return {
+				left: rect.left,
+				top: rect.top,
+				stored: stored ? JSON.parse(stored) : null,
+			};
+		});
+	expect(collapsedDragState.left).toBe(0);
+	expect(collapsedDragState.top).toBeLessThan(avatarBox.y);
+	expect(collapsedDragState.stored).toMatchObject({
+		edge: "left",
+		centerY: collapsedDragState.top + avatarBox.height / 2,
+	});
+
+	const topDragStart = await page
+		.locator(".live2d-companion__avatar")
+		.boundingBox();
+	expect(topDragStart).not.toBeNull();
+	if (!topDragStart) return;
+	await page.mouse.move(
+		topDragStart.x + topDragStart.width / 2,
+		topDragStart.y + topDragStart.height / 2,
+	);
+	await page.mouse.down();
+	await page.mouse.move(24, 170, { steps: 8 });
+	const topDraggingState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { top: rect.top };
+		});
+	expect(topDraggingState.top).toBeGreaterThan(16);
+	await page.mouse.up();
+	await expect
+		.poll(() =>
+			page.locator(".live2d-companion").evaluate((element) => {
+				const rect = element.getBoundingClientRect();
+				return rect.top;
+			}),
+		)
+		.toBeLessThanOrEqual(17);
+	await page.locator(".live2d-companion__avatar").click();
+	await expect(page.locator(".live2d-companion")).not.toHaveClass(
+		/live2d-companion--collapsed/,
+	);
+	const topExpandedState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { top: rect.top };
+		});
+	expect(topExpandedState.top).toBeCloseTo(16, 0);
+	await page.locator("#l2d-iframe").evaluate((iframe) => {
+		const frame = iframe as HTMLIFrameElement;
+		frame.contentDocument
+			?.querySelector<HTMLButtonElement>("#live2d-companion-collapse")
+			?.click();
+	});
+	await expect(page.locator(".live2d-companion")).toHaveClass(
+		/live2d-companion--collapsed/,
+	);
+	const topCollapsedAgainState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { top: rect.top };
+		});
+	expect(topCollapsedAgainState.top).toBeCloseTo(16, 0);
+
+	const bottomDragStart = await page
+		.locator(".live2d-companion__avatar")
+		.boundingBox();
+	expect(bottomDragStart).not.toBeNull();
+	if (!bottomDragStart) return;
+	await page.mouse.move(
+		bottomDragStart.x + bottomDragStart.width / 2,
+		bottomDragStart.y + bottomDragStart.height / 2,
+	);
+	await page.mouse.down();
+	await page.mouse.move(24, page.viewportSize()!.height - 170, {
+		steps: 8,
+	});
+	const bottomDraggingState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { bottom: window.innerHeight - rect.bottom };
+		});
+	expect(bottomDraggingState.bottom).toBeGreaterThan(16);
+	await page.mouse.up();
+	await expect
+		.poll(() =>
+			page.locator(".live2d-companion").evaluate((element) => {
+				const rect = element.getBoundingClientRect();
+				return window.innerHeight - rect.bottom;
+			}),
+		)
+		.toBeLessThanOrEqual(17);
+
 	await page.locator(".live2d-companion__avatar").click();
 	await expect(page.locator(".live2d-companion")).not.toHaveClass(
 		/live2d-companion--collapsed/,
@@ -1427,6 +1617,50 @@ test("floating tools controls the Live2D companion preference", async ({
 		opacity: "1",
 		pointerEvents: "auto",
 	});
+	const bottomExpandedState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { bottom: window.innerHeight - rect.bottom };
+		});
+	expect(bottomExpandedState.bottom).toBeCloseTo(16, 0);
+	await postLive2DDragEvent("l2d-drag-start", { x: 140, y: 120 });
+	await postLive2DDragEvent("l2d-drag-move", { x: 2000, y: 120 });
+	await postLive2DDragEvent("l2d-drag-end");
+	const rightBlockedExpandedState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { left: rect.left };
+		});
+	expect(rightBlockedExpandedState.left).toBeCloseTo(0, 0);
+	const firstExpandedTop = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => element.getBoundingClientRect().top);
+	await page.locator("#l2d-iframe").evaluate((iframe) => {
+		const frame = iframe as HTMLIFrameElement;
+		frame.contentDocument
+			?.querySelector<HTMLButtonElement>("#live2d-companion-collapse")
+			?.click();
+	});
+	await expect(page.locator(".live2d-companion")).toHaveClass(
+		/live2d-companion--collapsed/,
+	);
+	const bottomCollapsedAgainState = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => {
+			const rect = element.getBoundingClientRect();
+			return { bottom: window.innerHeight - rect.bottom };
+		});
+	expect(bottomCollapsedAgainState.bottom).toBeCloseTo(16, 0);
+	await page.locator(".live2d-companion__avatar").click();
+	await expect(page.locator(".live2d-companion")).not.toHaveClass(
+		/live2d-companion--collapsed/,
+	);
+	const secondExpandedTop = await page
+		.locator(".live2d-companion")
+		.evaluate((element) => element.getBoundingClientRect().top);
+	expect(secondExpandedTop).toBeCloseTo(firstExpandedTop, 0);
 	await expect
 		.poll(() =>
 			page.evaluate(() =>
@@ -1444,6 +1678,7 @@ test("Live2D companion remains available on medium and small viewports", async (
 		if (window.top !== window) return;
 		localStorage.removeItem("live2d-companion-mounted");
 		localStorage.removeItem("live2d-companion-collapsed");
+		localStorage.removeItem("live2d-companion-anchor");
 		localStorage.removeItem("live2d-companion-model-index");
 	});
 	await gotoPage(page, "/");

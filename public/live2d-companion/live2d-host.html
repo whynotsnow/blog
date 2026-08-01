@@ -1363,6 +1363,7 @@
 						widgetInstance
 							.switchModel(currentModelIndex)
 							.then(function () {
+								notified = true;
 								applyDefaultParametersBeforeReveal(config).then(
 									function () {
 										expressionsReady = true;

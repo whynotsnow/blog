@@ -1,6 +1,7 @@
 import { live2dCompanionConfig } from "@/config";
 import type {
-	Live2DCompanionCollapsedPosition,
+	Live2DCompanionAnchor,
+	Live2DCompanionCollapsedSnapEdge,
 	Live2DCompanionDragPointer,
 	Live2DCompanionStoredPosition,
 	Live2DWidgetConfig,
@@ -11,18 +12,24 @@ const collapsedDragActivationDistance = 6;
 const expressionLabels = live2dCompanionConfig.expressionMenu?.labels ?? {};
 
 type Live2DPositionRuntime = {
-	saveStoredPosition: (position: Live2DCompanionStoredPosition) => void;
-	saveCollapsedPosition: (position: Live2DCompanionCollapsedPosition) => void;
-	getCollapsedPositionFromRect: (
-		rect: DOMRect,
-	) => Live2DCompanionCollapsedPosition;
-	getExpandedPositionFromCollapsed: () => Live2DCompanionStoredPosition;
+	saveAnchor: (anchor: Live2DCompanionAnchor) => void;
+	getAnchorFromRect: (rect: DOMRect) => Live2DCompanionAnchor;
+	getAnchorFromExpandedPosition: (
+		position: Live2DCompanionStoredPosition,
+	) => Live2DCompanionAnchor;
+	getAnchorFromCollapsedPreview: (
+		position: Live2DCompanionStoredPosition,
+	) => Live2DCompanionAnchor;
 	clampPosition: (
 		position: Live2DCompanionStoredPosition,
 	) => Live2DCompanionStoredPosition;
-	clampCollapsedPosition: (
-		position: Live2DCompanionCollapsedPosition,
-	) => Live2DCompanionCollapsedPosition;
+	clampCollapsedAvatarPreviewPosition: (
+		position: Live2DCompanionStoredPosition,
+		options?: { suppressCornerSnap?: boolean },
+	) => Live2DCompanionStoredPosition;
+	getCollapsedAvatarPreviewSnapEdge: (
+		position: Live2DCompanionStoredPosition,
+	) => Live2DCompanionCollapsedSnapEdge | undefined;
 };
 
 type Live2DCompanionRuntimeOptions = {
@@ -50,12 +57,17 @@ type Live2DCompanionRuntimeOptions = {
 		position: Live2DCompanionStoredPosition | undefined,
 	) => void;
 	getStoredPosition: () => Live2DCompanionStoredPosition | undefined;
-	getCollapsedPosition: () => Live2DCompanionCollapsedPosition | undefined;
-	setCollapsedPosition: (
-		position: Live2DCompanionCollapsedPosition | undefined,
+	getAnchor: () => Live2DCompanionAnchor | undefined;
+	setAnchor: (anchor: Live2DCompanionAnchor | undefined) => void;
+	getCollapsedAvatarPreviewPosition: () =>
+		| Live2DCompanionStoredPosition
+		| undefined;
+	setCollapsedAvatarPreviewPosition: (
+		position: Live2DCompanionStoredPosition | undefined,
 	) => void;
 	getCollapsedAvatarDragging: () => boolean;
 	setCollapsedAvatarDragging: (dragging: boolean) => void;
+	setCollapsedAvatarSnapping: (snapping: boolean) => void;
 	position: Live2DPositionRuntime;
 	commitView: () => void;
 };
@@ -70,6 +82,8 @@ export function createLive2DCompanionRuntime(
 	let collapsedAvatarDragStarted = false;
 	let collapsedAvatarDragStart = { x: 0, y: 0 };
 	let collapsedAvatarDragOffset = { x: 0, y: 0 };
+	let collapsedAvatarSnapEdge: Live2DCompanionCollapsedSnapEdge | undefined;
+	let collapsedAvatarSnapTimer: number | undefined;
 	let suppressCollapsedAvatarClick = false;
 
 	function postToFrame(message: Record<string, unknown>) {
@@ -270,14 +284,35 @@ export function createLive2DCompanionRuntime(
 		if (storedPosition) {
 			const position = options.position.clampPosition(storedPosition);
 			options.setStoredPosition(position);
-			options.position.saveStoredPosition(position);
+			const anchor =
+				options.position.getAnchorFromExpandedPosition(position);
+			options.setAnchor(anchor);
+			options.position.saveAnchor(anchor);
 		}
 		postToFrame({ type: "live2d-companion-drag-state", dragging: false });
 		options.commitView();
 	}
 
+	function setCollapsedAvatarSnapEdge(
+		edge: Live2DCompanionCollapsedSnapEdge | undefined,
+	) {
+		if (edge === collapsedAvatarSnapEdge) return;
+		collapsedAvatarSnapEdge = edge;
+		window.clearTimeout(collapsedAvatarSnapTimer);
+		if (!edge) {
+			options.setCollapsedAvatarSnapping(false);
+			return;
+		}
+		options.setCollapsedAvatarSnapping(true);
+		collapsedAvatarSnapTimer = window.setTimeout(() => {
+			options.setCollapsedAvatarSnapping(false);
+			options.commitView();
+		}, 320);
+	}
+
 	function beginCollapsedAvatarPointer(event: PointerEvent) {
 		if (!options.getCollapsed() || event.button !== 0) return;
+		event.preventDefault();
 		const rect = options.getRootEl()?.getBoundingClientRect();
 		if (!rect) return;
 		collapsedAvatarPointerId = event.pointerId;
@@ -291,10 +326,19 @@ export function createLive2DCompanionRuntime(
 			x: event.clientX - rect.left,
 			y: event.clientY - rect.top,
 		};
-		options.setCollapsedPosition(
-			options.getCollapsedPosition() ??
-				options.position.getCollapsedPositionFromRect(rect),
+		options.setAnchor(
+			options.getAnchor() ?? options.position.getAnchorFromRect(rect),
 		);
+		const previewPosition =
+			options.position.clampCollapsedAvatarPreviewPosition(
+				{
+					left: rect.left,
+					top: rect.top,
+				},
+				{ suppressCornerSnap: true },
+			);
+		setCollapsedAvatarSnapEdge(undefined);
+		options.setCollapsedAvatarPreviewPosition(previewPosition);
 		if (event.currentTarget instanceof HTMLElement) {
 			try {
 				event.currentTarget.setPointerCapture(event.pointerId);
@@ -324,13 +368,16 @@ export function createLive2DCompanionRuntime(
 			return;
 		}
 		collapsedAvatarDragStarted = true;
-		const edge = event.clientX < window.innerWidth / 2 ? "left" : "right";
-		options.setCollapsedPosition(
-			options.position.clampCollapsedPosition({
-				edge,
-				top: event.clientY - collapsedAvatarDragOffset.y,
-			}),
-		);
+		const rawPosition = {
+			left: event.clientX - collapsedAvatarDragOffset.x,
+			top: event.clientY - collapsedAvatarDragOffset.y,
+		};
+		const previewPosition =
+			options.position.clampCollapsedAvatarPreviewPosition(rawPosition, {
+				suppressCornerSnap: true,
+			});
+		setCollapsedAvatarSnapEdge(undefined);
+		options.setCollapsedAvatarPreviewPosition(previewPosition);
 		event.preventDefault();
 		options.commitView();
 	}
@@ -354,12 +401,18 @@ export function createLive2DCompanionRuntime(
 		}
 		options.setCollapsedAvatarDragging(false);
 		collapsedAvatarPointerId = undefined;
-		const collapsedPosition = options.getCollapsedPosition();
-		if (collapsedAvatarDragStarted && collapsedPosition) {
-			const position =
-				options.position.clampCollapsedPosition(collapsedPosition);
-			options.setCollapsedPosition(position);
-			options.position.saveCollapsedPosition(position);
+		const previewPosition = options.getCollapsedAvatarPreviewPosition();
+		if (collapsedAvatarDragStarted && previewPosition) {
+			setCollapsedAvatarSnapEdge(
+				options.position.getCollapsedAvatarPreviewSnapEdge(
+					previewPosition,
+				),
+			);
+			const anchor =
+				options.position.getAnchorFromCollapsedPreview(previewPosition);
+			options.setAnchor(anchor);
+			options.position.saveAnchor(anchor);
+			options.setCollapsedAvatarPreviewPosition(undefined);
 			suppressCollapsedAvatarClick = true;
 			window.setTimeout(() => {
 				suppressCollapsedAvatarClick = false;
@@ -368,6 +421,7 @@ export function createLive2DCompanionRuntime(
 			options.commitView();
 			return;
 		}
+		options.setCollapsedAvatarPreviewPosition(undefined);
 		options.commitView();
 		expandCompanion(event);
 	}
@@ -382,6 +436,8 @@ export function createLive2DCompanionRuntime(
 		options.setCollapsedAvatarDragging(false);
 		collapsedAvatarPointerId = undefined;
 		collapsedAvatarDragStarted = false;
+		setCollapsedAvatarSnapEdge(undefined);
+		options.setCollapsedAvatarPreviewPosition(undefined);
 		options.commitView();
 	}
 
@@ -433,6 +489,7 @@ export function createLive2DCompanionRuntime(
 	function cleanupFrameTimers() {
 		window.clearTimeout(pendingInit);
 		window.clearTimeout(pendingFrameMount);
+		window.clearTimeout(collapsedAvatarSnapTimer);
 		options.getIframeEl()?.removeEventListener("load", scheduleInit);
 	}
 

@@ -414,6 +414,14 @@ export type Live2DCompanionConfig = {
 		dragIndicatorIcon?: string; // 拖拽准备状态提示图标的本地图标名称
 		hideWidgetStatusPanel?: boolean; // 是否隐藏 widget 自带加载/休息侧栏
 		dragHoverDelay?: number; // 鼠标悬停多久后进入拖拽准备状态（ms）
+		positionBounds?: {
+			viewportMargin?: number; // 收起头像与展开贴边时距离 viewport 上下边缘的最小边距（px）
+			horizontalInset?: number; // 展开/收起态距离配置侧 viewport 左右边缘的距离（px），默认 0
+			horizontalDock?: "configured-edge" | "nearest-edge"; // 横向停靠策略，默认只停靠到配置侧
+			expandedHorizontalOverflowRatio?: number; // 展开态左右允许越出自身尺寸的比例，默认 0.5
+			expandedVerticalOverflowRatio?: number; // 展开态上下允许越出自身尺寸的比例，默认 0
+			collapsedCornerSnapTolerance?: number; // 收起头像靠近上下边界时吸附到角落的容差（px）
+		};
 	};
 	dialog?: {
 		welcome?: string | string[]; // 欢迎词
