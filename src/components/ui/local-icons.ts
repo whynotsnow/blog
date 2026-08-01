@@ -81,7 +81,93 @@ import waterDropRounded from "@/assets/icons/material-symbols/water-drop-rounded
 import wbSunnyOutlineRounded from "@/assets/icons/material-symbols/wb-sunny-outline-rounded.svg?url";
 import widgetsRounded from "@/assets/icons/material-symbols/widgets-rounded.svg?url";
 
-export const localIconSources = {
+export type LocalIconName =
+	| "fa7-solid:chevron-right"
+	| "mdi:pin"
+	| "material-symbols:airwave-rounded"
+	| "material-symbols:article-outline"
+	| "material-symbols:article-outline-rounded"
+	| "material-symbols:auto-stories-outline-rounded"
+	| "material-symbols:book-2-outline-rounded"
+	| "material-symbols:calendar-today-outline-rounded"
+	| "material-symbols:check"
+	| "material-symbols:check-circle"
+	| "material-symbols:check-circle-outline-rounded"
+	| "material-symbols:chevron-left-rounded"
+	| "material-symbols:chevron-right-rounded"
+	| "material-symbols:close"
+	| "material-symbols:close-rounded"
+	| "material-symbols:collapse-content-rounded"
+	| "material-symbols:construction-rounded"
+	| "material-symbols:cyclone-rounded"
+	| "material-symbols:dark-mode-outline-rounded"
+	| "material-symbols:display-settings-rounded"
+	| "material-symbols:download"
+	| "material-symbols:error"
+	| "material-symbols:error-outline-rounded"
+	| "material-symbols:expand-less"
+	| "material-symbols:face-shake-rounded"
+	| "material-symbols:face-retouching-natural-rounded"
+	| "material-symbols:face-retouching-off-rounded"
+	| "material-symbols:format-list-bulleted"
+	| "material-symbols:format-list-bulleted-rounded"
+	| "material-symbols:format-list-numbered-rounded"
+	| "material-symbols:full-coverage-outline-rounded"
+	| "material-symbols:graphic-eq-rounded"
+	| "material-symbols:grid-view-rounded"
+	| "material-symbols:hide-image-outline"
+	| "material-symbols:hide-source-rounded"
+	| "material-symbols:history-rounded"
+	| "material-symbols:image-outline"
+	| "material-symbols:info-outline-rounded"
+	| "material-symbols:invert-colors-rounded"
+	| "material-symbols:keyboard-arrow-down-rounded"
+	| "material-symbols:keyboard-arrow-up-rounded"
+	| "material-symbols:link"
+	| "material-symbols:more-horiz"
+	| "material-symbols:mood-heart-rounded"
+	| "material-symbols:music-note-rounded"
+	| "material-symbols:notifications-outline-rounded"
+	| "material-symbols:pause"
+	| "material-symbols:pause-rounded"
+	| "material-symbols:person-off-rounded"
+	| "material-symbols:person-rounded"
+	| "material-symbols:play-arrow"
+	| "material-symbols:play-arrow-rounded"
+	| "material-symbols:queue-music-rounded"
+	| "material-symbols:refresh"
+	| "material-symbols:repeat-one-rounded"
+	| "material-symbols:repeat-rounded"
+	| "material-symbols:search"
+	| "material-symbols:sentiment-excited-rounded"
+	| "material-symbols:sentiment-frustrated-rounded"
+	| "material-symbols:sentiment-satisfied-rounded"
+	| "material-symbols:settings-rounded"
+	| "material-symbols:shuffle-rounded"
+	| "material-symbols:skip-next-rounded"
+	| "material-symbols:skip-previous-rounded"
+	| "material-symbols:smart-toy-outline-rounded"
+	| "material-symbols:spa-outline-rounded"
+	| "material-symbols:swap-horiz-rounded"
+	| "material-symbols:titlecase-rounded"
+	| "material-symbols:toc-rounded"
+	| "material-symbols:tune-rounded"
+	| "material-symbols:view-carousel-outline-rounded"
+	| "material-symbols:visibility-off"
+	| "material-symbols:visibility-off-outline-rounded"
+	| "material-symbols:visibility-off-rounded"
+	| "material-symbols:volume-down-rounded"
+	| "material-symbols:volume-off-rounded"
+	| "material-symbols:volume-up-rounded"
+	| "material-symbols:wallpaper"
+	| "material-symbols:warning-outline-rounded"
+	| "material-symbols:water-drop-rounded"
+	| "material-symbols:wb-sunny-outline-rounded"
+	| "material-symbols:widgets-rounded";
+
+export type LocalIconSources = Record<LocalIconName, string>;
+
+export const localIconSources: LocalIconSources = {
 	"fa7-solid:chevron-right": faChevronRight,
 	"mdi:pin": mdiPin,
 	"material-symbols:airwave-rounded": airwaveRounded,
@@ -170,12 +256,11 @@ export const localIconSources = {
 	"material-symbols:water-drop-rounded": waterDropRounded,
 	"material-symbols:wb-sunny-outline-rounded": wbSunnyOutlineRounded,
 	"material-symbols:widgets-rounded": widgetsRounded,
-} as const;
+};
 
-export type LocalIconName = keyof typeof localIconSources;
+const fallbackIcon: string =
+	localIconSources["material-symbols:info-outline-rounded"];
 
-const fallbackIcon = localIconSources["material-symbols:info-outline-rounded"];
-
-export function resolveLocalIcon(name: string) {
+export function resolveLocalIcon(name: string): string {
 	return localIconSources[name as LocalIconName] ?? fallbackIcon;
 }
