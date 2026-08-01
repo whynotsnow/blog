@@ -39,21 +39,19 @@ const {
 
 <div
 	class:list={[
-		"flex flex-wrap text-50 items-center gap-4 gap-x-4 gap-y-2",
+		"post-meta transition",
 		className,
 	]}
 >
 	<!-- publish date -->
-	<div class="flex items-center">
-		<div class="meta-icon">
+	<div class="post-meta__item">
+		<div class="meta-icon post-meta__icon">
 			<Icon
 				name="material-symbols:calendar-today-outline-rounded"
 				class="text-xl"
 			/>
 		</div>
-		<span class="text-50 text-sm font-medium"
-			>{formatDateToYYYYMMDD(published)}</span
-		>
+		<span class="post-meta__text">{formatDateToYYYYMMDD(published)}</span>
 	</div>
 
 	<!-- update date -->
@@ -61,34 +59,31 @@ const {
 		!hideUpdateDate &&
 			updated &&
 			updated.getTime() !== published.getTime() && (
-				<div class="flex items-center">
-					<div class="meta-icon">
+				<div class="post-meta__item">
+					<div class="meta-icon post-meta__icon">
 						<Icon
 							name="material-symbols:edit-calendar-outline-rounded"
 							class="text-xl"
 						/>
 					</div>
-					<span class="text-50 text-sm font-medium">
-						{formatDateToYYYYMMDD(updated)}
-					</span>
+					<span class="post-meta__text">{formatDateToYYYYMMDD(updated)}</span>
 				</div>
 			)
 	}
 
 	<!-- categories -->
-	<div class="flex items-center">
-		<div class="meta-icon">
+	<div class="post-meta__item">
+		<div class="meta-icon post-meta__icon">
 			<Icon
 				name="material-symbols:book-2-outline-rounded"
 				class="text-xl"
 			/>
 		</div>
-		<div class="flex flex-row flex-nowrap items-center">
+		<div class="post-meta__value">
 			<a
 				href={category.url}
 				aria-label={`View all posts in the ${category.name} category`}
-				class="link-lg transition text-50 text-sm font-medium
-                            hover:text-(--primary) dark:hover:text-(--primary) whitespace-nowrap"
+				class="post-meta__link link-lg transition"
 			>
 				{category?.name || i18n(I18nKey.uncategorized)}
 			</a>
@@ -98,14 +93,14 @@ const {
 	<!-- word count -->
 	{
 		showWordCount && words && (
-			<div class="flex items-center">
-				<div class="meta-icon">
+			<div class="post-meta__item">
+				<div class="meta-icon post-meta__icon">
 					<Icon
 						name="material-symbols:article-outline-rounded"
 						class="text-xl"
 					/>
 				</div>
-				<span class="text-50 text-sm font-medium">
+				<span class="post-meta__text">
 					{words}{" "}
 					{words > 1
 						? i18n(I18nKey.wordsCount)
@@ -120,43 +115,40 @@ const {
 		!showOnlyBasicMeta && (
 			<div
 				class:list={[
-					"items-center",
+					"post-meta__item post-meta__item--tags",
 					{
-						flex: !hideTagsForMobile,
-						"hidden md:flex": hideTagsForMobile,
+						"post-meta__item--mobile-hidden": hideTagsForMobile,
 					},
 				]}
 			>
-				<div class="meta-icon">
+				<div class="meta-icon post-meta__icon">
 					<Icon name="material-symbols:tag-rounded" class="text-xl" />
 				</div>
-				<div class="flex flex-row flex-nowrap items-center">
+				<div class="post-meta__tag-list">
 					{tags &&
 						tags.length > 0 &&
 						tags.map((tagItem, i) => (
-							<>
-								<div
+							<span class="post-meta__tag-item">
+								<span
 									class:list={[
 										{ hidden: i == 0 },
-										"mx-1.5 text-(--meta-divider) text-sm",
+										"post-meta__tag-separator",
 									]}
 								>
 									/
-								</div>
+								</span>
 								<a
 									href={tagItem.url}
 									aria-label={`View all posts with the ${tagItem.name} tag`}
-									class="link-lg transition text-50 text-sm font-medium
-                                        hover:text-(--primary) dark:hover:text-(--primary) whitespace-nowrap"
+									title={tagItem.name}
+									class="post-meta__link post-meta__tag-link link-lg transition"
 								>
 									{tagItem.name}
 								</a>
-							</>
+							</span>
 						))}
 					{!(tags && tags.length > 0) && (
-						<div class="transition text-50 text-sm font-medium">
-							{i18n(I18nKey.noTags)}
-						</div>
+						<div class="post-meta__text transition">{i18n(I18nKey.noTags)}</div>
 					)}
 				</div>
 			</div>
@@ -167,18 +159,18 @@ const {
 	{
 		!isHome && id && (
 			<div
-				class="hidden items-center umami-page-views"
+				class="hidden post-meta__item umami-page-views"
 				data-id={id}
 				data-page-views-label={i18n(I18nKey.profileStatsPageViews)}
 				data-visits-label={i18n(I18nKey.profileStatsVisits)}
 			>
-				<div class="meta-icon">
+				<div class="meta-icon post-meta__icon">
 					<Icon
 						name="material-symbols:visibility-outline-rounded"
 						class="text-xl"
 					/>
 				</div>
-				<span class="text-50 text-sm font-medium page-views-display">
+				<span class="post-meta__text page-views-display">
 					{i18n(I18nKey.pageViewsLoading)}
 				</span>
 			</div>
