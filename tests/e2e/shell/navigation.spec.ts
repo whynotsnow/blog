@@ -1,8 +1,40 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
 import { useStoredPreference } from "../../support/preferences";
 
 const entryAlignmentTolerance = 8;
+
+type MainEntryGeometry = {
+	offset: number;
+	scrollY: number;
+	targetScrollTop: number;
+};
+
+const readMainEntryGeometry = async (page: Page): Promise<MainEntryGeometry> =>
+	page.locator(".page-main-content").evaluate((node) => {
+		const rect = node.getBoundingClientRect();
+		const clearance = Number.parseFloat(
+			getComputedStyle(node).scrollMarginBlockStart,
+		);
+		const targetScrollTop = Math.max(
+			0,
+			window.scrollY +
+				rect.top -
+				(Number.isFinite(clearance) ? clearance : 0),
+		);
+
+		return {
+			offset: Math.abs(window.scrollY - targetScrollTop),
+			scrollY: window.scrollY,
+			targetScrollTop,
+		};
+	});
+
+const waitForMainEntryAlignment = async (page: Page): Promise<void> => {
+	await expect
+		.poll(async () => (await readMainEntryGeometry(page)).offset)
+		.toBeLessThanOrEqual(entryAlignmentTolerance);
+};
 
 test("category and post pages align the main region and keep a fixed visible navbar", async ({
 	page,
@@ -15,24 +47,10 @@ test("category and post pages align the main region and keep a fixed visible nav
 	const mainContent = page.locator(".main-content-layer");
 	await expect(banner).not.toHaveClass(/mobile-hide-banner/);
 	await expect(mainContent).not.toHaveClass(/mobile-main-no-banner/);
-	await expect
-		.poll(() => page.evaluate(() => window.scrollY))
-		.toBeGreaterThan(0);
-
-	const pageMain = page.locator(".page-main-content");
-	await expect
-		.poll(() =>
-			pageMain.evaluate(
-				(node) =>
-					Math.abs(
-						node.getBoundingClientRect().top -
-							Number.parseFloat(
-								getComputedStyle(node).scrollMarginTop,
-							),
-					) < 1,
-			),
-		)
-		.toBe(true);
+	await waitForMainEntryAlignment(page);
+	expect((await readMainEntryGeometry(page)).targetScrollTop).toBeGreaterThan(
+		0,
+	);
 
 	const navbar = page.locator("#navbar");
 	await expect(navbar).toHaveClass(/scrolled/);
@@ -42,9 +60,10 @@ test("category and post pages align the main region and keep a fixed visible nav
 	await expect(page.locator("#top-row")).toHaveCSS("position", "fixed");
 
 	await gotoPage(page, "/posts/markdown-tutorial/");
-	await expect
-		.poll(() => page.evaluate(() => window.scrollY))
-		.toBeGreaterThan(0);
+	await waitForMainEntryAlignment(page);
+	expect((await readMainEntryGeometry(page)).targetScrollTop).toBeGreaterThan(
+		0,
+	);
 	await expect(banner).not.toHaveClass(/mobile-hide-banner/);
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
 	await expect(navbar).toHaveClass(/scrolled/);

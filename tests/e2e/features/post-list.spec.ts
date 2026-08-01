@@ -675,6 +675,7 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 test("category tag index prefetches when idle and is reused for tag navigation", async ({
 	page,
 }) => {
+	await useStoredPreference(page, "live2d-companion-mounted", "0");
 	let indexRequests = 0;
 	page.on("request", (request) => {
 		if (new URL(request.url()).pathname === "/api/categories/tech.json/") {
@@ -691,7 +692,12 @@ test("category tag index prefetches when idle and is reused for tag navigation",
 	const tagLinks = page.locator(
 		'.category-filter a[href^="/category/tech/?tag="]',
 	);
-	await tagLinks.first().click();
+	const firstTagLink = tagLinks.first();
+	await expect(firstTagLink).toBeVisible();
+	await firstTagLink.evaluate((node) =>
+		node.scrollIntoView({ block: "center", inline: "nearest" }),
+	);
+	await firstTagLink.click();
 	await expect(
 		page.locator('[data-post-list-renderer="svelte"]'),
 	).toBeVisible();

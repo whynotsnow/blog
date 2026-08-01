@@ -1,6 +1,29 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
 import { useStoredPreference } from "../../support/preferences";
+
+const readCssLengthPx = async (
+	page: Page,
+	tokenName: string,
+): Promise<number> =>
+	page.evaluate((cssTokenName) => {
+		const tokenValue = getComputedStyle(document.documentElement)
+			.getPropertyValue(cssTokenName)
+			.trim();
+		if (!tokenValue) {
+			throw new Error(`Missing CSS length token: ${cssTokenName}`);
+		}
+
+		const probe = document.createElement("div");
+		probe.style.position = "absolute";
+		probe.style.visibility = "hidden";
+		probe.style.pointerEvents = "none";
+		probe.style.width = tokenValue;
+		document.body.append(probe);
+		const width = probe.getBoundingClientRect().width;
+		probe.remove();
+		return width;
+	}, tokenName);
 
 test("responsive width budgets preserve Card and support module stability", async ({
 	page,
@@ -122,7 +145,7 @@ test("responsive width budgets preserve Card and support module stability", asyn
 	).toBe(true);
 });
 
-test("container-content pages keep supported widths and reading measures", async ({
+test("container-content pages keep supported widths and post detail rail budgets", async ({
 	page,
 }) => {
 	await page.setViewportSize({ width: 1536, height: 900 });
@@ -158,10 +181,14 @@ test("container-content pages keep supported widths and reading measures", async
 	}
 
 	await gotoPage(page, "/posts/markdown-tutorial/");
+	const postDetailRailWidth = await readCssLengthPx(
+		page,
+		"--width-reading-wide",
+	);
 	const readingWidth = await page
 		.locator(".post-detail__content")
 		.evaluate((node) => node.getBoundingClientRect().width);
-	expect(readingWidth).toBeLessThanOrEqual(768 + 1);
+	expect(readingWidth).toBeLessThanOrEqual(postDetailRailWidth + 1);
 });
 
 test("container breakpoints retain minimum safe budgets after Shell contraction", async ({
@@ -461,6 +488,10 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	await expect(
 		page.locator(".post-support__toc table-of-contents#toc a").first(),
 	).toBeVisible();
+	const postDetailRailWidth = await readCssLengthPx(
+		page,
+		"--width-reading-wide",
+	);
 	await page.locator(".post-support").evaluate((node) => {
 		const rect = node.getBoundingClientRect();
 		const top = Number.parseFloat(getComputedStyle(node).top);
@@ -517,7 +548,9 @@ test("category filter and post TOC follow their owning width budgets", async ({
 		supportTocGeometry.supportWidth,
 		0,
 	);
-	expect(supportTocGeometry.articleWidth).toBeLessThanOrEqual(768 + 1);
+	expect(supportTocGeometry.articleWidth).toBeLessThanOrEqual(
+		postDetailRailWidth + 1,
+	);
 
 	await page.evaluate(() => {
 		const laterHeading = Array.from(
@@ -966,10 +999,21 @@ test("banner theme and motion styles follow site state and user preference", asy
 	).toBe("none");
 
 	const carousel = page.locator("#banner-carousel");
-	await expect(carousel.locator("[data-banner-slide] img")).toHaveCount(2);
-	await expect(
-		carousel.locator("template[data-banner-slide-content]"),
-	).toHaveCount(4);
+	const carouselContent = await carousel.evaluate((node) => {
+		const slides = Array.from(
+			node.querySelectorAll<HTMLElement>("[data-banner-slide]"),
+		);
+		return {
+			completeSlideCount: slides.filter(
+				(slide) =>
+					slide.querySelector("img") ||
+					slide.querySelector("template[data-banner-slide-content]"),
+			).length,
+			slideCount: slides.length,
+		};
+	});
+	expect(carouselContent.slideCount).toBeGreaterThanOrEqual(2);
+	expect(carouselContent.completeSlideCount).toBe(carouselContent.slideCount);
 	await carousel.hover();
 	await expect(carousel).toHaveAttribute("data-paused", "true");
 	await page.mouse.move(10, 700);

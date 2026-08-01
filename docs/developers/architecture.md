@@ -171,8 +171,8 @@ RawPost
 首页和文章详情页通过 `src/design/` 统一 Surface、文本层级、内容宽度、页面间距与 Typography。其他功能页仍可通过 Legacy token 保持兼容，详细分层和迁移规则见 [Design System](./design-system.md)。
 
 - 首页文章列表使用 `--width-listing`，不随主内容列无限扩张。
-- 文章正文阅读宽度使用 `--width-reading: 48rem`；代码、表格、图片与数学公式可扩展到 `--width-reading-wide`。
-- 普通模式下文章正文使用无卡片背景的 Content Surface；壁纸透明或 Overlay 模式仍使用半透明背景、轻边框与 blur，以维持可读性。
+- 通用正文阅读流使用 `--width-reading: 48rem`；文章详情页的 Header、正文、封面与后置区块共享 `--width-reading-wide`，代码、表格、图片与数学公式继续服从该宽内容 rail。
+- 普通模式下文章详情页使用 `ds-surface-card` 作为阅读卡片边界；壁纸透明或 Overlay 模式仍使用半透明背景、轻边框与 blur，以维持可读性。
 - 首页和文章详情页优先消费 `--surface-*`、`--text-*`、`--border-*` 与 `--accent` 等 Semantic token。旧的 `--card-bg`、`--primary`、`--line-*` 等变量由 Compatibility 层供值，不应在新代码中继续扩散。
 - 页面级留白使用 `--space-page-x`、`--space-content` 与 `--space-cluster`；组件内部的小型布局仍可使用 Tailwind spacing utility。
 
