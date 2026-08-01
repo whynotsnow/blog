@@ -3,10 +3,15 @@
   --font-heading: var(--font-body);
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  --text-body-size: clamp(1rem, 0.97rem + 0.15vw, 1.125rem);
-  --text-body-leading: 1.9;
+  --text-body-size: clamp(1rem, 0.985rem + 0.08vw, 1.0625rem);
+  --text-body-leading: 1.85;
   --text-small: 0.875rem;
   --text-meta: 0.875rem;
-  --text-title: clamp(1.75rem, 4vw, 2.5rem);
+  --text-title: clamp(1.75rem, 1.45rem + 1.2vw, 2.125rem);
+  --text-article-h1: clamp(1.5rem, 1.35rem + 0.6vw, 1.875rem);
+  --text-article-h2: clamp(1.375rem, 1.28rem + 0.4vw, 1.625rem);
+  --text-article-h3: clamp(1.1875rem, 1.14rem + 0.22vw, 1.375rem);
+  --text-article-h4: 1.0625rem;
+  --text-heading-measure: 28ch;
   --text-display: clamp(2.25rem, 6vw, 4rem);
 }

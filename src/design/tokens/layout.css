@@ -13,8 +13,6 @@
   --width-layout-three-sidebar-max: 1280px;
   --width-sidebar-wide-min: 248px;
   --width-sidebar-wide-max: 272px;
-  --measure-body: 42em;
-  --measure-heading: 28ch;
 
   --space-page-x: clamp(1rem, 3vw, 2rem);
   --space-shell-wide-x: clamp(1rem, 1.75vw, 1.5rem);

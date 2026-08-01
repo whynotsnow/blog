@@ -7,20 +7,36 @@
   line-height: var(--text-body-leading);
 
   > :where(p, ul, ol, blockquote) {
-    max-width: var(--measure-body);
     margin-inline: auto;
   }
 
-  > :where(h1, h2, h3, h4, h5, h6) {
-    max-width: var(--measure-heading);
+  :is(h1, h2, h3, h4, h5, h6) {
+    max-width: var(--text-heading-measure);
     color: var(--text-primary);
     font-family: var(--font-heading);
-    line-height: 1.35;
+    line-height: 1.4;
     text-wrap: balance;
   }
 
   h1 {
-    @apply text-3xl;
+    font-size: var(--text-article-h1);
+  }
+
+  h2 {
+    font-size: var(--text-article-h2);
+  }
+
+  h3 {
+    font-size: var(--text-article-h3);
+  }
+
+  h4 {
+    font-size: var(--text-article-h4);
+  }
+
+  h5,
+  h6 {
+    font-size: 1rem;
   }
 
   :is(h1, h2, h3, h4, h5, h6) {
