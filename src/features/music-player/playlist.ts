@@ -37,7 +37,7 @@ export function buildMetingApiUrl({
 	server: string;
 	type: string;
 	id: string;
-}) {
+}): string {
 	return api
 		.replace(":server", server)
 		.replace(":type", type)

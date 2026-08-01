@@ -1,17 +1,35 @@
 import { live2dCompanionConfig } from "@/config";
-import type { Live2DCompanionModelConfig, Live2DWidgetConfig } from "./types";
+import type {
+	Live2DCompanionModelConfig,
+	Live2DExpressionMenuConfig,
+	Live2DIdlePlaybackConfig,
+	Live2DWidgetConfig,
+} from "./types";
 
-export const defaultDragHoverDelay = 1500;
-export const modelStorageKey = "live2d-companion-model-index";
-export const defaultAvatarSrc =
+type Live2DModelEntry = {
+	path: string;
+	label?: string;
+	avatar?: string;
+	scale?: number;
+	offset?: [number, number];
+	defaultParameters?: Record<string, number>;
+	expressionMenu?: Live2DExpressionMenuConfig;
+	idlePlayback?: Live2DIdlePlaybackConfig;
+};
+
+export const defaultDragHoverDelay: number = 1500;
+export const modelStorageKey: string = "live2d-companion-model-index";
+export const defaultAvatarSrc: string =
 	live2dCompanionConfig.avatar ?? "/live2d-companion/models/NOIR/avatar.png";
 
-export function normalizeMessages(value?: string | string[]) {
+export function normalizeMessages(
+	value?: string | string[],
+): string[] | undefined {
 	if (!value) return undefined;
 	return Array.isArray(value) ? value : [value];
 }
 
-function buildTipsData() {
+function buildTipsData(): Record<string, unknown> {
 	const tipsData: Record<string, unknown> = {};
 	if (live2dCompanionConfig.tips) {
 		if (live2dCompanionConfig.tips.welcomeMessage) {
@@ -35,7 +53,7 @@ function buildTipsData() {
 }
 
 export function buildWidgetConfig(): Live2DWidgetConfig {
-	const modelEntries = (
+	const modelEntries: Live2DModelEntry[] = (
 		live2dCompanionConfig.models ?? [
 			"/live2d-companion/models/NOIR/noir.model3.json",
 		]
@@ -52,23 +70,24 @@ export function buildWidgetConfig(): Live2DWidgetConfig {
 			}),
 		}),
 	);
-	const modelProfiles = modelEntries.map((model) => ({
-		path: model.path,
-		...(model.label && { label: model.label }),
-		...(model.avatar && { avatar: model.avatar }),
-		...(model.expressionMenu && {
-			expressionMenu: model.expressionMenu,
-		}),
-		...(model.idlePlayback && {
-			idlePlayback: model.idlePlayback,
-		}),
-		...((model.defaultParameters ??
-			live2dCompanionConfig.defaultParameters) && {
-			defaultParameters:
-				model.defaultParameters ??
-				live2dCompanionConfig.defaultParameters,
-		}),
-	}));
+	const modelProfiles: NonNullable<Live2DWidgetConfig["_modelProfiles"]> =
+		modelEntries.map((model) => ({
+			path: model.path,
+			...(model.label && { label: model.label }),
+			...(model.avatar && { avatar: model.avatar }),
+			...(model.expressionMenu && {
+				expressionMenu: model.expressionMenu,
+			}),
+			...(model.idlePlayback && {
+				idlePlayback: model.idlePlayback,
+			}),
+			...((model.defaultParameters ??
+				live2dCompanionConfig.defaultParameters) && {
+				defaultParameters:
+					model.defaultParameters ??
+					live2dCompanionConfig.defaultParameters,
+			}),
+		}));
 	const tipsData = buildTipsData();
 	const modelHeight =
 		live2dCompanionConfig.height ?? live2dCompanionConfig.width ?? 280;
@@ -129,9 +148,9 @@ export function buildWidgetConfig(): Live2DWidgetConfig {
 	return widgetConfig;
 }
 
-export function getModelAvatarByStoredIndex() {
+export function getModelAvatarByStoredIndex(): string {
 	const models = live2dCompanionConfig.models ?? [];
-	const modelEntries = models.map((model) =>
+	const modelEntries: Live2DModelEntry[] = models.map((model) =>
 		typeof model === "string" ? { path: model } : model,
 	);
 	if (modelEntries.length === 0) return defaultAvatarSrc;

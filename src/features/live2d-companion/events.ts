@@ -13,7 +13,7 @@ export type Live2DCompanionCommandDetail = {
 
 export function dispatchLive2DCompanionCommand(
 	command: Live2DCompanionCommand,
-) {
+): void {
 	window.dispatchEvent(
 		new CustomEvent<Live2DCompanionCommandDetail>(
 			LIVE2D_COMPANION_COMMAND_EVENT,
@@ -24,22 +24,22 @@ export function dispatchLive2DCompanionCommand(
 	);
 }
 
-export function showLive2DCompanion() {
+export function showLive2DCompanion(): void {
 	dispatchLive2DCompanionCommand({ type: "show" });
 }
 
-export function collapseLive2DCompanion() {
+export function collapseLive2DCompanion(): void {
 	dispatchLive2DCompanionCommand({ type: "collapse" });
 }
 
-export function toggleLive2DCompanion() {
+export function toggleLive2DCompanion(): void {
 	dispatchLive2DCompanionCommand({ type: "toggle" });
 }
 
-export function sendLive2DCompanionMessage(text: string) {
+export function sendLive2DCompanionMessage(text: string): void {
 	dispatchLive2DCompanionCommand({ type: "message", text });
 }
 
-export function setLive2DCompanionExpression(name: string) {
+export function setLive2DCompanionExpression(name: string): void {
 	dispatchLive2DCompanionCommand({ type: "expression", name });
 }

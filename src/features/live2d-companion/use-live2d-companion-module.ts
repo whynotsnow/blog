@@ -1,5 +1,5 @@
 import { onDestroy, onMount } from "svelte";
-import { writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 import { live2dCompanionConfig } from "@/config";
 import {
 	LIVE2D_COMPANION_COMMAND_EVENT,
@@ -22,7 +22,7 @@ import {
 	normalizeMessages,
 } from "./widget-config";
 
-type Live2DCompanionModuleView = {
+export type Live2DCompanionModuleView = {
 	frameMounted: boolean;
 	loaded: boolean;
 	collapsed: boolean;
@@ -38,14 +38,33 @@ type Live2DCompanionModuleView = {
 	rootPositionStyle: string;
 };
 
+export type Live2DCompanionModuleConstants = {
+	widgetWidth: number;
+	frameHeight: number;
+	expandLabel: string | undefined;
+};
+
+export type Live2DCompanionModule = {
+	view: Writable<Live2DCompanionModuleView>;
+	setIframeEl: (element?: HTMLIFrameElement) => void;
+	setRootEl: (element?: HTMLDivElement) => void;
+	setExpressionPanelEl: (element?: HTMLDivElement) => void;
+	getExpressionLabel: (name: string) => string;
+	handleExpressionControlMouseLeave: (event: MouseEvent) => void;
+	selectExpression: (name: string) => void;
+	beginCollapsedAvatarPointer: (event: PointerEvent) => void;
+	preventCollapsedAvatarNativeDrag: (event: DragEvent) => void;
+	handleCollapsedAvatarClick: (event: MouseEvent) => void;
+};
+
 const widgetConfig = buildWidgetConfig();
 const widgetWidth = live2dCompanionConfig.width ?? 280;
 const widgetHeight = live2dCompanionConfig.height ?? widgetWidth;
 const frameHeight = Math.min(widgetHeight + 72, 360);
 
-export const live2dCompanionModuleConstants = {
-	widgetWidth,
-	frameHeight,
+export const live2dCompanionModuleConstants: Live2DCompanionModuleConstants = {
+	widgetWidth: widgetWidth,
+	frameHeight: frameHeight,
 	expandLabel: live2dCompanionConfig.dialog?.welcome
 		? normalizeMessages(live2dCompanionConfig.dialog.welcome)?.[0]
 		: "Show companion",
@@ -68,7 +87,7 @@ function createInitialView(): Live2DCompanionModuleView {
 	};
 }
 
-export function useLive2DCompanionModule() {
+export function useLive2DCompanionModule(): Live2DCompanionModule {
 	let iframeEl: HTMLIFrameElement | undefined;
 	let rootEl: HTMLDivElement | undefined;
 	let expressionPanelEl: HTMLDivElement | undefined;
@@ -172,39 +191,39 @@ export function useLive2DCompanionModule() {
 			collapsedAvatarSnapping = nextSnapping;
 		},
 		position: positionController,
-		commitView,
+		commitView: commitView,
 	});
 
-	function commitView() {
+	function commitView(): void {
 		view.set({
-			frameMounted,
-			loaded,
-			collapsed,
-			collapsing,
-			dragReady,
-			dragging,
-			collapsedAvatarDragging,
-			collapsedAvatarSnapping,
-			activeAvatarSrc,
-			expressionPanelOpen,
-			availableExpressions,
-			expressionPanelAnchor,
+			frameMounted: frameMounted,
+			loaded: loaded,
+			collapsed: collapsed,
+			collapsing: collapsing,
+			dragReady: dragReady,
+			dragging: dragging,
+			collapsedAvatarDragging: collapsedAvatarDragging,
+			collapsedAvatarSnapping: collapsedAvatarSnapping,
+			activeAvatarSrc: activeAvatarSrc,
+			expressionPanelOpen: expressionPanelOpen,
+			availableExpressions: availableExpressions,
+			expressionPanelAnchor: expressionPanelAnchor,
 			rootPositionStyle: positionController.buildRootPositionStyle(),
 		});
 	}
 
-	function setCollapsed(nextCollapsed: boolean) {
+	function setCollapsed(nextCollapsed: boolean): void {
 		collapsed = nextCollapsed;
 		setLive2DCompanionCollapsed(nextCollapsed);
 		commitView();
 	}
 
-	function clampPositionsToViewport() {
+	function clampPositionsToViewport(): void {
 		positionController.clampPositionsToViewport();
 		commitView();
 	}
 
-	function collapseCompanion() {
+	function collapseCompanion(): void {
 		if (collapsed || collapsing) return;
 		runtime.closeExpressionPanel();
 		positionController.ensureAnchorFromRoot();
@@ -219,7 +238,7 @@ export function useLive2DCompanionModule() {
 		}, 80);
 	}
 
-	function expandCompanion(event?: MouseEvent) {
+	function expandCompanion(event?: MouseEvent): void {
 		if (collapsed) {
 			const nextAnchor = anchor ?? positionController.getDefaultAnchor();
 			anchor = nextAnchor;
@@ -238,7 +257,7 @@ export function useLive2DCompanionModule() {
 		requestAnimationFrame(() => runtime.syncFramePointerFromEvent(event));
 	}
 
-	function toggleCollapsed() {
+	function toggleCollapsed(): void {
 		if (collapsed) {
 			expandCompanion();
 		} else {
@@ -246,7 +265,7 @@ export function useLive2DCompanionModule() {
 		}
 	}
 
-	function handleActionMessage(event: MessageEvent) {
+	function handleActionMessage(event: MessageEvent): void {
 		if (event.data.action === "home") {
 			window.location.href = "/";
 		}
@@ -272,7 +291,7 @@ export function useLive2DCompanionModule() {
 		}
 	}
 
-	function handleMessage(event: MessageEvent) {
+	function handleMessage(event: MessageEvent): void {
 		if (!iframeEl || event.source !== iframeEl.contentWindow) return;
 		if (event.data?.type === "l2d-loaded") {
 			runtime.applyLoadedMessage(event);
@@ -307,7 +326,7 @@ export function useLive2DCompanionModule() {
 		}
 	}
 
-	function handleCommand(event: Event) {
+	function handleCommand(event: Event): void {
 		const { command } = (event as CustomEvent<Live2DCompanionCommandDetail>)
 			.detail;
 		if (command.type === "collapse") {
@@ -331,21 +350,21 @@ export function useLive2DCompanionModule() {
 		}
 	}
 
-	function handleWindowPointerMove(event: PointerEvent) {
+	function handleWindowPointerMove(event: PointerEvent): void {
 		runtime.updateDragFromClientPoint(event.clientX, event.clientY);
 		runtime.updateCollapsedAvatarDrag(event);
 	}
 
-	function handleWindowPointerUp(event: PointerEvent) {
+	function handleWindowPointerUp(event: PointerEvent): void {
 		runtime.endDrag();
 		runtime.endCollapsedAvatarPointer(event, expandCompanion);
 	}
 
-	function handleWindowPointerCancel(event: PointerEvent) {
+	function handleWindowPointerCancel(event: PointerEvent): void {
 		runtime.cancelCollapsedAvatarPointer(event);
 	}
 
-	function preventCollapsedAvatarNativeDrag(event: DragEvent) {
+	function preventCollapsedAvatarNativeDrag(event: DragEvent): void {
 		event.preventDefault();
 	}
 
@@ -417,7 +436,7 @@ export function useLive2DCompanionModule() {
 	});
 
 	return {
-		view,
+		view: view,
 		setIframeEl: (element?: HTMLIFrameElement) => {
 			iframeEl = element;
 		},
@@ -432,7 +451,7 @@ export function useLive2DCompanionModule() {
 			runtime.handleExpressionControlMouseLeave,
 		selectExpression: runtime.selectExpression,
 		beginCollapsedAvatarPointer: runtime.beginCollapsedAvatarPointer,
-		preventCollapsedAvatarNativeDrag,
+		preventCollapsedAvatarNativeDrag: preventCollapsedAvatarNativeDrag,
 		handleCollapsedAvatarClick: (event: MouseEvent) =>
 			runtime.handleCollapsedAvatarClick(event, expandCompanion),
 	};

@@ -22,11 +22,11 @@ const emptyStatus: ReadingStatus = {
 	remainingMinutes: 0,
 };
 
-function clamp(value: number, min: number, max: number) {
+function clamp(value: number, min: number, max: number): number {
 	return Math.min(Math.max(value, min), max);
 }
 
-function getSavedPosition(pathname: string) {
+function getSavedPosition(pathname: string): SavedReadingPosition | undefined {
 	try {
 		const raw = localStorage.getItem(
 			`${READING_POSITION_PREFIX}${pathname}`,
@@ -83,7 +83,7 @@ export function collectReadingStatus(): ReadingStatus {
 	};
 }
 
-export function saveReadingPosition(status: ReadingStatus) {
+export function saveReadingPosition(status: ReadingStatus): void {
 	if (!status.active || status.progress <= 0.01 || status.progress >= 0.99)
 		return;
 	const value: SavedReadingPosition = {

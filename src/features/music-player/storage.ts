@@ -1,7 +1,7 @@
 const STORAGE_KEY_VOLUME = "music-player-volume";
 const STORAGE_KEY_MOUNTED = "music-player-mounted";
 
-export function loadStoredMusicPlayerMounted(defaultMounted = true) {
+export function loadStoredMusicPlayerMounted(defaultMounted = true): boolean {
 	try {
 		if (typeof localStorage === "undefined") return defaultMounted;
 
@@ -17,7 +17,7 @@ export function loadStoredMusicPlayerMounted(defaultMounted = true) {
 	return defaultMounted;
 }
 
-export function saveStoredMusicPlayerMounted(mounted: boolean) {
+export function saveStoredMusicPlayerMounted(mounted: boolean): void {
 	try {
 		if (typeof localStorage !== "undefined") {
 			localStorage.setItem(STORAGE_KEY_MOUNTED, mounted ? "1" : "0");
@@ -30,7 +30,7 @@ export function saveStoredMusicPlayerMounted(mounted: boolean) {
 	}
 }
 
-export function loadStoredVolume(defaultVolume = 0.7) {
+export function loadStoredVolume(defaultVolume = 0.7): number {
 	try {
 		if (typeof localStorage === "undefined") return defaultVolume;
 
@@ -51,7 +51,7 @@ export function loadStoredVolume(defaultVolume = 0.7) {
 	return defaultVolume;
 }
 
-export function saveStoredVolume(volume: number) {
+export function saveStoredVolume(volume: number): void {
 	try {
 		if (typeof localStorage !== "undefined") {
 			localStorage.setItem(STORAGE_KEY_VOLUME, volume.toString());

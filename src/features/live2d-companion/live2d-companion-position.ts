@@ -16,6 +16,11 @@ const defaultCollapsedCornerSnapTolerance = 8;
 
 type Live2DCompanionHorizontalDock = "configured-edge" | "nearest-edge";
 
+type Live2DCompanionCornerSnapRange = {
+	topEnd: number;
+	bottomStart: number;
+};
+
 type Live2DPositionControllerOptions = {
 	widgetWidth: number;
 	frameHeight: number;
@@ -36,10 +41,39 @@ type Live2DPositionControllerOptions = {
 	) => void;
 };
 
+export type Live2DPositionController = {
+	readAnchor: () => Live2DCompanionAnchor | undefined;
+	saveAnchor: (anchor: Live2DCompanionAnchor) => void;
+	getDefaultAnchor: () => Live2DCompanionAnchor;
+	getAnchorFromExpandedPosition: (
+		position: Live2DCompanionStoredPosition,
+	) => Live2DCompanionAnchor;
+	getAnchorFromRect: (rect: DOMRect) => Live2DCompanionAnchor;
+	getAnchorFromCollapsedPreview: (
+		position: Live2DCompanionStoredPosition,
+	) => Live2DCompanionAnchor;
+	getExpandedPositionFromAnchor: (
+		anchor: Live2DCompanionAnchor,
+	) => Live2DCompanionStoredPosition;
+	ensureAnchorFromRoot: () => Live2DCompanionAnchor;
+	clampPosition: (
+		position: Live2DCompanionStoredPosition,
+	) => Live2DCompanionStoredPosition;
+	clampCollapsedAvatarPreviewPosition: (
+		position: Live2DCompanionStoredPosition,
+		options?: { suppressCornerSnap?: boolean },
+	) => Live2DCompanionStoredPosition;
+	getCollapsedAvatarPreviewSnapEdge: (
+		position: Live2DCompanionStoredPosition,
+	) => Live2DCompanionCollapsedSnapEdge | undefined;
+	clampPositionsToViewport: () => void;
+	buildRootPositionStyle: () => string;
+};
+
 export function createLive2DPositionController(
 	options: Live2DPositionControllerOptions,
-) {
-	function clamp(value: number, min: number, max: number) {
+): Live2DPositionController {
+	function clamp(value: number, min: number, max: number): number {
 		return Math.min(Math.max(value, min), max);
 	}
 
@@ -76,19 +110,19 @@ export function createLive2DPositionController(
 			? Math.max(0, positionBounds.collapsedCornerSnapTolerance)
 			: defaultCollapsedCornerSnapTolerance;
 
-	function getCollapsedAvatarSize() {
+	function getCollapsedAvatarSize(): number {
 		return collapsedAvatarSize;
 	}
 
-	function getExpandedWidth() {
+	function getExpandedWidth(): number {
 		return options.widgetWidth;
 	}
 
-	function getExpandedHeight() {
+	function getExpandedHeight(): number {
 		return options.frameHeight;
 	}
 
-	function getCollapsedCornerSnapRange() {
+	function getCollapsedCornerSnapRange(): Live2DCompanionCornerSnapRange {
 		const size = getCollapsedAvatarSize();
 		const expandedHeight = getExpandedHeight();
 		const minTop = viewportMargin;
@@ -122,7 +156,7 @@ export function createLive2DPositionController(
 		return centerX < window.innerWidth / 2 ? "left" : "right";
 	}
 
-	function clampAnchor(anchor: Live2DCompanionAnchor) {
+	function clampAnchor(anchor: Live2DCompanionAnchor): Live2DCompanionAnchor {
 		return {
 			edge:
 				horizontalDock === "configured-edge"
@@ -132,14 +166,14 @@ export function createLive2DPositionController(
 		};
 	}
 
-	function saveAnchor(anchor: Live2DCompanionAnchor) {
+	function saveAnchor(anchor: Live2DCompanionAnchor): void {
 		localStorage.setItem(
 			anchorStorageKey,
 			JSON.stringify(clampAnchor(anchor)),
 		);
 	}
 
-	function readAnchor() {
+	function readAnchor(): Live2DCompanionAnchor | undefined {
 		try {
 			const raw = localStorage.getItem(anchorStorageKey);
 			if (!raw) return undefined;
@@ -170,13 +204,13 @@ export function createLive2DPositionController(
 		});
 	}
 
-	function getCollapsedDockLeft(edge: Live2DCompanionAnchor["edge"]) {
+	function getCollapsedDockLeft(edge: Live2DCompanionAnchor["edge"]): number {
 		const size = getCollapsedAvatarSize();
 		if (edge === "left") return horizontalInset;
 		return window.innerWidth - size - horizontalInset;
 	}
 
-	function getExpandedDockLeft(edge: Live2DCompanionAnchor["edge"]) {
+	function getExpandedDockLeft(edge: Live2DCompanionAnchor["edge"]): number {
 		const width = getExpandedWidth();
 		if (edge === "left") return horizontalInset;
 		return window.innerWidth - width - horizontalInset;
@@ -185,7 +219,7 @@ export function createLive2DPositionController(
 	function clampCollapsedAvatarPreviewPosition(
 		position: Live2DCompanionStoredPosition,
 		options: { suppressCornerSnap?: boolean } = {},
-	) {
+	): Live2DCompanionStoredPosition {
 		const size = getCollapsedAvatarSize();
 		const minLeft = horizontalInset;
 		const minTop = viewportMargin;
@@ -225,7 +259,9 @@ export function createLive2DPositionController(
 		return undefined;
 	}
 
-	function getExpandedPositionFromAnchor(anchor: Live2DCompanionAnchor) {
+	function getExpandedPositionFromAnchor(
+		anchor: Live2DCompanionAnchor,
+	): Live2DCompanionStoredPosition {
 		const height = getExpandedHeight();
 		const collapsedPosition = getCollapsedPositionFromAnchor(anchor);
 		const collapsedTopGap = collapsedPosition.top;
@@ -249,7 +285,9 @@ export function createLive2DPositionController(
 		});
 	}
 
-	function getCollapsedPositionFromAnchor(anchor: Live2DCompanionAnchor) {
+	function getCollapsedPositionFromAnchor(
+		anchor: Live2DCompanionAnchor,
+	): Live2DCompanionStoredPosition {
 		const size = getCollapsedAvatarSize();
 		const edge = clampAnchor(anchor).edge;
 		return clampCollapsedAvatarPreviewPosition({
@@ -258,7 +296,9 @@ export function createLive2DPositionController(
 		});
 	}
 
-	function clampPosition(position: Live2DCompanionStoredPosition) {
+	function clampPosition(
+		position: Live2DCompanionStoredPosition,
+	): Live2DCompanionStoredPosition {
 		const width = getExpandedWidth();
 		const height = getExpandedHeight();
 		let minLeft = horizontalInset - width * expandedHorizontalOverflowRatio;
@@ -288,7 +328,7 @@ export function createLive2DPositionController(
 
 	function getAnchorFromExpandedPosition(
 		position: Live2DCompanionStoredPosition,
-	) {
+	): Live2DCompanionAnchor {
 		const width = getExpandedWidth();
 		const height = getExpandedHeight();
 		const expandedPosition = clampPosition(position);
@@ -315,7 +355,7 @@ export function createLive2DPositionController(
 		});
 	}
 
-	function getAnchorFromRect(rect: DOMRect) {
+	function getAnchorFromRect(rect: DOMRect): Live2DCompanionAnchor {
 		const bottomGap = window.innerHeight - rect.bottom;
 		let centerY = rect.top + rect.height / 2;
 		if (rect.top <= viewportMargin + collapsedCornerSnapTolerance) {
@@ -334,7 +374,7 @@ export function createLive2DPositionController(
 
 	function getAnchorFromCollapsedPreview(
 		position: Live2DCompanionStoredPosition,
-	) {
+	): Live2DCompanionAnchor {
 		const size = getCollapsedAvatarSize();
 		const preview = clampCollapsedAvatarPreviewPosition(position);
 		return clampAnchor({
@@ -343,7 +383,7 @@ export function createLive2DPositionController(
 		});
 	}
 
-	function ensureAnchorFromRoot() {
+	function ensureAnchorFromRoot(): Live2DCompanionAnchor {
 		const rect = options.getRootEl()?.getBoundingClientRect();
 		const anchor = rect
 			? getAnchorFromRect(rect)
@@ -353,7 +393,7 @@ export function createLive2DPositionController(
 		return anchor;
 	}
 
-	function clampPositionsToViewport() {
+	function clampPositionsToViewport(): void {
 		const anchor = options.getAnchor();
 		if (anchor) {
 			const position = clampAnchor(anchor);
@@ -374,7 +414,7 @@ export function createLive2DPositionController(
 		}
 	}
 
-	function buildRootPositionStyle() {
+	function buildRootPositionStyle(): string {
 		const base = `--live2d-companion-width: ${options.widgetWidth}px; --live2d-companion-height: ${options.frameHeight}px;`;
 		const previewPosition = options.getCollapsedAvatarPreviewPosition();
 		if (options.getCollapsedAvatarDragging() && previewPosition) {
@@ -402,18 +442,19 @@ export function createLive2DPositionController(
 	}
 
 	return {
-		readAnchor,
-		saveAnchor,
-		getDefaultAnchor,
-		getAnchorFromExpandedPosition,
-		getAnchorFromRect,
-		getAnchorFromCollapsedPreview,
-		getExpandedPositionFromAnchor,
-		ensureAnchorFromRoot,
-		clampPosition,
-		clampCollapsedAvatarPreviewPosition,
-		getCollapsedAvatarPreviewSnapEdge,
-		clampPositionsToViewport,
-		buildRootPositionStyle,
+		readAnchor: readAnchor,
+		saveAnchor: saveAnchor,
+		getDefaultAnchor: getDefaultAnchor,
+		getAnchorFromExpandedPosition: getAnchorFromExpandedPosition,
+		getAnchorFromRect: getAnchorFromRect,
+		getAnchorFromCollapsedPreview: getAnchorFromCollapsedPreview,
+		getExpandedPositionFromAnchor: getExpandedPositionFromAnchor,
+		ensureAnchorFromRoot: ensureAnchorFromRoot,
+		clampPosition: clampPosition,
+		clampCollapsedAvatarPreviewPosition:
+			clampCollapsedAvatarPreviewPosition,
+		getCollapsedAvatarPreviewSnapEdge: getCollapsedAvatarPreviewSnapEdge,
+		clampPositionsToViewport: clampPositionsToViewport,
+		buildRootPositionStyle: buildRootPositionStyle,
 	};
 }

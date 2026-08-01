@@ -1,4 +1,7 @@
-export function getPreviousIndex(currentIndex: number, playlistLength: number) {
+export function getPreviousIndex(
+	currentIndex: number,
+	playlistLength: number,
+): number {
 	return currentIndex > 0 ? currentIndex - 1 : playlistLength - 1;
 }
 
@@ -10,7 +13,7 @@ export function getNextIndex({
 	currentIndex: number;
 	playlistLength: number;
 	isShuffled: boolean;
-}) {
+}): number {
 	if (!isShuffled) {
 		return currentIndex < playlistLength - 1 ? currentIndex + 1 : 0;
 	}
@@ -23,7 +26,10 @@ export function getNextIndex({
 	return nextIndex;
 }
 
-export function calculateVolumeFromPointer(clientX: number, rect: DOMRect) {
+export function calculateVolumeFromPointer(
+	clientX: number,
+	rect: DOMRect,
+): number {
 	return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
 }
 

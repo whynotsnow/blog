@@ -11,6 +11,21 @@ import { defaultAvatarSrc } from "./widget-config";
 const collapsedDragActivationDistance = 6;
 const expressionLabels = live2dCompanionConfig.expressionMenu?.labels ?? {};
 
+type Live2DThemeTokens = Partial<{
+	accent: string;
+	border: string;
+	isDark: boolean;
+	controlSurface: string;
+	messageSurface: string;
+	shadow: string;
+	text: string;
+}>;
+
+type Live2DParentClientPoint = {
+	x: number;
+	y: number;
+};
+
 type Live2DPositionRuntime = {
 	saveAnchor: (anchor: Live2DCompanionAnchor) => void;
 	getAnchorFromRect: (rect: DOMRect) => Live2DCompanionAnchor;
@@ -72,9 +87,41 @@ type Live2DCompanionRuntimeOptions = {
 	commitView: () => void;
 };
 
+export type Live2DCompanionRuntime = {
+	postToFrame: (message: Record<string, unknown>) => void;
+	postTheme: () => void;
+	closeExpressionPanel: () => void;
+	toggleExpressionPanel: (anchor?: { x: number; y: number }) => void;
+	getExpressionLabel: (name: string) => string;
+	handleExpressionControlMouseLeave: (event: MouseEvent) => void;
+	selectExpression: (name: string) => void;
+	scheduleInit: () => void;
+	queueFrameMount: () => void;
+	syncFramePointerFromEvent: (event?: MouseEvent) => void;
+	startDrag: (point: Live2DCompanionDragPointer) => void;
+	updateDrag: (point: Live2DCompanionDragPointer) => void;
+	updateDragFromClientPoint: (clientX: number, clientY: number) => void;
+	endDrag: () => void;
+	beginCollapsedAvatarPointer: (event: PointerEvent) => void;
+	updateCollapsedAvatarDrag: (event: PointerEvent) => void;
+	endCollapsedAvatarPointer: (
+		event: PointerEvent,
+		expandCompanion: (event?: MouseEvent) => void,
+	) => void;
+	cancelCollapsedAvatarPointer: (event: PointerEvent) => void;
+	handleCollapsedAvatarClick: (
+		event: MouseEvent,
+		expandCompanion: (event?: MouseEvent) => void,
+	) => void;
+	applyLoadedMessage: (event: MessageEvent) => void;
+	applyModelStateMessage: (event: MessageEvent) => void;
+	applyExpressionsMessage: (event: MessageEvent) => void;
+	cleanupFrameTimers: () => void;
+};
+
 export function createLive2DCompanionRuntime(
 	options: Live2DCompanionRuntimeOptions,
-) {
+): Live2DCompanionRuntime {
 	let pendingInit: number | undefined;
 	let pendingFrameMount: number | undefined;
 	let dragOffset = { x: 0, y: 0 };
@@ -86,13 +133,13 @@ export function createLive2DCompanionRuntime(
 	let collapsedAvatarSnapTimer: number | undefined;
 	let suppressCollapsedAvatarClick = false;
 
-	function postToFrame(message: Record<string, unknown>) {
+	function postToFrame(message: Record<string, unknown>): void {
 		const iframeEl = options.getIframeEl();
 		if (!iframeEl?.contentWindow) return;
 		iframeEl.contentWindow.postMessage(message, "*");
 	}
 
-	function readThemeTokens() {
+	function readThemeTokens(): Live2DThemeTokens {
 		if (live2dCompanionConfig.ui?.themeMode === "custom") return {};
 		const styles = window.getComputedStyle(document.documentElement);
 		const read = (name: string) => styles.getPropertyValue(name).trim();
@@ -112,41 +159,43 @@ export function createLive2DCompanionRuntime(
 		};
 	}
 
-	function postTheme() {
+	function postTheme(): void {
 		postToFrame({
 			type: "live2d-companion-theme",
 			theme: readThemeTokens(),
 		});
 	}
 
-	function getExpressionLabel(name: string) {
+	function getExpressionLabel(name: string): string {
 		return expressionLabels[name] ?? name;
 	}
 
-	function postExpressionPanelState(open = options.getExpressionPanelOpen()) {
+	function postExpressionPanelState(
+		open = options.getExpressionPanelOpen(),
+	): void {
 		postToFrame({
 			type: "live2d-companion-expression-panel-state",
 			open,
 		});
 	}
 
-	function setExpressionPanelOpen(open: boolean) {
+	function setExpressionPanelOpen(open: boolean): void {
 		options.setExpressionPanelOpenState(open);
 		postExpressionPanelState(open);
 		options.commitView();
 	}
 
-	function closeExpressionPanel() {
+	function closeExpressionPanel(): void {
 		setExpressionPanelOpen(false);
 	}
 
-	function toggleExpressionPanel(anchor?: { x: number; y: number }) {
+	function toggleExpressionPanel(anchor?: { x: number; y: number }): void {
 		if (options.getAvailableExpressions().length === 0) return;
 		if (anchor) options.setExpressionPanelAnchor(anchor);
 		setExpressionPanelOpen(!options.getExpressionPanelOpen());
 	}
 
-	function handleExpressionControlMouseLeave(event: MouseEvent) {
+	function handleExpressionControlMouseLeave(event: MouseEvent): void {
 		if (!options.getExpressionPanelOpen()) return;
 		const relatedTarget = event.relatedTarget;
 		const iframeEl = options.getIframeEl();
@@ -160,14 +209,14 @@ export function createLive2DCompanionRuntime(
 		closeExpressionPanel();
 	}
 
-	function selectExpression(name: string) {
+	function selectExpression(name: string): void {
 		postToFrame({
 			type: "live2d-companion-command",
 			command: { type: "expression", name },
 		});
 	}
 
-	function postInit() {
+	function postInit(): void {
 		if (!options.getIframeEl()?.contentWindow) return;
 		postToFrame({
 			type: "l2d-init",
@@ -178,7 +227,7 @@ export function createLive2DCompanionRuntime(
 		});
 	}
 
-	function scheduleInit() {
+	function scheduleInit(): void {
 		window.clearTimeout(pendingInit);
 		const idleWindow = window as Window & {
 			requestIdleCallback?: (
@@ -186,7 +235,7 @@ export function createLive2DCompanionRuntime(
 				options?: IdleRequestOptions,
 			) => number;
 		};
-		const run = () => {
+		const run = (): void => {
 			pendingInit = window.setTimeout(postInit, 0);
 		};
 
@@ -197,14 +246,14 @@ export function createLive2DCompanionRuntime(
 		}
 	}
 
-	function bindFrameAfterRender() {
+	function bindFrameAfterRender(): void {
 		const iframeEl = options.getIframeEl();
 		if (options.getDisposed() || !iframeEl) return;
 		iframeEl.addEventListener("load", scheduleInit);
 		scheduleInit();
 	}
 
-	function mountFrame() {
+	function mountFrame(): void {
 		if (options.getDisposed() || options.getFrameMounted()) return;
 		options.setFrameMounted(true);
 		options.setLoaded(false);
@@ -212,14 +261,14 @@ export function createLive2DCompanionRuntime(
 		window.setTimeout(bindFrameAfterRender, 0);
 	}
 
-	function queueFrameMount() {
+	function queueFrameMount(): void {
 		window.clearTimeout(pendingFrameMount);
 		pendingFrameMount = window.setTimeout(() => {
 			mountFrame();
 		}, 0);
 	}
 
-	function syncFramePointerFromEvent(event?: MouseEvent) {
+	function syncFramePointerFromEvent(event?: MouseEvent): void {
 		const iframeEl = options.getIframeEl();
 		if (!event || !iframeEl) return;
 		const rect = iframeEl.getBoundingClientRect();
@@ -232,7 +281,9 @@ export function createLive2DCompanionRuntime(
 		});
 	}
 
-	function getParentClientPoint(point: Live2DCompanionDragPointer) {
+	function getParentClientPoint(
+		point: Live2DCompanionDragPointer,
+	): Live2DParentClientPoint | undefined {
 		const rect = options.getIframeEl()?.getBoundingClientRect();
 		if (!rect) return undefined;
 		return {
@@ -241,7 +292,7 @@ export function createLive2DCompanionRuntime(
 		};
 	}
 
-	function startDrag(point: Live2DCompanionDragPointer) {
+	function startDrag(point: Live2DCompanionDragPointer): void {
 		const clientPoint = getParentClientPoint(point);
 		const rect = options.getRootEl()?.getBoundingClientRect();
 		if (!clientPoint || !rect) return;
@@ -260,7 +311,7 @@ export function createLive2DCompanionRuntime(
 		options.commitView();
 	}
 
-	function updateDragFromClientPoint(clientX: number, clientY: number) {
+	function updateDragFromClientPoint(clientX: number, clientY: number): void {
 		if (!options.getDragging()) return;
 		options.setStoredPosition(
 			options.position.clampPosition({
@@ -271,13 +322,13 @@ export function createLive2DCompanionRuntime(
 		options.commitView();
 	}
 
-	function updateDrag(point: Live2DCompanionDragPointer) {
+	function updateDrag(point: Live2DCompanionDragPointer): void {
 		const clientPoint = getParentClientPoint(point);
 		if (!clientPoint) return;
 		updateDragFromClientPoint(clientPoint.x, clientPoint.y);
 	}
 
-	function endDrag() {
+	function endDrag(): void {
 		if (!options.getDragging()) return;
 		options.setDragging(false);
 		const storedPosition = options.getStoredPosition();
@@ -295,7 +346,7 @@ export function createLive2DCompanionRuntime(
 
 	function setCollapsedAvatarSnapEdge(
 		edge: Live2DCompanionCollapsedSnapEdge | undefined,
-	) {
+	): void {
 		if (edge === collapsedAvatarSnapEdge) return;
 		collapsedAvatarSnapEdge = edge;
 		window.clearTimeout(collapsedAvatarSnapTimer);
@@ -310,7 +361,7 @@ export function createLive2DCompanionRuntime(
 		}, 320);
 	}
 
-	function beginCollapsedAvatarPointer(event: PointerEvent) {
+	function beginCollapsedAvatarPointer(event: PointerEvent): void {
 		if (!options.getCollapsed() || event.button !== 0) return;
 		event.preventDefault();
 		const rect = options.getRootEl()?.getBoundingClientRect();
@@ -350,7 +401,7 @@ export function createLive2DCompanionRuntime(
 		options.commitView();
 	}
 
-	function updateCollapsedAvatarDrag(event: PointerEvent) {
+	function updateCollapsedAvatarDrag(event: PointerEvent): void {
 		if (
 			!options.getCollapsedAvatarDragging() ||
 			event.pointerId !== collapsedAvatarPointerId
@@ -385,7 +436,7 @@ export function createLive2DCompanionRuntime(
 	function endCollapsedAvatarPointer(
 		event: PointerEvent,
 		expandCompanion: (event?: MouseEvent) => void,
-	) {
+	): void {
 		if (
 			!options.getCollapsedAvatarDragging() ||
 			event.pointerId !== collapsedAvatarPointerId
@@ -426,7 +477,7 @@ export function createLive2DCompanionRuntime(
 		expandCompanion(event);
 	}
 
-	function cancelCollapsedAvatarPointer(event: PointerEvent) {
+	function cancelCollapsedAvatarPointer(event: PointerEvent): void {
 		if (
 			!options.getCollapsedAvatarDragging() ||
 			event.pointerId !== collapsedAvatarPointerId
@@ -444,7 +495,7 @@ export function createLive2DCompanionRuntime(
 	function handleCollapsedAvatarClick(
 		event: MouseEvent,
 		expandCompanion: (event?: MouseEvent) => void,
-	) {
+	): void {
 		if (suppressCollapsedAvatarClick) {
 			event.preventDefault();
 			return;
@@ -452,7 +503,7 @@ export function createLive2DCompanionRuntime(
 		if (options.getCollapsed()) expandCompanion(event);
 	}
 
-	function applyLoadedMessage(event: MessageEvent) {
+	function applyLoadedMessage(event: MessageEvent): void {
 		const iframeEl = options.getIframeEl();
 		if (!iframeEl) return;
 		const height =
@@ -464,7 +515,7 @@ export function createLive2DCompanionRuntime(
 		options.commitView();
 	}
 
-	function applyModelStateMessage(event: MessageEvent) {
+	function applyModelStateMessage(event: MessageEvent): void {
 		options.setActiveAvatarSrc(
 			typeof event.data.avatar === "string" && event.data.avatar
 				? event.data.avatar
@@ -473,7 +524,7 @@ export function createLive2DCompanionRuntime(
 		options.commitView();
 	}
 
-	function applyExpressionsMessage(event: MessageEvent) {
+	function applyExpressionsMessage(event: MessageEvent): void {
 		options.setAvailableExpressions(
 			Array.isArray(event.data.expressions)
 				? event.data.expressions.filter(
@@ -486,7 +537,7 @@ export function createLive2DCompanionRuntime(
 		options.commitView();
 	}
 
-	function cleanupFrameTimers() {
+	function cleanupFrameTimers(): void {
 		window.clearTimeout(pendingInit);
 		window.clearTimeout(pendingFrameMount);
 		window.clearTimeout(collapsedAvatarSnapTimer);
@@ -494,28 +545,28 @@ export function createLive2DCompanionRuntime(
 	}
 
 	return {
-		postToFrame,
-		postTheme,
-		closeExpressionPanel,
-		toggleExpressionPanel,
-		getExpressionLabel,
-		handleExpressionControlMouseLeave,
-		selectExpression,
-		scheduleInit,
-		queueFrameMount,
-		syncFramePointerFromEvent,
-		startDrag,
-		updateDrag,
-		updateDragFromClientPoint,
-		endDrag,
-		beginCollapsedAvatarPointer,
-		updateCollapsedAvatarDrag,
-		endCollapsedAvatarPointer,
-		cancelCollapsedAvatarPointer,
-		handleCollapsedAvatarClick,
-		applyLoadedMessage,
-		applyModelStateMessage,
-		applyExpressionsMessage,
-		cleanupFrameTimers,
+		postToFrame: postToFrame,
+		postTheme: postTheme,
+		closeExpressionPanel: closeExpressionPanel,
+		toggleExpressionPanel: toggleExpressionPanel,
+		getExpressionLabel: getExpressionLabel,
+		handleExpressionControlMouseLeave: handleExpressionControlMouseLeave,
+		selectExpression: selectExpression,
+		scheduleInit: scheduleInit,
+		queueFrameMount: queueFrameMount,
+		syncFramePointerFromEvent: syncFramePointerFromEvent,
+		startDrag: startDrag,
+		updateDrag: updateDrag,
+		updateDragFromClientPoint: updateDragFromClientPoint,
+		endDrag: endDrag,
+		beginCollapsedAvatarPointer: beginCollapsedAvatarPointer,
+		updateCollapsedAvatarDrag: updateCollapsedAvatarDrag,
+		endCollapsedAvatarPointer: endCollapsedAvatarPointer,
+		cancelCollapsedAvatarPointer: cancelCollapsedAvatarPointer,
+		handleCollapsedAvatarClick: handleCollapsedAvatarClick,
+		applyLoadedMessage: applyLoadedMessage,
+		applyModelStateMessage: applyModelStateMessage,
+		applyExpressionsMessage: applyExpressionsMessage,
+		cleanupFrameTimers: cleanupFrameTimers,
 	};
 }
