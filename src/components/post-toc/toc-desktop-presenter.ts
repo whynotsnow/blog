@@ -53,7 +53,7 @@ export class DesktopTocPresenter {
 		this.graph = options.graph;
 	}
 
-	apply(state: DesktopTocViewState) {
+	apply(state: DesktopTocViewState): void {
 		const planId = ++this.planSequence;
 		const plan = this.resolveEffectivePlan(
 			resolveTocTransitionPlan(this.previousState, state),
@@ -152,7 +152,7 @@ export class DesktopTocPresenter {
 		this.scheduleScrollCorrection(state.highlightIndex, { planId });
 	}
 
-	dispose() {
+	dispose(): void {
 		if (this.indicatorRaf) cancelAnimationFrame(this.indicatorRaf);
 		if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 		if (this.finalizeTimer) window.clearTimeout(this.finalizeTimer);
@@ -176,7 +176,10 @@ export class DesktopTocPresenter {
 		this.lastCommittedHighlight = null;
 	}
 
-	private renderExpandedRegion(rootIndex: number, onSettled?: () => void) {
+	private renderExpandedRegion(
+		rootIndex: number,
+		onSettled?: () => void,
+	): void {
 		if (this.renderedRootIndex === rootIndex) {
 			return;
 		}
@@ -212,7 +215,7 @@ export class DesktopTocPresenter {
 		this.slotTransitions.expand(slot, nextHTML, onSettled);
 	}
 
-	private shouldSequenceRootsOnlyCollapse(plan: TocTransitionPlan) {
+	private shouldSequenceRootsOnlyCollapse(plan: TocTransitionPlan): boolean {
 		return (
 			plan.state.mode === "roots-only" &&
 			plan.state.rootsOnlyReason !== "empty" &&
@@ -243,7 +246,7 @@ export class DesktopTocPresenter {
 	private applyEntryState(
 		state: DesktopTocViewState,
 		options: { suppressActive?: boolean } = {},
-	) {
+	): void {
 		for (const entry of this.host.querySelectorAll<HTMLAnchorElement>(
 			"a[data-toc-index]",
 		)) {
@@ -268,12 +271,12 @@ export class DesktopTocPresenter {
 		}
 	}
 
-	private hideIndicator() {
+	private hideIndicator(): void {
 		if (this.indicator) this.indicator.style.opacity = "0";
 		this.lastCommittedHighlight = null;
 	}
 
-	private afterHighlightExit(planId: number, callback: () => void) {
+	private afterHighlightExit(planId: number, callback: () => void): void {
 		if (!this.indicator) {
 			callback();
 			return;
@@ -289,7 +292,7 @@ export class DesktopTocPresenter {
 		}
 
 		let settled = false;
-		const finish = () => {
+		const finish = (): void => {
 			if (settled) return;
 			settled = true;
 			this.highlightExitTimer = 0;
@@ -303,7 +306,7 @@ export class DesktopTocPresenter {
 			if (planId !== this.planSequence) return;
 			callback();
 		};
-		const listener = (event: TransitionEvent) => {
+		const listener = (event: TransitionEvent): void => {
 			if (
 				event.target !== this.indicator ||
 				event.propertyName !== "opacity"
@@ -321,7 +324,7 @@ export class DesktopTocPresenter {
 		);
 	}
 
-	private cancelIndicatorMotion() {
+	private cancelIndicatorMotion(): void {
 		if (this.indicatorRaf) cancelAnimationFrame(this.indicatorRaf);
 		if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 		if (this.finalizeTimer) window.clearTimeout(this.finalizeTimer);
@@ -330,7 +333,7 @@ export class DesktopTocPresenter {
 		this.finalizeTimer = 0;
 	}
 
-	private anchorScrollBottom() {
+	private anchorScrollBottom(): void {
 		const maxScrollTop =
 			this.scrollRoot.scrollHeight - this.scrollRoot.clientHeight;
 		if (maxScrollTop <= 0) return;
@@ -341,7 +344,10 @@ export class DesktopTocPresenter {
 		});
 	}
 
-	private scheduleIndicator(activeIndex: number, planId = this.planSequence) {
+	private scheduleIndicator(
+		activeIndex: number,
+		planId = this.planSequence,
+	): void {
 		if (this.indicatorRaf) cancelAnimationFrame(this.indicatorRaf);
 		this.indicatorRaf = requestAnimationFrame(() => {
 			this.indicatorRaf = 0;
@@ -353,7 +359,7 @@ export class DesktopTocPresenter {
 	private scheduleScrollCorrection(
 		activeIndex: number,
 		options: { moveIndicator?: boolean; planId?: number } = {},
-	) {
+	): void {
 		const shouldMoveIndicator = options.moveIndicator ?? true;
 		const planId = options.planId ?? this.planSequence;
 		if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
@@ -373,7 +379,7 @@ export class DesktopTocPresenter {
 		}, TRANSITION_FINALIZE_DELAY);
 	}
 
-	private applySettledHighlight(plan: TocTransitionPlan) {
+	private applySettledHighlight(plan: TocTransitionPlan): void {
 		const { state } = plan;
 		if (state.scrollAnchor === "bottom") {
 			this.anchorScrollBottom();
@@ -394,20 +400,20 @@ export class DesktopTocPresenter {
 		this.moveIndicator(state.highlightIndex);
 	}
 
-	private applyPendingSettledHighlight() {
+	private applyPendingSettledHighlight(): void {
 		const plan = this.pendingSettledPlan;
 		if (!plan) return;
 		this.pendingSettledPlan = null;
 		this.applySettledHighlight(plan);
 	}
 
-	private getEntry(index: number) {
+	private getEntry(index: number): HTMLAnchorElement | null {
 		return this.host.querySelector<HTMLAnchorElement>(
 			`a[data-toc-index="${index}"]`,
 		);
 	}
 
-	private moveIndicator(activeIndex: number) {
+	private moveIndicator(activeIndex: number): void {
 		if (!this.indicator) return;
 		const geometry = this.resolveIndicatorGeometry(activeIndex);
 		if (!geometry) {
@@ -426,7 +432,7 @@ export class DesktopTocPresenter {
 		};
 	}
 
-	private placeIndicatorWithoutMotion(activeIndex: number) {
+	private placeIndicatorWithoutMotion(activeIndex: number): void {
 		if (!this.indicator) return;
 		const geometry = this.resolveIndicatorGeometry(activeIndex);
 		if (!geometry) {
@@ -440,7 +446,9 @@ export class DesktopTocPresenter {
 		);
 	}
 
-	private resolveIndicatorGeometry(activeIndex: number) {
+	private resolveIndicatorGeometry(
+		activeIndex: number,
+	): { top: number; height: number } | null {
 		const activeEntry = this.getEntry(activeIndex);
 		if (!activeEntry) return null;
 
@@ -459,7 +467,7 @@ export class DesktopTocPresenter {
 		return { top, height };
 	}
 
-	private isHighlightCommitted(activeIndex: number) {
+	private isHighlightCommitted(activeIndex: number): boolean {
 		const geometry = this.resolveIndicatorGeometry(activeIndex);
 		if (!geometry || !this.lastCommittedHighlight) return false;
 		return (
@@ -471,7 +479,7 @@ export class DesktopTocPresenter {
 		);
 	}
 
-	private ensureActiveVisible(activeIndex: number) {
+	private ensureActiveVisible(activeIndex: number): void {
 		const activeEntry = this.getEntry(activeIndex);
 		if (!activeEntry) return;
 

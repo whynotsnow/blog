@@ -1,6 +1,6 @@
 import type { TocItem } from "./toc-data";
 
-export function escapeHtml(value: string) {
+export function escapeHtml(value: string): string {
 	return value
 		.replaceAll("&", "&amp;")
 		.replaceAll("<", "&lt;")
@@ -8,7 +8,7 @@ export function escapeHtml(value: string) {
 		.replaceAll('"', "&quot;");
 }
 
-export function renderDesktopTocItem(item: TocItem, index = -1) {
+export function renderDesktopTocItem(item: TocItem, index = -1): string {
 	const rootBadgeClass =
 		item.badgeKind === "text"
 			? "bg-(--toc-badge-bg) text-(--btn-content)"
@@ -29,7 +29,7 @@ export function renderDesktopTocItem(item: TocItem, index = -1) {
 	</a>`;
 }
 
-export function renderDesktopTocShell(items: TocItem[]) {
+export function renderDesktopTocShell(items: TocItem[]): string {
 	return items
 		.map((item, index) => ({ item, index }))
 		.filter(({ item }) => item.level === 0)
@@ -40,7 +40,7 @@ export function renderDesktopTocShell(items: TocItem[]) {
 		.join("");
 }
 
-export function renderFloatingTocItem(item: TocItem, index = -1) {
+export function renderFloatingTocItem(item: TocItem, index = -1): string {
 	const badge =
 		item.badgeKind === "text"
 			? `<span class="floating-toc-badge">${escapeHtml(item.badge)}</span>`
@@ -51,7 +51,7 @@ export function renderFloatingTocItem(item: TocItem, index = -1) {
 	return `<a href="#${escapeHtml(item.id)}" class="floating-toc-item" style="padding-left: ${0.5 + item.level}rem" data-level="${item.level}" data-toc-index="${index}">${badge}<span class="floating-toc-text">${escapeHtml(item.text)}</span></a>`;
 }
 
-export function renderFloatingTocShell(items: TocItem[]) {
+export function renderFloatingTocShell(items: TocItem[]): string {
 	return items
 		.map((item, index) => ({ item, index }))
 		.filter(({ item }) => item.level === 0)

@@ -1,4 +1,7 @@
-export function downloadPosterImage(posterImage: string | null, title: string) {
+export function downloadPosterImage(
+	posterImage: string | null,
+	title: string,
+): void {
 	if (!posterImage) return;
 
 	const anchor = document.createElement("a");
@@ -7,7 +10,7 @@ export function downloadPosterImage(posterImage: string | null, title: string) {
 	anchor.click();
 }
 
-export async function copyShareLink(url: string) {
+export async function copyShareLink(url: string): Promise<void> {
 	if (navigator.clipboard?.writeText) {
 		await navigator.clipboard.writeText(url);
 		return;

@@ -413,7 +413,7 @@ function bindPostListViewChangeListener() {
 	);
 }
 
-export function initAnimePage() {
+export function initAnimePage(): void {
 	tryInitAnimeLayout();
 	bindPostListViewChangeListener();
 

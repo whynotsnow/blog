@@ -57,12 +57,12 @@ const defaultIcons: Record<SiteNoticeStatus, string> = {
 	danger: "material-symbols:error-outline-rounded",
 };
 
-function normalizePathname(pathname: string) {
+function normalizePathname(pathname: string): string {
 	const normalized = pathname.replace(/\/+$/, "");
 	return normalized || "/";
 }
 
-function matchesRoute(pathname: string, routes: string[] | undefined) {
+function matchesRoute(pathname: string, routes: string[] | undefined): boolean {
 	if (!routes?.length) return false;
 	return routes.some((route) => {
 		const normalizedRoute = normalizePathname(route.replace(/\*$/, ""));
@@ -76,7 +76,7 @@ function matchesRoute(pathname: string, routes: string[] | undefined) {
 export function isSiteNoticeVisible(
 	visibility: SiteNoticeVisibility | undefined,
 	pathname: string,
-) {
+): boolean {
 	const normalizedPathname = normalizePathname(pathname);
 	if (!visibility) return true;
 	if (matchesRoute(normalizedPathname, visibility.exclude)) return false;
@@ -89,7 +89,9 @@ export function isSiteNoticeVisible(
 	return true;
 }
 
-function normalizeAction(action: SiteNoticeSourceData["action"]) {
+function normalizeAction(
+	action: SiteNoticeSourceData["action"],
+): SiteNoticeItemViewModel["action"] {
 	return action
 		? {
 				label: action.label,
@@ -99,21 +101,21 @@ function normalizeAction(action: SiteNoticeSourceData["action"]) {
 		: undefined;
 }
 
-function normalizeLevel(level: SiteNoticeSourceData["level"]) {
+function normalizeLevel(level: SiteNoticeSourceData["level"]): SiteNoticeLevel {
 	return level ?? "normal";
 }
 
 function normalizeDismissible(
 	level: SiteNoticeLevel,
 	dismissible: boolean | undefined,
-) {
+): boolean {
 	return dismissible ?? level !== "critical";
 }
 
 function normalizeRequiresAck(
 	level: SiteNoticeLevel,
 	requiresAck: boolean | undefined,
-) {
+): boolean {
 	return requiresAck ?? level === "critical";
 }
 
@@ -142,7 +144,9 @@ export function buildSiteNoticeItemViewModel(
 	};
 }
 
-export async function getSiteNotices(pathname: string) {
+export async function getSiteNotices(
+	pathname: string,
+): Promise<SiteNoticeItemViewModel[]> {
 	const { getCollection } = await import("astro:content");
 	const entries = await getCollection("notifications", ({ data }) => {
 		if (data.expires && data.expires.getTime() < Date.now()) return false;

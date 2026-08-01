@@ -1,4 +1,9 @@
-export const bannerImageSources = {
+export type BannerImageSources = {
+	desktop: string[];
+	mobile: string[];
+};
+
+export const bannerImageSources: BannerImageSources = {
 	desktop: [
 		"/assets/desktop-banner/1.webp",
 		"/assets/desktop-banner/2.webp",

@@ -200,7 +200,7 @@ function applyInitialPageShell() {
 	});
 }
 
-export function applyWallpaperMode() {
+export function applyWallpaperMode(): void {
 	const wallpaperMode = getWallpaperMode();
 	const bannerWrapper = document.getElementById("banner-wrapper");
 	const fullWallpaper = document.querySelector(

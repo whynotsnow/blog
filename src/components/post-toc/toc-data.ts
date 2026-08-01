@@ -64,7 +64,7 @@ const JAPANESE_KATAKANA = [
 	"ン",
 ];
 
-export function cleanTocText(text: string) {
+export function cleanTocText(text: string): string {
 	return text.replace(/#+\s*$/, "");
 }
 

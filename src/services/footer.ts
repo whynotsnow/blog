@@ -38,7 +38,7 @@ function runningDaysSince(date: Date, now: Date): number {
 
 export function buildFooterViewModel(
 	store: ContentStore,
-	now = new Date(),
+	now: Date = new Date(),
 ): FooterViewModel {
 	const siteStartDate = siteConfig.siteStartDate || "2025-01-01";
 	const startDate = new Date(siteStartDate);

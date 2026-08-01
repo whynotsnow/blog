@@ -35,4 +35,4 @@ export function createTaskRunner(limit: number): TaskRunner {
 	};
 }
 
-export const runPostBuildTask = createTaskRunner(4);
+export const runPostBuildTask: TaskRunner = createTaskRunner(4);

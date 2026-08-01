@@ -26,7 +26,7 @@ export function setHue(hue: number): void {
 	r.style.setProperty("--hue", String(hue));
 }
 
-export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
+export function applyThemeToDocument(theme: LIGHT_DARK_MODE): void {
 	// 获取当前主题状态的完整信息
 	const currentIsDark = document.documentElement.classList.contains("dark");
 	const currentTheme = document.documentElement.getAttribute("data-theme");
@@ -161,14 +161,17 @@ export function setWallpaperMode(mode: WALL_MODE): void {
 	);
 }
 
-function getNumberConfigDefault(value: number | undefined, fallback: number) {
+function getNumberConfigDefault(
+	value: number | undefined,
+	fallback: number,
+): number {
 	return typeof value === "number" ? value : fallback;
 }
 
 function getBooleanConfigDefault(
 	value: boolean | undefined,
 	fallback: boolean,
-) {
+): boolean {
 	return typeof value === "boolean" ? value : fallback;
 }
 

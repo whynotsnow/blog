@@ -21,7 +21,7 @@ export async function loadImage(src: string): Promise<HTMLImageElement | null> {
 	});
 }
 
-export function readThemeColor(fallback = "#558e88") {
+export function readThemeColor(fallback = "#558e88"): string {
 	const temp = document.createElement("div");
 	temp.style.color = "var(--primary)";
 	temp.style.display = "none";

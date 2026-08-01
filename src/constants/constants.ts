@@ -1,28 +1,28 @@
-export const HOME_FEATURED_SECTION_SIZE = 3;
-export const HOME_TECHNOLOGY_SECTION_SIZE = 6;
-export const CATEGORY_PAGE_SIZE = 12;
+export const HOME_FEATURED_SECTION_SIZE: number = 3;
+export const HOME_TECHNOLOGY_SECTION_SIZE: number = 6;
+export const CATEGORY_PAGE_SIZE: number = 12;
 
-export const LIGHT_MODE = "light",
-	DARK_MODE = "dark";
-export const DEFAULT_THEME = LIGHT_MODE;
+export const LIGHT_MODE = "light" as const,
+	DARK_MODE = "dark" as const;
+export const DEFAULT_THEME: typeof LIGHT_MODE = LIGHT_MODE;
 
 // Banner height unit: vh
-export const BANNER_HEIGHT = 35;
-export const BANNER_HEIGHT_FULLSCREEN = 100;
-export const BANNER_HEIGHT_EXTEND = 30;
-export const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
+export const BANNER_HEIGHT: number = 35;
+export const BANNER_HEIGHT_FULLSCREEN: number = 100;
+export const BANNER_HEIGHT_EXTEND: number = 30;
+export const BANNER_HEIGHT_HOME: number = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
 // The height the main panel overlaps the banner, unit: rem
-export const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
+export const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT: number = 3.5;
 
 // Page width: rem
-export const PAGE_WIDTH = 86;
+export const PAGE_WIDTH: number = 86;
 
 // Category constants
-export const UNCATEGORIZED = "uncategorized";
+export const UNCATEGORIZED = "uncategorized" as const;
 
 // Wallpaper mode constants
-export const WALL_BANNER = "banner";
-export const WALL_FULL_BANNER = "full-banner";
-export const WALL_FULL = "full-wall";
-export const WALL_NONE = "none";
+export const WALL_BANNER = "banner" as const;
+export const WALL_FULL_BANNER = "full-banner" as const;
+export const WALL_FULL = "full-wall" as const;
+export const WALL_NONE = "none" as const;

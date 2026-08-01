@@ -18,7 +18,7 @@ function readConfig(): PasswordProtectionClientConfig | null {
 	}
 }
 
-async function loadCryptoLibraries() {
+async function loadCryptoLibraries(): Promise<void> {
 	if (window.CryptoJS) return;
 
 	await new Promise<void>((resolve, reject) => {
@@ -33,7 +33,7 @@ async function loadCryptoLibraries() {
 function resetAutoUnlockState(
 	protectionDiv: HTMLElement,
 	passwordInput: HTMLInputElement,
-) {
+): void {
 	sessionStorage.removeItem(`page-password-${window.location.pathname}`);
 
 	const inputGroup = protectionDiv.querySelector<HTMLElement>(
@@ -54,7 +54,7 @@ function resetAutoUnlockState(
 	protectionDiv.classList.remove("auto-unlocking");
 }
 
-async function runPostDecryptHooks(contentDiv: HTMLElement) {
+async function runPostDecryptHooks(contentDiv: HTMLElement): Promise<void> {
 	if (window.hljs) {
 		contentDiv.querySelectorAll("pre code").forEach((block) => {
 			window.hljs?.highlightElement(block);
@@ -99,7 +99,7 @@ async function runPostDecryptHooks(contentDiv: HTMLElement) {
 	}
 }
 
-async function replayScripts(contentDiv: HTMLElement) {
+async function replayScripts(contentDiv: HTMLElement): Promise<void> {
 	const scripts = contentDiv.querySelectorAll("script");
 	const scriptPromises = Array.from(scripts).map((script) => {
 		return new Promise<void>((resolve) => {
@@ -120,7 +120,7 @@ async function replayScripts(contentDiv: HTMLElement) {
 	await Promise.all(scriptPromises);
 }
 
-export async function initPasswordProtection() {
+export async function initPasswordProtection(): Promise<void> {
 	const config = readConfig();
 	if (!config) return;
 
@@ -253,7 +253,7 @@ export async function initPasswordProtection() {
 	}
 }
 
-async function copyToClipboard(text: string) {
+async function copyToClipboard(text: string): Promise<void> {
 	try {
 		await navigator.clipboard.writeText(text);
 	} catch (clipboardErr) {
@@ -284,7 +284,7 @@ async function copyToClipboard(text: string) {
 	}
 }
 
-function getCodeText(codeElement: Element) {
+function getCodeText(codeElement: Element): string {
 	const lineElements = codeElement.querySelectorAll("span.line");
 	if (lineElements.length > 0) {
 		return Array.from(lineElements)
@@ -302,7 +302,7 @@ function getCodeText(codeElement: Element) {
 	return codeElement.textContent || "";
 }
 
-export function initPasswordProtectionCopyButtons() {
+export function initPasswordProtectionCopyButtons(): void {
 	document.addEventListener("click", (event) => {
 		const target = event.target;
 		if (!(target instanceof HTMLElement)) return;

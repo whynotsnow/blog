@@ -35,7 +35,9 @@ type TocStoreSubscriber = (
 	reason: TocStoreReason,
 ) => void;
 
-class PostTocStore {
+type TocStoreUnsubscribe = () => boolean;
+
+export class PostTocStore {
 	private root: Element | null = null;
 	private items: TocItem[] = [];
 	private headings: Array<HTMLElement | undefined> = [];
@@ -49,7 +51,7 @@ class PostTocStore {
 	private resizeRaf = 0;
 	private removeRefreshListener: (() => void) | null = null;
 
-	init() {
+	init(): void {
 		if (this.initialized) return;
 		this.initialized = true;
 		window.addEventListener("scroll", this.handleScroll, {
@@ -63,7 +65,7 @@ class PostTocStore {
 		});
 	}
 
-	subscribe(subscriber: TocStoreSubscriber) {
+	subscribe(subscriber: TocStoreSubscriber): TocStoreUnsubscribe {
 		this.init();
 		this.subscribers.add(subscriber);
 		subscriber(this.getSnapshot(), "init");
@@ -87,7 +89,7 @@ class PostTocStore {
 		items: TocItem[],
 		root: Element | null = getPostContentRoot(),
 		reason: TocStoreReason = "init",
-	) {
+	): TocStoreSnapshot {
 		this.root = root;
 		this.items = items;
 		this.headings = getHeadingElementsForItems(root, items);
@@ -102,7 +104,10 @@ class PostTocStore {
 		return this.getSnapshot();
 	}
 
-	refresh(root?: Element, reason: TocStoreReason = "runtime-refresh") {
+	refresh(
+		root?: Element,
+		reason: TocStoreReason = "runtime-refresh",
+	): TocStoreSnapshot {
 		const state = resolveTocRuntimeState(root);
 		this.root = state.root;
 		this.items = state.items;
@@ -118,7 +123,7 @@ class PostTocStore {
 		return this.getSnapshot();
 	}
 
-	clear(reason: TocStoreReason = "runtime-refresh") {
+	clear(reason: TocStoreReason = "runtime-refresh"): TocStoreSnapshot {
 		this.root = null;
 		this.items = [];
 		this.headings = [];
@@ -129,7 +134,7 @@ class PostTocStore {
 		return this.getSnapshot();
 	}
 
-	measure(reason: TocStoreReason = "layout-remeasure") {
+	measure(reason: TocStoreReason = "layout-remeasure"): TocStoreSnapshot {
 		this.tracker.measure();
 		ensureTocTargetsScrollable(this.headings);
 		this.activeIndex = this.tracker.update(
@@ -140,7 +145,7 @@ class PostTocStore {
 		return this.getSnapshot();
 	}
 
-	update(reason: TocStoreReason = "scroll") {
+	update(reason: TocStoreReason = "scroll"): TocStoreSnapshot {
 		this.activeIndex = this.tracker.update(
 			window.scrollY,
 			TOC_ACTIVE_OFFSET,
@@ -149,7 +154,7 @@ class PostTocStore {
 		return this.getSnapshot();
 	}
 
-	dispose() {
+	dispose(): void {
 		window.removeEventListener("scroll", this.handleScroll);
 		window.removeEventListener("resize", this.handleResize);
 		if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
@@ -161,7 +166,7 @@ class PostTocStore {
 		this.subscribers.clear();
 	}
 
-	private handleScroll = () => {
+	private handleScroll = (): void => {
 		if (this.scrollSettleTimer) {
 			window.clearTimeout(this.scrollSettleTimer);
 		}
@@ -176,7 +181,7 @@ class PostTocStore {
 		});
 	};
 
-	private handleResize = () => {
+	private handleResize = (): void => {
 		if (this.resizeRaf) return;
 		this.resizeRaf = requestAnimationFrame(() => {
 			this.resizeRaf = 0;
@@ -184,7 +189,7 @@ class PostTocStore {
 		});
 	};
 
-	private emit(reason: TocStoreReason) {
+	private emit(reason: TocStoreReason): void {
 		const snapshot = this.getSnapshot();
 		for (const subscriber of this.subscribers) {
 			subscriber(snapshot, reason);
@@ -194,6 +199,6 @@ class PostTocStore {
 
 const store = new PostTocStore();
 
-export function getPostTocStore() {
+export function getPostTocStore(): PostTocStore {
 	return store;
 }

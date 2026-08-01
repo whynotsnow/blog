@@ -111,7 +111,10 @@ const notificationsCollection = defineCollection({
    Export
 ========================= */
 
-export const collections = {
+export const collections: Record<
+	string,
+	ReturnType<typeof defineCollection>
+> = {
 	posts: postsCollection,
 	spec: specCollection,
 	notifications: notificationsCollection,

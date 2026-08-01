@@ -4,9 +4,9 @@ import { defaultFavicons } from "@/constants/icon";
 import type { Favicon } from "@/types/config";
 import { pathsEqual, url } from "@/utils/url";
 
-export const LAYOUT_BANNER_HEIGHT = 35;
-export const LAYOUT_BANNER_HEIGHT_EXTEND = 30;
-export const LAYOUT_BANNER_HEIGHT_HOME =
+export const LAYOUT_BANNER_HEIGHT: number = 35;
+export const LAYOUT_BANNER_HEIGHT_EXTEND: number = 30;
+export const LAYOUT_BANNER_HEIGHT_HOME: number =
 	LAYOUT_BANNER_HEIGHT + LAYOUT_BANNER_HEIGHT_EXTEND;
 
 export interface LayoutPageShellInput {
@@ -62,7 +62,7 @@ export function getDefaultBanner(): string {
 	return "";
 }
 
-function buildPageTitle(title?: string) {
+function buildPageTitle(title?: string): string {
 	if (title) {
 		return `${title} - ${siteConfig.title}`;
 	}
@@ -71,7 +71,10 @@ function buildPageTitle(title?: string) {
 		: siteConfig.title;
 }
 
-function buildOgImageUrl(postSlug: string | undefined, site: URL | undefined) {
+function buildOgImageUrl(
+	postSlug: string | undefined,
+	site: URL | undefined,
+): string | undefined {
 	if (!siteConfig.generateOgImages || !postSlug || !site) return undefined;
 	return new URL(`/og/${postSlug}.png`, site).toString();
 }
@@ -83,11 +86,11 @@ function buildCanonicalUrl(input: LayoutPageShellInput): string {
 		: canonicalPath;
 }
 
-function buildSiteLang(lang?: string) {
+function buildSiteLang(lang?: string): string {
 	return (lang || siteConfig.lang).replace("_", "-");
 }
 
-function getBannerOffset() {
+function getBannerOffset(): string {
 	const bannerOffsetByPosition = {
 		top: `${BANNER_HEIGHT_EXTEND}vh`,
 		center: `${BANNER_HEIGHT_EXTEND / 2}vh`,

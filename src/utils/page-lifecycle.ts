@@ -32,17 +32,20 @@ let boundSwup: Window["swup"] | undefined;
 let swupEnableListenerBound = false;
 let firstLoadDispatched = false;
 
-function emit(event: PageLifecycleEvent, payload: PageLifecyclePayload = {}) {
+function emit(
+	event: PageLifecycleEvent,
+	payload: PageLifecyclePayload = {},
+): void {
 	callbacks.get(event)?.forEach((callback) => callback(payload));
 }
 
-function runFirstLoad() {
+function runFirstLoad(): void {
 	if (firstLoadDispatched) return;
 	firstLoadDispatched = true;
 	emit("first-load");
 }
 
-function onReady(callback: () => void) {
+function onReady(callback: () => void): void {
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", callback, { once: true });
 	} else {
@@ -50,7 +53,7 @@ function onReady(callback: () => void) {
 	}
 }
 
-function bindSwup() {
+function bindSwup(): boolean {
 	const swup = window.swup;
 	if (!swup?.hooks) return false;
 	if (boundSwup === swup) return true;
@@ -75,7 +78,7 @@ function toSwupVisit(visit: unknown): SwupVisit | undefined {
 	return visit as SwupVisit;
 }
 
-function ensureLifecycle() {
+function ensureLifecycle(): void {
 	onReady(runFirstLoad);
 
 	bindSwup();
@@ -90,7 +93,7 @@ function ensureLifecycle() {
 export function onPageLifecycle(
 	event: PageLifecycleEvent,
 	callback: PageLifecycleCallback,
-) {
+): () => boolean {
 	if (!callbacks.has(event)) {
 		callbacks.set(event, new Set());
 	}
@@ -102,7 +105,7 @@ export function onPageLifecycle(
 		callback({});
 	}
 
-	return () => callbacks.get(event)?.delete(callback);
+	return () => callbacks.get(event)?.delete(callback) ?? false;
 }
 
 if (typeof window !== "undefined") {

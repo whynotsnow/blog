@@ -23,6 +23,16 @@ export interface TimelineItem {
 	featured?: boolean;
 }
 
+export interface TimelineStats {
+	total: number;
+	byType: Record<TimelineItem["type"], number>;
+}
+
+export interface TotalWorkExperience {
+	years: number;
+	months: number;
+}
+
 export const timelineData: TimelineItem[] = [
 	{
 		id: "current-study",
@@ -209,7 +219,7 @@ export const timelineData: TimelineItem[] = [
 ];
 
 // Get timeline statistics
-export const getTimelineStats = () => {
+export const getTimelineStats = (): TimelineStats => {
 	const total = timelineData.length;
 	const byType = {
 		education: timelineData.filter((item) => item.type === "education")
@@ -220,11 +230,11 @@ export const getTimelineStats = () => {
 			.length,
 	};
 
-	return { total, byType };
+	return { total: total, byType: byType };
 };
 
 // Get timeline items by type
-export const getTimelineByType = (type?: string) => {
+export const getTimelineByType = (type?: string): TimelineItem[] => {
 	if (!type || type === "all") {
 		return timelineData.sort(
 			(a, b) =>
@@ -242,7 +252,7 @@ export const getTimelineByType = (type?: string) => {
 };
 
 // Get featured timeline items
-export const getFeaturedTimeline = () => {
+export const getFeaturedTimeline = (): TimelineItem[] => {
 	return timelineData
 		.filter((item) => item.featured)
 		.sort(
@@ -253,12 +263,12 @@ export const getFeaturedTimeline = () => {
 };
 
 // Get current ongoing items
-export const getCurrentItems = () => {
+export const getCurrentItems = (): TimelineItem[] => {
 	return timelineData.filter((item) => !item.endDate);
 };
 
 // Calculate total work experience
-export const getTotalWorkExperience = () => {
+export const getTotalWorkExperience = (): TotalWorkExperience => {
 	const workItems = timelineData.filter((item) => item.type === "work");
 	let totalMonths = 0;
 

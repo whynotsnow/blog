@@ -27,6 +27,13 @@ export interface PostTocRefreshDetail {
 	root?: Element;
 }
 
+export interface TocOptions {
+	maxDepth: number;
+	useJapaneseBadge: boolean;
+}
+
+export type PostTocRefreshUnsubscribe = () => void;
+
 export function getPostContentRoot(
 	scope: ParentNode = document,
 ): Element | null {
@@ -50,7 +57,7 @@ export function readStaticTocItems(doc: Document = document): TocItem[] {
 	}
 }
 
-export function getTocOptions() {
+export function getTocOptions(): TocOptions {
 	return {
 		maxDepth: window.siteConfig?.toc?.depth || 3,
 		useJapaneseBadge: window.siteConfig?.toc?.useJapaneseBadge || false,
@@ -80,9 +87,9 @@ export function getHeadingElementsForItems(
 }
 
 export function resolveTocRuntimeState(runtimeRoot?: Element): TocRuntimeState {
-	const root = runtimeRoot || getPostContentRoot();
-	const staticItems = runtimeRoot ? [] : readStaticTocItems();
-	const items =
+	const root: Element | null = runtimeRoot || getPostContentRoot();
+	const staticItems: TocItem[] = runtimeRoot ? [] : readStaticTocItems();
+	const items: TocItem[] =
 		staticItems.length > 0
 			? staticItems
 			: root
@@ -112,7 +119,7 @@ export function scrollToHeading(
 		offset?: number;
 		close?: () => void | Promise<void>;
 	} = {},
-) {
+): boolean {
 	const heading = findHeadingById(id, options.root ?? getPostContentRoot());
 	if (!heading) return false;
 
@@ -129,8 +136,8 @@ export function scrollToHeading(
 
 export function ensureTocTargetsScrollable(
 	targets: Array<HTMLElement | undefined>,
-	offset = TOC_ACTIVE_OFFSET,
-) {
+	offset: number = TOC_ACTIVE_OFFSET,
+): void {
 	const visibleTargets = targets.filter((target): target is HTMLElement =>
 		Boolean(target),
 	);
@@ -156,7 +163,7 @@ export function ensureTocTargetsScrollable(
 	guard.style.height = `${Math.max(currentGuardHeight, requiredCompensation)}px`;
 }
 
-export function refreshRuntimeHeadings(root?: Element) {
+export function refreshRuntimeHeadings(root?: Element): void {
 	window.dispatchEvent(
 		new CustomEvent<PostTocRefreshDetail>(POST_TOC_REFRESH_EVENT, {
 			detail: { root },
@@ -164,12 +171,13 @@ export function refreshRuntimeHeadings(root?: Element) {
 	);
 }
 
-export const dispatchPostTocRefresh = refreshRuntimeHeadings;
+export const dispatchPostTocRefresh: typeof refreshRuntimeHeadings =
+	refreshRuntimeHeadings;
 
 export function onPostTocRefresh(
 	callback: (detail: PostTocRefreshDetail) => void,
-) {
-	const listener = (event: Event) => {
+): PostTocRefreshUnsubscribe {
+	const listener = (event: Event): void => {
 		callback((event as CustomEvent<PostTocRefreshDetail>).detail ?? {});
 	};
 	window.addEventListener(POST_TOC_REFRESH_EVENT, listener);

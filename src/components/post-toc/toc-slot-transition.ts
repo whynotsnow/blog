@@ -10,7 +10,7 @@ export class TocSlotTransitionController {
 	private slotCleanups = new WeakMap<HTMLElement, SlotCleanup>();
 	private activeCleanups = new Set<SlotCleanup>();
 
-	dispose() {
+	dispose(): void {
 		for (const cleanup of this.activeCleanups) {
 			window.clearTimeout(cleanup.timer);
 			cleanup.slot.removeEventListener("transitionend", cleanup.listener);
@@ -19,7 +19,7 @@ export class TocSlotTransitionController {
 		this.activeCleanups.clear();
 	}
 
-	expand(slot: HTMLElement, nextHTML: string, onSettled?: () => void) {
+	expand(slot: HTMLElement, nextHTML: string, onSettled?: () => void): void {
 		this.clearTimer(slot);
 		const previousHeight = slot.childElementCount ? slot.scrollHeight : 0;
 		slot.style.height = `${previousHeight}px`;
@@ -43,7 +43,7 @@ export class TocSlotTransitionController {
 		});
 	}
 
-	collapse(slot: HTMLElement, onSettled?: () => void) {
+	collapse(slot: HTMLElement, onSettled?: () => void): void {
 		this.clearTimer(slot);
 		if (!slot.childElementCount) {
 			slot.dataset.expanded = "false";
@@ -72,7 +72,7 @@ export class TocSlotTransitionController {
 		});
 	}
 
-	private clearTimer(slot: HTMLElement) {
+	private clearTimer(slot: HTMLElement): void {
 		const active = this.slotCleanups.get(slot);
 		if (!active) return;
 		window.clearTimeout(active.timer);
@@ -81,12 +81,12 @@ export class TocSlotTransitionController {
 		this.activeCleanups.delete(active);
 	}
 
-	private setCleanupTimer(slot: HTMLElement, cleanup: () => void) {
-		const finish = () => {
+	private setCleanupTimer(slot: HTMLElement, cleanup: () => void): void {
+		const finish = (): void => {
 			cleanup();
 			this.clearTimer(slot);
 		};
-		const listener = (event: TransitionEvent) => {
+		const listener = (event: TransitionEvent): void => {
 			if (event.target !== slot || event.propertyName !== "height")
 				return;
 			finish();

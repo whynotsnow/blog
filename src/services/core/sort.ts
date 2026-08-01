@@ -10,7 +10,7 @@ import type { PostIndexEntry, PostQuery, RawPost } from "./types";
  * 3. 基础推荐分 (recommendScore * 10)
  * 4. 时间衰减 (发布天数 * 0.1) 每天扣0.1分
  */
-export function calculateRecommendScore(post: RawPost) {
+export function calculateRecommendScore(post: RawPost): number {
 	let score = 0;
 
 	// 置顶权重最高，确保置顶文章排在前面
@@ -36,7 +36,7 @@ export function calculateRecommendScore(post: RawPost) {
 export function sortByScore(
 	posts: PostIndexEntry[],
 	order: "asc" | "desc" = "desc",
-) {
+): PostIndexEntry[] {
 	const sorted = [...posts].sort((a, b) => a.score - b.score);
 
 	return order === "asc" ? sorted : sorted.reverse();

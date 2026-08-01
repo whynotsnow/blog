@@ -26,7 +26,7 @@ function readCalendarConfig(): ArchiveCalendarConfig | null {
 	}
 }
 
-export function initArchiveCalendar() {
+export function initArchiveCalendar(): void {
 	const widget = document.getElementById("calendar-widget");
 	if (!widget || widget.dataset.calendarInitialized === "true") return;
 

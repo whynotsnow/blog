@@ -4,11 +4,15 @@ import type { RawPost } from "./types";
 
 export type RenderedPost = Awaited<ReturnType<typeof render>>;
 export type RenderPost = (entry: RawPost) => Promise<RenderedPost>;
+export type PostRenderRegistry = {
+	get(entry: RawPost): Promise<RenderedPost>;
+	clear(): void;
+};
 
 export function createPostRenderRegistry(
 	renderEntry: RenderPost,
 	runTask: TaskRunner,
-) {
+): PostRenderRegistry {
 	const inFlight = new Map<string, Promise<RenderedPost>>();
 
 	return {
@@ -39,10 +43,14 @@ export function createPostRenderRegistry(
 	};
 }
 
-const registry = createPostRenderRegistry(render, runPostBuildTask);
+const registry: PostRenderRegistry = createPostRenderRegistry(
+	render,
+	runPostBuildTask,
+);
 
-export const getRenderedPost = registry.get;
-export const _clearPostRenderCache = registry.clear;
+export const getRenderedPost: PostRenderRegistry["get"] = registry.get;
+export const _clearPostRenderCache: PostRenderRegistry["clear"] =
+	registry.clear;
 
 if (import.meta.hot) {
 	import.meta.hot.dispose(_clearPostRenderCache);

@@ -2,7 +2,7 @@ import type { APIContext } from "astro";
 import { profileConfig, siteConfig } from "@/config";
 import { getFeedPosts, renderAtomFeed } from "@/services/feed";
 
-export async function GET(context: APIContext) {
+export async function GET(context: APIContext): Promise<Response> {
 	if (!context.site) {
 		throw Error("site not set");
 	}

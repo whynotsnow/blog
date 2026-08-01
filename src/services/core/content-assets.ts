@@ -85,10 +85,20 @@ export async function resolvePosterImage(
 	return imagePath;
 }
 
-export async function resolveSharePosterImages(entry: RawPost) {
+export type SharePosterImages = {
+	posterCoverUrl: string | undefined;
+	posterAvatarUrl: string | undefined;
+};
+
+export async function resolveSharePosterImages(
+	entry: RawPost,
+): Promise<SharePosterImages> {
 	const baseDir = getFileDirFromPath(entry.filePath || "");
 	const posterCoverUrl = await resolvePosterImage(entry.data.image, baseDir);
 	const posterAvatarUrl = await resolvePosterImage(profileConfig.avatar);
 
-	return { posterCoverUrl, posterAvatarUrl };
+	return {
+		posterCoverUrl: posterCoverUrl,
+		posterAvatarUrl: posterAvatarUrl,
+	};
 }

@@ -37,7 +37,7 @@ export interface TimelinePageModel {
 	};
 }
 
-export function getTimelineTypeIcon(type: string) {
+export function getTimelineTypeIcon(type: string): string {
 	switch (type) {
 		case "education":
 			return "material-symbols:school";
@@ -52,7 +52,7 @@ export function getTimelineTypeIcon(type: string) {
 	}
 }
 
-function getTimelineTypeLabel(type: TimelineType) {
+function getTimelineTypeLabel(type: TimelineType): string {
 	switch (type) {
 		case "education":
 			return i18n(I18nKey.timelineEducation);
@@ -65,7 +65,7 @@ function getTimelineTypeLabel(type: TimelineType) {
 	}
 }
 
-function getTimelineTypeBadgeClass(type: TimelineType) {
+function getTimelineTypeBadgeClass(type: TimelineType): string {
 	switch (type) {
 		case "education":
 			return "bg-blue-600/20 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
@@ -78,12 +78,15 @@ function getTimelineTypeBadgeClass(type: TimelineType) {
 	}
 }
 
-export function formatTimelineDate(dateString: string) {
+export function formatTimelineDate(dateString: string): string {
 	const date = new Date(dateString);
 	return date.toLocaleDateString("zh-CN", { year: "numeric", month: "long" });
 }
 
-export function getTimelineDuration(startDate: string, endDate?: string) {
+export function getTimelineDuration(
+	startDate: string,
+	endDate?: string,
+): string {
 	const start = new Date(startDate);
 	const end = endDate ? new Date(endDate) : new Date();
 	const diffTime = Math.abs(end.getTime() - start.getTime());

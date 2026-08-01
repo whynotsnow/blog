@@ -1,11 +1,11 @@
-export function initTimelinePage() {
+export function initTimelinePage(): void {
 	const timelineNodes = document.querySelectorAll(".timeline-node");
 	timelineNodes.forEach((node, index) => {
 		(node as HTMLElement).style.animationDelay = `${index * 0.2}s`;
 	});
 }
 
-function scheduleTimelineInit() {
+function scheduleTimelineInit(): void {
 	setTimeout(initTimelinePage, 100);
 }
 

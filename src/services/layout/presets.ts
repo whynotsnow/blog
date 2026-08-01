@@ -1,6 +1,9 @@
 import type { PageLayoutPolicy, PageLayoutPolicyName } from "./types";
 
-export const pageLayoutPolicies = {
+export const pageLayoutPolicies: Record<
+	PageLayoutPolicyName,
+	PageLayoutPolicy
+> = {
 	default: {
 		shellStrategy: "viewport-legacy",
 		desktop: {
@@ -19,4 +22,4 @@ export const pageLayoutPolicies = {
 			layout: "content-right",
 		},
 	},
-} satisfies Record<PageLayoutPolicyName, PageLayoutPolicy>;
+};

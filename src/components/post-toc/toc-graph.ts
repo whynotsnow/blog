@@ -73,11 +73,14 @@ export function buildTocGraph(items: TocItem[]): TocGraph {
 	};
 }
 
-export function getTocNode(graph: TocGraph, index: number) {
+export function getTocNode(graph: TocGraph, index: number): TocNode | null {
 	return index >= 0 ? (graph.nodes[index] ?? null) : null;
 }
 
-export function getTocBranchIndexes(graph: TocGraph, rootIndex: number) {
+export function getTocBranchIndexes(
+	graph: TocGraph,
+	rootIndex: number,
+): number[] {
 	const root = getTocNode(graph, rootIndex);
 	if (!root) return [];
 
@@ -90,7 +93,10 @@ export function getTocBranchIndexes(graph: TocGraph, rootIndex: number) {
 	return branchIndexes;
 }
 
-export function getTocAncestorIndexes(graph: TocGraph, index: number) {
+export function getTocAncestorIndexes(
+	graph: TocGraph,
+	index: number,
+): number[] {
 	const ancestors: number[] = [];
 	let parentIndex = getTocNode(graph, index)?.parentIndex ?? null;
 	while (parentIndex !== null) {

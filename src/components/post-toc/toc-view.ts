@@ -9,7 +9,7 @@ export interface TocBranchView {
 export function resolveTocActiveRootIndex(
 	graph: TocGraph,
 	activeIndex: number,
-) {
+): number {
 	const activeNode = getTocNode(graph, activeIndex);
 	if (activeNode) return activeNode.rootIndex;
 	return graph.rootIndexes[0] ?? -1;

@@ -34,9 +34,11 @@ export const getStaticPaths: GetStaticPaths = async () => {
 	});
 };
 
-let fontCache: { regular: Buffer | null; bold: Buffer | null } | null = null;
+type FontCache = { regular: Buffer | null; bold: Buffer | null };
 
-async function fetchNotoSansSCFonts() {
+let fontCache: FontCache | null = null;
+
+async function fetchNotoSansSCFonts(): Promise<FontCache> {
 	if (fontCache) {
 		return fontCache;
 	}
@@ -48,7 +50,7 @@ async function fetchNotoSansSCFonts() {
 		if (!cssResp.ok) throw new Error("Failed to fetch Google Fonts CSS");
 		const cssText = await cssResp.text();
 
-		const getUrlForWeight = (weight: number) => {
+		const getUrlForWeight = (weight: number): string | null => {
 			const blockRe = new RegExp(
 				`@font-face\\s*{[^}]*font-weight:\\s*${weight}[^}]*}`,
 				"g",
@@ -94,7 +96,9 @@ async function fetchNotoSansSCFonts() {
 	}
 }
 
-export async function GET({ props }: APIContext<{ post: PostIndexEntry }>) {
+export async function GET({
+	props,
+}: APIContext<{ post: PostIndexEntry }>): Promise<Response> {
 	const { post } = props;
 
 	// Try to fetch fonts from Google Fonts (woff2) at runtime.

@@ -17,6 +17,17 @@ export interface Skill {
 	color?: string; // Skill card theme color
 }
 
+export interface SkillStats {
+	total: number;
+	byLevel: Record<Skill["level"], number>;
+	byCategory: Record<Skill["category"], number>;
+}
+
+export interface TotalExperience {
+	years: number;
+	months: number;
+}
+
 export const skillsData: Skill[] = [
 	// Frontend Skills
 	{
@@ -685,7 +696,7 @@ export const skillsData: Skill[] = [
 ];
 
 // Get skill statistics
-export const getSkillStats = () => {
+export const getSkillStats = (): SkillStats => {
 	const total = skillsData.length;
 	const byLevel = {
 		beginner: skillsData.filter((s) => s.level === "beginner").length,
@@ -702,11 +713,11 @@ export const getSkillStats = () => {
 		other: skillsData.filter((s) => s.category === "other").length,
 	};
 
-	return { total, byLevel, byCategory };
+	return { total: total, byLevel: byLevel, byCategory: byCategory };
 };
 
 // Get skills by category
-export const getSkillsByCategory = (category?: string) => {
+export const getSkillsByCategory = (category?: string): Skill[] => {
 	if (!category || category === "all") {
 		return skillsData;
 	}
@@ -714,14 +725,14 @@ export const getSkillsByCategory = (category?: string) => {
 };
 
 // Get advanced skills
-export const getAdvancedSkills = () => {
+export const getAdvancedSkills = (): Skill[] => {
 	return skillsData.filter(
 		(s) => s.level === "advanced" || s.level === "expert",
 	);
 };
 
 // Calculate total years of experience
-export const getTotalExperience = () => {
+export const getTotalExperience = (): TotalExperience => {
 	const totalMonths = skillsData.reduce((total, skill) => {
 		return total + skill.experience.years * 12 + skill.experience.months;
 	}, 0);

@@ -65,7 +65,9 @@ function parseDate(dateStr: string): PosterDate | null {
 	}
 }
 
-export async function createSharePoster(input: DrawSharePosterInput) {
+export async function createSharePoster(
+	input: DrawSharePosterInput,
+): Promise<string> {
 	const {
 		author,
 		avatar,

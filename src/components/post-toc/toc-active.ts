@@ -11,15 +11,15 @@ export type TocScrollDirection = "up" | "down" | "still" | "jump";
 const DEFAULT_ACTIVE_OFFSET = 100;
 const JUMP_SCROLL_DELTA = 240;
 
-function getWindowScrollY() {
+function getWindowScrollY(): number {
 	return typeof window === "undefined" ? 0 : window.scrollY;
 }
 
-function getDocumentTop(element: HTMLElement) {
+function getDocumentTop(element: HTMLElement): number {
 	return element.getBoundingClientRect().top + getWindowScrollY();
 }
 
-function findIndexAtProbe(nodes: TocNode[], probeY: number) {
+function findIndexAtProbe(nodes: TocNode[], probeY: number): number {
 	let low = 0;
 	let high = nodes.length - 1;
 	let activeIndex = -1;
@@ -61,7 +61,10 @@ export class TocActiveTracker {
 		this.offset = options.offset ?? DEFAULT_ACTIVE_OFFSET;
 	}
 
-	setState(items: TocItem[], headings: Array<HTMLElement | undefined>) {
+	setState(
+		items: TocItem[],
+		headings: Array<HTMLElement | undefined>,
+	): number {
 		const previousActiveId = this.getActiveNode()?.id ?? this.activeId;
 		this.graph = buildTocGraph(items);
 		this.nodes = this.graph.nodes;
@@ -85,7 +88,7 @@ export class TocActiveTracker {
 		return this.activeIndex;
 	}
 
-	measure() {
+	measure(): void {
 		for (let index = 0; index < this.nodes.length; index++) {
 			const node = this.nodes[index];
 			const heading = this.headings[index];
@@ -103,7 +106,10 @@ export class TocActiveTracker {
 		}
 	}
 
-	update(scrollY = getWindowScrollY(), offset = this.offset) {
+	update(
+		scrollY: number = getWindowScrollY(),
+		offset: number = this.offset,
+	): number {
 		this.offset = offset;
 		this.scrollDirection = resolveTocScrollDirection(
 			this.lastScrollY,
@@ -156,7 +162,7 @@ export class TocActiveTracker {
 		return this.activeIndex;
 	}
 
-	getActiveNode() {
+	getActiveNode(): TocNode | null {
 		return this.activeIndex >= 0
 			? (this.nodes[this.activeIndex] ?? null)
 			: null;
