@@ -42,7 +42,7 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
 			"navbar__inner overflow-visible! mx-auto flex items-center justify-between px-4",
 			{ "max-w-(--page-width)": !containerContent },
 		]}>
-		<a href={url('/')} class="navbar__brand btn-plain scale-animation rounded-lg h-10 md:h-13 md:in-[.enable-banner]:h-10 md:in-[.enable-banner]:group-[.scrolled]:h-13 px-5 font-bold active:scale-95 shrink-0 transition-all duration-300">
+		<a href={url('/')} class="navbar__brand btn-plain scale-animation rounded-(--navbar-control-radius) h-10 md:h-13 md:in-[.enable-banner]:h-10 md:in-[.enable-banner]:group-[.scrolled]:h-13 px-5 font-bold active:scale-95 shrink-0 transition-all duration-300">
 			<div class="navbar__brand-content flex flex-row items-center text-md">
 				{/* 使用navbarTitle配置或默认配置 */}
                 {siteConfig.navbarTitle ? (
@@ -73,7 +73,7 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
             </div>
             <ActivityCenter />
             {siteConfig.toc.enable && <MobileTOC client:only="svelte"></MobileTOC>}
-            <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
+            <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-(--navbar-control-radius) w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
                 <Icon name="material-symbols:unfold-more" class="text-[1.25rem]"></Icon>
             </button>
         </div>

@@ -277,7 +277,7 @@
 <div class="hidden lg:block relative w-11 h-11 shrink-0">
 	<div
 		id="search-bar"
-		class="flex transition-all items-center h-11 rounded-lg absolute right-0 top-0 shrink-0
+		class="flex transition-all items-center h-11 rounded-(--navbar-control-radius) absolute right-0 top-0 shrink-0
             {isDesktopSearchExpanded
 			? 'search-bar-bg'
 			: 'btn-plain active:scale-90'}
@@ -328,7 +328,7 @@
 	onclick={togglePanel}
 	aria-label="Search Panel"
 	id="search-switch"
-	class="btn-plain scale-animation lg:hidden! rounded-lg w-11 h-11 active:scale-90"
+	class="btn-plain scale-animation lg:hidden! rounded-(--navbar-control-radius) w-11 h-11 active:scale-90"
 >
 	<LocalIcon name="material-symbols:search" class="text-[1.25rem]" />
 </button>

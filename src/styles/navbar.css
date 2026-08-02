@@ -17,6 +17,9 @@
   --navbar-control-hover-color: var(--accent);
   --navbar-control-hover-bg: var(--btn-plain-bg-hover);
   --navbar-control-active-bg: var(--btn-plain-bg-active);
+  --navbar-control-radius: var(--radius-sm);
+  --navbar-menu-item-radius: var(--radius-sm);
+  --navbar-panel-radius: var(--radius-lg);
   --navbar-dropdown-offset: -0.5rem;
   --navbar-dropdown-scale: 0.98;
 }

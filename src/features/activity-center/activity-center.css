@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--navbar-control-radius, var(--radius-sm));
 }
 
 .activity-center__switch > .local-icon {

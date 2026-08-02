@@ -45,7 +45,7 @@ const hasChildren = children.length > 0;
 		hasChildren ? (
 			<>
 				<button
-					class="navbar__link btn-plain scale-animation rounded-lg h-11 font-bold w-11 lg:w-auto lg:px-5 active:scale-95 dropdown-trigger flex items-center justify-center lg:justify-start whitespace-nowrap"
+					class="navbar__link btn-plain scale-animation rounded-(--navbar-control-radius) h-11 font-bold w-11 lg:w-auto lg:px-5 active:scale-95 dropdown-trigger flex items-center justify-center lg:justify-start whitespace-nowrap"
 					aria-expanded="false"
 					aria-haspopup="true"
 					data-dropdown-trigger
@@ -61,7 +61,7 @@ const hasChildren = children.length > 0;
 				</button>
 
 				<div class="dropdown-menu" data-dropdown-menu>
-					<div class="dropdown-content bg-(--surface-overlay) rounded-(--radius-lg) shadow-xl dark:shadow-none border border-black/5 dark:border-white/10 p-2 min-w-48">
+					<div class="dropdown-content bg-(--surface-overlay) rounded-(--navbar-panel-radius) shadow-xl dark:shadow-none border border-black/5 dark:border-white/10 p-2 min-w-48">
 						{children.map((child) => (
 							<a
 								href={
@@ -73,7 +73,7 @@ const hasChildren = children.length > 0;
 										? "noopener noreferrer"
 										: null
 								}
-								class="dropdown-item flex items-center justify-between px-4 py-2.5 transition-colors duration-150 font-medium rounded-lg"
+								class="dropdown-item flex items-center justify-between px-4 py-2.5 transition-colors duration-150 font-medium rounded-(--navbar-menu-item-radius)"
 								aria-label={child.name}
 							>
 								<div class="flex items-center">
@@ -102,7 +102,7 @@ const hasChildren = children.length > 0;
 				href={link.external ? link.url : url(link.url)}
 				target={link.external ? "_blank" : null}
 				rel={link.external ? "noopener noreferrer" : null}
-				class="navbar__link btn-plain scale-animation rounded-lg h-11 font-bold w-11 lg:w-auto lg:px-5 active:scale-95 flex items-center justify-center lg:justify-start whitespace-nowrap"
+				class="navbar__link btn-plain scale-animation rounded-(--navbar-control-radius) h-11 font-bold w-11 lg:w-auto lg:px-5 active:scale-95 flex items-center justify-center lg:justify-start whitespace-nowrap"
 			>
 				{link.icon && (
 					<Icon name={link.icon} class="text-[1.1rem] lg:mr-2 shrink-0" />

@@ -163,7 +163,7 @@
 	on:click={togglePanel}
 	aria-label="Table of Contents"
 	id="mobile-toc-switch"
-	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 lg:hidden! theme-switch-btn"
+	class="btn-plain scale-animation rounded-(--navbar-control-radius) h-11 w-11 active:scale-90 lg:hidden! theme-switch-btn"
 >
 	<LocalIcon
 		name="material-symbols:format-list-bulleted"
