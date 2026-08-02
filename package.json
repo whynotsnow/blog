@@ -56,6 +56,7 @@
 		"lint": "eslint src scripts tests \"*.config.{js,mjs,cjs,ts}\"",
 		"lint:fix": "eslint src scripts tests \"*.config.{js,mjs,cjs,ts}\" --fix",
 		"design:check": "node scripts/check-design-system.mjs",
+		"typography:inventory": "node scripts/typography-inventory.mjs",
 		"prepare": "node scripts/install-git-hooks.mjs",
 		"precommit": "node scripts/check-env.mjs && node scripts/pre-commit-check.mjs",
 		"preinstall": "node scripts/check-env.mjs",
