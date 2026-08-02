@@ -19,6 +19,7 @@
 | 文档 | 说明 |
 | --- | --- |
 | [内容编写指南](./content-guide.md) | 文章 frontmatter、分类标签、草稿、资源和 schema 变更。 |
+| [分类管理](./category-management.md) | 分类新增、展示资产、Tag 治理、路由验证和数据库迁移边界。 |
 | [配置说明](./configuration.md) | 站点配置、环境变量、特色页面和 URL 工具。 |
 
 ## 内容分离与部署

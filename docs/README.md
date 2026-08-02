@@ -18,6 +18,7 @@
 | [开发工作流](./developers/development.md) | 环境、命令、构建、检查和常用任务。 |
 | [测试策略](./developers/testing.md) | 按改动影响面选择测试、测试分层和全量回归升级条件。 |
 | [内容编写指南](./developers/content-guide.md) | 文章 schema、frontmatter、分类标签、草稿和资源规则。 |
+| [分类管理](./developers/category-management.md) | 分类新增、展示资产、Tag 治理、路由验证和数据库迁移边界。 |
 | [配置说明](./developers/configuration.md) | 站点配置、环境变量、特色页面和 URL 工具。 |
 | [维护指南](./developers/maintenance.md) | 定期检查、依赖更新、生成文件和高风险区域。 |
 | [Live2D Companion 维护指南](./developers/live2d-companion-maintenance.md) | 看板娘组件架构、配置、iframe、拖拽、模型和验证规则。 |
