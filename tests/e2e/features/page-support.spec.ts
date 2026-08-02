@@ -52,6 +52,9 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	await expect(
 		page.locator(".category-support__heading", { hasText: "其他分类" }),
 	).toHaveCount(0);
+	await expect(
+		page.locator(".category-support__heading", { hasText: "分类导航" }),
+	).toHaveCount(0);
 
 	await gotoPage(page, "/category/tech/");
 	await expect(page.locator(".category-support")).toBeVisible();
@@ -62,8 +65,21 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 		page.locator(".category-support__heading", { hasText: "热门标签" }),
 	).toBeVisible();
 	await expect(
-		page.locator(".category-support__heading", { hasText: "其他分类" }),
+		page.locator(".category-support__heading", { hasText: "分类导航" }),
 	).toBeVisible();
+	await expect(
+		page.locator(".category-support__featured-link", {
+			hasText: "全部分类",
+		}),
+	).toHaveAttribute("href", "/category/");
+	await expect(
+		page.locator(".category-support__featured-link", {
+			hasText: "推荐分类",
+		}),
+	).toHaveAttribute("href", "/category/recommended/");
+	await expect(
+		page.locator(".category-support__heading", { hasText: "其他分类" }),
+	).toHaveCount(0);
 	await expect(
 		page.locator(".category-support__heading", { hasText: "当前分类" }),
 	).toHaveCount(0);

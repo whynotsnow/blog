@@ -142,9 +142,12 @@ async function buildCategoryHubPageViewModel(
 			recentPosts: sortByRecentActivity(store.posts)
 				.slice(0, CATEGORY_HUB_SUPPORT_RECENT_POST_LIMIT)
 				.map(toSupportPostLink),
-			categories: store.categories
-				.slice(0, CATEGORY_HUB_SUPPORT_CATEGORY_LIMIT)
-				.map(toSupportCategoryLink),
+			categoryNavigation: {
+				featuredLinks: [],
+				categories: store.categories
+					.slice(0, CATEGORY_HUB_SUPPORT_CATEGORY_LIMIT)
+					.map(toSupportCategoryLink),
+			},
 			tags: supportTags,
 		},
 	};

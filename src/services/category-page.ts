@@ -1,6 +1,6 @@
 import type { GetStaticPathsItem, ImageMetadata } from "astro";
 import { CATEGORY_PAGE_SIZE } from "@constants/constants";
-import { url } from "@utils/url";
+import { getCategoryHubUrl, getCategoryRecommendedUrl, url } from "@utils/url";
 import { toPostCardViewModel } from "./core/inject";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
@@ -32,8 +32,20 @@ export type CategorySupportModule = "recentPosts" | "tags" | "categories";
 export type CategorySupportViewModel = {
 	modules: CategorySupportModule[];
 	recentPosts: SupportPostLink[];
-	categories: SupportTaxonomyLink[];
+	categoryNavigation: CategorySupportNavigationViewModel;
 	tags: SupportTaxonomyLink[];
+};
+
+export type CategorySupportNavigationLink = {
+	id: string;
+	label: string;
+	description: string;
+	url: string;
+};
+
+export type CategorySupportNavigationViewModel = {
+	featuredLinks: CategorySupportNavigationLink[];
+	categories: SupportTaxonomyLink[];
 };
 
 const CATEGORY_SUPPORT_MODULES = [
@@ -44,6 +56,20 @@ const CATEGORY_SUPPORT_MODULES = [
 const CATEGORY_SUPPORT_RECENT_POST_LIMIT = 5;
 const CATEGORY_SUPPORT_CATEGORY_LIMIT = 8;
 const CATEGORY_SUPPORT_TAG_LIMIT = 8;
+const CATEGORY_SUPPORT_FEATURED_LINKS: CategorySupportNavigationLink[] = [
+	{
+		id: "all-categories",
+		label: "全部分类",
+		description: "总览",
+		url: getCategoryHubUrl(),
+	},
+	{
+		id: "recommended-categories",
+		label: "推荐分类",
+		description: "精选",
+		url: getCategoryRecommendedUrl(),
+	},
+];
 
 export type CategoryPaginationViewModel = {
 	start: number;
@@ -191,10 +217,15 @@ function buildCategoryPageProps(params: {
 			recentPosts: sortByRecentActivity(sortedPosts)
 				.slice(0, CATEGORY_SUPPORT_RECENT_POST_LIMIT)
 				.map(toSupportPostLink),
-			categories: categories
-				.filter((category) => category.slug !== slug)
-				.slice(0, CATEGORY_SUPPORT_CATEGORY_LIMIT)
-				.map(toSupportCategoryLink),
+			categoryNavigation: {
+				featuredLinks: CATEGORY_SUPPORT_FEATURED_LINKS.map((link) => ({
+					...link,
+				})),
+				categories: categories
+					.filter((category) => category.slug !== slug)
+					.slice(0, CATEGORY_SUPPORT_CATEGORY_LIMIT)
+					.map(toSupportCategoryLink),
+			},
 			tags: (activeCategory?.tags ?? [])
 				.slice()
 				.sort((a, b) => b.count - a.count)

@@ -27,7 +27,7 @@
 | `/category/{slug}/page/{page}/` | 具体分类的第 2 页及后续分页；不会生成 `/page/1/`。 |
 | `/api/categories/{slug}.json/` | 每个具体分类一份紧凑 Tag 索引，浏览器仅在需要 Tag 模式时加载或低优先级预取。 |
 
-分类 Hub 和具体分类页都通过 `MainGridLayout` 的 `support` slot 使用右栏。右栏展示模块由 service 输出的 `support.modules` 控制：Hub 页启用全站最近更新和热门标签，不重复展示分类入口；具体分类页启用当前分类最近更新、当前分类热门标签和其他分类入口。
+分类 Hub 和具体分类页都通过 `MainGridLayout` 的 `support` slot 使用右栏。右栏展示模块由 service 输出的 `support.modules` 控制：Hub 页启用全站最近更新和热门标签，不重复展示分类导航；具体分类页启用当前分类最近更新、当前分类热门标签和分类导航。分类导航顶部展示 `/category/` 与 `/category/recommended/` 两个 Hub 入口，下方继续展示当前分类之外的相邻分类。
 
 ## 新增分类
 

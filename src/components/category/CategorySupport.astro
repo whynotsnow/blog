@@ -7,6 +7,7 @@ type Props = Pick<CategoryPageProps, "support">;
 
 const { support } = Astro.props as Props;
 const enabledModules = new Set(support.modules);
+const categoryNavigation = support.categoryNavigation;
 ---
 
 <aside class="category-support ds-stack" aria-label="分类上下文">
@@ -49,14 +50,29 @@ const enabledModules = new Set(support.modules);
 	}
 
 	{
-		enabledModules.has("categories") && support.categories.length > 0 && (
+		enabledModules.has("categories") &&
+			(categoryNavigation.featuredLinks.length > 0 ||
+				categoryNavigation.categories.length > 0) && (
 			<section class="category-support__panel ds-surface-card">
 				<h2 class="category-support__heading">
 					<Icon name="material-symbols:category-outline-rounded" />
-					其他分类
+					分类导航
 				</h2>
+				{categoryNavigation.featuredLinks.length > 0 && (
+					<div class="category-support__featured-links">
+						{categoryNavigation.featuredLinks.map((link) => (
+							<a
+								href={link.url}
+								class="category-support__featured-link"
+							>
+								<span>{link.label}</span>
+								<small>{link.description}</small>
+							</a>
+						))}
+					</div>
+				)}
 				<div class="category-support__links">
-					{support.categories.map((category) => (
+					{categoryNavigation.categories.map((category) => (
 						<a href={category.url} class="category-support__link">
 							<span>{category.name}</span>
 							<small>{category.count}</small>
@@ -108,12 +124,19 @@ const enabledModules = new Set(support.modules);
 	}
 
 	.category-support__post-list,
+	.category-support__featured-links,
 	.category-support__links {
 		display: grid;
 		gap: var(--size-2);
 	}
 
+	.category-support__featured-links {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		margin-bottom: var(--size-2);
+	}
+
 	.category-support__post,
+	.category-support__featured-link,
 	.category-support__link,
 	.category-support__tag {
 		display: inline-flex;
@@ -132,12 +155,14 @@ const enabledModules = new Set(support.modules);
 			border-color var(--motion-fast) var(--motion-ease-standard);
 	}
 
-	.category-support__tag:hover {
+	.category-support__tag:hover,
+	.category-support__featured-link:hover {
 		border-color: var(--border-strong);
 		color: var(--accent);
 	}
 
 	.category-support__post,
+	.category-support__featured-link,
 	.category-support__link {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto;
@@ -147,6 +172,7 @@ const enabledModules = new Set(support.modules);
 	}
 
 	.category-support__post strong,
+	.category-support__featured-link span,
 	.category-support__link span,
 	.category-support__tag span {
 		overflow: hidden;
@@ -158,11 +184,13 @@ const enabledModules = new Set(support.modules);
 	}
 
 	.category-support__post:hover strong,
+	.category-support__featured-link:hover span,
 	.category-support__link:hover span {
 		color: var(--accent);
 	}
 
 	.category-support__post span,
+	.category-support__featured-link small,
 	.category-support__link small,
 	.category-support__tag small {
 		color: var(--text-muted);
