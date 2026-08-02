@@ -92,6 +92,7 @@ Keep tool roles separate. Detailed routing lives in `docs/agents/workflow.md`; t
 - Agents must not use controlled Chrome for debugging, inspection, or validation. Chrome checks are developer-operated only, even when Chrome control is technically available.
 - Playwright is the default agent-operated browser validation tool. Prefer existing tests, then add a narrowly scoped check only when it provides useful coverage.
 - Computer Use is only for system-level execution such as starting dev servers, running commands, or file operations. Do not use it for UI validation.
+- When an agent starts a long-running service for Playwright, browser checks, or any validation task, it must stop that service before ending the task unless the user explicitly asks to keep it running or the still-active task requires it. If a service is intentionally left running, report the reason, URL or process context, and a concrete shutdown command that is valid for the current environment in the handoff.
 
 Use source inspection and static checks before browser validation. Low-risk presentation changes may skip browser validation when the handoff states why and lists the checks performed. For browser-dependent behavior, do not treat code review alone as completed UI validation.
 

@@ -103,6 +103,7 @@ Keep exploration, verification, knowledge retrieval, and environment execution s
 - Reuse existing Playwright coverage before adding a new check.
 - Use narrowly scoped assertions for route rendering, element visibility, responsive behavior, deterministic interaction, DOM state, accessibility, console errors, failed requests, and predefined screenshot questions.
 - Do not add broad regression coverage for a one-off low-risk change unless the test provides lasting value.
+- If Playwright or a manual validation script requires starting a local dev server or other long-running service, stop that service before ending the task unless the user explicitly asks to keep it running or the active task still needs it. If it remains running by design, record why, include the service URL or process context, and provide a concrete shutdown command that is valid for the current environment in the handoff.
 
 ---
 
@@ -163,6 +164,8 @@ If a task involves:
 
 Then:
 → Use terminal/shell or Computer Use for environment execution only. Do not use either as a substitute for browser-based UI validation.
+
+Long-running service cleanup is mandatory: an agent that starts a dev server, watcher, preview server, database emulator, queue worker, or similar background process for validation must stop it before the final handoff unless the user asked to keep it running or continuing work depends on it. When intentionally leaving a service running, state the reason, the URL or process context, and a concrete shutdown command that is valid for the current environment.
 
 ---
 
