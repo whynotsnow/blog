@@ -24,18 +24,18 @@
 		<div>
 			<h1
 				id="category-filter-title"
-				class="text-xl font-bold text-(--text-primary)"
+				class="category-filter__title font-bold text-(--text-primary)"
 			>
 				{activeCategory?.name ?? "文章分类"}
 			</h1>
-			<p class="mt-1 text-sm text-(--text-secondary)">
+			<p class="category-filter__summary mt-1 text-(--text-secondary)">
 				{#if activeTag}# {activeTag.name} ·
 				{/if}{resultCount} 篇文章
 			</p>
 		</div>
 		<details class="category-filter__mobile">
 			<summary
-				class="cursor-pointer rounded-(--radius-md) border border-(--border-default) px-3 py-2 text-sm font-semibold text-(--text-primary)"
+				class="category-filter__summary-action cursor-pointer rounded-(--radius-md) border border-(--border-default) px-3 py-2 font-semibold text-(--text-primary)"
 			>
 				筛选
 			</summary>
@@ -50,7 +50,7 @@
 					aria-current={category.slug === categorySlug
 						? "page"
 						: undefined}
-					class={`rounded-(--radius-md) border px-3 py-2 text-sm font-semibold transition ${
+					class={`category-filter__category rounded-(--radius-md) border px-3 py-2 font-semibold transition ${
 						category.slug === categorySlug
 							? "border-(--accent) bg-(--accent) text-(--text-on-accent)"
 							: "border-(--border-subtle) text-(--text-secondary) hover:border-(--border-strong) hover:text-(--accent)"
@@ -68,7 +68,7 @@
 					<a
 						href={url(`/category/${activeCategory.slug}/`)}
 						aria-current={!currentTag ? "page" : undefined}
-						class={`rounded-(--radius-md) px-2.5 py-1.5 text-xs font-semibold transition ${
+						class={`category-filter__tag rounded-(--radius-md) px-2.5 py-1.5 font-semibold transition ${
 							!currentTag
 								? "bg-(--accent) text-(--text-on-accent)"
 								: "text-(--text-secondary) hover:text-(--accent)"
@@ -84,7 +84,7 @@
 							aria-current={currentTag === tag.slug
 								? "page"
 								: undefined}
-							class={`rounded-(--radius-md) px-2.5 py-1.5 text-xs font-semibold transition ${
+							class={`category-filter__tag rounded-(--radius-md) px-2.5 py-1.5 font-semibold transition ${
 								currentTag === tag.slug
 									? "bg-(--accent) text-(--text-on-accent)"
 									: "text-(--text-secondary) hover:text-(--accent)"
@@ -103,6 +103,20 @@
 <style>
 	.category-filter {
 		padding: clamp(1rem, 2cqi, 1.25rem);
+	}
+
+	.category-filter__title {
+		font-size: 1.25rem;
+	}
+
+	.category-filter__summary,
+	.category-filter__summary-action,
+	.category-filter__category {
+		font-size: 0.875rem;
+	}
+
+	.category-filter__tag {
+		font-size: 0.75rem;
 	}
 
 	.category-filter__mobile {

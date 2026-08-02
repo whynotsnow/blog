@@ -434,11 +434,13 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 
 	table-of-contents#toc :global(.toc-entry-badge) {
 		margin-left: calc(var(--toc-level, 0) * 1rem);
+		font-size: 0.75rem;
 	}
 
 	table-of-contents#toc :global(.toc-entry-label) {
 		min-width: 0;
 		overflow: hidden;
+		font-size: 0.875rem;
 		line-height: 1.35;
 		text-overflow: ellipsis;
 		white-space: nowrap;

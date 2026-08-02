@@ -10,10 +10,10 @@ const { lastModified } = Astro.props;
 <div id="last-modified" data-last-modified={lastModified} data-prefix={i18n(I18nKey.lastModifiedPrefix)} data-year={i18n(I18nKey.year)} data-month={i18n(I18nKey.month)} data-day={i18n(I18nKey.day)} data-hour={i18n(I18nKey.hour)} data-minute={i18n(I18nKey.minute)} data-second={i18n(I18nKey.second)} hidden />
 <aside class="post-detail__wide-block post-detail__aux-card post-detail__notice">
 	<div class="flex items-center gap-3">
-		<div class="flex items-center justify-center h-12 w-12 rounded-lg bg-(--enter-btn-bg)"><Icon name="material-symbols:history-rounded" class="text-3xl text-(--primary)" /></div>
+		<div class="flex items-center justify-center h-12 w-12 rounded-lg bg-(--enter-btn-bg)"><Icon name="material-symbols:history-rounded" class="post-detail__modified-icon text-(--primary)" /></div>
 		<div class="flex flex-col gap-1">
-			<div id="modifiedtime" class="text-[1rem] leading-tight text-75" />
-			<p class="text-[0.8rem] leading-tight text-75">{i18n(I18nKey.lastModifiedOutdated)}</p>
+			<div id="modifiedtime" class="post-detail__modified-time leading-tight text-75" />
+			<p class="post-detail__modified-note leading-tight text-75">{i18n(I18nKey.lastModifiedOutdated)}</p>
 		</div>
 	</div>
 </aside>

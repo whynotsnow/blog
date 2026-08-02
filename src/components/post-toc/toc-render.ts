@@ -22,10 +22,10 @@ export function renderDesktopTocItem(item: TocItem, index = -1): string {
 	const textClass = item.level <= 1 ? "text-50" : "text-30";
 
 	return `<a href="#${escapeHtml(item.id)}" data-depth="${item.depth}" data-toc-level="${item.level}" data-toc-index="${index}" style="--toc-level: ${item.level};" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2">
-		<div class="toc-entry-badge transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${rootBadgeClass}">
+		<div class="toc-entry-badge transition w-5 h-5 shrink-0 rounded-lg flex items-center justify-center font-bold ${rootBadgeClass}">
 			${badgeContent}
 		</div>
-		<div class="toc-entry-label transition text-sm ${textClass}">${escapeHtml(item.text)}</div>
+		<div class="toc-entry-label transition ${textClass}">${escapeHtml(item.text)}</div>
 	</a>`;
 }
 

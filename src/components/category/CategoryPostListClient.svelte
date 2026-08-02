@@ -43,7 +43,7 @@
 	{#if $paginationState.isTagMode}
 		{#if $loadState === "loading"}
 			<div
-				class="ds-surface-card p-6 text-center text-sm text-(--text-secondary)"
+				class="category-page__state ds-surface-card p-6 text-center text-(--text-secondary)"
 				aria-live="polite"
 				data-category-index-state="loading"
 			>
@@ -51,7 +51,7 @@
 			</div>
 		{:else if $loadState === "error"}
 			<div
-				class="ds-surface-card p-6 text-center text-sm text-(--text-secondary)"
+				class="category-page__state ds-surface-card p-6 text-center text-(--text-secondary)"
 				aria-live="assertive"
 				data-category-index-state="error"
 			>
@@ -76,3 +76,9 @@
 		<slot />
 	{/if}
 </div>
+
+<style>
+	.category-page__state {
+		font-size: 0.875rem;
+	}
+</style>

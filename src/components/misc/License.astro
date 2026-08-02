@@ -26,7 +26,7 @@ const postUrl = sourceLink || decodeURIComponent(Astro.url.toString());
 ---
 <div
 	class:list={[
-		"relative transition overflow-hidden",
+		"license-block relative transition overflow-hidden",
 		!bare && "bg-(--license-block-bg) py-5 px-6",
 		className,
 	]}
@@ -39,17 +39,23 @@ const postUrl = sourceLink || decodeURIComponent(Astro.url.toString());
     </a>
     <div class="flex gap-6 mt-2">
         <div>
-            <div class="transition text-30 text-sm">{i18n(I18nKey.author)}</div>
+            <div class="license-block__label transition text-30">{i18n(I18nKey.author)}</div>
             <div class="transition text-75 line-clamp-2">{author || profileConf.name}</div>
         </div>
         <div>
-            <div class="transition text-30 text-sm">{i18n(I18nKey.publishedAt)}</div>
+            <div class="license-block__label transition text-30">{i18n(I18nKey.publishedAt)}</div>
             <div class="transition text-75 line-clamp-2">{formatDateToYYYYMMDD(pubDate)}</div>
         </div>
         <div>
-            <div class="transition text-30 text-sm">{i18n(I18nKey.license)}</div>
+            <div class="license-block__label transition text-30">{i18n(I18nKey.license)}</div>
             <a href={licenseName ? (licenseUrl || undefined) : licenseConf.url} target="_blank" class="link text-(--primary) line-clamp-2">{licenseName || licenseConf.name}</a>
         </div>
     </div>
     <Icon name="fa7-brands:creative-commons" class="transition text-[15rem] absolute pointer-events-none right-6 top-1/2 -translate-y-1/2 text-black/5 dark:text-white/5"></Icon>
 </div>
+
+<style>
+	.license-block__label {
+		font-size: 0.875rem;
+	}
+</style>

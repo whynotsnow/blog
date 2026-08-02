@@ -178,7 +178,7 @@
 		top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
 >
 	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-lg font-bold text-(--primary)">
+		<h3 class="mobile-toc-panel__title font-bold text-(--primary)">
 			{isHomePage
 				? i18n(I18nKey.postList)
 				: i18n(I18nKey.tableOfContents)}
@@ -197,7 +197,7 @@
 			<div class="text-center py-8 text-black/50 dark:text-white/50">
 				<LocalIcon
 					name="material-symbols:article-outline"
-					class="text-2xl mb-2"
+					class="mobile-toc-panel__empty-icon"
 				/>
 				<p>暂无文章</p>
 			</div>
@@ -282,6 +282,15 @@
 		background: var(--card-bg);
 		border: 1px solid var(--line-color);
 		backdrop-filter: blur(10px);
+	}
+
+	.mobile-toc-panel__title {
+		font-size: 1.125rem;
+	}
+
+	.mobile-toc-panel__empty-icon {
+		margin-bottom: 0.5rem;
+		font-size: 1.5rem;
 	}
 
 	/* 确保主题切换按钮的背景色即时更新 */
