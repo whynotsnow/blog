@@ -59,9 +59,8 @@ const processedLinks: ProcessedNavBarLink[] = Astro.props.links.map(
         <div class="mobile-menu-item">
             {link.children && link.children.length > 0 ? (
                 <div class="mobile-dropdown" data-mobile-dropdown>
-                    <button 
-                        class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-4 w-full text-left
-                            hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active) transition"
+                    <button
+                        class="mobile-nav-control group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-4 w-full text-left"
                         data-mobile-dropdown-trigger
                         aria-expanded="false"
                     >
@@ -75,9 +74,8 @@ const processedLinks: ProcessedNavBarLink[] = Astro.props.links.map(
                     </button>
                     <div class="mobile-submenu" data-mobile-submenu>
                         {link.children.map((child) => (
-                            <a href={child.external ? child.url : url(child.url)} 
-                               class="group flex justify-between items-center py-2 pl-6 pr-1 rounded-lg gap-4
-                                   hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active) transition"
+                            <a href={child.external ? child.url : url(child.url)}
+                               class="mobile-nav-control mobile-nav-control--sub group flex justify-between items-center py-2 pl-6 pr-1 rounded-lg gap-4"
                                target={child.external ? "_blank" : null}
                             >
                                 <div class="flex items-center transition nav-subitem-text font-medium">
@@ -92,9 +90,7 @@ const processedLinks: ProcessedNavBarLink[] = Astro.props.links.map(
                     </div>
                 </div>
             ) : (
-                <a href={link.external ? link.url : url(link.url)} class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-4
-                    hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active) transition
-                "
+                <a href={link.external ? link.url : url(link.url)} class="mobile-nav-control group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-4"
                    target={link.external ? "_blank" : null}
                 >
                     <div class="flex items-center transition nav-item-text font-bold">
@@ -119,6 +115,26 @@ const processedLinks: ProcessedNavBarLink[] = Astro.props.links.map(
     .mobile-submenu {
         @apply max-h-0 overflow-hidden transition-all duration-300 ease-in-out;
     }
+
+    .mobile-nav-control {
+        color: var(--text-secondary);
+        transition:
+            color var(--motion-fast) var(--motion-ease-standard),
+            background-color var(--motion-fast) var(--motion-ease-standard);
+    }
+
+    .mobile-nav-control:is(:hover, :focus-visible) {
+        color: var(--navbar-control-hover-color, var(--accent));
+        background: var(--navbar-control-hover-bg, var(--btn-plain-bg-hover));
+    }
+
+    .mobile-nav-control:active {
+        background: var(--navbar-control-active-bg, var(--btn-plain-bg-active));
+    }
+
+    .mobile-nav-control--sub {
+        color: var(--text-muted);
+    }
     
     .mobile-dropdown[data-expanded="true"] .mobile-submenu {
         @apply max-h-96;
@@ -129,15 +145,15 @@ const processedLinks: ProcessedNavBarLink[] = Astro.props.links.map(
     }
 
     .nav-item-text {
-        @apply text-black/75 dark:text-white/75;
+        color: currentColor;
     }
 
     .nav-subitem-text {
-        @apply text-black/60 dark:text-white/60;
+        color: currentColor;
     }
 
     .nav-arrow {
-        @apply text-black/25 dark:text-white/25;
+        color: var(--text-disabled);
     }
 </style>
 

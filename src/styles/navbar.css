@@ -13,6 +13,12 @@
   --navbar-brand-padding-inline: 1.25rem;
   --navbar-link-padding-inline: 1.25rem;
   --navbar-item-gap: 0.25rem;
+  --navbar-control-color: var(--text-secondary);
+  --navbar-control-hover-color: var(--accent);
+  --navbar-control-hover-bg: var(--btn-plain-bg-hover);
+  --navbar-control-active-bg: var(--btn-plain-bg-active);
+  --navbar-dropdown-offset: -0.5rem;
+  --navbar-dropdown-scale: 0.98;
 }
 
 #navbar > div {
@@ -40,6 +46,19 @@
 
 #navbar .navbar__brand {
   padding-inline: var(--navbar-brand-padding-inline);
+}
+
+#navbar :is(.navbar__brand, .navbar__link) {
+  color: var(--navbar-control-color);
+  transition:
+    color var(--motion-fast) var(--motion-ease-standard),
+    background-color var(--motion-fast) var(--motion-ease-standard),
+    transform var(--motion-fast) var(--motion-ease-standard);
+}
+
+#navbar :is(.navbar__brand, .navbar__link):is(:hover, :focus-visible),
+#navbar .dropdown-container:is(:hover, :focus-within) > .navbar__link {
+  color: var(--navbar-control-hover-color);
 }
 
 #navbar :is(.navbar__brand-content, .navbar__link, .dropdown-content) {
