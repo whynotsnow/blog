@@ -55,6 +55,19 @@ function createSignature(fontPackage, sourceBuffer, charset) {
 	);
 }
 
+function cleanStaleFontOutputs(buildDir) {
+	const expectedOutputs = new Set(
+		FONT_PACKAGES.map((fontPackage) => fontPackage.output),
+	);
+
+	for (const file of fs.readdirSync(buildDir)) {
+		if (path.extname(file).toLowerCase() !== ".woff2") continue;
+		if (expectedOutputs.has(file)) continue;
+		fs.rmSync(path.join(buildDir, file), { force: true });
+		console.log(`✓ removed stale font output: ${file}`);
+	}
+}
+
 async function compileFont({ sourcePath, outputPath, charset, temporaryDir }) {
 	await new Promise((resolve, reject) => {
 		new Fontmin()
@@ -166,6 +179,7 @@ export async function prepareFonts({
 			manifestPath,
 			`${JSON.stringify(nextManifest, null, 2)}\n`,
 		);
+		cleanStaleFontOutputs(buildDir);
 	}
 
 	return check ? previousManifest : nextManifest;

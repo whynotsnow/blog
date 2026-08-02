@@ -1,5 +1,5 @@
 :root {
-  --font-body: var(--font-latin, "Zen Maru Gothic"), var(--font-cjk, "Lolita V2"), var(--font-sans);
+  --font-body: var(--font-cjk, "Lolita V2"), var(--font-latin, "Zen Maru Gothic"), var(--font-sans);
   --font-heading: var(--font-body);
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
