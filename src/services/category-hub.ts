@@ -55,6 +55,13 @@ export type CategoryHubPageViewModel = {
 
 const CATEGORY_HUB_TAG_LIMIT = 5;
 const CATEGORY_HUB_RECENT_LIMIT = 3;
+const CATEGORY_HUB_SUPPORT_MODULES = [
+	"recentPosts",
+	"tags",
+] satisfies CategorySupportViewModel["modules"];
+const CATEGORY_HUB_SUPPORT_RECENT_POST_LIMIT = 5;
+const CATEGORY_HUB_SUPPORT_CATEGORY_LIMIT = 8;
+const CATEGORY_HUB_SUPPORT_TAG_LIMIT = 8;
 
 function buildCategoryHubTabs(): CategoryHubTab[] {
 	return [
@@ -118,7 +125,7 @@ async function buildCategoryHubPageViewModel(
 			),
 		)
 		.sort((a, b) => b.count - a.count)
-		.slice(0, 8);
+		.slice(0, CATEGORY_HUB_SUPPORT_TAG_LIMIT);
 
 	return {
 		activeView,
@@ -131,10 +138,13 @@ async function buildCategoryHubPageViewModel(
 		categories,
 		posts,
 		support: {
+			modules: [...CATEGORY_HUB_SUPPORT_MODULES],
 			recentPosts: sortByRecentActivity(store.posts)
-				.slice(0, 5)
+				.slice(0, CATEGORY_HUB_SUPPORT_RECENT_POST_LIMIT)
 				.map(toSupportPostLink),
-			categories: store.categories.slice(0, 8).map(toSupportCategoryLink),
+			categories: store.categories
+				.slice(0, CATEGORY_HUB_SUPPORT_CATEGORY_LIMIT)
+				.map(toSupportCategoryLink),
 			tags: supportTags,
 		},
 	};

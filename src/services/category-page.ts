@@ -27,11 +27,23 @@ export type CategoryPageProps = {
 	support: CategorySupportViewModel;
 };
 
+export type CategorySupportModule = "recentPosts" | "tags" | "categories";
+
 export type CategorySupportViewModel = {
+	modules: CategorySupportModule[];
 	recentPosts: SupportPostLink[];
 	categories: SupportTaxonomyLink[];
 	tags: SupportTaxonomyLink[];
 };
+
+const CATEGORY_SUPPORT_MODULES = [
+	"recentPosts",
+	"tags",
+	"categories",
+] satisfies CategorySupportModule[];
+const CATEGORY_SUPPORT_RECENT_POST_LIMIT = 5;
+const CATEGORY_SUPPORT_CATEGORY_LIMIT = 8;
+const CATEGORY_SUPPORT_TAG_LIMIT = 8;
 
 export type CategoryPaginationViewModel = {
 	start: number;
@@ -175,17 +187,18 @@ function buildCategoryPageProps(params: {
 		categories,
 		tagIndexUrl: url(`/api/categories/${slug}.json/`),
 		support: {
+			modules: [...CATEGORY_SUPPORT_MODULES],
 			recentPosts: sortByRecentActivity(sortedPosts)
-				.slice(0, 5)
+				.slice(0, CATEGORY_SUPPORT_RECENT_POST_LIMIT)
 				.map(toSupportPostLink),
 			categories: categories
 				.filter((category) => category.slug !== slug)
-				.slice(0, 8)
+				.slice(0, CATEGORY_SUPPORT_CATEGORY_LIMIT)
 				.map(toSupportCategoryLink),
 			tags: (activeCategory?.tags ?? [])
 				.slice()
 				.sort((a, b) => b.count - a.count)
-				.slice(0, 8)
+				.slice(0, CATEGORY_SUPPORT_TAG_LIMIT)
 				.map((tag) => toSupportTagLink(tag, slug)),
 		},
 	};

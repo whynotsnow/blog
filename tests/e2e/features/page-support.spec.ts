@@ -41,6 +41,18 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	await expect(page.locator(".profile-card")).toHaveCount(0);
 
 	await page.setViewportSize({ width: 1280, height: 900 });
+	await gotoPage(page, "/category/");
+	await expect(page.locator(".category-support")).toBeVisible();
+	await expect(
+		page.locator(".category-support__heading", { hasText: "最近更新" }),
+	).toBeVisible();
+	await expect(
+		page.locator(".category-support__heading", { hasText: "热门标签" }),
+	).toBeVisible();
+	await expect(
+		page.locator(".category-support__heading", { hasText: "其他分类" }),
+	).toHaveCount(0);
+
 	await gotoPage(page, "/category/tech/");
 	await expect(page.locator(".category-support")).toBeVisible();
 	await expect(

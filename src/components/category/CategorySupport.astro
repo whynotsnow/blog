@@ -6,11 +6,12 @@ import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 type Props = Pick<CategoryPageProps, "support">;
 
 const { support } = Astro.props as Props;
+const enabledModules = new Set(support.modules);
 ---
 
 <aside class="category-support ds-stack" aria-label="分类上下文">
 	{
-		support.recentPosts.length > 0 && (
+		enabledModules.has("recentPosts") && support.recentPosts.length > 0 && (
 			<section class="category-support__panel ds-surface-card">
 				<h2 class="category-support__heading">
 					<Icon name="material-symbols:update-rounded" />
@@ -29,7 +30,7 @@ const { support } = Astro.props as Props;
 	}
 
 	{
-		support.tags.length > 0 && (
+		enabledModules.has("tags") && support.tags.length > 0 && (
 			<section class="category-support__panel ds-surface-card">
 				<h2 class="category-support__heading">
 					<Icon name="material-symbols:tag-rounded" />
@@ -48,7 +49,7 @@ const { support } = Astro.props as Props;
 	}
 
 	{
-		support.categories.length > 0 && (
+		enabledModules.has("categories") && support.categories.length > 0 && (
 			<section class="category-support__panel ds-surface-card">
 				<h2 class="category-support__heading">
 					<Icon name="material-symbols:category-outline-rounded" />
