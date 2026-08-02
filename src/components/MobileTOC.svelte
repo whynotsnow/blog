@@ -279,13 +279,13 @@
 	.mobile-toc-panel {
 		--mobile-toc-title-size: var(--text-section-title-size);
 		--mobile-toc-empty-icon-size: var(--text-icon-large-size);
-		--mobile-toc-item-size: var(--text-ui-muted-size);
+		--mobile-toc-item-size: var(--text-ui-size);
 		--mobile-toc-root-size: var(--text-body-regular-size);
-		--mobile-toc-level-3-size: var(--text-subtle-size);
-		--mobile-toc-level-4-size: var(--text-compact-size);
+		--mobile-toc-level-3-size: var(--text-meta-size);
+		--mobile-toc-level-4-size: var(--text-meta-size);
 		--mobile-toc-deep-size: var(--text-caption-size);
-		--mobile-toc-badge-size: var(--text-compact-size);
-		--mobile-toc-post-title-size: var(--text-ui-muted-size);
+		--mobile-toc-badge-size: var(--text-meta-size);
+		--mobile-toc-post-title-size: var(--text-ui-size);
 		--mobile-toc-post-category-size: var(--text-caption-size);
 		--mobile-toc-pinned-icon-size: var(--text-icon-inline-size);
 		max-height: calc(100vh - 120px);

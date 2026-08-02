@@ -44,6 +44,7 @@ const isBilibiliImage = [resolvedDesktop, resolvedMobile].some((src) =>
 			alt=""
 			class="block h-full w-full object-cover"
 			decoding="async"
+			draggable={false}
 			fetchpriority={fetchpriority}
 			loading={loading}
 			referrerpolicy={isBilibiliImage ? "no-referrer" : undefined}

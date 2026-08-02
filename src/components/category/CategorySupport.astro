@@ -72,7 +72,7 @@ const { support } = Astro.props as Props;
 		--stack-space: var(--space-grid-gap);
 		--category-support-heading-size: var(--text-ui-emphasis-size);
 		--category-support-heading-icon-size: var(--text-icon-inline-size);
-		--category-support-item-title-size: var(--text-ui-muted-size);
+		--category-support-item-title-size: var(--text-ui-size);
 	}
 
 	@media (max-width: 879px) {
@@ -123,7 +123,7 @@ const { support } = Astro.props as Props;
 		border: 1px solid var(--border-subtle);
 		border-radius: var(--radius-md);
 		color: var(--text-secondary);
-		font-size: var(--text-meta);
+		font-size: var(--text-meta-size);
 		font-weight: 700;
 		line-height: 1;
 		transition:
@@ -165,6 +165,6 @@ const { support } = Astro.props as Props;
 	.category-support__link small,
 	.category-support__tag small {
 		color: var(--text-muted);
-		font-size: var(--text-meta);
+		font-size: var(--text-meta-size);
 	}
 </style>

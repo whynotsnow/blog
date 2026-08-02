@@ -46,28 +46,24 @@ Typography 规范化采用分批迁移。第一批只覆盖首页、分类页、
 
 迁移前后使用 `pnpm typography:inventory` 盘点第一批范围内的 Tailwind `text-*`、裸 `font-size`、已 token 化 `font-size` 和无效 Typography token。该命令当前是软约束，目标是先缩小第一批债务；当第一批收敛后，再考虑把新增裸字号接入 `pnpm design:check` 门禁。
 
-公共 Typography 阶梯使用 `--text-*-size` 命名，优先覆盖第一批迁移需要的 UI 字号。既有 `--text-small`、`--text-meta`、`--text-title` 作为兼容别名保留，但新 Feature 应优先引用新的 `--text-*-size` 阶梯；业务 token 例如 `--post-card-title-size`、`--category-filter-control-size` 应引用公共阶梯，而不是直接写裸字号。
+公共 Typography 阶梯使用 `--text-*-size` 命名，优先覆盖第一批迁移需要的 UI 字号。第一批迁移完成后，实际字号阶梯不再按历史视觉值逐个保留，而是收敛为少量稳定档位，并保证相邻独立档位至少相差 `2px`：12px、14px、16px、18px、20px、28px 与流式 Page/Article Heading。`Meta`、`UI Emphasis` 等仍可作为业务语义存在，但它们映射到最近的稳定档位，不再制造 13px、15px 这类中间尺寸。既有 `--text-small`、`--text-meta`、`--text-title` 作为兼容别名保留，但新 Feature 应优先引用新的 `--text-*-size` 阶梯；业务 token 例如 `--post-card-title-size`、`--category-filter-control-size` 应引用公共阶梯，而不是直接写裸字号。
 
 | Token | 语义 | 主要用途 |
 | --- | --- | --- |
-| `--text-caption-size` | Caption | 徽标、弱计数、极小辅助信息 |
-| `--text-dense-size` | Dense | 紧凑列表、低优先级链接 |
-| `--text-compact-size` | Compact | 卡片说明、小型提示 |
-| `--text-subtle-size` | Subtle | 层级较深的 TOC 或弱辅助行 |
-| `--text-meta-size` | Meta | 日期、分类、状态说明、次级信息 |
-| `--text-ui-size` | UI | 普通控件、筛选项、Tab |
-| `--text-ui-muted-size` | Muted UI | 辅助列表标题、较弱导航项 |
-| `--text-ui-emphasis-size` | Emphasis UI | 侧栏模块标题、强调控件 |
-| `--text-body-regular-size` | Body Regular | 小块正文、分享标题、评论标题 |
-| `--text-subtitle-size` | Subtitle | 分类卡片标题等小标题 |
-| `--text-card-title-size` | Card Title | 文章卡片、分类筛选标题 |
-| `--text-section-title-size` | Section Title | 区块标题、移动目录标题 |
-| `--text-stat-size` | Stat | 统计数字 |
-| `--text-list-title-size` | List Title | 列表模式文章标题 |
-| `--text-page-title-size` | Page Title | 普通页面主标题 |
+| `--text-caption-size` | Caption, 12px | 徽标、弱计数、极小辅助信息 |
+| `--text-ui-size` | UI, 14px | 普通控件、筛选项、Tab、评论正文 |
+| `--text-meta-size` | Meta, alias to UI | 日期、分类、状态说明、次级信息 |
+| `--text-body-regular-size` | Body Regular, 16px | 小块正文、分享标题、评论标题 |
+| `--text-ui-emphasis-size` | Emphasis UI, alias to Body Regular | 侧栏模块标题、强调控件 |
+| `--text-body-size` | Article Body, 16-17px | Markdown 正文阅读流 |
+| `--text-section-title-size` | Section Title, 18px | 区块标题、移动目录标题、统计数字 |
+| `--text-card-title-size` | Card Title, 20px | 文章卡片、分类筛选标题 |
+| `--text-list-title-size` | List Title, 28px | 列表模式文章标题 |
+| `--text-page-title-size` | Page Title, 28-32px | 普通页面主标题、文章详情主标题 |
+| `--text-article-h1` 到 `--text-article-h4` | Article Heading | Markdown 内部标题层级 |
 | `--text-icon-*` | Icon Size | 与文字节奏绑定的图标尺寸 |
 
-字号消费顺序固定为：公共 Typography 阶梯 → Feature-local 业务 token → `font-size` 使用点。第一批范围内 `font-size` 只能引用变量，`inherit` 作为继承规则例外；文字用途的 Tailwind `text-*` 不再允许新增。`pnpm typography:inventory --scope=priority --fail-on-text-class --fail-on-raw-font-size --fail-on-invalid-token --fail-on-raw-size-token` 与 `pnpm design:check` 共享同一套 priority Typography 边界。全站范围可用 `pnpm typography:inventory --scope=all` 观察 Legacy Typography Debt，但暂不作为门禁。
+`--text-dense-size`、`--text-compact-size`、`--text-subtle-size`、`--text-ui-muted-size`、`--text-subtitle-size`、`--text-stat-size` 属于兼容型别名，只为未完成迁移的旧语义保留；新代码不要继续消费这些 token。字号消费顺序固定为：公共 Typography 阶梯 → Feature-local 业务 token → `font-size` 使用点。第一批范围内 `font-size` 只能引用变量，`inherit` 作为继承规则例外；文字用途的 Tailwind `text-*` 不再允许新增。`pnpm typography:inventory --scope=priority --fail-on-text-class --fail-on-raw-font-size --fail-on-invalid-token --fail-on-raw-size-token` 与 `pnpm design:check` 共享同一套 priority Typography 边界。全站范围可用 `pnpm typography:inventory --scope=all` 观察 Legacy Typography Debt，但暂不作为门禁。
 
 ### Pattern
 

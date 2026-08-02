@@ -5,13 +5,13 @@
   --post-detail-stat-size: var(--text-meta-size);
   --post-detail-share-icon-size: var(--text-icon-heading-size);
   --post-detail-share-title-size: var(--text-body-regular-size);
-  --post-detail-share-copy-size: var(--text-compact-size);
+  --post-detail-share-copy-size: var(--text-meta-size);
   --post-detail-modified-time-size: var(--text-body-regular-size);
   --post-detail-modified-icon-size: var(--text-icon-heading-size);
-  --post-detail-modified-note-size: var(--text-compact-size);
+  --post-detail-modified-note-size: var(--text-meta-size);
   --post-detail-related-heading-size: var(--text-body-regular-size);
   --post-detail-related-heading-icon-size: var(--text-icon-inline-size);
-  --post-detail-related-title-size: var(--text-ui-muted-size);
+  --post-detail-related-title-size: var(--text-ui-size);
   --post-detail-related-icon-size: var(--text-icon-inline-size);
   --post-meta-icon-size: var(--text-icon-inline-size);
 
@@ -217,7 +217,7 @@
   border-radius: var(--radius-full);
   background: var(--surface-raised);
   color: var(--text-secondary);
-  font-size: var(--text-meta);
+  font-size: var(--text-meta-size);
   font-weight: 800;
   line-height: 1.5;
 }
@@ -260,7 +260,7 @@
   border-radius: var(--radius-sm);
   background: color-mix(in oklab, var(--accent) 12%, var(--surface-card));
   color: var(--accent);
-  font-size: var(--text-meta);
+  font-size: var(--text-meta-size);
   font-weight: 800;
 }
 
@@ -287,7 +287,7 @@
   align-items: center;
   gap: var(--size-2);
   color: var(--text-muted);
-  font-size: var(--text-meta);
+  font-size: var(--text-meta-size);
   font-weight: 700;
 }
 
@@ -409,7 +409,7 @@
 
 .post-detail__meta {
   color: var(--text-muted);
-  font-size: var(--text-meta);
+  font-size: var(--text-meta-size);
 }
 
 .post-meta {
@@ -419,7 +419,7 @@
   column-gap: var(--size-4);
   row-gap: var(--size-2);
   color: var(--text-muted);
-  font-size: var(--text-meta);
+  font-size: var(--text-meta-size);
   line-height: 1.45;
 }
 

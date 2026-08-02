@@ -1,5 +1,7 @@
 [data-comment-service="twikoo"],
 [data-comment-service="twikoo"] #twikoo {
+  --twikoo-body-size: var(--text-ui-size);
+  --twikoo-meta-size: var(--text-meta-size);
   --twikoo-title-size: var(--text-body-regular-size);
   --twikoo-nick-size: var(--text-ui-emphasis-size);
   --twikoo-accent: var(--accent);
@@ -18,7 +20,7 @@
 
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: var(--text-small);
+  font-size: var(--twikoo-body-size);
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
@@ -42,7 +44,7 @@
 
 [data-comment-service="twikoo"] #twikoo :is(.tk-content) {
   color: var(--text-primary);
-  font-size: var(--text-small);
+  font-size: var(--twikoo-body-size);
   line-height: 1.8;
 }
 
@@ -52,7 +54,7 @@
 
 [data-comment-service="twikoo"] #twikoo :is(.tk-time, .tk-extras, .tk-action, .tk-footer, .tk-meta, .tk-tag) {
   color: var(--text-muted);
-  font-size: var(--text-meta);
+  font-size: var(--twikoo-meta-size);
 }
 
 [data-comment-service="twikoo"] #twikoo :is(.tk-action-link, .tk-actions button, .tk-expand, .tk-submit-action-icon, .tk-admin-comment) {
@@ -176,7 +178,7 @@
 @media (max-width: 640px) {
   [data-comment-service="twikoo"],
   [data-comment-service="twikoo"] #twikoo {
-    font-size: var(--text-small);
+    font-size: var(--twikoo-body-size);
   }
 
   [data-comment-service="twikoo"] #twikoo :is(.tk-comments-title) {

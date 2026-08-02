@@ -21,31 +21,6 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 
 	<section class="home-support__panel ds-surface-card">
 		<h2 class="home-support__heading">
-			<Icon name="material-symbols:bar-chart-rounded" />
-			站点概览
-		</h2>
-		<div class="home-support__stats">
-			<div>
-				<span>{model.stats.postCount}</span>
-				<small>文章</small>
-			</div>
-			<div>
-				<span>{model.stats.categoryCount}</span>
-				<small>分类</small>
-			</div>
-			<div>
-				<span>{model.stats.tagCount}</span>
-				<small>标签</small>
-			</div>
-			<div>
-				<span>{formattedWords}</span>
-				<small>字数</small>
-			</div>
-		</div>
-	</section>
-
-	<section class="home-support__panel ds-surface-card">
-		<h2 class="home-support__heading">
 			<Icon name="material-symbols:update-rounded" />
 			最近更新
 		</h2>
@@ -96,6 +71,31 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 			</section>
 		)
 	}
+
+	<section class="home-support__panel ds-surface-card">
+		<h2 class="home-support__heading">
+			<Icon name="material-symbols:bar-chart-rounded" />
+			站点概览
+		</h2>
+		<div class="home-support__stats">
+			<div>
+				<span>{model.stats.postCount}</span>
+				<small>文章</small>
+			</div>
+			<div>
+				<span>{model.stats.categoryCount}</span>
+				<small>分类</small>
+			</div>
+			<div>
+				<span>{model.stats.tagCount}</span>
+				<small>标签</small>
+			</div>
+			<div>
+				<span>{formattedWords}</span>
+				<small>字数</small>
+			</div>
+		</div>
+	</section>
 </aside>
 
 <style>
@@ -103,8 +103,8 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 		--stack-space: var(--space-grid-gap);
 		--home-support-heading-size: var(--text-ui-emphasis-size);
 		--home-support-heading-icon-size: var(--text-icon-inline-size);
-		--home-support-stat-value-size: var(--text-stat-size);
-		--home-support-item-title-size: var(--text-ui-muted-size);
+		--home-support-stat-value-size: var(--text-body-regular-size);
+		--home-support-item-title-size: var(--text-ui-size);
 	}
 
 	.home-support__panel {
@@ -159,7 +159,7 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 	.home-support__post span,
 	.home-support__taxonomy-link small {
 		color: var(--text-muted);
-		font-size: var(--text-meta);
+		font-size: var(--text-meta-size);
 	}
 
 	.home-support__stats small {
@@ -215,7 +215,7 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 		border: 1px solid var(--border-subtle);
 		border-radius: var(--radius-md);
 		color: var(--text-secondary);
-		font-size: var(--text-meta);
+		font-size: var(--text-meta-size);
 		font-weight: 700;
 		line-height: 1;
 	}

@@ -45,6 +45,7 @@ function appendBannerImage(
 	if (options.id) image.id = options.id;
 	image.alt = options.alt;
 	image.className = options.className;
+	image.draggable = false;
 	image.src = src;
 	image.loading = "eager";
 	if (options.position) {

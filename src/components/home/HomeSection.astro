@@ -21,16 +21,16 @@ const { section } = Astro.props;
 
 <style>
 	.home-section__header {
-		--home-section-link-size: clamp(var(--text-dense-size), calc(var(--text-caption-size) + 0.25cqi), var(--text-ui-size));
+		--home-section-title-size: var(--text-section-title-size);
+		--home-section-link-size: var(--text-ui-size);
 		width: 100%;
 		max-width: var(--width-feed-one-max);
 		margin-inline: auto;
 	}
 
 	.home-section__title {
-		font-size: var(--post-card-title-size);
+		font-size: var(--home-section-title-size);
 		line-height: 1.25;
-		letter-spacing: -0.02em;
 		text-wrap: balance;
 	}
 

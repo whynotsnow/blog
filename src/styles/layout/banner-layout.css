@@ -21,6 +21,11 @@
   overflow: hidden;
 }
 
+#banner-wrapper img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 .banner-text-overlay {
   align-items: center;
   justify-content: center;
