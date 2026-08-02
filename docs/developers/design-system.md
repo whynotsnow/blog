@@ -46,7 +46,28 @@ Typography 规范化采用分批迁移。第一批只覆盖首页、分类页、
 
 迁移前后使用 `pnpm typography:inventory` 盘点第一批范围内的 Tailwind `text-*`、裸 `font-size`、已 token 化 `font-size` 和无效 Typography token。该命令当前是软约束，目标是先缩小第一批债务；当第一批收敛后，再考虑把新增裸字号接入 `pnpm design:check` 门禁。
 
-公共 Typography 阶梯使用 `--text-*-size` 命名，优先覆盖第一批迁移需要的 UI 字号：Caption、Dense、Compact、Meta、UI、Muted UI、Emphasis UI、Body Regular、Subtitle、Card Title、Section Title、Stat、List Title、Page Title，以及图标字号 `--text-icon-*`。既有 `--text-small`、`--text-meta`、`--text-title` 作为兼容别名保留，但新 Feature 应优先引用新的 `--text-*-size` 阶梯；业务 token 例如 `--post-card-title-size`、`--category-filter-control-size` 应引用公共阶梯，而不是直接写裸字号。
+公共 Typography 阶梯使用 `--text-*-size` 命名，优先覆盖第一批迁移需要的 UI 字号。既有 `--text-small`、`--text-meta`、`--text-title` 作为兼容别名保留，但新 Feature 应优先引用新的 `--text-*-size` 阶梯；业务 token 例如 `--post-card-title-size`、`--category-filter-control-size` 应引用公共阶梯，而不是直接写裸字号。
+
+| Token | 语义 | 主要用途 |
+| --- | --- | --- |
+| `--text-caption-size` | Caption | 徽标、弱计数、极小辅助信息 |
+| `--text-dense-size` | Dense | 紧凑列表、低优先级链接 |
+| `--text-compact-size` | Compact | 卡片说明、小型提示 |
+| `--text-subtle-size` | Subtle | 层级较深的 TOC 或弱辅助行 |
+| `--text-meta-size` | Meta | 日期、分类、状态说明、次级信息 |
+| `--text-ui-size` | UI | 普通控件、筛选项、Tab |
+| `--text-ui-muted-size` | Muted UI | 辅助列表标题、较弱导航项 |
+| `--text-ui-emphasis-size` | Emphasis UI | 侧栏模块标题、强调控件 |
+| `--text-body-regular-size` | Body Regular | 小块正文、分享标题、评论标题 |
+| `--text-subtitle-size` | Subtitle | 分类卡片标题等小标题 |
+| `--text-card-title-size` | Card Title | 文章卡片、分类筛选标题 |
+| `--text-section-title-size` | Section Title | 区块标题、移动目录标题 |
+| `--text-stat-size` | Stat | 统计数字 |
+| `--text-list-title-size` | List Title | 列表模式文章标题 |
+| `--text-page-title-size` | Page Title | 普通页面主标题 |
+| `--text-icon-*` | Icon Size | 与文字节奏绑定的图标尺寸 |
+
+字号消费顺序固定为：公共 Typography 阶梯 → Feature-local 业务 token → `font-size` 使用点。第一批范围内 `font-size` 只能引用变量，`inherit` 作为继承规则例外；文字用途的 Tailwind `text-*` 不再允许新增。`pnpm typography:inventory --scope=priority --fail-on-text-class --fail-on-raw-font-size --fail-on-invalid-token --fail-on-raw-size-token` 与 `pnpm design:check` 共享同一套 priority Typography 边界。全站范围可用 `pnpm typography:inventory --scope=all` 观察 Legacy Typography Debt，但暂不作为门禁。
 
 ### Pattern
 

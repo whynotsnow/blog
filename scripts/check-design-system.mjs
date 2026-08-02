@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { extname, join } from "node:path";
 import process from "node:process";
+import { collectTypographyInventory } from "./typography-inventory.mjs";
 
 const ROOT = process.cwd();
 const DESIGN_ROOT = "src/design";
@@ -209,6 +210,40 @@ for (const file of walk(DESIGN_ROOT).filter(
 			errors.push(
 				`${file} makes Design depend on legacy token ${token}.`,
 			);
+	}
+}
+
+const priorityTypography = collectTypographyInventory({ scope: "priority" });
+if (priorityTypography.invalidTextTokens.length > 0) {
+	for (const item of priorityTypography.invalidTextTokens) {
+		errors.push(
+			`${item.file}:${item.line} references undefined Typography token ${item.token}.`,
+		);
+	}
+}
+if (priorityTypography.rawTextClassTotal > 0) {
+	for (const [file, count] of Object.entries(
+		priorityTypography.textClassFiles,
+	)) {
+		errors.push(
+			`${file} contains ${count} Tailwind text-* class(es) in priority Typography scope.`,
+		);
+	}
+}
+if (priorityTypography.rawNonInheritFontSizeTotal > 0) {
+	for (const item of priorityTypography.rawFontSizeRecords.filter(
+		(record) => record.value !== "inherit",
+	)) {
+		errors.push(
+			`${item.file}:${item.line} uses raw font-size ${item.value} in priority Typography scope.`,
+		);
+	}
+}
+if (priorityTypography.rawSizeTokenDefinitions.length > 0) {
+	for (const item of priorityTypography.rawSizeTokenDefinitions) {
+		errors.push(
+			`${item.file}:${item.line} defines ${item.token} as raw size ${item.value}; use a public Typography token.`,
+		);
 	}
 }
 
