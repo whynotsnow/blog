@@ -1,5 +1,6 @@
 ---
 import CategoryHubPage from "@components/category/CategoryHubPage.astro";
+import CategorySupport from "@components/category/CategorySupport.astro";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import { getCategoryHubPageViewModel } from "@/services/category-hub";
 
@@ -7,5 +8,9 @@ const model = await getCategoryHubPageViewModel();
 ---
 
 <MainGridLayout title={model.title} layoutPolicy="listing">
+	<CategorySupport
+		slot="support"
+		support={model.support}
+	/>
 	<CategoryHubPage {model} />
 </MainGridLayout>

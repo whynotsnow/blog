@@ -4,10 +4,15 @@ import {
 	getCategoryPageUrl,
 	getCategoryRecommendedUrl,
 } from "@/utils/url";
+import {
+	categoryAssets,
+	type CategoryImageAsset,
+} from "@/data/category-assets";
 import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
 import { toPostCardViewModel } from "./core/inject";
 import { sortByScore } from "./core/sort";
+import type { CategorySupportViewModel } from "./category-page";
 import {
 	sortByRecentActivity,
 	toSupportCategoryLink,
@@ -30,6 +35,10 @@ export type CategoryHubCard = {
 	name: string;
 	url: string;
 	count: number;
+	tagCount: number;
+	description?: string;
+	image?: CategoryImageAsset;
+	updated?: string;
 	tags: SupportTaxonomyLink[];
 	recentPosts: SupportPostLink[];
 };
@@ -41,6 +50,7 @@ export type CategoryHubPageViewModel = {
 	tabs: CategoryHubTab[];
 	categories: CategoryHubCard[];
 	posts: PostCardViewModel[];
+	support: CategorySupportViewModel;
 };
 
 const CATEGORY_HUB_TAG_LIMIT = 5;
@@ -67,21 +77,30 @@ async function buildCategoryHubPageViewModel(
 	const store = await getContentStore();
 	const categories = store.categories.map((category) => {
 		const entry = store.categoryMap.get(category.slug);
+		const sortedRecentPosts = sortByRecentActivity(entry?.posts ?? []);
+		const latestPost = sortedRecentPosts[0];
 		const tags = (entry ? Array.from(entry.tags.values()) : category.tags)
 			.slice()
 			.sort((a, b) => b.count - a.count)
 			.slice(0, CATEGORY_HUB_TAG_LIMIT)
 			.map((tag) => toSupportTagLink(tag, category.slug));
-		const recentPosts = sortByRecentActivity(entry?.posts ?? [])
+		const recentPosts = sortedRecentPosts
 			.slice(0, CATEGORY_HUB_RECENT_LIMIT)
 			.map(toSupportPostLink);
 		const link = toSupportCategoryLink(category);
+		const asset = categoryAssets[category.slug];
 
 		return {
 			slug: category.slug,
 			name: category.name,
 			url: link.url || getCategoryPageUrl(category.slug),
 			count: category.count,
+			tagCount: entry?.tags.size ?? category.tags.length,
+			description: asset?.description,
+			image: asset?.image,
+			updated: latestPost
+				? (latestPost.updated ?? latestPost.published).toISOString()
+				: undefined,
 			tags,
 			recentPosts,
 		};
@@ -92,6 +111,14 @@ async function buildCategoryHubPageViewModel(
 					.slice(0, CATEGORY_PAGE_SIZE)
 					.map(toPostCardViewModel)
 			: [];
+	const supportTags = Array.from(store.categoryMap.values())
+		.flatMap((entry) =>
+			Array.from(entry.tags.values()).map((tag) =>
+				toSupportTagLink(tag, entry.category.slug),
+			),
+		)
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 8);
 
 	return {
 		activeView,
@@ -103,6 +130,13 @@ async function buildCategoryHubPageViewModel(
 		tabs: buildCategoryHubTabs(),
 		categories,
 		posts,
+		support: {
+			recentPosts: sortByRecentActivity(store.posts)
+				.slice(0, 5)
+				.map(toSupportPostLink),
+			categories: store.categories.slice(0, 8).map(toSupportCategoryLink),
+			tags: supportTags,
+		},
 	};
 }
 
