@@ -277,6 +277,17 @@
 
 <style>
 	.mobile-toc-panel {
+		--mobile-toc-title-size: 1.125rem;
+		--mobile-toc-empty-icon-size: 1.5rem;
+		--mobile-toc-item-size: 0.9rem;
+		--mobile-toc-root-size: 1rem;
+		--mobile-toc-level-3-size: 0.85rem;
+		--mobile-toc-level-4-size: 0.8rem;
+		--mobile-toc-deep-size: 0.75rem;
+		--mobile-toc-badge-size: 0.8rem;
+		--mobile-toc-post-title-size: 0.9rem;
+		--mobile-toc-post-category-size: 0.75rem;
+		--mobile-toc-pinned-icon-size: 1.25rem;
 		max-height: calc(100vh - 120px);
 		overflow-y: auto;
 		background: var(--card-bg);
@@ -285,12 +296,12 @@
 	}
 
 	.mobile-toc-panel__title {
-		font-size: 1.125rem;
+		font-size: var(--mobile-toc-title-size);
 	}
 
 	.mobile-toc-panel__empty-icon {
 		margin-bottom: 0.5rem;
-		font-size: 1.5rem;
+		font-size: var(--mobile-toc-empty-icon-size);
 	}
 
 	/* 确保主题切换按钮的背景色即时更新 */
@@ -328,7 +339,7 @@
 		background: transparent;
 		cursor: pointer;
 		color: rgba(0, 0, 0, 0.75);
-		font-size: 0.9rem;
+		font-size: var(--mobile-toc-item-size);
 		line-height: 1.4;
 	}
 
@@ -353,7 +364,7 @@
 	.toc-item.level-1 {
 		padding-left: 12px;
 		font-weight: 600;
-		font-size: 1rem;
+		font-size: var(--mobile-toc-root-size);
 		gap: 8px;
 	}
 
@@ -364,20 +375,20 @@
 
 	.toc-item.level-3 {
 		padding-left: 36px;
-		font-size: 0.85rem;
+		font-size: var(--mobile-toc-level-3-size);
 		gap: 6px;
 	}
 
 	.toc-item.level-4 {
 		padding-left: 44px;
-		font-size: 0.8rem;
+		font-size: var(--mobile-toc-level-4-size);
 		gap: 6px;
 	}
 
 	.toc-item.level-5,
 	.toc-item.level-6 {
 		padding-left: 52px;
-		font-size: 0.75rem;
+		font-size: var(--mobile-toc-deep-size);
 		color: rgba(0, 0, 0, 0.5);
 		gap: 6px;
 	}
@@ -418,7 +429,7 @@
 		border-radius: 6px;
 		background: var(--toc-badge-bg);
 		color: var(--btn-content);
-		font-size: 0.8rem;
+		font-size: var(--mobile-toc-badge-size);
 		font-weight: 600;
 		flex-shrink: 0;
 		line-height: 1;
@@ -475,7 +486,7 @@
 	}
 
 	.post-title {
-		font-size: 0.9rem;
+		font-size: var(--mobile-toc-post-title-size);
 		font-weight: 600;
 		color: rgba(0, 0, 0, 0.75);
 		margin-bottom: 4px;
@@ -490,7 +501,7 @@
 	}
 
 	.post-category {
-		font-size: 0.75rem;
+		font-size: var(--mobile-toc-post-category-size);
 		color: rgba(0, 0, 0, 0.5);
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -504,7 +515,7 @@
 	:global(.pinned-icon) {
 		display: inline;
 		color: var(--primary);
-		font-size: 1.25rem;
+		font-size: var(--mobile-toc-pinned-icon-size);
 		margin-right: 0.5rem;
 		transform: translateY(-0.125rem);
 		vertical-align: middle;

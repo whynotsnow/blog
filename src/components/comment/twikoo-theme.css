@@ -1,5 +1,7 @@
 [data-comment-service="twikoo"],
 [data-comment-service="twikoo"] #twikoo {
+  --twikoo-title-size: 1rem;
+  --twikoo-nick-size: 0.95rem;
   --twikoo-accent: var(--accent);
   --twikoo-accent-hover: color-mix(in oklch, var(--accent) 84%, var(--surface-raised));
   --twikoo-accent-active: color-mix(in oklch, var(--accent) 88%, var(--text-primary));
@@ -29,12 +31,12 @@
 
 [data-comment-service="twikoo"] #twikoo :is(.tk-comments-title) {
   margin-block-end: var(--space-card);
-  font-size: 1rem;
+  font-size: var(--twikoo-title-size);
   font-weight: 700;
 }
 
 [data-comment-service="twikoo"] #twikoo :is(.tk-nick) {
-  font-size: 0.95rem;
+  font-size: var(--twikoo-nick-size);
   font-weight: 700;
 }
 

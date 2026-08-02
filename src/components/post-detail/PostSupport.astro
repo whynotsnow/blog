@@ -78,6 +78,9 @@ const hasHeadings = headings.length > 0;
 			24rem,
 			calc(100dvh - var(--main-content-offset) - var(--space-grid-gap))
 		);
+		--post-support-heading-size: 0.95rem;
+		--post-support-heading-icon-size: 1.25rem;
+		--post-support-nav-title-size: 0.9rem;
 		position: sticky;
 		top: var(--main-content-offset);
 		width: 100%;
@@ -128,13 +131,13 @@ const hasHeadings = headings.length > 0;
 		gap: var(--size-2);
 		margin-bottom: var(--size-3);
 		color: var(--text-primary);
-		font-size: 0.95rem;
+		font-size: var(--post-support-heading-size);
 		font-weight: 800;
 	}
 
 	.post-support__heading :global(svg) {
 		color: var(--accent);
-		font-size: 1.25rem;
+		font-size: var(--post-support-heading-icon-size);
 	}
 
 	.post-support__toc-body {
@@ -184,7 +187,7 @@ const hasHeadings = headings.length > 0;
 	.post-support__nav-link strong {
 		overflow: hidden;
 		color: var(--text-primary);
-		font-size: 0.9rem;
+		font-size: var(--post-support-nav-title-size);
 		font-weight: 800;
 		line-height: 1.35;
 		text-overflow: ellipsis;

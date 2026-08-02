@@ -40,6 +40,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 <style>
 	.floating-toc-wrapper {
+		--floating-toc-item-size: 0.9rem;
+		--floating-toc-badge-size: 0.75rem;
 		position: relative;
 		z-index: 61;
 		pointer-events: auto;
@@ -144,7 +146,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		padding: 0.5rem;
 		color: var(--text-secondary);
 		text-decoration: none;
-		font-size: 0.9rem;
+		font-size: var(--floating-toc-item-size);
 		line-height: 1.5;
 		border-radius: 0.5rem;
 		transition: all 0.2s;
@@ -170,7 +172,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		background: var(--btn-regular-bg);
 		color: var(--primary);
 		border-radius: 0.25rem;
-		font-size: 0.75rem;
+		font-size: var(--floating-toc-badge-size);
 		font-weight: bold;
 		margin-right: 0.5rem;
 		flex-shrink: 0;

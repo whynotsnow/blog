@@ -70,6 +70,9 @@ const { support } = Astro.props as Props;
 <style>
 	.category-support {
 		--stack-space: var(--space-grid-gap);
+		--category-support-heading-size: 0.95rem;
+		--category-support-heading-icon-size: 1.25rem;
+		--category-support-item-title-size: 0.9rem;
 	}
 
 	@media (max-width: 879px) {
@@ -88,13 +91,13 @@ const { support } = Astro.props as Props;
 		gap: var(--size-2);
 		margin-bottom: var(--size-3);
 		color: var(--text-primary);
-		font-size: 0.95rem;
+		font-size: var(--category-support-heading-size);
 		font-weight: 800;
 	}
 
 	.category-support__heading :global(svg) {
 		color: var(--accent);
-		font-size: 1.25rem;
+		font-size: var(--category-support-heading-icon-size);
 	}
 
 	.category-support__tags {
@@ -147,7 +150,7 @@ const { support } = Astro.props as Props;
 	.category-support__tag span {
 		overflow: hidden;
 		color: var(--text-primary);
-		font-size: 0.9rem;
+		font-size: var(--category-support-item-title-size);
 		font-weight: 800;
 		text-overflow: ellipsis;
 		white-space: nowrap;

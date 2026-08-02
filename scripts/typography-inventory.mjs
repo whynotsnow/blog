@@ -31,8 +31,7 @@ const PRIORITY_PATHS = [
 ];
 const TEXT_CLASS_RE = /(?:^|[^\w-])text-(xs|sm|base|lg|xl|[2-9]xl)(?![\w-])/g;
 const FONT_SIZE_RE = /font-size\s*:\s*([^;\n]+);?/g;
-const TYPOGRAPHY_TOKEN_RE =
-	/var\(--(?:text-(?:caption|meta|ui|body|body-size|body-leading|small|title|article-h[1-4]|display|[\w-]+-size)|post-[\w-]*size|category-[\w-]*size|home-[\w-]*size|toc-[\w-]*size|comment-[\w-]*size|navbar-font-size|footer-[\w-]*size|banner-[\w-]*size)[^)]*\)/;
+const FONT_SIZE_TOKEN_RE = /var\(--[\w-]+(?:\s*,[^)]*)?\)/;
 
 function walk(path) {
 	const absolutePath = join(ROOT, path);
@@ -104,7 +103,7 @@ function collectInventory() {
 			for (const match of line.matchAll(FONT_SIZE_RE)) {
 				const value = match[1].trim();
 				increment(fontSizes, value);
-				if (TYPOGRAPHY_TOKEN_RE.test(value)) {
+				if (FONT_SIZE_TOKEN_RE.test(value)) {
 					increment(tokenFontSizes, value);
 				} else {
 					increment(rawFontSizes, value);

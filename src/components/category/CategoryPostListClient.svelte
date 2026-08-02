@@ -78,7 +78,11 @@
 </div>
 
 <style>
+	.category-page {
+		--category-page-state-size: 0.875rem;
+	}
+
 	.category-page__state {
-		font-size: 0.875rem;
+		font-size: var(--category-page-state-size);
 	}
 </style>

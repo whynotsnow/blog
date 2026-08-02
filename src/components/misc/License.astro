@@ -55,7 +55,11 @@ const postUrl = sourceLink || decodeURIComponent(Astro.url.toString());
 </div>
 
 <style>
+	.license-block {
+		--license-label-size: 0.875rem;
+	}
+
 	.license-block__label {
-		font-size: 0.875rem;
+		font-size: var(--license-label-size);
 	}
 </style>

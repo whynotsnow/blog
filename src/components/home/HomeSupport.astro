@@ -101,6 +101,10 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 <style>
 	.home-support {
 		--stack-space: var(--space-grid-gap);
+		--home-support-heading-size: 0.95rem;
+		--home-support-heading-icon-size: 1.25rem;
+		--home-support-stat-value-size: 1.15rem;
+		--home-support-item-title-size: 0.9rem;
 	}
 
 	.home-support__panel {
@@ -113,13 +117,13 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 		gap: var(--size-2);
 		margin-bottom: var(--size-3);
 		color: var(--text-primary);
-		font-size: 0.95rem;
+		font-size: var(--home-support-heading-size);
 		font-weight: 800;
 	}
 
 	.home-support__heading :global(svg) {
 		color: var(--accent);
-		font-size: 1.25rem;
+		font-size: var(--home-support-heading-icon-size);
 	}
 
 	.home-support__stats {
@@ -144,7 +148,7 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 	.home-support__stats span {
 		overflow: hidden;
 		color: var(--text-primary);
-		font-size: 1.15rem;
+		font-size: var(--home-support-stat-value-size);
 		font-weight: 800;
 		line-height: 1;
 		text-overflow: ellipsis;
@@ -180,7 +184,7 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 	.home-support__taxonomy-link span {
 		overflow: hidden;
 		color: var(--text-primary);
-		font-size: 0.9rem;
+		font-size: var(--home-support-item-title-size);
 		font-weight: 800;
 		line-height: 1.35;
 		text-overflow: ellipsis;

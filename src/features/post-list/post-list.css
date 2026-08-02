@@ -10,11 +10,16 @@
   --post-card-cover-min-size: 10rem;
   --post-card-cover-max-size: 14rem;
   --post-card-content-padding: var(--space-card);
+  --post-card-list-title-size: 1.875rem;
+  --post-card-list-chevron-size: 2rem;
+  --post-card-list-meta-size: 0.875rem;
+  --post-card-list-meta-icon-size: 1.25rem;
   --post-card-title-size: 1.25rem;
   --post-card-section-gap: var(--space-cluster);
   --post-card-summary-size: 0.875rem;
   --post-card-meta-size: 0.75rem;
   --post-card-tag-size: 0.75rem;
+  --post-card-cover-icon-size: 3rem;
   --post-card-tag-block-size: 1.5rem;
   --post-card-tag-gap: var(--size-2);
   container-name: post-feed;
@@ -42,7 +47,7 @@
   width: 100%;
   margin-bottom: 0.75rem;
   color: var(--text-primary);
-  font-size: 1.875rem;
+  font-size: var(--post-card-list-title-size);
   font-weight: 700;
 }
 
@@ -69,7 +74,7 @@
 .home-post-card__title-chevron {
   position: absolute;
   color: var(--accent);
-  font-size: 2rem;
+  font-size: var(--post-card-list-chevron-size);
   transform: translateY(0.125rem);
 }
 
@@ -88,7 +93,7 @@
   align-items: center;
   margin-bottom: 1rem;
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-size: var(--post-card-list-meta-size);
 }
 
 .home-post-card__meta-item {
@@ -101,7 +106,7 @@
 
 .home-post-card__meta-icon {
   flex: none;
-  font-size: 1.25rem;
+  font-size: var(--post-card-list-meta-icon-size);
 }
 
 .home-post-card__meta-link {
@@ -136,7 +141,7 @@
 
 .home-post-card__tag,
 .home-post-card__tag-empty {
-  font-size: 0.75rem;
+  font-size: var(--post-card-tag-size);
 }
 
 .home-post-card__tag {
@@ -200,7 +205,7 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface-overlay) 88%, transparent);
   color: var(--accent);
-  font-size: 0.75rem;
+  font-size: var(--post-card-tag-size);
   font-weight: 600;
   line-height: 1.25;
   pointer-events: none;
@@ -224,7 +229,7 @@
 
 .home-post-card__cover-enter-icon {
   color: white;
-  font-size: 3rem;
+  font-size: var(--post-card-cover-icon-size);
   opacity: 0;
   transform: scale(0.5);
 }
@@ -244,7 +249,7 @@
 
 .home-post-card__cover-placeholder-icon {
   color: var(--accent);
-  font-size: 3rem;
+  font-size: var(--post-card-cover-icon-size);
 }
 
 .home-post-card__image {

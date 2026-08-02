@@ -102,21 +102,24 @@
 
 <style>
 	.category-filter {
+		--category-filter-title-size: 1.25rem;
+		--category-filter-control-size: 0.875rem;
+		--category-filter-tag-size: 0.75rem;
 		padding: clamp(1rem, 2cqi, 1.25rem);
 	}
 
 	.category-filter__title {
-		font-size: 1.25rem;
+		font-size: var(--category-filter-title-size);
 	}
 
 	.category-filter__summary,
 	.category-filter__summary-action,
 	.category-filter__category {
-		font-size: 0.875rem;
+		font-size: var(--category-filter-control-size);
 	}
 
 	.category-filter__tag {
-		font-size: 0.75rem;
+		font-size: var(--category-filter-tag-size);
 	}
 
 	.category-filter__mobile {

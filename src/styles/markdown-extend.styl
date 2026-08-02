@@ -1,4 +1,8 @@
 .custom-md
+  --markdown-github-title-size: 1.25rem
+  --markdown-github-description-size: 1rem
+  --markdown-github-meta-size: 0.875rem
+  --markdown-github-logo-size: 1.25rem
 
   blockquote.admonition
     .bdm-title
@@ -117,7 +121,7 @@ a.card-github
     justify-content: space-between
     margin-bottom: 0.5rem
     color: var(--tw-prose-headings)
-    font-size: 1.25rem
+    font-size: var(--markdown-github-title-size)
     font-weight: 500
 
     .gc-titlebar-left
@@ -148,7 +152,7 @@ a.card-github
 
   .gc-description
     margin-bottom: 0.7rem
-    font-size: 1rem
+    font-size: var(--markdown-github-description-size)
     font-weight: 300
     line-height: 1.5rem
     color: var(--tw-prose-body)
@@ -165,7 +169,7 @@ a.card-github
 
   .gc-stars, .gc-forks, .gc-license, .github-logo
     font-weight: 500
-    font-size: 0.875rem
+    font-size: var(--markdown-github-meta-size)
     opacity: 0.9;
 
     &:before
@@ -199,7 +203,7 @@ a.card-github
       mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' aria-hidden='true' height='16' viewBox='0 0 16 16' version='1.1' width='16'%3E%3Cpath d='M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z'%3E%3C/path%3E%3C/svg%3E")
 
   .github-logo
-    font-size: 1.25rem
+    font-size: var(--markdown-github-logo-size)
 
     &:before
       background-color: var(--tw-prose-headings)
