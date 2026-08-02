@@ -40,6 +40,12 @@ Primitive → Semantic → Theme/Pattern → Component
 
 Typography 中，Astro Font API 注入的 `--font-latin` 与 `--font-cjk` 只表示具体字体资源；当前 `--font-latin` 由 Zen Maru Gothic 生成 ASCII 子集，`--font-cjk` 由 Lolita V2 生成 CJK 子集。`src/design/tokens/typography.css` 使用它们组合语义级 `--font-body`，并继续派生 `--font-heading`。Feature 应消费 `--font-body`、`--font-heading` 或 `--font-mono`，不能直接绑定字体文件、Hash URL 或 Font API 生成的 Family Name。
 
+Typography 规范化采用分批迁移。第一批只覆盖首页、分类页、文章详情页，以及这些页面直接展示或条件渲染的组件链路：`src/pages/index.astro`、`src/pages/posts/`、`src/components/home/`、`src/components/category/`、`src/components/post-detail/`、`src/components/post-toc/`、`PostMeta`、`MobileTOC`、`FloatingTOC`、评论入口、License、Markdown wrapper、`src/features/post-list/` 和 Markdown 样式。`projects`、`devices`、`friends`、`skills`、`diary`、`albums`、`anime`、RSS/Atom、404、播放器、设置面板等暂时按 Legacy Typography Debt 保留，只有进入后续批次时才迁移。
+
+第一批范围内不应新增裸 `font-size` 或文字用途的 Tailwind `text-*`。字号优先从公共 Typography 阶梯获取；当某个功能需要稳定业务语义时，可以在所属 Feature CSS 中定义业务 token，但业务 token 的值应优先引用公共字号 token。例外仅限第三方组件覆盖、图标尺寸、外部库或极局部视觉校正，并应尽量用 Feature-local token 集中表达。图标尺寸不等同于文字字号；后续迁移中应从盘点里单独识别，避免把 icon `text-xl` 误当作正文排版契约。
+
+迁移前后使用 `pnpm typography:inventory` 盘点第一批范围内的 Tailwind `text-*`、裸 `font-size`、已 token 化 `font-size` 和无效 Typography token。该命令当前是软约束，目标是先缩小第一批债务；当第一批收敛后，再考虑把新增裸字号接入 `pnpm design:check` 门禁。
+
 ### Pattern
 
 | Class | 用途 |
