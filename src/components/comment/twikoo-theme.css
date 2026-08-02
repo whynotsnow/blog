@@ -1,7 +1,7 @@
 [data-comment-service="twikoo"],
 [data-comment-service="twikoo"] #twikoo {
-  --twikoo-title-size: 1rem;
-  --twikoo-nick-size: 0.95rem;
+  --twikoo-title-size: var(--text-body-regular-size);
+  --twikoo-nick-size: var(--text-ui-emphasis-size);
   --twikoo-accent: var(--accent);
   --twikoo-accent-hover: color-mix(in oklch, var(--accent) 84%, var(--surface-raised));
   --twikoo-accent-active: color-mix(in oklch, var(--accent) 88%, var(--text-primary));

@@ -277,17 +277,17 @@
 
 <style>
 	.mobile-toc-panel {
-		--mobile-toc-title-size: 1.125rem;
-		--mobile-toc-empty-icon-size: 1.5rem;
-		--mobile-toc-item-size: 0.9rem;
-		--mobile-toc-root-size: 1rem;
-		--mobile-toc-level-3-size: 0.85rem;
-		--mobile-toc-level-4-size: 0.8rem;
-		--mobile-toc-deep-size: 0.75rem;
-		--mobile-toc-badge-size: 0.8rem;
-		--mobile-toc-post-title-size: 0.9rem;
-		--mobile-toc-post-category-size: 0.75rem;
-		--mobile-toc-pinned-icon-size: 1.25rem;
+		--mobile-toc-title-size: var(--text-section-title-size);
+		--mobile-toc-empty-icon-size: var(--text-icon-large-size);
+		--mobile-toc-item-size: var(--text-ui-muted-size);
+		--mobile-toc-root-size: var(--text-body-regular-size);
+		--mobile-toc-level-3-size: var(--text-subtle-size);
+		--mobile-toc-level-4-size: var(--text-compact-size);
+		--mobile-toc-deep-size: var(--text-caption-size);
+		--mobile-toc-badge-size: var(--text-compact-size);
+		--mobile-toc-post-title-size: var(--text-ui-muted-size);
+		--mobile-toc-post-category-size: var(--text-caption-size);
+		--mobile-toc-pinned-icon-size: var(--text-icon-inline-size);
 		max-height: calc(100vh - 120px);
 		overflow-y: auto;
 		background: var(--card-bg);

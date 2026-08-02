@@ -46,6 +46,8 @@ Typography 规范化采用分批迁移。第一批只覆盖首页、分类页、
 
 迁移前后使用 `pnpm typography:inventory` 盘点第一批范围内的 Tailwind `text-*`、裸 `font-size`、已 token 化 `font-size` 和无效 Typography token。该命令当前是软约束，目标是先缩小第一批债务；当第一批收敛后，再考虑把新增裸字号接入 `pnpm design:check` 门禁。
 
+公共 Typography 阶梯使用 `--text-*-size` 命名，优先覆盖第一批迁移需要的 UI 字号：Caption、Dense、Compact、Meta、UI、Muted UI、Emphasis UI、Body Regular、Subtitle、Card Title、Section Title、Stat、List Title、Page Title，以及图标字号 `--text-icon-*`。既有 `--text-small`、`--text-meta`、`--text-title` 作为兼容别名保留，但新 Feature 应优先引用新的 `--text-*-size` 阶梯；业务 token 例如 `--post-card-title-size`、`--category-filter-control-size` 应引用公共阶梯，而不是直接写裸字号。
+
 ### Pattern
 
 | Class | 用途 |

@@ -1,7 +1,7 @@
 @reference "tailwindcss";
 
 .custom-md {
-  --markdown-minor-heading-size: 1rem;
+  --markdown-minor-heading-size: var(--text-body-regular-size);
 
   color: var(--text-primary);
   font-family: var(--font-body);

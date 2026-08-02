@@ -102,9 +102,9 @@
 
 <style>
 	.category-filter {
-		--category-filter-title-size: 1.25rem;
-		--category-filter-control-size: 0.875rem;
-		--category-filter-tag-size: 0.75rem;
+		--category-filter-title-size: var(--text-card-title-size);
+		--category-filter-control-size: var(--text-ui-size);
+		--category-filter-tag-size: var(--text-caption-size);
 		padding: clamp(1rem, 2cqi, 1.25rem);
 	}
 

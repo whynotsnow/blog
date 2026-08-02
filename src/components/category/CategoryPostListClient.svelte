@@ -79,7 +79,7 @@
 
 <style>
 	.category-page {
-		--category-page-state-size: 0.875rem;
+		--category-page-state-size: var(--text-meta-size);
 	}
 
 	.category-page__state {

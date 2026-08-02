@@ -21,7 +21,7 @@ const { section } = Astro.props;
 
 <style>
 	.home-section__header {
-		--home-section-link-size: clamp(0.8125rem, 0.75rem + 0.25cqi, 0.875rem);
+		--home-section-link-size: clamp(var(--text-dense-size), calc(var(--text-caption-size) + 0.25cqi), var(--text-ui-size));
 		width: 100%;
 		max-width: var(--width-feed-one-max);
 		margin-inline: auto;

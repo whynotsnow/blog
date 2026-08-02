@@ -413,8 +413,8 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 
 <style>
 	table-of-contents#toc {
-		--toc-entry-badge-size: 0.75rem;
-		--toc-entry-label-size: 0.875rem;
+		--toc-entry-badge-size: var(--text-caption-size);
+		--toc-entry-label-size: var(--text-meta-size);
 		max-height: none;
 		min-height: 0;
 		overflow: visible;

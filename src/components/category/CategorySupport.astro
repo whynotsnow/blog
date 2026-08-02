@@ -70,9 +70,9 @@ const { support } = Astro.props as Props;
 <style>
 	.category-support {
 		--stack-space: var(--space-grid-gap);
-		--category-support-heading-size: 0.95rem;
-		--category-support-heading-icon-size: 1.25rem;
-		--category-support-item-title-size: 0.9rem;
+		--category-support-heading-size: var(--text-ui-emphasis-size);
+		--category-support-heading-icon-size: var(--text-icon-inline-size);
+		--category-support-item-title-size: var(--text-ui-muted-size);
 	}
 
 	@media (max-width: 879px) {
