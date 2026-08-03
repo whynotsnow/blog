@@ -12,7 +12,7 @@
 | 规范分类 | `src/config/category-slugs.ts` | 定义稳定 `name`、`slug` 和兼容输入 `aliases`。 |
 | 分类展示资产 | `src/data/category-assets.ts` | 定义分类 Hub 卡片使用的描述和封面图。 |
 | 分类归一化 | `src/services/core/taxonomy.ts` | 将 frontmatter 输入转换为规范分类或自动 slug。 |
-| 分类 Hub 数据 | `src/services/category-hub.ts` | 构建 `/category/` 和 `/category/recommended/` 的 View Model。 |
+| 分类 Hub 数据 | `src/services/category-hub.ts` | 构建 `/category/`、`/category/recent/` 和 `/category/recommended/` 的 View Model。 |
 | 具体分类页数据 | `src/services/category-page.ts` | 构建 `/category/{slug}/`、分页和 Tag JSON 索引。 |
 
 普通 UI 组件不要直接读取 Astro Content Collection。分类、标签、文章链接和卡片数据应通过 `src/services/core`、`src/services/category-hub.ts` 或 `src/services/category-page.ts` 进入页面。
@@ -22,12 +22,13 @@
 | 路由 | 说明 |
 | --- | --- |
 | `/category/` | 分类 Hub 的全部分类视图，展示分类卡片、热门 Tag、每类最近文章和右侧 support。 |
+| `/category/recent/` | 分类 Hub 的最近更新视图，按全站最近活动时间展示文章，并复用分类 support。 |
 | `/category/recommended/` | 分类 Hub 的推荐视图，按全站推荐分展示文章，并复用分类 support。 |
 | `/category/{slug}/` | 具体分类第一页，主内容区支持分类和 Tag 筛选。 |
 | `/category/{slug}/page/{page}/` | 具体分类的第 2 页及后续分页；不会生成 `/page/1/`。 |
 | `/api/categories/{slug}.json/` | 每个具体分类一份紧凑 Tag 索引，浏览器仅在需要 Tag 模式时加载或低优先级预取。 |
 
-分类 Hub 和具体分类页都通过 `MainGridLayout` 的 `support` slot 使用右栏。右栏展示模块由 service 输出的 `support.modules` 控制：Hub 页启用全站最近更新和热门标签，不重复展示分类导航；具体分类页启用当前分类最近更新、当前分类热门标签和分类导航。分类导航顶部展示 `/category/` 与 `/category/recommended/` 两个 Hub 入口，下方继续展示当前分类之外的相邻分类。
+分类 Hub 和具体分类页都通过 `MainGridLayout` 的 `support` slot 使用右栏。全站发现入口由 `src/services/support.ts` 统一生成，并通过 `GlobalDiscoveryCard.astro` 展示预览内容：全部分类 card 展示分类项，最近更新与推荐阅读 card 展示文章项。Hub 页会隐藏当前视图对应的发现 card，只展示其他发现入口和热门标签；具体分类页展示全部全站发现入口，并且这些 card 使用全站文章池。当前分类文章、Tag 筛选和分页留在主内容区，右栏不再重复当前分类最近更新、热门标签或分类导航。
 
 ## 新增分类
 
@@ -215,6 +216,7 @@ pnpm exec playwright test tests/e2e/features/post-list.spec.ts
 验证重点：
 
 - `/category/` 能展示分类卡片。
+- `/category/recent/` 能按最近活动时间展示文章并保留右栏。
 - `/category/recommended/` 能展示推荐文章并保留右栏。
 - `/category/{slug}/` 能展示具体分类文章。
 - 合法 `?tag=` 查询能加载 `/api/categories/{slug}.json/`。
@@ -268,7 +270,7 @@ Astro pages / UI components
 3. 将 `src/data/category-assets.ts` 的描述和图片迁移到分类记录。
 4. 编写数据库 loader，使其输出与 `ContentStore` 分类索引等价的数据。
 5. 先替换 `category-hub.ts` 和 `category-page.ts` 的数据来源，保持页面组件不变。
-6. 对比 `/category/`、`/category/recommended/`、`/category/{slug}/` 和 Tag JSON 输出。
+6. 对比 `/category/`、`/category/recent/`、`/category/recommended/`、`/category/{slug}/` 和 Tag JSON 输出。
 7. 完成后再评估是否迁移文章详情页、Feed 或搜索索引。
 
 不要在迁移第一步就改 UI 结构。分类管理的长期稳定点应该是 slug、URL 和 View Model，而不是当前 Astro 或未来数据库的具体读取方式。
