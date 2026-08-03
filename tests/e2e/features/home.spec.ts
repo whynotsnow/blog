@@ -11,7 +11,9 @@ test("home sections expose configured guide destinations", async ({ page }) => {
 	await expect(sections.nth(1).locator("h2")).toHaveText("推荐阅读");
 	await expect(sections.nth(2).locator("h2")).toHaveText("技术文章");
 	await expect(
-		sections.nth(0).locator('.home-section__link[href="/category/"]'),
+		sections
+			.nth(0)
+			.locator('.home-section__link[href="/category/recent/"]'),
 	).toBeVisible();
 	await expect(
 		sections
@@ -124,7 +126,7 @@ test("home section headers follow Feed width and responsive typography", async (
 				Math.abs(geometry.supportRight - geometry.gridRight),
 			).toBeLessThan(1);
 		}
-		expect(geometry.titleSize).toBeCloseTo(20, 1);
+		expect(geometry.titleSize).toBeCloseTo(18, 1);
 		expect(geometry.headerToFeedGap).toBeCloseTo(geometry.sectionGap, 1);
 		expect(geometry.sectionGap).toBeCloseTo(geometry.feedGap, 1);
 	}
@@ -134,5 +136,5 @@ test("home section headers follow Feed width and responsive typography", async (
 	expect(samples[2].columnCount).toBe(1);
 	expect(samples[3].headerWidth).toBeCloseTo(608, 0);
 	expect(samples[3].columnCount).toBe(2);
-	expect(samples.at(-1)!.titleSize).toBeCloseTo(20, 1);
+	expect(samples.at(-1)!.titleSize).toBeCloseTo(18, 1);
 });

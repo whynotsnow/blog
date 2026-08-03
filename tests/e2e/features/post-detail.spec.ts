@@ -923,7 +923,7 @@ test("post support TOC owns internal overflow without sidebar scrollbar", async 
 		const heading = document.getElementById(item.id);
 		if (!heading) throw new Error(`Missing heading ${item.id}`);
 		window.scrollTo({
-			top: heading.getBoundingClientRect().top + window.scrollY - 120,
+			top: heading.getBoundingClientRect().top + window.scrollY - 40,
 		});
 	});
 	await expect

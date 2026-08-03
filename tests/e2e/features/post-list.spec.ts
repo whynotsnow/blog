@@ -52,9 +52,27 @@ test("category hub lists all categories and links to category pages", async ({
 	await expect(
 		page.locator(".category-hub-tab[aria-current='page']"),
 	).toHaveText("全部分类");
+	const activeTab = page.locator(".category-hub-tab[aria-current='page']");
+	await activeTab.hover();
+	const activeTabColors = await activeTab.evaluate((tab) => {
+		const probe = document.createElement("span");
+		probe.style.color = "var(--text-on-accent)";
+		document.body.append(probe);
+		const textOnAccent = getComputedStyle(probe).color;
+		probe.remove();
+
+		return {
+			color: getComputedStyle(tab).color,
+			textOnAccent,
+		};
+	});
+	expect(activeTabColors.color).toBe(activeTabColors.textOnAccent);
+	await expect(
+		page.locator('.category-hub-tab[href="/category/recent/"]'),
+	).toHaveText("最近更新");
 	await expect(
 		page.locator('.category-hub-tab[href="/category/recommended/"]'),
-	).toHaveText("推荐");
+	).toHaveText("推荐阅读");
 
 	const techCard = page.locator('[data-category-card="tech"]');
 	await expect(techCard).toBeVisible();
@@ -79,10 +97,10 @@ test("category recommended view renders recommended posts", async ({
 
 	const hub = page.locator("[data-category-hub]");
 	await expect(hub).toHaveAttribute("data-category-hub-view", "recommended");
-	await expect(page.locator("#category-hub-title")).toHaveText("推荐");
+	await expect(page.locator("#category-hub-title")).toHaveText("推荐阅读");
 	await expect(
 		page.locator(".category-hub-tab[aria-current='page']"),
-	).toHaveText("推荐");
+	).toHaveText("推荐阅读");
 	await expect(page.locator("#category-filter-title")).toHaveCount(0);
 
 	const postList = page.locator("#category-recommended-post-list");
@@ -91,6 +109,30 @@ test("category recommended view renders recommended posts", async ({
 	await page.locator('.category-hub-tab[href="/category/"]').click();
 	await expect(page).toHaveURL(/\/category\/$/);
 	await expect(hub).toHaveAttribute("data-category-hub-view", "all");
+});
+
+test("category recent view renders recently updated posts", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1000, height: 900 });
+	await gotoPage(page, "/category/recent/");
+
+	const hub = page.locator("[data-category-hub]");
+	await expect(hub).toHaveAttribute("data-category-hub-view", "recent");
+	await expect(page.locator("#category-hub-title")).toHaveText("最近更新");
+	await expect(
+		page.locator(".category-hub-tab[aria-current='page']"),
+	).toHaveText("最近更新");
+	await expect(page.locator("#category-filter-title")).toHaveCount(0);
+
+	const postList = page.locator("#category-recent-post-list");
+	await expect(postList).toHaveAttribute("data-post-list-renderer", "astro");
+	await expect(postList.locator(":scope > .post-list__item")).toHaveCount(12);
+	await page
+		.locator('.category-hub-tab[href="/category/recommended/"]')
+		.click();
+	await expect(page).toHaveURL(/\/category\/recommended\/$/);
+	await expect(hub).toHaveAttribute("data-category-hub-view", "recommended");
 });
 
 test("Grid Card height follows its cover while Content keeps a bounded budget", async ({

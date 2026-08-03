@@ -12,7 +12,25 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	await expect(
 		page.locator(".page-support-region .profile-card"),
 	).toBeVisible();
-	await expect(page.locator(".home-support__panel")).toHaveCount(4);
+	await expect(
+		page.locator(
+			".home-support__panel, .home-support .global-discovery-card",
+		),
+	).toHaveCount(4);
+	await expect(
+		page.locator('.home-support [data-discovery-card="recent"]'),
+	).toContainText("最近更新");
+	await expect(
+		page.locator(
+			'.home-support [data-discovery-card="recent"] .global-discovery-card__item',
+		),
+	).toHaveCount(4);
+	await expect(
+		page.locator('.home-support [data-discovery-card="category"]'),
+	).toContainText("全部分类");
+	await expect(
+		page.locator('.home-support [data-discovery-card="category"]'),
+	).toContainText("技术");
 	await expect(
 		page.locator(".home-support__heading", { hasText: "站点概览" }),
 	).toBeVisible();
@@ -44,7 +62,13 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	await gotoPage(page, "/category/");
 	await expect(page.locator(".category-support")).toBeVisible();
 	await expect(
-		page.locator(".category-support__heading", { hasText: "最近更新" }),
+		page.locator('.category-support [data-discovery-card="category"]'),
+	).toHaveCount(0);
+	await expect(
+		page.locator('.category-support [data-discovery-card="recent"]'),
+	).toBeVisible();
+	await expect(
+		page.locator('.category-support [data-discovery-card="recommended"]'),
 	).toBeVisible();
 	await expect(
 		page.locator(".category-support__heading", { hasText: "热门标签" }),
@@ -60,23 +84,42 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	await expect(page.locator(".category-support")).toBeVisible();
 	await expect(
 		page.locator(".category-support__heading", { hasText: "最近更新" }),
-	).toBeVisible();
+	).toHaveCount(0);
 	await expect(
 		page.locator(".category-support__heading", { hasText: "热门标签" }),
-	).toBeVisible();
+	).toHaveCount(0);
 	await expect(
-		page.locator(".category-support__heading", { hasText: "分类导航" }),
-	).toBeVisible();
-	await expect(
-		page.locator(".category-support__featured-link", {
-			hasText: "全部分类",
+		page.locator(".category-support .support-link-panel__heading", {
+			hasText: "分类导航",
 		}),
+	).toHaveCount(0);
+	await expect(
+		page.locator('.category-support [data-discovery-card="category"]'),
+	).toBeVisible();
+	await expect(
+		page.locator('.category-support [data-discovery-card="category"]'),
+	).toContainText("全部分类");
+	await expect(
+		page.locator(
+			'.category-support [data-discovery-card="category"] .global-discovery-card__header',
+		),
 	).toHaveAttribute("href", "/category/");
 	await expect(
-		page.locator(".category-support__featured-link", {
-			hasText: "推荐分类",
-		}),
-	).toHaveAttribute("href", "/category/recommended/");
+		page.locator('.category-support [data-discovery-card="recent"]'),
+	).toContainText("最近更新");
+	await expect(
+		page.locator(
+			'.category-support [data-discovery-card="recent"] .global-discovery-card__item',
+		),
+	).toHaveCount(4);
+	await expect(
+		page.locator('.category-support [data-discovery-card="recommended"]'),
+	).toContainText("推荐阅读");
+	await expect(
+		page.locator(
+			'.category-support [data-discovery-card="recommended"] .global-discovery-card__item',
+		),
+	).toHaveCount(4);
 	await expect(
 		page.locator(".category-support__heading", { hasText: "其他分类" }),
 	).toHaveCount(0);
@@ -96,10 +139,27 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	await expect(page.locator(".post-support__toc")).toBeVisible();
 	await expect(
 		page.locator(".post-support__heading", { hasText: "继续阅读" }),
-	).toBeVisible();
+	).toHaveCount(0);
 	await expect(
 		page.locator(".post-support__heading", { hasText: "推荐阅读" }),
-	).toBeVisible();
+	).toHaveCount(0);
+	await expect(
+		page.locator('.post-support [data-discovery-card="category"]'),
+	).toContainText("全部分类");
+	await expect(
+		page.locator('.post-support [data-discovery-card="category"]'),
+	).toContainText("技术");
+	await expect(
+		page.locator('.post-support [data-discovery-card="recent"]'),
+	).toContainText("最近更新");
+	await expect(
+		page.locator(
+			'.post-support [data-discovery-card="recent"] .global-discovery-card__item',
+		),
+	).toHaveCount(4);
+	await expect(
+		page.locator('.post-support [data-discovery-card="recommended"]'),
+	).toContainText("推荐阅读");
 	await expect(
 		page.locator(".post-support__heading", { hasText: "阅读信息" }),
 	).toHaveCount(0);
