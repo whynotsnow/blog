@@ -1,6 +1,6 @@
 import type { GetStaticPathsItem, ImageMetadata } from "astro";
 import { CATEGORY_PAGE_SIZE } from "@constants/constants";
-import { getCategoryHubUrl, getCategoryRecommendedUrl, url } from "@utils/url";
+import { url } from "@utils/url";
 import { toPostCardViewModel } from "./core/inject";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
@@ -10,10 +10,8 @@ import type {
 	PostNavigatorCategory,
 } from "./core/types";
 import {
-	sortByRecentActivity,
-	toSupportCategoryLink,
-	toSupportPostLink,
-	toSupportTagLink,
+	buildGlobalDiscoveryCards,
+	type GlobalDiscoveryCardViewModel,
 	type SupportPostLink,
 	type SupportTaxonomyLink,
 } from "./support";
@@ -32,6 +30,7 @@ export type CategorySupportModule = "recentPosts" | "tags" | "categories";
 export type CategorySupportViewModel = {
 	modules: CategorySupportModule[];
 	recentPosts: SupportPostLink[];
+	discoveryCards: GlobalDiscoveryCardViewModel[];
 	categoryNavigation: CategorySupportNavigationViewModel;
 	tags: SupportTaxonomyLink[];
 };
@@ -47,29 +46,6 @@ export type CategorySupportNavigationViewModel = {
 	featuredLinks: CategorySupportNavigationLink[];
 	categories: SupportTaxonomyLink[];
 };
-
-const CATEGORY_SUPPORT_MODULES = [
-	"recentPosts",
-	"tags",
-	"categories",
-] satisfies CategorySupportModule[];
-const CATEGORY_SUPPORT_RECENT_POST_LIMIT = 5;
-const CATEGORY_SUPPORT_CATEGORY_LIMIT = 8;
-const CATEGORY_SUPPORT_TAG_LIMIT = 8;
-const CATEGORY_SUPPORT_FEATURED_LINKS: CategorySupportNavigationLink[] = [
-	{
-		id: "all-categories",
-		label: "全部分类",
-		description: "总览",
-		url: getCategoryHubUrl(),
-	},
-	{
-		id: "recommended-categories",
-		label: "推荐分类",
-		description: "精选",
-		url: getCategoryRecommendedUrl(),
-	},
-];
 
 export type CategoryPaginationViewModel = {
 	start: number;
@@ -191,21 +167,18 @@ function buildCategoryPage(
 
 function buildCategoryPageProps(params: {
 	sortedPosts: PostIndexEntry[];
+	globalPosts: PostIndexEntry[];
 	slug: string;
 	currentPage: number;
 	categories: PostNavigatorCategory[];
 }): CategoryPageProps {
-	const { sortedPosts, slug, currentPage, categories } = params;
+	const { sortedPosts, globalPosts, slug, currentPage, categories } = params;
 	const allPosts = sortedPosts.map(toPostCardViewModel);
 	const { posts, pagination } = buildCategoryPage(
 		allPosts,
 		slug,
 		currentPage,
 	);
-	const activeCategory = categories.find(
-		(category) => category.slug === slug,
-	);
-
 	return {
 		posts,
 		pagination,
@@ -213,24 +186,17 @@ function buildCategoryPageProps(params: {
 		categories,
 		tagIndexUrl: url(`/api/categories/${slug}.json/`),
 		support: {
-			modules: [...CATEGORY_SUPPORT_MODULES],
-			recentPosts: sortByRecentActivity(sortedPosts)
-				.slice(0, CATEGORY_SUPPORT_RECENT_POST_LIMIT)
-				.map(toSupportPostLink),
+			modules: [],
+			recentPosts: [],
+			discoveryCards: buildGlobalDiscoveryCards({
+				posts: globalPosts,
+				categories,
+			}),
 			categoryNavigation: {
-				featuredLinks: CATEGORY_SUPPORT_FEATURED_LINKS.map((link) => ({
-					...link,
-				})),
-				categories: categories
-					.filter((category) => category.slug !== slug)
-					.slice(0, CATEGORY_SUPPORT_CATEGORY_LIMIT)
-					.map(toSupportCategoryLink),
+				featuredLinks: [],
+				categories: [],
 			},
-			tags: (activeCategory?.tags ?? [])
-				.slice()
-				.sort((a, b) => b.count - a.count)
-				.slice(0, CATEGORY_SUPPORT_TAG_LIMIT)
-				.map((tag) => toSupportTagLink(tag, slug)),
+			tags: [],
 		},
 	};
 }
@@ -248,6 +214,7 @@ export async function getCategoryIndexStaticPaths(): Promise<
 			params: { slug },
 			props: buildCategoryPageProps({
 				sortedPosts,
+				globalPosts: store.posts,
 				slug,
 				currentPage: 1,
 				categories,
@@ -276,6 +243,7 @@ export async function getCategoryPaginatedStaticPaths(): Promise<
 				params: { slug, page: String(currentPage) },
 				props: buildCategoryPageProps({
 					sortedPosts,
+					globalPosts: store.posts,
 					slug,
 					currentPage,
 					categories,

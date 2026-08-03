@@ -15,6 +15,7 @@ import { runPostBuildTask } from "../core/concurrency";
 import { buildPostDetailStaticPathItems } from "./static-paths";
 import {
 	buildDeterministicRandomPostLinks,
+	buildGlobalDiscoveryCards,
 	buildRecommendedPostLinks,
 	toSupportPostLink,
 } from "../support";
@@ -144,6 +145,10 @@ export async function getPostDetailPageData(
 			continueReading,
 			recommendedPosts: visibleRecommendedPosts,
 			randomPosts,
+			discoveryCards: buildGlobalDiscoveryCards({
+				posts: store.posts,
+				categories: store.categories,
+			}),
 		},
 		canonicalUrl,
 		canonicalOgSlug: index.route.canonicalSlug,

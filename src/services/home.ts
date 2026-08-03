@@ -4,8 +4,8 @@ import {
 } from "@constants/constants";
 import { CATEGORY_SLUGS } from "@/config";
 import {
-	getCategoryHubUrl,
 	getCategoryPageUrl,
+	getCategoryRecentUrl,
 	getCategoryRecommendedUrl,
 } from "@/utils/url";
 import { toPostCardViewModel } from "./core/inject";
@@ -13,11 +13,9 @@ import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
 import { sortByScore } from "./core/sort";
 import {
-	sortByRecentActivity,
-	toSupportCategoryLink,
-	toSupportPostLink,
+	buildGlobalDiscoveryCards,
 	toSupportTagLink,
-	type SupportPostLink,
+	type GlobalDiscoveryCardViewModel,
 	type SupportTaxonomyLink,
 } from "./support";
 
@@ -41,8 +39,7 @@ export interface HomeSupportViewModel {
 		tagCount: number;
 		totalWords: number;
 	};
-	recentPosts: SupportPostLink[];
-	categories: SupportTaxonomyLink[];
+	discoveryCards: GlobalDiscoveryCardViewModel[];
 	tags: SupportTaxonomyLink[];
 }
 
@@ -91,7 +88,7 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 			{
 				id: "recent",
 				title: "最近更新",
-				href: getCategoryHubUrl(),
+				href: getCategoryRecentUrl(),
 				linkLabel: "更多",
 				posts: recent,
 			},
@@ -111,10 +108,11 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 				tagCount: allTagLinks.length,
 				totalWords: store.stats.totalWords,
 			},
-			recentPosts: sortByRecentActivity(store.posts)
-				.slice(0, 4)
-				.map(toSupportPostLink),
-			categories: store.categories.slice(0, 8).map(toSupportCategoryLink),
+			discoveryCards: buildGlobalDiscoveryCards({
+				posts: store.posts,
+				categories: store.categories,
+				include: ["recent", "category"],
+			}),
 			tags: tagLinks,
 		},
 	};

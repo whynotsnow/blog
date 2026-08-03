@@ -157,7 +157,7 @@ const { model } = Astro.props;
 		) : (
 			<PostGrid
 				posts={model.posts}
-				id="category-recommended-post-list"
+				id={`category-${model.activeView}-post-list`}
 			/>
 		)
 	}
@@ -214,6 +214,11 @@ const { model } = Astro.props;
 	.category-hub-tab--active {
 		border-color: var(--accent);
 		background: var(--accent);
+		color: var(--text-on-accent);
+	}
+
+	.category-hub-tab--active:hover {
+		border-color: var(--accent);
 		color: var(--text-on-accent);
 	}
 

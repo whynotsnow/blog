@@ -1,8 +1,8 @@
 ---
 import { Icon } from "astro-icon/components";
 import ProfileCard from "@components/profile/ProfileCard.astro";
+import GlobalDiscoveryCard from "@components/support/GlobalDiscoveryCard.astro";
 import type { HomeSupportViewModel } from "@/services/home";
-import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 
 interface Props {
 	model: HomeSupportViewModel;
@@ -19,39 +19,11 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 <aside class:list={["home-support ds-stack", className]} aria-label="首页侧栏">
 	<ProfileCard />
 
-	<section class="home-support__panel ds-surface-card">
-		<h2 class="home-support__heading">
-			<Icon name="material-symbols:update-rounded" />
-			最近更新
-		</h2>
-		<div class="home-support__post-list">
-			{
-				model.recentPosts.map((post) => (
-					<a href={post.url} class="home-support__post">
-						<strong>{post.title}</strong>
-						<span>{formatDateToYYYYMMDD(post.published)}</span>
-					</a>
-				))
-			}
-		</div>
-	</section>
-
-	<section class="home-support__panel ds-surface-card">
-		<h2 class="home-support__heading">
-			<Icon name="material-symbols:category-outline-rounded" />
-			分类入口
-		</h2>
-		<div class="home-support__taxonomy">
-			{
-				model.categories.map((category) => (
-					<a href={category.url} class="home-support__taxonomy-link">
-						<span>{category.name}</span>
-						<small>{category.count}</small>
-					</a>
-				))
-			}
-		</div>
-	</section>
+	{
+		model.discoveryCards.map((card) => (
+			<GlobalDiscoveryCard card={card} />
+		))
+	}
 
 	{
 		model.tags.length > 0 && (
@@ -104,7 +76,8 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 		--home-support-heading-size: var(--text-ui-emphasis-size);
 		--home-support-heading-icon-size: var(--text-icon-inline-size);
 		--home-support-stat-value-size: var(--text-body-regular-size);
-		--home-support-item-title-size: var(--text-ui-size);
+		width: 100%;
+		align-items: stretch;
 	}
 
 	.home-support__panel {
@@ -132,8 +105,7 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 		gap: var(--size-2);
 	}
 
-	.home-support__stats div,
-	.home-support__taxonomy-link {
+	.home-support__stats div {
 		min-width: 0;
 		padding: var(--size-3);
 		border: 1px solid var(--border-subtle);
@@ -155,9 +127,7 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 		white-space: nowrap;
 	}
 
-	.home-support__stats small,
-	.home-support__post span,
-	.home-support__taxonomy-link small {
+	.home-support__stats small {
 		color: var(--text-muted);
 		font-size: var(--text-meta-size);
 	}
@@ -166,39 +136,9 @@ const formattedWords = new Intl.NumberFormat("zh-CN", {
 		margin-top: var(--size-1);
 	}
 
-	.home-support__post-list,
-	.home-support__taxonomy,
 	.home-support__tags {
 		display: grid;
 		gap: var(--size-2);
-	}
-
-	.home-support__post,
-	.home-support__taxonomy-link {
-		display: grid;
-		gap: var(--size-1);
-		color: var(--text-secondary);
-	}
-
-	.home-support__post strong,
-	.home-support__taxonomy-link span {
-		overflow: hidden;
-		color: var(--text-primary);
-		font-size: var(--home-support-item-title-size);
-		font-weight: 800;
-		line-height: 1.35;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.home-support__post:hover strong,
-	.home-support__taxonomy-link:hover span {
-		color: var(--accent);
-	}
-
-	.home-support__taxonomy-link {
-		grid-template-columns: minmax(0, 1fr) auto;
-		align-items: center;
 	}
 
 	.home-support__tags {

@@ -2,7 +2,7 @@
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import TOC from "@components/post-toc/TableOfContents.astro";
-import { formatDateToYYYYMMDD } from "@utils/date-utils";
+import GlobalDiscoveryCard from "@components/support/GlobalDiscoveryCard.astro";
 import type { PostDetailPageProps } from "@/services/post-detail/types";
 import type { TocItem } from "@components/post-toc/toc-data";
 
@@ -33,41 +33,9 @@ const hasHeadings = headings.length > 0;
 	}
 
 	{
-		support.continueReading.length > 0 && (
-			<section class="post-support__panel ds-surface-card">
-				<h2 class="post-support__heading">
-					<Icon name="material-symbols:swap-horiz-rounded" />
-					继续阅读
-				</h2>
-				<div class="post-support__nav">
-					{support.continueReading.map((post) => (
-						<a href={post.url} class="post-support__nav-link">
-							<strong>{post.title}</strong>
-							<span>{formatDateToYYYYMMDD(post.published)}</span>
-						</a>
-					))}
-				</div>
-			</section>
-		)
-	}
-
-	{
-		support.recommendedPosts.length > 0 && (
-			<section class="post-support__panel ds-surface-card">
-				<h2 class="post-support__heading">
-					<Icon name="material-symbols:bookmark-star-outline-rounded" />
-					推荐阅读
-				</h2>
-				<div class="post-support__nav">
-					{support.recommendedPosts.map((post) => (
-						<a href={post.url} class="post-support__nav-link">
-							<strong>{post.title}</strong>
-							<span>{post.category.name}</span>
-						</a>
-					))}
-				</div>
-			</section>
-		)
+		support.discoveryCards.map((card) => (
+			<GlobalDiscoveryCard card={card} />
+		))
 	}
 </aside>
 
@@ -80,7 +48,6 @@ const hasHeadings = headings.length > 0;
 		);
 		--post-support-heading-size: var(--text-ui-emphasis-size);
 		--post-support-heading-icon-size: var(--text-icon-inline-size);
-		--post-support-nav-title-size: var(--text-ui-size);
 		position: sticky;
 		top: var(--main-content-offset);
 		width: 100%;
@@ -156,41 +123,4 @@ const hasHeadings = headings.length > 0;
 		display: none;
 	}
 
-	.post-support__nav {
-		display: grid;
-		gap: var(--size-2);
-	}
-
-	.post-support__nav-link {
-		display: grid;
-		gap: var(--size-1);
-		min-width: 0;
-		padding: var(--size-3);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--radius-md);
-		color: var(--text-secondary);
-		transition:
-			color var(--motion-fast) var(--motion-ease-standard),
-			border-color var(--motion-fast) var(--motion-ease-standard);
-	}
-
-	.post-support__nav-link:hover {
-		border-color: var(--border-strong);
-		color: var(--accent);
-	}
-
-	.post-support__nav-link span {
-		font-size: var(--text-meta-size);
-		font-weight: 700;
-	}
-
-	.post-support__nav-link strong {
-		overflow: hidden;
-		color: var(--text-primary);
-		font-size: var(--post-support-nav-title-size);
-		font-weight: 800;
-		line-height: 1.35;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
 </style>

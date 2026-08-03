@@ -1,7 +1,7 @@
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { AstroComponentFactory } from "astro/runtime/server/index.js";
 import type { PostNavigationLink, UIMeta } from "../core/types";
-import type { SupportPostLink } from "../support";
+import type { GlobalDiscoveryCardViewModel, SupportPostLink } from "../support";
 
 export type Person = {
 	"@type": "Person";
@@ -93,6 +93,7 @@ export type PostDetailPageProps = {
 		continueReading: SupportPostLink[];
 		recommendedPosts: SupportPostLink[];
 		randomPosts: SupportPostLink[];
+		discoveryCards: GlobalDiscoveryCardViewModel[];
 	};
 	canonicalUrl: string;
 	canonicalOgSlug: string;

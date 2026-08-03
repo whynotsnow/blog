@@ -1,5 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
+import GlobalDiscoveryCard from "@components/support/GlobalDiscoveryCard.astro";
+import SupportLinkPanel from "@components/support/SupportLinkPanel.astro";
 import type { CategoryPageProps } from "@/services/category-page";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 
@@ -11,6 +13,12 @@ const categoryNavigation = support.categoryNavigation;
 ---
 
 <aside class="category-support ds-stack" aria-label="分类上下文">
+	{
+		support.discoveryCards.map((card) => (
+			<GlobalDiscoveryCard card={card} />
+		))
+	}
+
 	{
 		enabledModules.has("recentPosts") && support.recentPosts.length > 0 && (
 			<section class="category-support__panel ds-surface-card">
@@ -53,33 +61,20 @@ const categoryNavigation = support.categoryNavigation;
 		enabledModules.has("categories") &&
 			(categoryNavigation.featuredLinks.length > 0 ||
 				categoryNavigation.categories.length > 0) && (
-			<section class="category-support__panel ds-surface-card">
-				<h2 class="category-support__heading">
-					<Icon name="material-symbols:category-outline-rounded" />
-					分类导航
-				</h2>
-				{categoryNavigation.featuredLinks.length > 0 && (
-					<div class="category-support__featured-links">
-						{categoryNavigation.featuredLinks.map((link) => (
-							<a
-								href={link.url}
-								class="category-support__featured-link"
-							>
-								<span>{link.label}</span>
-								<small>{link.description}</small>
-							</a>
-						))}
-					</div>
-				)}
-				<div class="category-support__links">
-					{categoryNavigation.categories.map((category) => (
-						<a href={category.url} class="category-support__link">
-							<span>{category.name}</span>
-							<small>{category.count}</small>
-						</a>
-					))}
-				</div>
-			</section>
+			<SupportLinkPanel
+				title="分类导航"
+				icon="material-symbols:category-outline-rounded"
+				featuredLinks={categoryNavigation.featuredLinks.map((link) => ({
+					label: link.label,
+					url: link.url,
+					description: link.description,
+				}))}
+				links={categoryNavigation.categories.map((category) => ({
+					label: category.name,
+					url: category.url,
+					count: category.count,
+				}))}
+			/>
 		)
 	}
 </aside>
@@ -90,6 +85,8 @@ const categoryNavigation = support.categoryNavigation;
 		--category-support-heading-size: var(--text-ui-emphasis-size);
 		--category-support-heading-icon-size: var(--text-icon-inline-size);
 		--category-support-item-title-size: var(--text-ui-size);
+		width: 100%;
+		align-items: stretch;
 	}
 
 	@media (max-width: 879px) {
@@ -123,21 +120,12 @@ const categoryNavigation = support.categoryNavigation;
 		gap: var(--size-2);
 	}
 
-	.category-support__post-list,
-	.category-support__featured-links,
-	.category-support__links {
+	.category-support__post-list {
 		display: grid;
 		gap: var(--size-2);
 	}
 
-	.category-support__featured-links {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		margin-bottom: var(--size-2);
-	}
-
 	.category-support__post,
-	.category-support__featured-link,
-	.category-support__link,
 	.category-support__tag {
 		display: inline-flex;
 		max-width: 100%;
@@ -155,15 +143,12 @@ const categoryNavigation = support.categoryNavigation;
 			border-color var(--motion-fast) var(--motion-ease-standard);
 	}
 
-	.category-support__tag:hover,
-	.category-support__featured-link:hover {
+	.category-support__tag:hover {
 		border-color: var(--border-strong);
 		color: var(--accent);
 	}
 
-	.category-support__post,
-	.category-support__featured-link,
-	.category-support__link {
+	.category-support__post {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto;
 		gap: var(--size-2);
@@ -172,8 +157,6 @@ const categoryNavigation = support.categoryNavigation;
 	}
 
 	.category-support__post strong,
-	.category-support__featured-link span,
-	.category-support__link span,
 	.category-support__tag span {
 		overflow: hidden;
 		color: var(--text-primary);
@@ -183,15 +166,11 @@ const categoryNavigation = support.categoryNavigation;
 		white-space: nowrap;
 	}
 
-	.category-support__post:hover strong,
-	.category-support__featured-link:hover span,
-	.category-support__link:hover span {
+	.category-support__post:hover strong {
 		color: var(--accent);
 	}
 
 	.category-support__post span,
-	.category-support__featured-link small,
-	.category-support__link small,
 	.category-support__tag small {
 		color: var(--text-muted);
 		font-size: var(--text-meta-size);

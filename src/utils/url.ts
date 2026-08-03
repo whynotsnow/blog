@@ -35,6 +35,10 @@ export function getCategoryHubUrl(): string {
 	return url("/category/");
 }
 
+export function getCategoryRecentUrl(): string {
+	return url("/category/recent/");
+}
+
 export function getCategoryRecommendedUrl(): string {
 	return url("/category/recommended/");
 }

@@ -3,6 +3,43 @@ import type {
 	PostNavigatorCategory,
 	TagItem,
 } from "./core/types";
+import { sortByScore } from "./core/sort";
+import {
+	getCategoryHubUrl,
+	getCategoryRecentUrl,
+	getCategoryRecommendedUrl,
+} from "@/utils/url";
+
+export type SupportDiscoveryId = "category" | "recent" | "recommended";
+
+export type SupportDiscoveryLink = {
+	id: SupportDiscoveryId;
+	title: string;
+	url: string;
+	icon: string;
+};
+
+export type GlobalDiscoveryCardItem =
+	| {
+			type: "category";
+			label: string;
+			url: string;
+			count: number;
+	  }
+	| {
+			type: "post";
+			label: string;
+			url: string;
+			meta: string;
+	  };
+
+export type GlobalDiscoveryCardViewModel = {
+	id: SupportDiscoveryId;
+	title: string;
+	url: string;
+	icon: string;
+	items: GlobalDiscoveryCardItem[];
+};
 
 export type SupportPostLink = {
 	id: string;
@@ -27,6 +64,97 @@ export type SupportTaxonomyLink = {
 	count: number;
 	url: string;
 };
+
+const DISCOVERY_LINKS: SupportDiscoveryLink[] = [
+	{
+		id: "category",
+		title: "全部分类",
+		url: getCategoryHubUrl(),
+		icon: "material-symbols:category-outline-rounded",
+	},
+	{
+		id: "recent",
+		title: "最近更新",
+		url: getCategoryRecentUrl(),
+		icon: "material-symbols:update-rounded",
+	},
+	{
+		id: "recommended",
+		title: "推荐阅读",
+		url: getCategoryRecommendedUrl(),
+		icon: "material-symbols:bookmark-star-outline-rounded",
+	},
+];
+
+export function buildDiscoveryLinks(
+	params: {
+		current?: SupportDiscoveryId;
+		include?: SupportDiscoveryId[];
+	} = {},
+): SupportDiscoveryLink[] {
+	const included = params.include ? new Set(params.include) : undefined;
+
+	return DISCOVERY_LINKS.filter(
+		(link) =>
+			link.id !== params.current && (!included || included.has(link.id)),
+	).map((link) => ({ ...link }));
+}
+
+export function buildGlobalDiscoveryCards(params: {
+	posts: PostIndexEntry[];
+	categories: PostNavigatorCategory[];
+	current?: SupportDiscoveryId;
+	include?: SupportDiscoveryId[];
+	itemLimit?: number;
+}): GlobalDiscoveryCardViewModel[] {
+	const { posts, categories, current, include, itemLimit = 4 } = params;
+	const categoryItems = categories
+		.slice(0, itemLimit)
+		.map((category): GlobalDiscoveryCardItem => {
+			const link = toSupportCategoryLink(category);
+
+			return {
+				type: "category",
+				label: link.name,
+				url: link.url,
+				count: link.count,
+			};
+		});
+	const recentItems = sortByRecentActivity(posts)
+		.slice(0, itemLimit)
+		.map((post): GlobalDiscoveryCardItem => {
+			const link = toSupportPostLink(post);
+
+			return {
+				type: "post",
+				label: link.title,
+				url: link.url,
+				meta: link.category.name,
+			};
+		});
+	const recommendedItems = sortByScore(posts)
+		.slice(0, itemLimit)
+		.map((post): GlobalDiscoveryCardItem => {
+			const link = toSupportPostLink(post);
+
+			return {
+				type: "post",
+				label: link.title,
+				url: link.url,
+				meta: link.category.name,
+			};
+		});
+	const itemsById: Record<SupportDiscoveryId, GlobalDiscoveryCardItem[]> = {
+		category: categoryItems,
+		recent: recentItems,
+		recommended: recommendedItems,
+	};
+
+	return buildDiscoveryLinks({ current, include }).map((link) => ({
+		...link,
+		items: itemsById[link.id],
+	}));
+}
 
 export function toSupportPostLink(post: PostIndexEntry): SupportPostLink {
 	return {

@@ -2,6 +2,7 @@ import { CATEGORY_PAGE_SIZE } from "@constants/constants";
 import {
 	getCategoryHubUrl,
 	getCategoryPageUrl,
+	getCategoryRecentUrl,
 	getCategoryRecommendedUrl,
 } from "@/utils/url";
 import {
@@ -14,6 +15,7 @@ import { toPostCardViewModel } from "./core/inject";
 import { sortByScore } from "./core/sort";
 import type { CategorySupportViewModel } from "./category-page";
 import {
+	buildGlobalDiscoveryCards,
 	sortByRecentActivity,
 	toSupportCategoryLink,
 	toSupportPostLink,
@@ -22,7 +24,7 @@ import {
 	type SupportTaxonomyLink,
 } from "./support";
 
-export type CategoryHubView = "all" | "recommended";
+export type CategoryHubView = "all" | "recent" | "recommended";
 
 export type CategoryHubTab = {
 	id: CategoryHubView;
@@ -56,7 +58,6 @@ export type CategoryHubPageViewModel = {
 const CATEGORY_HUB_TAG_LIMIT = 5;
 const CATEGORY_HUB_RECENT_LIMIT = 3;
 const CATEGORY_HUB_SUPPORT_MODULES = [
-	"recentPosts",
 	"tags",
 ] satisfies CategorySupportViewModel["modules"];
 const CATEGORY_HUB_SUPPORT_RECENT_POST_LIMIT = 5;
@@ -71,8 +72,13 @@ function buildCategoryHubTabs(): CategoryHubTab[] {
 			url: getCategoryHubUrl(),
 		},
 		{
+			id: "recent",
+			label: "最近更新",
+			url: getCategoryRecentUrl(),
+		},
+		{
 			id: "recommended",
-			label: "推荐",
+			label: "推荐阅读",
 			url: getCategoryRecommendedUrl(),
 		},
 	];
@@ -113,11 +119,14 @@ async function buildCategoryHubPageViewModel(
 		};
 	});
 	const posts =
-		activeView === "recommended"
-			? sortByScore(store.posts)
+		activeView === "all"
+			? []
+			: (activeView === "recent"
+					? sortByRecentActivity(store.posts)
+					: sortByScore(store.posts)
+				)
 					.slice(0, CATEGORY_PAGE_SIZE)
-					.map(toPostCardViewModel)
-			: [];
+					.map(toPostCardViewModel);
 	const supportTags = Array.from(store.categoryMap.values())
 		.flatMap((entry) =>
 			Array.from(entry.tags.values()).map((tag) =>
@@ -129,11 +138,18 @@ async function buildCategoryHubPageViewModel(
 
 	return {
 		activeView,
-		title: activeView === "recommended" ? "推荐" : "全部分类",
+		title:
+			activeView === "recommended"
+				? "推荐阅读"
+				: activeView === "recent"
+					? "最近更新"
+					: "全部分类",
 		description:
 			activeView === "recommended"
 				? "按推荐分展示值得优先阅读的文章。"
-				: "按主题浏览文章，进入具体分类后可继续按标签筛选。",
+				: activeView === "recent"
+					? "按最近活动时间浏览最新更新的文章。"
+					: "按主题浏览文章，进入具体分类后可继续按标签筛选。",
 		tabs: buildCategoryHubTabs(),
 		categories,
 		posts,
@@ -142,6 +158,11 @@ async function buildCategoryHubPageViewModel(
 			recentPosts: sortByRecentActivity(store.posts)
 				.slice(0, CATEGORY_HUB_SUPPORT_RECENT_POST_LIMIT)
 				.map(toSupportPostLink),
+			discoveryCards: buildGlobalDiscoveryCards({
+				posts: store.posts,
+				categories: store.categories,
+				current: activeView === "all" ? "category" : activeView,
+			}),
 			categoryNavigation: {
 				featuredLinks: [],
 				categories: store.categories
@@ -159,4 +180,8 @@ export async function getCategoryHubPageViewModel(): Promise<CategoryHubPageView
 
 export async function getCategoryRecommendedPageViewModel(): Promise<CategoryHubPageViewModel> {
 	return buildCategoryHubPageViewModel("recommended");
+}
+
+export async function getCategoryRecentPageViewModel(): Promise<CategoryHubPageViewModel> {
+	return buildCategoryHubPageViewModel("recent");
 }
