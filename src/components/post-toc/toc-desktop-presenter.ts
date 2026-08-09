@@ -102,13 +102,11 @@ export class DesktopTocPresenter {
 			return;
 		}
 
-		if (plan.deferHighlightUntilSlotSettled) {
+		if (plan.deferIndicatorUntilSlotSettled) {
 			this.cancelIndicatorMotion();
 			this.pendingSettledPlan = plan;
-			if (plan.highlightMode === "fade-in") {
-				this.hideIndicator();
-			}
-		} else if (this.pendingSettledRootIndex === null) {
+			this.hideIndicator({ immediate: true });
+		} else {
 			this.pendingSettledPlan = null;
 		}
 
@@ -119,7 +117,7 @@ export class DesktopTocPresenter {
 			this.applyPendingSettledHighlight();
 		});
 		if (
-			plan.deferHighlightUntilSlotSettled &&
+			plan.deferIndicatorUntilSlotSettled &&
 			plan.slotAction === "none" &&
 			this.pendingSettledRootIndex !== state.expandedRootIndex
 		) {
@@ -128,10 +126,8 @@ export class DesktopTocPresenter {
 				this.applyPendingSettledHighlight();
 			});
 		}
-		this.applyEntryState(state, {
-			suppressActive: plan.deferHighlightUntilSlotSettled,
-		});
-		if (state.highlightIndex >= 0 && state.scrollAnchor === "bottom") {
+		this.applyEntryState(state);
+		if (this.shouldAnchorScrollBottom(state, plan)) {
 			this.anchorScrollBottom();
 		}
 
@@ -147,7 +143,19 @@ export class DesktopTocPresenter {
 			return;
 		}
 
-		if (plan.deferHighlightUntilSlotSettled) {
+		if (plan.deferIndicatorUntilSlotSettled) {
+			this.scheduleScrollCorrection(state.highlightIndex, {
+				moveIndicator: false,
+				planId,
+			});
+			return;
+		}
+		if (
+			plan.highlightMode === "fade-in" ||
+			plan.highlightMode === "fade-in-place"
+		) {
+			this.cancelIndicatorMotion();
+			this.rebindIndicatorInPlace(state.highlightIndex, planId);
 			this.scheduleScrollCorrection(state.highlightIndex, {
 				moveIndicator: false,
 				planId,
@@ -236,6 +244,7 @@ export class DesktopTocPresenter {
 		if (
 			this.pendingSettledRootIndex !== state.expandedRootIndex ||
 			!this.pendingSettledPlan ||
+			!this.pendingSettledPlan.deferIndicatorUntilSlotSettled ||
 			state.highlightIndex < 0
 		) {
 			return plan;
@@ -245,7 +254,8 @@ export class DesktopTocPresenter {
 			...plan,
 			state,
 			highlightMode: this.pendingSettledPlan.highlightMode,
-			deferHighlightUntilSlotSettled: true,
+			deferHighlightUntilSlotSettled: false,
+			deferIndicatorUntilSlotSettled: true,
 		};
 	}
 
@@ -277,8 +287,17 @@ export class DesktopTocPresenter {
 		}
 	}
 
-	private hideIndicator(): void {
-		if (this.indicator) this.indicator.style.opacity = "0";
+	private hideIndicator(options: { immediate?: boolean } = {}): void {
+		if (this.indicator) {
+			if (options.immediate) {
+				this.indicator.setAttribute(
+					"style",
+					"opacity: 0; transition: none;",
+				);
+			} else {
+				this.indicator.style.opacity = "0";
+			}
+		}
 		this.lastCommittedHighlight = null;
 	}
 
@@ -350,6 +369,17 @@ export class DesktopTocPresenter {
 		});
 	}
 
+	private shouldAnchorScrollBottom(
+		state: DesktopTocViewState,
+		plan: TocTransitionPlan,
+	): boolean {
+		return (
+			state.highlightIndex >= 0 &&
+			state.scrollAnchor === "bottom" &&
+			plan.highlightMode !== "fade-in-place"
+		);
+	}
+
 	private scheduleIndicator(
 		activeIndex: number,
 		planId = this.planSequence,
@@ -357,6 +387,14 @@ export class DesktopTocPresenter {
 		if (this.indicatorRaf) cancelAnimationFrame(this.indicatorRaf);
 		this.indicatorRaf = requestAnimationFrame(() => {
 			this.indicatorRaf = 0;
+			if (planId !== this.planSequence) return;
+			this.moveIndicator(activeIndex);
+		});
+	}
+
+	private rebindIndicatorInPlace(activeIndex: number, planId: number): void {
+		this.placeIndicatorWithoutMotion(activeIndex);
+		requestAnimationFrame(() => {
 			if (planId !== this.planSequence) return;
 			this.moveIndicator(activeIndex);
 		});

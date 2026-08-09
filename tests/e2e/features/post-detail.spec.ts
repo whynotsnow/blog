@@ -1,5 +1,69 @@
 import { expect, test } from "@playwright/test";
+import type { DesktopTocViewState } from "../../../src/components/post-toc/toc-desktop-state";
+import { resolveTocTransitionPlan } from "../../../src/components/post-toc/toc-transition-plan";
 import { gotoPage } from "../../support/navigation";
+
+test("desktop TOC root boundary switches rebind highlight in place", () => {
+	const childState: DesktopTocViewState = {
+		mode: "normal",
+		activeIndex: 2,
+		activeRootIndex: 1,
+		highlightIndex: 2,
+		expandedRootIndex: 1,
+		transitionType: "same-node",
+		scrollDirection: "down",
+		rootsOnlyReason: null,
+		scrollAnchor: "active",
+	};
+	const branchSwitchState: DesktopTocViewState = {
+		mode: "normal",
+		activeIndex: 6,
+		activeRootIndex: 5,
+		highlightIndex: 6,
+		expandedRootIndex: 5,
+		transitionType: "root-switch",
+		scrollDirection: "up",
+		rootsOnlyReason: null,
+		scrollAnchor: "bottom",
+	};
+	const childToRootState: DesktopTocViewState = {
+		...childState,
+		activeIndex: 1,
+		highlightIndex: 1,
+		transitionType: "same-node",
+		scrollDirection: "up",
+	};
+	const rootToChildState: DesktopTocViewState = {
+		...childState,
+		scrollDirection: "down",
+	};
+
+	const branchSwitchPlan = resolveTocTransitionPlan(
+		childState,
+		branchSwitchState,
+	);
+	const childToRootPlan = resolveTocTransitionPlan(
+		childState,
+		childToRootState,
+	);
+	const rootToChildPlan = resolveTocTransitionPlan(
+		childToRootState,
+		rootToChildState,
+	);
+
+	expect(branchSwitchPlan.slotAction).toBe("switch");
+	expect(branchSwitchPlan.highlightMode).toBe("fade-in-place");
+	expect(branchSwitchPlan.deferHighlightUntilSlotSettled).toBe(false);
+	expect(branchSwitchPlan.deferIndicatorUntilSlotSettled).toBe(true);
+	expect(childToRootPlan.slotAction).toBe("none");
+	expect(childToRootPlan.highlightMode).toBe("fade-in-place");
+	expect(childToRootPlan.deferHighlightUntilSlotSettled).toBe(false);
+	expect(childToRootPlan.deferIndicatorUntilSlotSettled).toBe(false);
+	expect(rootToChildPlan.slotAction).toBe("none");
+	expect(rootToChildPlan.highlightMode).toBe("move");
+	expect(rootToChildPlan.deferHighlightUntilSlotSettled).toBe(false);
+	expect(rootToChildPlan.deferIndicatorUntilSlotSettled).toBe(false);
+});
 
 test("post detail components render through the thin route", async ({
 	page,
@@ -1391,6 +1455,11 @@ test("post support TOC keeps active heading stable across branch transitions", a
 	).toBe(true);
 	expect(
 		targetRegionSamples.some((sample) => sample.visible.length > 0),
+	).toBe(true);
+	expect(
+		targetRegionSamples.some((sample) =>
+			sample.trackerText.includes("This is an H"),
+		),
 	).toBe(true);
 	expect(transitionState.activeFullyVisible).toBe(true);
 });

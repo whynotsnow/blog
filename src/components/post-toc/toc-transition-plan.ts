@@ -1,6 +1,6 @@
 import type { DesktopTocViewState } from "./toc-desktop-state";
 
-export type TocHighlightMode = "move" | "deferred-move" | "fade-in" | "hidden";
+export type TocHighlightMode = "move" | "fade-in" | "fade-in-place" | "hidden";
 export type TocSlotAction = "none" | "expand" | "collapse" | "switch";
 
 export interface TocTransitionPlan {
@@ -8,6 +8,7 @@ export interface TocTransitionPlan {
 	slotAction: TocSlotAction;
 	highlightMode: TocHighlightMode;
 	deferHighlightUntilSlotSettled: boolean;
+	deferIndicatorUntilSlotSettled: boolean;
 }
 
 export function resolveTocTransitionPlan(
@@ -31,21 +32,31 @@ export function resolveTocTransitionPlan(
 		state.highlightIndex >= 0 && previous?.mode === "roots-only";
 	const isBranchSwitch =
 		state.highlightIndex >= 0 && state.transitionType === "root-switch";
-	const shouldDeferHighlight = isBoundaryEntry || isBranchSwitch;
-
+	const isChildToRootBoundarySwitch =
+		state.highlightIndex >= 0 &&
+		previous?.highlightIndex !== undefined &&
+		previous.highlightIndex >= 0 &&
+		previous.activeRootIndex === state.activeRootIndex &&
+		previous.highlightIndex !== state.highlightIndex &&
+		state.highlightIndex === state.activeRootIndex;
 	const highlightMode: TocHighlightMode =
 		state.highlightIndex < 0
 			? "hidden"
 			: isBoundaryEntry
 				? "fade-in"
 				: isBranchSwitch
-					? "deferred-move"
-					: "move";
+					? "fade-in-place"
+					: isChildToRootBoundarySwitch
+						? "fade-in-place"
+						: "move";
 
 	return {
 		state,
 		slotAction,
 		highlightMode,
-		deferHighlightUntilSlotSettled: shouldDeferHighlight,
+		deferHighlightUntilSlotSettled: false,
+		deferIndicatorUntilSlotSettled:
+			state.highlightIndex >= 0 &&
+			(slotAction === "expand" || slotAction === "switch"),
 	};
 }

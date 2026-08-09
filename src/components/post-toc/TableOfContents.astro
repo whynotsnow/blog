@@ -446,6 +446,8 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 	}
 
 	table-of-contents#toc[data-toc-highlight-mode="fade-in"]
+		:global(.toc-active-indicator),
+	table-of-contents#toc[data-toc-highlight-mode="fade-in-place"]
 		:global(.toc-active-indicator) {
 		transition:
 			opacity var(--motion-fast) var(--motion-ease-standard),
