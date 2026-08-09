@@ -84,6 +84,28 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
 <script>
 	const searchContainer = document.getElementById("search-container");
 	const navbarLinksContainer = document.getElementById("navbar-links-container");
+	const navbarRoot = document.getElementById("navbar");
+
+	const normalizeCurrentPage = (href: string) => {
+		const targetUrl = new URL(href, window.location.href);
+		const pathname = targetUrl.pathname.replace(/\/+$/, "") || "/";
+		return `${targetUrl.origin}${pathname}${targetUrl.search}`;
+	};
+
+	navbarRoot?.addEventListener("click", (event) => {
+		const target = event.target instanceof Element ? event.target : null;
+		const link = target?.closest("a[href]");
+		if (!(link instanceof HTMLAnchorElement) || !navbarRoot.contains(link)) {
+			return;
+		}
+		if (event.detail === 0 || link.target || link.hasAttribute("download")) return;
+
+		const targetPage = normalizeCurrentPage(link.href);
+		const currentPage = normalizeCurrentPage(window.location.href);
+		if (targetPage === currentPage) {
+			link.blur();
+		}
+	});
 
 	if (searchContainer && navbarLinksContainer) {
 		// 鼠标移入/触摸开始时隐藏导航链接

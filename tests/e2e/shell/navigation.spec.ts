@@ -190,6 +190,25 @@ test("home retains banner-aware navbar behavior", async ({ page }) => {
 	await expect(navbar).toHaveClass(/scrolled/);
 });
 
+test("navbar current-page link does not retain pointer focus", async ({
+	page,
+}) => {
+	await gotoPage(page, "/");
+
+	const homeLink = page.locator("#navbar .navbar__brand");
+	await homeLink.click();
+
+	await expect
+		.poll(() =>
+			page.evaluate(
+				() =>
+					document.activeElement ===
+					document.querySelector("#navbar .navbar__brand"),
+			),
+		)
+		.toBe(false);
+});
+
 test("Swup shows navigation progress independently from page entry scrolling", async ({
 	page,
 }) => {
