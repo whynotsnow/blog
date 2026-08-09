@@ -1520,6 +1520,10 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 				!!rootRect &&
 				rootRect.bottom >= containerRect.top - 1 &&
 				rootRect.top <= containerRect.bottom + 1,
+			rootFullyVisible:
+				!!rootRect &&
+				rootRect.top >= containerRect.top - 1 &&
+				rootRect.bottom <= containerRect.bottom + 1,
 		};
 	});
 
@@ -1537,6 +1541,128 @@ test("post support TOC keeps expanded child fully visible when scrolling up from
 	expect(bottomUpState.activeRootText).toContain("4 This is an H1");
 	expect(bottomUpState.activeFullyVisible).toBe(true);
 	expect(bottomUpState.rootVisible).toBe(true);
+	expect(bottomUpState.rootFullyVisible).toBe(true);
+});
+
+test("post support TOC keeps deep heading ancestor context visible", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 520 });
+	await gotoPage(page, "/posts/toc-scroll-anchor-validation/");
+	await expect(page.locator("#toc a").first()).toBeVisible();
+
+	const deepContextState = await page.evaluate(async () => {
+		const normalize = (value: string | null | undefined) =>
+			value?.replace(/\s+/g, " ").trim() ?? "";
+		const wait = (delay: number) =>
+			new Promise((resolve) => window.setTimeout(resolve, delay));
+		const content = document.querySelector<HTMLElement>(
+			"#post-container .post-detail__content",
+		);
+		if (!content) throw new Error("Missing post content root");
+
+		window.siteConfig.toc = {
+			...(window.siteConfig.toc ?? {}),
+			depth: 3,
+		};
+
+		const validationSection = document.createElement("section");
+		validationSection.id = "toc-depth-validation-section";
+		validationSection.innerHTML = `
+			<h2 id="runtime-deep-root">Runtime Deep Root</h2>
+			<p>${"Runtime root filler. ".repeat(80)}</p>
+			<h3 id="runtime-deep-parent">Runtime Deep Parent</h3>
+			<p>${"Runtime parent filler. ".repeat(80)}</p>
+			<h4 id="runtime-deep-active">Runtime Deep Active</h4>
+			<p>${"Runtime active filler. ".repeat(160)}</p>
+		`;
+		content.append(validationSection);
+		window.dispatchEvent(
+			new CustomEvent("post-toc:refresh", {
+				detail: { root: content },
+			}),
+		);
+		await wait(360);
+
+		const activeHeading = document.getElementById("runtime-deep-active");
+		if (!activeHeading) {
+			throw new Error("Missing runtime deep active heading");
+		}
+		const offset =
+			Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0;
+		document.documentElement.style.scrollBehavior = "auto";
+		window.scrollTo({
+			top:
+				activeHeading.getBoundingClientRect().top +
+				window.scrollY -
+				offset +
+				12,
+			behavior: "auto",
+		});
+		await wait(520);
+
+		const scrollContainer = document.querySelector<HTMLElement>(
+			".post-support__toc-body",
+		);
+		const entries = Array.from(
+			document.querySelectorAll<HTMLElement>("#toc a[data-toc-index]"),
+		);
+		const findEntry = (text: string) =>
+			entries.find((entry) =>
+				normalize(entry.textContent).includes(text),
+			);
+		const rootEntry = findEntry("Runtime Deep Root");
+		const parentEntry = findEntry("Runtime Deep Parent");
+		const activeEntry = findEntry("Runtime Deep Active");
+		if (!scrollContainer || !rootEntry || !parentEntry || !activeEntry) {
+			throw new Error("Missing runtime TOC entries");
+		}
+		const containerRect = scrollContainer.getBoundingClientRect();
+		const isFullyVisible = (entry: HTMLElement) => {
+			const rect = entry.getBoundingClientRect();
+			return (
+				rect.top >= containerRect.top - 1 &&
+				rect.bottom <= containerRect.bottom + 1
+			);
+		};
+
+		return {
+			activeText: normalize(
+				document.querySelector("#toc a.visible")?.textContent,
+			),
+			rootLevel: rootEntry.dataset.tocLevel ?? "",
+			parentLevel: parentEntry.dataset.tocLevel ?? "",
+			activeLevel: activeEntry.dataset.tocLevel ?? "",
+			rootFullyVisible: isFullyVisible(rootEntry),
+			parentFullyVisible: isFullyVisible(parentEntry),
+			activeFullyVisible: isFullyVisible(activeEntry),
+			currentBranch: entries
+				.filter((entry) =>
+					entry.classList.contains("is-current-branch"),
+				)
+				.map((entry) => normalize(entry.textContent)),
+		};
+	});
+
+	expect(deepContextState.activeText).toBe("Runtime Deep Active");
+	expect(deepContextState.rootLevel).toBe("0");
+	expect(deepContextState.parentLevel).toBe("1");
+	expect(deepContextState.activeLevel).toBe("2");
+	expect(
+		deepContextState.currentBranch.some((text) =>
+			text.includes("Runtime Deep Root"),
+		),
+	).toBe(true);
+	expect(deepContextState.currentBranch).toEqual(
+		expect.arrayContaining(["Runtime Deep Parent", "Runtime Deep Active"]),
+	);
+	expect(deepContextState.rootFullyVisible).toBe(true);
+	expect(deepContextState.parentFullyVisible).toBe(true);
+	expect(deepContextState.activeFullyVisible).toBe(true);
 });
 
 test("encrypted posts reuse the shared post content contract", async ({

@@ -1,4 +1,9 @@
-import { getTocBranchIndexes, getTocNode, type TocGraph } from "./toc-graph";
+import {
+	getTocAncestorIndexes,
+	getTocBranchIndexes,
+	getTocNode,
+	type TocGraph,
+} from "./toc-graph";
 import { renderDesktopTocItem } from "./toc-render";
 import type { DesktopTocViewState } from "./toc-desktop-state";
 import {
@@ -15,6 +20,7 @@ const TRANSITION_FINALIZE_DELAY = TOC_SLOT_TRANSITION_MS + 80;
 const HIGHLIGHT_EXIT_FALLBACK_DELAY = 180;
 const VISIBILITY_PADDING = 12;
 const INDICATOR_GEOMETRY_EPSILON = 0.5;
+const CONTEXT_ENTRY_GAP = 4;
 
 export interface DesktopTocPresenterOptions {
 	host: HTMLElement;
@@ -368,14 +374,14 @@ export class DesktopTocPresenter {
 		this.scrollRaf = requestAnimationFrame(() => {
 			this.scrollRaf = 0;
 			if (planId !== this.planSequence) return;
-			this.ensureActiveVisible(activeIndex);
+			this.ensureActiveContextVisible(activeIndex);
 		});
 
 		this.finalizeTimer = window.setTimeout(() => {
 			this.finalizeTimer = 0;
 			if (planId !== this.planSequence) return;
 			if (shouldMoveIndicator) this.moveIndicator(activeIndex);
-			this.ensureActiveVisible(activeIndex);
+			this.ensureActiveContextVisible(activeIndex);
 		}, TRANSITION_FINALIZE_DELAY);
 	}
 
@@ -386,7 +392,7 @@ export class DesktopTocPresenter {
 		}
 		if (state.highlightIndex < 0) return;
 		this.applyEntryState(state);
-		this.ensureActiveVisible(state.highlightIndex);
+		this.ensureActiveContextVisible(state.highlightIndex);
 		if (this.isHighlightCommitted(state.highlightIndex)) {
 			return;
 		}
@@ -479,25 +485,24 @@ export class DesktopTocPresenter {
 		);
 	}
 
-	private ensureActiveVisible(activeIndex: number): void {
-		const activeEntry = this.getEntry(activeIndex);
-		if (!activeEntry) return;
-
+	private ensureActiveContextVisible(activeIndex: number): void {
 		const currentScroll = this.scrollRoot.scrollTop;
 		const viewportHeight = this.scrollRoot.clientHeight;
 		const safeTop = currentScroll + VISIBILITY_PADDING;
 		const safeBottom = currentScroll + viewportHeight - VISIBILITY_PADDING;
 		const scrollRootRect = this.scrollRoot.getBoundingClientRect();
-		const activeRect = activeEntry.getBoundingClientRect();
-		const activeTop = currentScroll + activeRect.top - scrollRootRect.top;
-		const activeBottom =
-			currentScroll + activeRect.bottom - scrollRootRect.top;
+		const context = this.resolveVisibleContextRange(
+			activeIndex,
+			scrollRootRect,
+			viewportHeight,
+		);
+		if (!context) return;
 
 		let nextTop = currentScroll;
-		if (activeTop < safeTop) {
-			nextTop = activeTop - VISIBILITY_PADDING;
-		} else if (activeBottom > safeBottom) {
-			nextTop = activeBottom - viewportHeight + VISIBILITY_PADDING;
+		if (context.top < safeTop) {
+			nextTop = context.top - VISIBILITY_PADDING;
+		} else if (context.bottom > safeBottom) {
+			nextTop = context.bottom - viewportHeight + VISIBILITY_PADDING;
 		}
 
 		if (Math.abs(nextTop - currentScroll) < 1) return;
@@ -506,5 +511,58 @@ export class DesktopTocPresenter {
 			left: 0,
 			behavior: "auto",
 		});
+	}
+
+	private resolveVisibleContextRange(
+		activeIndex: number,
+		scrollRootRect: DOMRect,
+		viewportHeight: number,
+	): { top: number; bottom: number } | null {
+		const activeEntry = this.getEntry(activeIndex);
+		if (!activeEntry) return null;
+
+		const activeRange = this.resolveEntryRange(activeEntry, scrollRootRect);
+		if (!activeRange) return null;
+
+		const ancestorEntries = getTocAncestorIndexes(this.graph, activeIndex)
+			.map((index) => this.getEntry(index))
+			.filter((entry): entry is HTMLAnchorElement => Boolean(entry));
+		const candidateEntries = [...ancestorEntries, activeEntry];
+		const maxRangeHeight = Math.max(
+			activeRange.bottom - activeRange.top,
+			viewportHeight - VISIBILITY_PADDING * 2,
+		);
+
+		for (let start = 0; start < candidateEntries.length; start += 1) {
+			const ranges = candidateEntries
+				.slice(start)
+				.map((entry) => this.resolveEntryRange(entry, scrollRootRect))
+				.filter((range): range is { top: number; bottom: number } =>
+					Boolean(range),
+				);
+			if (ranges.length === 0) continue;
+
+			const top = Math.min(...ranges.map((range) => range.top));
+			const bottom = Math.max(...ranges.map((range) => range.bottom));
+			if (bottom - top <= maxRangeHeight) {
+				return { top, bottom };
+			}
+		}
+
+		return activeRange;
+	}
+
+	private resolveEntryRange(
+		entry: HTMLElement,
+		scrollRootRect: DOMRect,
+	): { top: number; bottom: number } | null {
+		const rect = entry.getBoundingClientRect();
+		const top = this.scrollRoot.scrollTop + rect.top - scrollRootRect.top;
+		const height = Math.max(rect.height, entry.scrollHeight);
+		if (height <= 0) return null;
+		return {
+			top: top - CONTEXT_ENTRY_GAP,
+			bottom: top + height + CONTEXT_ENTRY_GAP,
+		};
 	}
 }
