@@ -235,7 +235,6 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 <script>
 	import {
-		TOC_SCROLL_OFFSET,
 		getTocBranchIndexes,
 		getTocNode,
 		scrollToHeading,
@@ -287,7 +286,6 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			const id = link.getAttribute("href")?.slice(1);
 			if (id) {
 				scrollToHeading(id, {
-					offset: TOC_SCROLL_OFFSET,
 					close: () => this.close(),
 				});
 			}

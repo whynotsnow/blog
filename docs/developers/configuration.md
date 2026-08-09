@@ -96,6 +96,7 @@
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。它只控制 Post List View，不再隐式改写页面级 Layout Policy。
 - 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 共享 `1280px` 外部最大宽度。首页在 `1200px` 以上使用最大 `992px` 的三列 Feed + Profile support，在 `880px–1199px` 使用最大 `656px` 的双列 Feed + Profile support，低于 `880px` 时把同一个 Profile DOM 放到 Main 前方；Feed 低于 `608px` 后退为单列。分类 Hub 和具体分类页提供 Category support，文章详情页提供 Post support；带 support 的页面在 `880px` 以上进入主内容 + 右栏布局。断点针对实际容器，不直接对应 viewport 宽度。
 - `siteConfig.pageScaling` 仅保留给尚未迁移的 `viewport-legacy` 页面；首页、分类页和文章详情页会主动清除根字号缩放，不能依赖该配置改变 Card、Sidebar 或 Typography 尺寸。
+- `siteConfig.toc.scrollOffset`：控制文章 TOC 点击定位与滚动 active 高亮共用的顶部偏移，单位为 px。未配置时运行时会优先读取页面布局变量 `--main-content-offset`，使 TOC 与 fixed Navbar 保持一致；读取失败时回退为 `0`。不要分别为点击滚动和 active 判断设置不同偏移。
 - `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`full-banner`、`full-wall`、`none`。`banner` 表示横幅模式；`full-banner` 表示全屏横幅；`full-wall` 显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果；`none` 隐藏壁纸。
 - Banner、Navbar 与尚未迁移页面仍使用 viewport 断点：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。首页、分类页和文章详情页的内容布局不使用这些断点，而以 `page-shell` 与 `post-feed` Container Query 为准。
 - 普通 Banner 使用 `--banner-block-size` 同步控制横幅高度与正文起始位置；低高度横屏约为 `60vh` 以优先正文。首页 Fullscreen Banner 始终为 `100dvh`，非首页移动端隐藏 Banner。

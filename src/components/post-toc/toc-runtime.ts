@@ -18,8 +18,8 @@ export {
 
 export const POST_TOC_DATA_ID = "post-toc-data";
 export const POST_TOC_REFRESH_EVENT = "post-toc:refresh";
-export const TOC_SCROLL_OFFSET = 80;
-export const TOC_ACTIVE_OFFSET = 120;
+const TOC_LAYOUT_OFFSET_PROPERTY = "--main-content-offset";
+export const TOC_DEFAULT_SCROLL_OFFSET = 0;
 
 export interface TocRuntimeState {
 	root: Element | null;
@@ -66,6 +66,28 @@ export function getTocOptions(): TocOptions {
 		maxDepth: window.siteConfig?.toc?.depth || 3,
 		useJapaneseBadge: window.siteConfig?.toc?.useJapaneseBadge || false,
 	};
+}
+
+function readPixelCustomProperty(name: string): number | null {
+	const value = Number.parseFloat(
+		getComputedStyle(document.documentElement).getPropertyValue(name),
+	);
+	return Number.isFinite(value) ? value : null;
+}
+
+export function resolveTocScrollOffset(): number {
+	const configuredOffset = window.siteConfig?.toc?.scrollOffset;
+	if (
+		typeof configuredOffset === "number" &&
+		Number.isFinite(configuredOffset)
+	) {
+		return configuredOffset;
+	}
+
+	return (
+		readPixelCustomProperty(TOC_LAYOUT_OFFSET_PROPERTY) ??
+		TOC_DEFAULT_SCROLL_OFFSET
+	);
 }
 
 export function getHeadingElementsForItems(
@@ -128,11 +150,12 @@ export function scrollToHeading(
 	if (!heading) return false;
 
 	void options.close?.();
+	const targetTop =
+		heading.getBoundingClientRect().top +
+		window.scrollY -
+		(options.offset ?? resolveTocScrollOffset());
 	window.scrollTo({
-		top:
-			heading.getBoundingClientRect().top +
-			window.scrollY -
-			(options.offset ?? TOC_SCROLL_OFFSET),
+		top: Math.ceil(targetTop),
 		behavior: "smooth",
 	});
 	return true;
@@ -140,7 +163,7 @@ export function scrollToHeading(
 
 export function ensureTocTargetsScrollable(
 	targets: Array<HTMLElement | undefined>,
-	offset: number = TOC_ACTIVE_OFFSET,
+	offset: number = resolveTocScrollOffset(),
 ): void {
 	const visibleTargets = targets.filter((target): target is HTMLElement =>
 		Boolean(target),

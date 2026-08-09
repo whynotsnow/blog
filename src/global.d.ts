@@ -14,6 +14,10 @@ type SwupHookName =
 	| "visit:start"
 	| "visit:end";
 
+type RuntimeSiteConfig = {
+	toc?: Partial<SiteConfig["toc"]>;
+};
+
 interface SwupInstance {
 	hooks: {
 		on: (
@@ -89,7 +93,7 @@ declare global {
 				visitors?: number;
 			}>;
 		};
-		siteConfig: SiteConfig;
+		siteConfig: RuntimeSiteConfig;
 	}
 }
 

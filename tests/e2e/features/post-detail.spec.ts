@@ -1025,11 +1025,20 @@ test("post support TOC collapses to root list at document boundaries", async ({
 
 	await page.evaluate(() => {
 		document.documentElement.style.scrollBehavior = "auto";
+		const offset =
+			Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0;
 		const content = document.querySelector<HTMLElement>(
 			"#post-container .post-detail__content",
 		)!;
 		window.scrollTo({
-			top: content.getBoundingClientRect().bottom + window.scrollY - 120,
+			top:
+				content.getBoundingClientRect().bottom +
+				window.scrollY -
+				offset,
 		});
 	});
 	await page.waitForFunction(
@@ -1083,10 +1092,20 @@ test("post support TOC does not enter bottom mode while a late child heading is 
 
 	await page.evaluate(() => {
 		document.documentElement.style.scrollBehavior = "auto";
+		const offset =
+			Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0;
 		const heading = document.querySelector<HTMLElement>("#custom-titles");
 		if (!heading) throw new Error("Missing Custom Titles heading");
 		window.scrollTo({
-			top: heading.getBoundingClientRect().top + window.scrollY - 100,
+			top:
+				heading.getBoundingClientRect().top +
+				window.scrollY -
+				offset +
+				12,
 			behavior: "auto",
 		});
 	});
@@ -1133,11 +1152,20 @@ test("post support TOC does not enter bottom mode while a late child heading is 
 		});
 
 	await page.evaluate(() => {
+		const offset =
+			Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0;
 		const content = document.querySelector<HTMLElement>(
 			"#post-container .post-detail__content",
 		)!;
 		window.scrollTo({
-			top: content.getBoundingClientRect().bottom + window.scrollY - 120,
+			top:
+				content.getBoundingClientRect().bottom +
+				window.scrollY -
+				offset,
 			behavior: "auto",
 		});
 	});
@@ -1156,6 +1184,70 @@ test("post support TOC does not enter bottom mode while a late child heading is 
 			rootsOnlyReason: "bottom",
 			currentBranchCount: 0,
 		});
+});
+
+test("post support TOC clicks use the shared offset without native hash jumps", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 720 });
+	await gotoPage(page, "/posts/markdown-extended/");
+	await expect(page.locator("#toc a").first()).toBeVisible();
+
+	const clickState = await page.evaluate(async () => {
+		const wait = (delay: number) =>
+			new Promise((resolve) => window.setTimeout(resolve, delay));
+		const normalize = (value: string | null | undefined) =>
+			value?.replace(/\s+/g, " ").trim() ?? "";
+		const offset =
+			Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0;
+		const rootHeading = document.querySelector<HTMLElement>("#admonitions");
+		const targetHeading =
+			document.querySelector<HTMLElement>("#custom-titles");
+		if (!rootHeading || !targetHeading) {
+			throw new Error("Missing markdown-extended headings");
+		}
+
+		document.documentElement.style.scrollBehavior = "auto";
+		window.scrollTo({
+			top:
+				rootHeading.getBoundingClientRect().top +
+				window.scrollY -
+				offset,
+			behavior: "auto",
+		});
+		await wait(360);
+
+		const link = Array.from(
+			document.querySelectorAll<HTMLAnchorElement>("#toc a"),
+		).find((entry) =>
+			normalize(entry.textContent).includes("Custom Titles"),
+		);
+		if (!link) throw new Error("Missing Custom Titles TOC link");
+
+		const beforeHash = window.location.hash;
+		link.click();
+		await wait(900);
+		const activeEntry =
+			document.querySelector<HTMLElement>("#toc a.visible");
+
+		return {
+			beforeHash,
+			afterHash: window.location.hash,
+			offset,
+			targetTop: targetHeading.getBoundingClientRect().top,
+			activeText: normalize(activeEntry?.textContent),
+		};
+	});
+
+	expect(clickState.afterHash).toBe(clickState.beforeHash);
+	expect(
+		Math.abs(clickState.targetTop - clickState.offset),
+	).toBeLessThanOrEqual(3);
+	expect(clickState.activeText).toBe("Custom Titles");
 });
 
 test("post support TOC keeps active heading stable across branch transitions", async ({
@@ -1211,9 +1303,15 @@ test("post support TOC keeps active heading stable across branch transitions", a
 			if (!heading) throw new Error(`Missing heading ${id}`);
 			return heading.getBoundingClientRect().top + window.scrollY;
 		};
+		const tocOffset =
+			Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0;
 
-		const startY = headingTop(fourthRoot.item.id) - 120;
-		const endY = headingTop(previousBranchChild.item.id) - 120;
+		const startY = headingTop(fourthRoot.item.id) - tocOffset;
+		const endY = headingTop(previousBranchChild.item.id) - tocOffset;
 		window.scrollTo(0, startY);
 		await waitFrame();
 

@@ -560,7 +560,12 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			laterHeading ||
 			document.querySelector<HTMLElement>(".page-main-content")!;
 		const targetTop = target.getBoundingClientRect().top + window.scrollY;
-		const tocActiveOffset = 120 + 24;
+		const tocActiveOffset =
+			(Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0) + 24;
 		window.scrollTo({
 			top: Math.max(targetTop - tocActiveOffset - 1, 0),
 			behavior: "auto",

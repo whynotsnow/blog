@@ -21,7 +21,7 @@ export function renderDesktopTocItem(item: TocItem, index = -1): string {
 				: '<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
 	const textClass = item.level <= 1 ? "text-50" : "text-30";
 
-	return `<a href="#${escapeHtml(item.id)}" data-depth="${item.depth}" data-toc-level="${item.level}" data-toc-index="${index}" style="--toc-level: ${item.level};" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2">
+	return `<a href="#${escapeHtml(item.id)}" data-no-swup data-depth="${item.depth}" data-toc-level="${item.level}" data-toc-index="${index}" style="--toc-level: ${item.level};" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--toc-btn-hover) active:bg-(--toc-btn-active) py-2">
 		<div class="toc-entry-badge transition w-5 h-5 shrink-0 rounded-lg flex items-center justify-center font-bold ${rootBadgeClass}">
 			${badgeContent}
 		</div>
@@ -48,7 +48,7 @@ export function renderFloatingTocItem(item: TocItem, index = -1): string {
 				? '<span class="floating-toc-dot"></span>'
 				: '<span class="floating-toc-dot-small"></span>';
 
-	return `<a href="#${escapeHtml(item.id)}" class="floating-toc-item" style="padding-left: ${0.5 + item.level}rem" data-level="${item.level}" data-toc-index="${index}">${badge}<span class="floating-toc-text">${escapeHtml(item.text)}</span></a>`;
+	return `<a href="#${escapeHtml(item.id)}" data-no-swup class="floating-toc-item" style="padding-left: ${0.5 + item.level}rem" data-level="${item.level}" data-toc-index="${index}">${badge}<span class="floating-toc-text">${escapeHtml(item.text)}</span></a>`;
 }
 
 export function renderFloatingTocShell(items: TocItem[]): string {

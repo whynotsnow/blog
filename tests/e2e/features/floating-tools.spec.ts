@@ -223,8 +223,14 @@ test("floating TOC uses shared post TOC data sources", async ({ page }) => {
 	await page.evaluate((id) => {
 		const heading = document.getElementById(id);
 		if (!heading) throw new Error(`Missing heading ${id}`);
+		const offset =
+			Number.parseFloat(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--main-content-offset",
+				),
+			) || 0;
 		window.scrollTo({
-			top: heading.getBoundingClientRect().top + window.scrollY - 120,
+			top: heading.getBoundingClientRect().top + window.scrollY - offset,
 			behavior: "auto",
 		});
 	}, inlineHtmlItem.id);

@@ -1,11 +1,11 @@
 import {
-	TOC_ACTIVE_OFFSET,
 	TocActiveTracker,
 	ensureTocTargetsScrollable,
 	getHeadingElementsForItems,
 	getPostContentRoot,
 	onPostTocRefresh,
 	resolveTocRuntimeState,
+	resolveTocScrollOffset,
 	type TocGraph,
 	type TocItem,
 	type TocScrollDirection,
@@ -41,7 +41,9 @@ export class PostTocStore {
 	private root: Element | null = null;
 	private items: TocItem[] = [];
 	private headings: Array<HTMLElement | undefined> = [];
-	private tracker = new TocActiveTracker({ offset: TOC_ACTIVE_OFFSET });
+	private tracker = new TocActiveTracker({
+		offset: resolveTocScrollOffset(),
+	});
 	private activeIndex = -1;
 	private version = 0;
 	private subscribers = new Set<TocStoreSubscriber>();
@@ -96,11 +98,9 @@ export class PostTocStore {
 		this.tracker.setState(items, this.headings, {
 			contentRangeEnd: this.getContentRangeEnd(),
 		});
-		ensureTocTargetsScrollable(this.headings);
-		this.activeIndex = this.tracker.update(
-			window.scrollY,
-			TOC_ACTIVE_OFFSET,
-		);
+		const offset = resolveTocScrollOffset();
+		ensureTocTargetsScrollable(this.headings, offset);
+		this.activeIndex = this.tracker.update(window.scrollY, offset);
 		this.version += 1;
 		this.emit(reason);
 		return this.getSnapshot();
@@ -117,11 +117,9 @@ export class PostTocStore {
 		this.tracker.setState(this.items, this.headings, {
 			contentRangeEnd: this.getContentRangeEnd(),
 		});
-		ensureTocTargetsScrollable(this.headings);
-		this.activeIndex = this.tracker.update(
-			window.scrollY,
-			TOC_ACTIVE_OFFSET,
-		);
+		const offset = resolveTocScrollOffset();
+		ensureTocTargetsScrollable(this.headings, offset);
+		this.activeIndex = this.tracker.update(window.scrollY, offset);
 		this.version += 1;
 		this.emit(reason);
 		return this.getSnapshot();
@@ -142,11 +140,9 @@ export class PostTocStore {
 		this.tracker.measure({
 			contentRangeEnd: this.getContentRangeEnd(),
 		});
-		ensureTocTargetsScrollable(this.headings);
-		this.activeIndex = this.tracker.update(
-			window.scrollY,
-			TOC_ACTIVE_OFFSET,
-		);
+		const offset = resolveTocScrollOffset();
+		ensureTocTargetsScrollable(this.headings, offset);
+		this.activeIndex = this.tracker.update(window.scrollY, offset);
 		this.emit(reason);
 		return this.getSnapshot();
 	}
@@ -154,7 +150,7 @@ export class PostTocStore {
 	update(reason: TocStoreReason = "scroll"): TocStoreSnapshot {
 		this.activeIndex = this.tracker.update(
 			window.scrollY,
-			TOC_ACTIVE_OFFSET,
+			resolveTocScrollOffset(),
 		);
 		this.emit(reason);
 		return this.getSnapshot();

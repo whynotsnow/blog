@@ -33,11 +33,10 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 <script>
 	import { buildTocItems, collectTocHeadings } from "./toc-data";
 	import {
-		TOC_SCROLL_OFFSET,
-		findHeadingById,
 		getPostContentRoot,
 		getTocOptions,
 		onPostTocRefresh,
+		scrollToHeading,
 		type TocActiveTracker,
 		type TocItem,
 	} from "./toc-runtime";
@@ -61,7 +60,6 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 
 	class TableOfContents extends HTMLElement {
 		tocEl: HTMLElement | null = null;
-		headingIdxMap: Map<string, number> = new Map();
 		tocItems: TocItem[] = [];
 		headings: Array<HTMLElement | undefined> = [];
 		store = getPostTocStore();
@@ -201,28 +199,10 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 
 			if (anchor) {
 				event.preventDefault(); // 阻止默认的锚点跳转
+				event.stopPropagation();
 
 				const id = decodeURIComponent(anchor.hash?.substring(1));
-				const targetElement = findHeadingById(id);
-
-				if (targetElement) {
-					// 计算目标位置，与移动端保持一致
-					const targetTop =
-						targetElement.getBoundingClientRect().top +
-						window.scrollY -
-						TOC_SCROLL_OFFSET;
-
-					// 使用与移动端相同的滚动方式
-					window.scrollTo({
-						top: targetTop,
-						behavior: "smooth",
-					});
-				}
-
-				const idx = this.headingIdxMap.get(id);
-				if (idx !== undefined) {
-					this.update("anchor-jump");
-				}
+				scrollToHeading(id);
 			}
 		};
 
@@ -240,7 +220,6 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 				this.removeStoreSubscriber?.();
 				this.presenter?.dispose();
 			}
-			this.headingIdxMap.clear();
 			this.tocItems = [];
 			this.headings = [];
 			this.activeTracker = this.store.getSnapshot().tracker;
@@ -298,9 +277,6 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 			if (this.tocItems.length === 0) return;
 
 			const contentRoot = this.getContentRoot();
-			for (let i = 0; i < this.tocItems.length; i++) {
-				this.headingIdxMap.set(this.tocItems[i].id, i);
-			}
 			this.store.setItems(this.tocItems, contentRoot, "init");
 			this.removeStoreSubscriber = this.store.subscribe(
 				(snapshot, reason) =>
