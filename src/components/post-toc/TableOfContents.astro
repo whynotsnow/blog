@@ -58,7 +58,6 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 	const TOC_BOUNDARY_MIN_ITEMS = 6;
 	const TOC_BOUNDARY_MIN_ROOTS = 2;
 	const TOC_BOUNDARY_MIN_VIEWPORTS = 1.5;
-	const TOC_BOTTOM_BOUNDARY_OFFSET = 160;
 
 	class TableOfContents extends HTMLElement {
 		tocEl: HTMLElement | null = null;
@@ -89,24 +88,9 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 		): DesktopTocRootsOnlyReason | null {
 			if (!this.activeTracker.nodes.length) return "empty";
 			if (!this.canUseRootsOnlyBoundary()) return null;
-			if (window.scrollY <= 1) return "top";
-			if (currentIndex < 0) return "top";
-
-			const isBottomBoundary =
-				window.scrollY + window.innerHeight >=
-				this.getReadingContentBottomY() - TOC_BOTTOM_BOUNDARY_OFFSET;
-			const wasBottomRootsOnly =
-				this.viewportState?.mode === "roots-only" &&
-				this.viewportState.rootsOnlyReason === "bottom";
-			const canEnterBottomBoundary =
-				this.activeTracker.scrollDirection === "down" ||
-				this.activeTracker.scrollDirection === "jump" ||
-				(this.activeTracker.scrollDirection === "still" &&
-					wasBottomRootsOnly);
-
-			if (isBottomBoundary && canEnterBottomBoundary) {
-				return "bottom";
-			}
+			const boundaryState = this.activeTracker.getBoundaryState();
+			if (boundaryState === "before" || currentIndex < 0) return "top";
+			if (boundaryState === "after") return "bottom";
 
 			return null;
 		}
@@ -129,12 +113,6 @@ const tocItemsJson = JSON.stringify(tocItems).replaceAll("<", "\\u003c");
 			return (
 				this.closest(".post-support__toc-body") as HTMLElement | null
 			);
-		}
-
-		getReadingContentBottomY() {
-			const root = this.getReadingContentRoot();
-			if (!root) return document.documentElement.scrollHeight;
-			return root.getBoundingClientRect().bottom + window.scrollY;
 		}
 
 		canUseRootsOnlyBoundary() {

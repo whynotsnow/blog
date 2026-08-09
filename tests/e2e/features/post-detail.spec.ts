@@ -1029,11 +1029,7 @@ test("post support TOC collapses to root list at document boundaries", async ({
 			"#post-container .post-detail__content",
 		)!;
 		window.scrollTo({
-			top:
-				content.getBoundingClientRect().bottom +
-				window.scrollY -
-				window.innerHeight +
-				120,
+			top: content.getBoundingClientRect().bottom + window.scrollY - 120,
 		});
 	});
 	await page.waitForFunction(
@@ -1076,6 +1072,90 @@ test("post support TOC collapses to root list at document boundaries", async ({
 	expect(bottomState.mode).toBe("roots-only");
 	expect(bottomState.rootsOnlyReason).toBe("bottom");
 	expect(bottomState.scrollAnchor).toBe("bottom");
+});
+
+test("post support TOC does not enter bottom mode while a late child heading is active", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 720 });
+	await gotoPage(page, "/posts/markdown-extended/");
+	await expect(page.locator("#toc a").first()).toBeVisible();
+
+	await page.evaluate(() => {
+		document.documentElement.style.scrollBehavior = "auto";
+		const heading = document.querySelector<HTMLElement>("#custom-titles");
+		if (!heading) throw new Error("Missing Custom Titles heading");
+		window.scrollTo({
+			top: heading.getBoundingClientRect().top + window.scrollY - 100,
+			behavior: "auto",
+		});
+	});
+	await expect
+		.poll(() =>
+			page.locator("#toc").evaluate((toc) => ({
+				mode: (toc as HTMLElement).dataset.tocMode ?? "",
+				active:
+					toc
+						.querySelector("a.visible")
+						?.textContent?.replace(/\s+/g, " ")
+						.trim() ?? "",
+				currentBranchCount: toc.querySelectorAll("a.is-current-branch")
+					.length,
+			})),
+		)
+		.toMatchObject({
+			mode: "normal",
+			active: "Custom Titles",
+			currentBranchCount: 5,
+		});
+
+	await page.evaluate(() => window.scrollBy({ top: 80, behavior: "auto" }));
+	await expect
+		.poll(() =>
+			page.locator("#toc").evaluate((toc) => ({
+				mode: (toc as HTMLElement).dataset.tocMode ?? "",
+				rootsOnlyReason:
+					(toc as HTMLElement).dataset.tocRootsOnlyReason ?? "",
+				active:
+					toc
+						.querySelector("a.visible")
+						?.textContent?.replace(/\s+/g, " ")
+						.trim() ?? "",
+				currentBranchCount: toc.querySelectorAll("a.is-current-branch")
+					.length,
+			})),
+		)
+		.toMatchObject({
+			mode: "normal",
+			rootsOnlyReason: "none",
+			active: "Custom Titles",
+			currentBranchCount: 5,
+		});
+
+	await page.evaluate(() => {
+		const content = document.querySelector<HTMLElement>(
+			"#post-container .post-detail__content",
+		)!;
+		window.scrollTo({
+			top: content.getBoundingClientRect().bottom + window.scrollY - 120,
+			behavior: "auto",
+		});
+	});
+	await expect
+		.poll(() =>
+			page.locator("#toc").evaluate((toc) => ({
+				mode: (toc as HTMLElement).dataset.tocMode ?? "",
+				rootsOnlyReason:
+					(toc as HTMLElement).dataset.tocRootsOnlyReason ?? "",
+				currentBranchCount: toc.querySelectorAll("a.is-current-branch")
+					.length,
+			})),
+		)
+		.toMatchObject({
+			mode: "roots-only",
+			rootsOnlyReason: "bottom",
+			currentBranchCount: 0,
+		});
 });
 
 test("post support TOC keeps active heading stable across branch transitions", async ({

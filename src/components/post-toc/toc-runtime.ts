@@ -1,7 +1,11 @@
 import { buildTocItems, collectTocHeadings, type TocItem } from "./toc-data";
 
 export type { TocItem } from "./toc-data";
-export { TocActiveTracker, type TocScrollDirection } from "./toc-active";
+export {
+	TocActiveTracker,
+	type TocBoundaryState,
+	type TocScrollDirection,
+} from "./toc-active";
 export {
 	buildTocGraph,
 	createEmptyTocGraph,

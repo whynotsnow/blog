@@ -7,6 +7,7 @@ import {
 } from "./toc-graph";
 
 export type TocScrollDirection = "up" | "down" | "still" | "jump";
+export type TocBoundaryState = "empty" | "before" | "inside" | "after";
 
 const DEFAULT_ACTIVE_OFFSET = 100;
 const JUMP_SCROLL_DELTA = 240;
@@ -56,6 +57,7 @@ export class TocActiveTracker {
 	private activeId = "";
 	private lastScrollY = getWindowScrollY();
 	private offset: number;
+	private contentRangeEnd = Number.POSITIVE_INFINITY;
 
 	constructor(options: { offset?: number } = {}) {
 		this.offset = options.offset ?? DEFAULT_ACTIVE_OFFSET;
@@ -64,12 +66,13 @@ export class TocActiveTracker {
 	setState(
 		items: TocItem[],
 		headings: Array<HTMLElement | undefined>,
+		options: { contentRangeEnd?: number } = {},
 	): number {
 		const previousActiveId = this.getActiveNode()?.id ?? this.activeId;
 		this.graph = buildTocGraph(items);
 		this.nodes = this.graph.nodes;
 		this.headings = headings;
-		this.measure();
+		this.measure(options);
 
 		const retainedIndex = previousActiveId
 			? this.nodes.findIndex((node) => node.id === previousActiveId)
@@ -88,7 +91,11 @@ export class TocActiveTracker {
 		return this.activeIndex;
 	}
 
-	measure(): void {
+	measure(options: { contentRangeEnd?: number } = {}): void {
+		if (typeof options.contentRangeEnd === "number") {
+			this.contentRangeEnd = options.contentRangeEnd;
+		}
+
 		for (let index = 0; index < this.nodes.length; index++) {
 			const node = this.nodes[index];
 			const heading = this.headings[index];
@@ -102,7 +109,7 @@ export class TocActiveTracker {
 			const nextNode = this.nodes[index + 1];
 			node.rangeEnd = nextNode
 				? nextNode.rangeStart
-				: Number.POSITIVE_INFINITY;
+				: Math.max(node.rangeStart, this.contentRangeEnd);
 		}
 	}
 
@@ -166,5 +173,21 @@ export class TocActiveTracker {
 		return this.activeIndex >= 0
 			? (this.nodes[this.activeIndex] ?? null)
 			: null;
+	}
+
+	getBoundaryState(
+		scrollY: number = getWindowScrollY(),
+		offset: number = this.offset,
+	): TocBoundaryState {
+		if (!this.nodes.length) return "empty";
+
+		const firstNode = this.nodes[0];
+		const lastNode = this.nodes[this.nodes.length - 1];
+		const probeY = scrollY + offset;
+		if (probeY < firstNode.rangeStart) return "before";
+		if (Number.isFinite(lastNode.rangeEnd) && probeY >= lastNode.rangeEnd) {
+			return "after";
+		}
+		return "inside";
 	}
 }

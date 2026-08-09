@@ -93,7 +93,9 @@ export class PostTocStore {
 		this.root = root;
 		this.items = items;
 		this.headings = getHeadingElementsForItems(root, items);
-		this.tracker.setState(items, this.headings);
+		this.tracker.setState(items, this.headings, {
+			contentRangeEnd: this.getContentRangeEnd(),
+		});
 		ensureTocTargetsScrollable(this.headings);
 		this.activeIndex = this.tracker.update(
 			window.scrollY,
@@ -112,7 +114,9 @@ export class PostTocStore {
 		this.root = state.root;
 		this.items = state.items;
 		this.headings = state.headings;
-		this.tracker.setState(this.items, this.headings);
+		this.tracker.setState(this.items, this.headings, {
+			contentRangeEnd: this.getContentRangeEnd(),
+		});
 		ensureTocTargetsScrollable(this.headings);
 		this.activeIndex = this.tracker.update(
 			window.scrollY,
@@ -135,7 +139,9 @@ export class PostTocStore {
 	}
 
 	measure(reason: TocStoreReason = "layout-remeasure"): TocStoreSnapshot {
-		this.tracker.measure();
+		this.tracker.measure({
+			contentRangeEnd: this.getContentRangeEnd(),
+		});
 		ensureTocTargetsScrollable(this.headings);
 		this.activeIndex = this.tracker.update(
 			window.scrollY,
@@ -194,6 +200,11 @@ export class PostTocStore {
 		for (const subscriber of this.subscribers) {
 			subscriber(snapshot, reason);
 		}
+	}
+
+	private getContentRangeEnd(): number {
+		if (!this.root) return Number.POSITIVE_INFINITY;
+		return this.root.getBoundingClientRect().bottom + window.scrollY;
 	}
 }
 

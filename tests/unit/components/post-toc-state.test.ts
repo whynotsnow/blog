@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TocItem } from "@/components/post-toc/toc-data";
+import { TocActiveTracker } from "@/components/post-toc/toc-active";
 import { buildTocGraph } from "@/components/post-toc/toc-graph";
 import { resolveDesktopTocViewState } from "@/components/post-toc/toc-desktop-state";
 import { resolveTocBranchView } from "@/components/post-toc/toc-view";
@@ -156,5 +157,25 @@ describe("desktop TOC state", () => {
 		expect(view.activeRootIndex).toBe(-1);
 		expect([...view.branchIndexes]).toEqual([]);
 		expect([...view.visibleIndexes]).toEqual([0, 1, 3]);
+	});
+
+	it("derives document boundary state from measured heading ranges", () => {
+		const tracker = new TocActiveTracker({ offset: 120 });
+		const headings = [200, 480, 760].map(
+			(top) =>
+				({
+					getBoundingClientRect: () => ({ top }),
+				}) as HTMLElement,
+		);
+
+		tracker.setState(items.slice(0, 3), headings, {
+			contentRangeEnd: 1000,
+		});
+
+		expect(tracker.nodes[2].rangeEnd).toBe(1000);
+		expect(tracker.getBoundaryState(79)).toBe("before");
+		expect(tracker.getBoundaryState(80)).toBe("inside");
+		expect(tracker.getBoundaryState(879)).toBe("inside");
+		expect(tracker.getBoundaryState(880)).toBe("after");
 	});
 });
