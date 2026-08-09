@@ -198,21 +198,42 @@ export class DesktopTocPresenter {
 			return;
 		}
 
+		let pendingTransitions = 1;
+		const waitForTransition = (): (() => void) => {
+			pendingTransitions += 1;
+			let settled = false;
+			return () => {
+				if (settled) return;
+				settled = true;
+				pendingTransitions -= 1;
+				if (pendingTransitions === 0) onSettled?.();
+			};
+		};
+
 		for (const slot of this.host.querySelectorAll<HTMLElement>(
 			".toc-expanded-region",
 		)) {
 			if (Number(slot.dataset.rootIndex) !== rootIndex) {
-				this.slotTransitions.collapse(slot);
+				this.slotTransitions.collapse(slot, waitForTransition());
 			}
 		}
 
 		this.renderedRootIndex = rootIndex;
-		if (rootIndex < 0) return;
+		this.pendingSettledRootIndex = rootIndex;
+		if (rootIndex < 0) {
+			pendingTransitions -= 1;
+			if (pendingTransitions === 0) onSettled?.();
+			return;
+		}
 
 		const slot = this.host.querySelector<HTMLElement>(
 			`.toc-expanded-region[data-root-index="${rootIndex}"]`,
 		);
-		if (!slot) return;
+		if (!slot) {
+			pendingTransitions -= 1;
+			if (pendingTransitions === 0) onSettled?.();
+			return;
+		}
 
 		const childItems = getTocBranchIndexes(this.graph, rootIndex)
 			.filter((index) => index !== rootIndex)
@@ -220,13 +241,18 @@ export class DesktopTocPresenter {
 				item: this.graph.items[index],
 				index,
 			}));
-		if (!childItems.length) return;
+		if (!childItems.length) {
+			pendingTransitions -= 1;
+			if (pendingTransitions === 0) onSettled?.();
+			return;
+		}
 
 		const nextHTML = childItems
 			.map(({ item, index }) => renderDesktopTocItem(item, index))
 			.join("");
-		this.pendingSettledRootIndex = rootIndex;
-		this.slotTransitions.expand(slot, nextHTML, onSettled);
+		this.slotTransitions.expand(slot, nextHTML, waitForTransition());
+		pendingTransitions -= 1;
+		if (pendingTransitions === 0) onSettled?.();
 	}
 
 	private shouldSequenceRootsOnlyCollapse(plan: TocTransitionPlan): boolean {
