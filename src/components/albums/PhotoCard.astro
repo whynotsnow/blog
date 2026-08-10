@@ -1,0 +1,29 @@
+---
+import type { Photo } from "../../types/album";
+
+interface Props {
+	photo: Photo;
+	albumId: string;
+}
+
+const { photo, albumId } = Astro.props;
+const alt = photo.alt || photo.title || "";
+---
+
+<figure class="gallery-photo-card break-inside-avoid mb-3">
+	<a
+		href={photo.src}
+		data-src={photo.src}
+		data-fancybox={`album-${albumId}`}
+		data-caption={alt}
+		class="block overflow-hidden rounded-lg bg-black/5 dark:bg-white/5"
+	>
+		<img
+			src={photo.src}
+			alt={alt}
+			loading="lazy"
+			decoding="async"
+			class="photo-image h-auto w-full object-cover transition-transform duration-300 hover:scale-105"
+		/>
+	</a>
+</figure>

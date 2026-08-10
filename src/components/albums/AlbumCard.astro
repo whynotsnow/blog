@@ -1,0 +1,101 @@
+---
+import { i18n } from "../../i18n/translation";
+import I18nKey from "../../i18n/i18nKey";
+import type { AlbumGroup } from "../../types/album";
+
+interface Props {
+	album: AlbumGroup;
+}
+
+const { album } = Astro.props;
+---
+
+<a
+	href={`/albums/${album.id}/`}
+	data-tags={album.tags?.join(",") || ""}
+	class="album-card group relative block overflow-hidden rounded-lg border border-(--line-divider) bg-(--card-bg) shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+>
+	<div class="aspect-4/3 relative overflow-hidden bg-black/5 dark:bg-white/5">
+		<img
+			src={album.cover}
+			alt={album.title}
+			class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+			loading="lazy"
+			decoding="async"
+		/>
+
+		<div class="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent"></div>
+
+		<div class="absolute top-2 right-2 flex items-center gap-1.5">
+			{
+				album.password && (
+					<span
+						class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm"
+						aria-label="Password protected"
+					>
+						<svg
+							class="h-3.5 w-3.5"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							aria-hidden="true"
+						>
+							<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2Zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2Zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1S15.1 4.29 15.1 6v2Z" />
+						</svg>
+					</span>
+				)
+			}
+			<span class="rounded-full bg-black/50 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+				{album.photos.length}
+				{i18n(I18nKey.albumsPhotosCount)}
+			</span>
+		</div>
+
+		<div class="absolute right-0 bottom-0 left-0 p-4">
+			<h2 class="line-clamp-1 text-base font-bold text-white drop-shadow-lg">
+				{album.title}
+			</h2>
+
+			{
+				album.description && (
+					<p
+						class="mt-1 line-clamp-1 text-xs leading-relaxed text-white/75"
+						title={album.description}
+					>
+						{album.description}
+					</p>
+				)
+			}
+
+			<div class="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-white/70">
+				<time>{new Date(album.date).toLocaleDateString("zh-CN")}</time>
+				{
+					album.location && (
+						<span class="inline-flex items-center gap-0.5">
+							<svg
+								class="h-3 w-3"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								aria-hidden="true"
+							>
+								<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" />
+							</svg>
+							{album.location}
+						</span>
+					)
+				}
+			</div>
+
+			{
+				album.tags && album.tags.length > 0 && (
+					<div class="mt-2 flex flex-wrap gap-1">
+						{album.tags.slice(0, 4).map((tag) => (
+							<span class="rounded bg-white/20 px-1.5 py-0.5 text-[0.6rem] text-white/90 backdrop-blur-sm">
+								{tag}
+							</span>
+						))}
+					</div>
+				)
+			}
+		</div>
+	</div>
+</a>

@@ -1,0 +1,100 @@
+---
+export interface FilterTab {
+	value: string;
+	label: string;
+	count?: number;
+}
+
+interface Props {
+	tabs: FilterTab[];
+	dataAttr: string;
+	activeValue?: string;
+	class?: string;
+}
+
+const {
+	tabs,
+	dataAttr,
+	activeValue = "all",
+	class: className = "",
+} = Astro.props;
+---
+
+<div class:list={["filter-tabs", className]}>
+	{
+		tabs.map((tab) => (
+			<button
+				type="button"
+				class:list={[
+					"filter-tabs__item",
+					{ "is-active": tab.value === activeValue },
+				]}
+				data-filter-value={tab.value}
+				data-filter-attr={dataAttr}
+			>
+				<span>{tab.label}</span>
+				{tab.count !== undefined && (
+					<span class="filter-tabs__count">({tab.count})</span>
+				)}
+			</button>
+		))
+	}
+</div>
+
+<style>
+	.filter-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.filter-tabs__item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--line-divider);
+		border-radius: var(--radius-large);
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+		font-size: 0.875rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition:
+			background-color 0.2s ease,
+			border-color 0.2s ease,
+			color 0.2s ease;
+		white-space: nowrap;
+	}
+
+	.filter-tabs__item:hover:not(.is-active) {
+		background: var(--btn-regular-bg-hover);
+		border-color: var(--primary);
+	}
+
+	.filter-tabs__item.is-active {
+		background: var(--primary);
+		color: white;
+		border-color: var(--primary);
+	}
+
+	.filter-tabs__count {
+		opacity: 0.65;
+		font-size: 0.8rem;
+	}
+
+	@media (width < 768px) {
+		.filter-tabs {
+			gap: 0.375rem;
+		}
+
+		.filter-tabs__item {
+			padding: 0.4rem 0.8rem;
+			font-size: 0.8rem;
+		}
+
+		.filter-tabs__count {
+			display: none;
+		}
+	}
+</style>
