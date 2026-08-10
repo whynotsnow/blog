@@ -38,6 +38,10 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 ---
 
 <MainGridLayout title={title} description={subtitle}>
+	<script>
+		import("../features/diary/diary-client");
+	</script>
+
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
@@ -71,6 +75,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 					data-minutes-ago={relativeTimeLabels.minutesAgo}
 					data-hours-ago={relativeTimeLabels.hoursAgo}
 					data-days-ago={relativeTimeLabels.daysAgo}
+					data-timezone={String(siteConfig.timeZone)}
 				>
 					{
 						moments.map((moment, index) => (
