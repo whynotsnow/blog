@@ -114,7 +114,14 @@
 
 ## 特色页面
 
-`siteConfig.featurePages` 控制可选页面是否启用。关闭某个页面后，也应从导航配置中移除对应链接。
+`siteConfig.featurePages` 控制可选页面是否启用。顶部导航会根据这些开关自动派生特色页面链接：开启后按 `src/config/navbar.ts` 中的 `featureOrder` 加入导航，关闭后自动移除对应链接。
+
+需要调整自动生成的导航项时，不要重新维护一份完整 `links` 列表，优先修改 `src/config/navbar.ts` 中的 `navBarAutoConfig`：
+
+- `baseLinks`：始终显示的基础链接，例如 Home 和 Archive。
+- `featureOrder`：特色页面出现在导航中的顺序。
+- `featureItems`：定义每个特色页面对应的导航项；需要覆盖 `name`、`url`、`icon` 或 `children` 时，把对应页面从 `LinkPreset` 改成完整链接对象即可，例如把相册显示为 `Gallery`。
+- `extraLinks`：不受 `featurePages` 控制的自定义链接，例如 About。
 
 当前可选页面：
 
