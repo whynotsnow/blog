@@ -118,6 +118,7 @@ export const ja: Translation = {
 
 	// 日記ページ
 	[Key.diarySubtitle]: "いつでも、どこでも生活を共有",
+	[Key.diaryNoResults]: "一致する日記はありません",
 	[Key.diaryCount]: "件の日記のエントリー",
 	[Key.diaryReply]: "返信",
 	[Key.diaryTips]: "最新の30件の日記のエントリーのみを表示",
@@ -165,13 +166,15 @@ export const ja: Translation = {
 	[Key.albumsEmptyDesc]:
 		"まだアルバムが作成されていません。美しい思い出を追加しましょう!",
 	[Key.albumsBackToList]: "アルバムに戻る",
+	[Key.albumsPhotoCount]: "件の写真",
+	[Key.albumsPhotosCount]: "件の写真",
+	[Key.albumsFilterAll]: "すべて",
+	[Key.albumsNoResults]: "一致するアルバムはありません",
 
 	// デバイスページ
 	[Key.devices]: "デバイス",
 	[Key.devicesSubtitle]: "日常的に使用しているデバイスを紹介",
 	[Key.devicesViewDetails]: "詳細を表示",
-	[Key.albumsPhotoCount]: "件の写真",
-	[Key.albumsPhotosCount]: "件の写真",
 
 	// プロジェクトページ
 	[Key.projects]: "プロジェクト",

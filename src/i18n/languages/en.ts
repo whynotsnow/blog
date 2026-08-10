@@ -118,6 +118,7 @@ export const en: Translation = {
 
 	// Diary Page
 	[Key.diarySubtitle]: "Share life, anytime, anywhere",
+	[Key.diaryNoResults]: "No matching diary entries",
 	[Key.diaryCount]: "diary entries",
 	[Key.diaryReply]: "Reply",
 	[Key.diaryTips]: "Only show the latest 30 diary entries",
@@ -164,13 +165,15 @@ export const en: Translation = {
 	[Key.albumsEmptyDesc]:
 		"No albums have been created yet. Go add some beautiful memories!",
 	[Key.albumsBackToList]: "Back to Albums",
+	[Key.albumsPhotoCount]: "photo",
+	[Key.albumsPhotosCount]: "photos",
+	[Key.albumsFilterAll]: "All",
+	[Key.albumsNoResults]: "No matching albums",
 
 	// Devices Page
 	[Key.devices]: "My Devices",
 	[Key.devicesSubtitle]: "Here are the devices I use in my daily life",
 	[Key.devicesViewDetails]: "View Details",
-	[Key.albumsPhotoCount]: "photo",
-	[Key.albumsPhotosCount]: "photos",
 
 	// Projects Page
 	[Key.projects]: "Projects",

@@ -111,6 +111,7 @@ enum I18nKey {
 
 	// 短文页面
 	diarySubtitle = "diarySubtitle",
+	diaryNoResults = "diaryNoResults",
 	diaryCount = "diaryCount",
 	diaryReply = "diaryReply",
 	diaryTips = "diaryTips",
@@ -157,6 +158,8 @@ enum I18nKey {
 	albumsBackToList = "albumsBackToList",
 	albumsPhotoCount = "albumsPhotoCount",
 	albumsPhotosCount = "albumsPhotosCount",
+	albumsFilterAll = "albumsFilterAll",
+	albumsNoResults = "albumsNoResults",
 
 	// 设备页面
 	devices = "devices",

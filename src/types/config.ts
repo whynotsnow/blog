@@ -113,6 +113,9 @@ export type SiteConfig = {
 		mode?: "bangumi" | "local" | "bilibili"; // 番剧页面模式
 	};
 
+	// 日记页面 Memos API 地址，留空则使用静态数据
+	diaryApiUrl?: string;
+
 	// 标签样式配置
 	tagStyle?: {
 		useNewStyle?: boolean; // 是否使用新样式（悬停高亮样式）还是旧样式（外框常亮样式）

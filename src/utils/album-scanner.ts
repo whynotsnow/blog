@@ -14,6 +14,8 @@ type AlbumInfo = {
 	tags?: string[];
 	layout?: AlbumGroup["layout"];
 	columns?: number;
+	password?: string;
+	passwordHint?: string;
 };
 
 type ExternalPhoto = Photo;
@@ -84,13 +86,19 @@ async function processAlbumFolder(
 		photos = processExternalPhotos(info.photos || [], folderName);
 	} else {
 		// 本地模式：检查本地文件
-		const coverPath = path.join(folderPath, "cover.jpg");
-		if (!fs.existsSync(coverPath)) {
-			console.warn(`相册 ${folderName} 缺少 cover.jpg 文件`);
-			return null;
+		let coverPath = path.join(folderPath, "cover.webp");
+		const hasWebpCover = fs.existsSync(coverPath);
+		if (!hasWebpCover) {
+			coverPath = path.join(folderPath, "cover.jpg");
+			if (!fs.existsSync(coverPath)) {
+				console.warn(`相册 ${folderName} 缺少 cover 文件`);
+				return null;
+			}
 		}
 
-		cover = `/images/albums/${folderName}/cover.jpg`;
+		cover = hasWebpCover
+			? `/images/albums/${folderName}/cover.webp`
+			: `/images/albums/${folderName}/cover.jpg`;
 		photos = scanPhotos(folderPath, folderName);
 	}
 
@@ -111,6 +119,8 @@ async function processAlbumFolder(
 		tags: info.tags || [],
 		layout: info.layout || "grid",
 		columns: info.columns || 3,
+		password: info.password || undefined,
+		passwordHint: info.passwordHint || undefined,
 		photos,
 	};
 }
@@ -119,24 +129,40 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 	const photos: Photo[] = [];
 	const files = fs.readdirSync(folderPath);
 
+	const imageExtensions = [
+		".jpg",
+		".jpeg",
+		".png",
+		".gif",
+		".webp",
+		".svg",
+		".avif",
+		".bmp",
+		".tiff",
+		".tif",
+	];
+
 	// 过滤出图片文件
 	const imageFiles = files.filter((file) => {
 		const ext = path.extname(file).toLowerCase();
 		return (
-			[
-				".jpg",
-				".jpeg",
-				".png",
-				".gif",
-				".webp",
-				".svg",
-				".avif",
-				".bmp",
-				".tiff",
-				".tif",
-			].includes(ext) && file !== "cover.jpg"
+			imageExtensions.includes(ext) &&
+			file !== "cover.jpg" &&
+			file !== "cover.webp"
 		);
 	});
+
+	const fileWebpMap = new Map<string, string>();
+	for (const file of imageFiles) {
+		const baseName = path.basename(file, path.extname(file));
+		const ext = path.extname(file).toLowerCase();
+		if (
+			(ext === ".jpg" || ext === ".jpeg" || ext === ".png") &&
+			imageFiles.includes(`${baseName}.webp`)
+		) {
+			fileWebpMap.set(file, `${baseName}.webp`);
+		}
+	}
 
 	// 处理每张照片
 	imageFiles.forEach((file, index) => {
@@ -145,10 +171,13 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 
 		// 解析文件名中的标签
 		const { baseName, tags } = parseFileName(file);
+		const src = fileWebpMap.has(file)
+			? `/images/albums/${albumId}/${fileWebpMap.get(file)}`
+			: `/images/albums/${albumId}/${file}`;
 
 		photos.push({
 			id: `${albumId}-photo-${index}`,
-			src: `/images/albums/${albumId}/${file}`,
+			src,
 			alt: baseName,
 			title: baseName,
 			tags: tags,
@@ -198,11 +227,16 @@ function parseFileName(fileName: string): { baseName: string; tags: string[] } {
 	// 匹配文件名中的标签，格式为：文件名_标签1_标签2.扩展名
 	const parts = path.basename(fileName, path.extname(fileName)).split("_");
 
-	if (parts.length > 1) {
-		// 第一部分作为基本名称，其余部分作为标签
+	if (parts.length >= 3) {
+		// 前 N-2 部分作为基本名称，最后 2 部分作为标签
 		const baseName = parts.slice(0, -2).join("_");
 		const tags = parts.slice(-2);
 		return { baseName, tags };
+	}
+
+	if (parts.length === 2) {
+		// 第一部分作为基本名称，第二部分作为标签
+		return { baseName: parts[0], tags: [parts[1]] };
 	}
 
 	// 如果没有标签，返回不带扩展名的文件名

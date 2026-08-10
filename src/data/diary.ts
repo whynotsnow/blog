@@ -46,15 +46,16 @@ export const getDiaryStats = (): DiaryStats => {
 		hasImages: hasImages,
 		hasLocation: hasLocation,
 		hasMood: hasMood,
-		imagePercentage: Math.round((hasImages / total) * 100),
-		locationPercentage: Math.round((hasLocation / total) * 100),
-		moodPercentage: Math.round((hasMood / total) * 100),
+		imagePercentage: total > 0 ? Math.round((hasImages / total) * 100) : 0,
+		locationPercentage:
+			total > 0 ? Math.round((hasLocation / total) * 100) : 0,
+		moodPercentage: total > 0 ? Math.round((hasMood / total) * 100) : 0,
 	};
 };
 
 // 获取日记列表（按时间倒序）
 export const getDiaryList = (limit?: number): DiaryItem[] => {
-	const sortedData = diaryData.sort(
+	const sortedData = [...diaryData].sort(
 		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 	);
 
@@ -84,6 +85,7 @@ export const getDiaryWithImages = (): DiaryItem[] => {
 export const getDiaryByTag = (tag: string): DiaryItem[] => {
 	return diaryData
 		.filter((item) => item.tags?.includes(tag))
+		.slice()
 		.sort(
 			(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 		);

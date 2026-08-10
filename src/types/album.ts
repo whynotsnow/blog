@@ -22,5 +22,7 @@ export interface AlbumGroup {
 	tags?: string[];
 	layout?: "grid" | "masonry";
 	columns?: number;
+	password?: string;
+	passwordHint?: string;
 	photos: Photo[];
 }

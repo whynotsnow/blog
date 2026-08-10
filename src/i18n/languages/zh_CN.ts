@@ -115,6 +115,7 @@ export const zh_CN: Translation = {
 
 	// 短文页面
 	[Key.diarySubtitle]: "随时随地，分享生活",
+	[Key.diaryNoResults]: "没有匹配的日记",
 	[Key.diaryCount]: "条短文",
 	[Key.diaryReply]: "回复",
 	[Key.diaryTips]: "只展示最近30条日记",
@@ -161,6 +162,8 @@ export const zh_CN: Translation = {
 	[Key.albumsBackToList]: "返回相册",
 	[Key.albumsPhotoCount]: "张照片",
 	[Key.albumsPhotosCount]: "张照片",
+	[Key.albumsFilterAll]: "全部",
+	[Key.albumsNoResults]: "没有匹配的相册",
 
 	// 设备页面
 	[Key.devices]: "我的设备",
