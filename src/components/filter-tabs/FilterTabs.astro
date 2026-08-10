@@ -53,8 +53,8 @@ const {
 		align-items: center;
 		gap: 0.375rem;
 		padding: 0.5rem 1rem;
-		border: 1px solid var(--line-divider);
-		border-radius: var(--radius-large);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-lg);
 		background: var(--btn-regular-bg);
 		color: var(--btn-content);
 		font-size: 0.875rem;
@@ -69,13 +69,13 @@ const {
 
 	.filter-tabs__item:hover:not(.is-active) {
 		background: var(--btn-regular-bg-hover);
-		border-color: var(--primary);
+		border-color: var(--accent);
 	}
 
 	.filter-tabs__item.is-active {
-		background: var(--primary);
+		background: var(--accent);
 		color: white;
-		border-color: var(--primary);
+		border-color: var(--accent);
 	}
 
 	.filter-tabs__count {

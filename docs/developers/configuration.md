@@ -136,6 +136,8 @@
 
 番剧数据源由 `src/config/site.ts` 中的 `siteConfig.anime.mode` 控制，可选 `local`、`bangumi` 或 `bilibili`。当前配置使用 `local`，构建不会请求外部服务；选择 `bangumi` 或 `bilibili` 时必须同时配置对应用户 ID，否则数据更新和构建会失败。更新脚本在无法读取该配置时保留上游的 `bangumi` fallback。
 
+日记页面默认读取 `src/data/diary.ts` 的静态数据。`siteConfig.diaryApiUrl` 留空时不会请求外部服务；填入公开 Memos API 地址时，浏览器会在 `/diary/` 页面加载后拉取 `PUBLIC` 且 `NORMAL` 的 Memos，并用这些动态条目替换静态列表。Memos 图片附件只接受 `image/*` 类型，展示顺序为 `pinned` 优先、再按创建时间倒序。该配置不要填写需要认证的私有 API 或包含 Token 的 URL。
+
 ## 环境变量
 
 | 变量 | 说明 |

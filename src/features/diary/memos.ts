@@ -116,7 +116,7 @@ function renderDiaryMoment(
 					<div class="flex items-center gap-3">${locationHtml}</div>
 				</div>
 			</div>
-			<div class="absolute inset-0 bg-linear-to-br from-(--primary)/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
+			<div class="moment-card__hover-layer absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
 		</article>`;
 }
 

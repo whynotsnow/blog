@@ -150,6 +150,21 @@ pnpm new-post -- my-post-title
 - 大图优先使用 WebP。
 - 文章图片路径应保持稳定，因为卡片、Feed 和 OG 图片可能复用它们。
 
+## 相册资源
+
+相册页面读取 `public/images/albums/{albumId}/info.json` 和同目录图片。`info.json` 的常用字段包括：
+
+- `title`、`description`、`date`、`location`、`tags`：用于相册列表、详情页和筛选。
+- `hidden`：为 `true` 时构建时跳过该相册。
+- `layout`：支持 `masonry` 和 `grid`，未配置时使用 `grid`。
+- `columns`：保留给相册网格布局使用，未配置时为 `3`。
+- `password`：可选，相册详情照片区会加密，未解锁前不输出照片 HTML。
+- `passwordHint`：可选，保留给密码提示文案；当前通用密码组件仍显示站点级默认提示。
+
+本地相册优先使用 `cover.webp` 作为封面，缺失时回退到 `cover.jpg`；两个封面文件都不会进入照片列表。普通图片支持 `jpg`、`jpeg`、`png`、`gif`、`webp`、`svg`、`avif`、`bmp`、`tiff`、`tif`。当同目录同时存在同名 `jpg`/`jpeg`/`png` 与 `webp` 时，扫描器会优先把照片 URL 指向 WebP。文件名可用下划线携带标签，例如 `name_tag.webp` 或 `name_tag1_tag2.webp`。
+
+外链相册在 `info.json` 中设置 `mode: "external"`，并提供 `cover` 和 `photos` 数组。`photos` 中每项至少需要 `src`，可选 `thumbnail`、`alt`、`title`、`description`、`tags`、`date`、`location`、`width`、`height`。外链相册同样支持 `password` 和 `passwordHint`。
+
 ## 网站通知
 
 网站通知使用 `src/content/notifications/*.md`。Frontmatter 控制列表摘要、状态、等级、可见范围和交互策略，正文 Markdown 会在 Activity Center 弹窗中展示。

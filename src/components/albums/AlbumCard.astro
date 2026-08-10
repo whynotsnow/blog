@@ -13,7 +13,7 @@ const { album } = Astro.props;
 <a
 	href={`/albums/${album.id}/`}
 	data-tags={album.tags?.join(",") || ""}
-	class="album-card group relative block overflow-hidden rounded-lg border border-(--line-divider) bg-(--card-bg) shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+	class="album-card group relative block overflow-hidden rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-card)] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
 >
 	<div class="aspect-4/3 relative overflow-hidden bg-black/5 dark:bg-white/5">
 		<img

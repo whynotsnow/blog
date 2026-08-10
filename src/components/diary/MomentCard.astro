@@ -110,7 +110,7 @@ const imageGroup = `diary-${index}`;
 	</div>
 
 	<div
-		class="absolute inset-0 bg-linear-to-br from-(--primary)/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"
+		class="moment-card__hover-layer absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"
 	>
 	</div>
 </article>
@@ -123,6 +123,14 @@ const imageGroup = `diary-${index}`;
 
 	.moment-card.filtered-out {
 		display: none;
+	}
+
+	.moment-card__hover-layer {
+		background: linear-gradient(
+			to bottom right,
+			color-mix(in srgb, var(--accent) 5%, transparent),
+			transparent
+		);
 	}
 
 	.moment-card:nth-child(1) {
