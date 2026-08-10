@@ -9,6 +9,7 @@ import { sakuraConfig } from "../config";
 import { initSakura } from "../utils/sakura-manager";
 import type { PanelId } from "../utils/panel-manager";
 import { onPageLifecycle } from "../utils/page-lifecycle";
+import { initFilterTabs } from "../components/filter-tabs/filter-tabs-client";
 
 const setTimeout = (
 	callback: TimerHandler,
@@ -151,12 +152,23 @@ function checkKatex() {
 async function initFancybox() {
 	const albumImagesSelector =
 		".custom-md img, #post-cover img, .moment-images img";
-	const albumLinksSelector = ".moment-images a[data-fancybox]";
-	const singleFancyboxSelector = "[data-fancybox]:not(.moment-images a)";
+	const groupedFancyboxSelector = [
+		".moment-images [data-fancybox]",
+		".diary-images [data-fancybox]",
+		".photo-gallery [data-fancybox]",
+		".gallery-masonry [data-fancybox]",
+	].join(", ");
+	const singleFancyboxSelector = [
+		"[data-fancybox]",
+		":not(.moment-images [data-fancybox])",
+		":not(.diary-images [data-fancybox])",
+		":not(.photo-gallery [data-fancybox])",
+		":not(.gallery-masonry [data-fancybox])",
+	].join("");
 
 	const hasImages =
 		document.querySelector(albumImagesSelector) ||
-		document.querySelector(albumLinksSelector) ||
+		document.querySelector(groupedFancyboxSelector) ||
 		document.querySelector(singleFancyboxSelector);
 
 	if (!hasImages) return;
@@ -219,16 +231,25 @@ async function initFancybox() {
 	});
 	fancyboxSelectors.push(albumImagesSelector);
 
-	Fancybox.bind(albumLinksSelector, {
+	const sourceFromTrigger = (el: HTMLElement) => {
+		const href = el.getAttribute("href");
+		if (href && href !== "javascript:void(0)") {
+			return href;
+		}
+		return el.getAttribute("data-src") || href || "";
+	};
+
+	Fancybox.bind(groupedFancyboxSelector, {
 		...commonConfig,
-		source: (el: HTMLElement) => {
-			return el.getAttribute("data-src") || el.getAttribute("href");
-		},
+		source: sourceFromTrigger,
 	});
-	fancyboxSelectors.push(albumLinksSelector);
+	fancyboxSelectors.push(groupedFancyboxSelector);
 
 	// 绑定单独的 fancybox 图片
-	Fancybox.bind(singleFancyboxSelector, commonConfig);
+	Fancybox.bind(singleFancyboxSelector, {
+		...commonConfig,
+		source: sourceFromTrigger,
+	});
 	fancyboxSelectors.push(singleFancyboxSelector);
 }
 
@@ -241,6 +262,11 @@ function cleanupFancybox() {
 	});
 	fancyboxSelectors = [];
 }
+
+window.__refreshFancybox = async () => {
+	cleanupFancybox();
+	await initFancybox();
+};
 
 const setup = () => {
 	onPageLifecycle("link-click", () => {
@@ -266,6 +292,7 @@ const setup = () => {
 
 		// 初始化新页面的图片、公式、滚动条和TOC
 		initFancybox();
+		initFilterTabs(true);
 		checkKatex();
 		initKatexScrollbar();
 
@@ -419,6 +446,7 @@ const setup = () => {
 };
 
 initFancybox();
+initFilterTabs();
 checkKatex();
 setup();
 

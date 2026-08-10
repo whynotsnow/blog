@@ -7,8 +7,8 @@ export interface RelativeTimeLabels {
 export function formatRelativeTime(
 	dateString: string,
 	labels: RelativeTimeLabels,
-	timeZone = 8,
-	now = new Date(),
+	timeZone: number = 8,
+	now: Date = new Date(),
 ): string {
 	const normalizedTimeZone = timeZone >= -12 && timeZone <= 12 ? timeZone : 8;
 	const date = new Date(dateString);

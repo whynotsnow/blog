@@ -68,6 +68,13 @@
 			"test",
 			"tests/e2e/features/floating-tools.spec.ts"
 		],
+		"albums-diary": [
+			"pnpm",
+			"exec",
+			"playwright",
+			"test",
+			"tests/e2e/features/albums-diary.spec.ts"
+		],
 		"floating-toc": [
 			"pnpm",
 			"exec",
@@ -189,6 +196,7 @@
 				"src/styles/transition.css",
 				"src/components/layout/main-grid-client.ts",
 				"src/scripts/layout-client.ts",
+				"src/global.d.ts",
 				"src/utils/page-lifecycle.ts",
 				"src/services/layout/**"
 			],
@@ -209,6 +217,27 @@
 				"src/components/home/**"
 			],
 			"groups": ["lint", "astro", "home"]
+		},
+		{
+			"patterns": [
+				"src/pages/albums.astro",
+				"src/pages/albums/**",
+				"src/pages/diary.astro",
+				"src/components/albums/**",
+				"src/components/diary/**",
+				"src/components/filter-tabs/**",
+				"src/features/diary/**",
+				"src/styles/albums.css",
+				"src/utils/timeFormat.ts"
+			],
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"unit",
+				"albums-diary"
+			]
 		},
 		{
 			"patterns": [
@@ -352,6 +381,10 @@
 		{
 			"patterns": ["tests/e2e/features/floating-tools.spec.ts"],
 			"groups": ["test-type", "floating-tools"]
+		},
+		{
+			"patterns": ["tests/e2e/features/albums-diary.spec.ts"],
+			"groups": ["test-type", "albums-diary"]
 		},
 		{
 			"patterns": ["tests/e2e/contracts/**"],

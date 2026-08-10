@@ -70,6 +70,8 @@ declare global {
 			bind?: (selector: string, options: Record<string, unknown>) => void;
 			unbind?: (selector: string) => void;
 		};
+		__initFilterTabs?: () => void;
+		__refreshFancybox?: () => void | Promise<void>;
 		hljs?: {
 			highlightElement: (element: Element) => void;
 		};
