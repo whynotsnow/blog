@@ -5,7 +5,13 @@ export const pageLayoutPolicies: Record<
 	PageLayoutPolicy
 > = {
 	default: {
-		shellStrategy: "viewport-legacy",
+		shellStrategy: "container-content",
+		desktop: {
+			layout: "content-right",
+		},
+	},
+	content: {
+		shellStrategy: "container-content",
 		desktop: {
 			layout: "content-right",
 		},

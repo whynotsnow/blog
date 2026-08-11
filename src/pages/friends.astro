@@ -30,7 +30,7 @@ const title = i18n(I18nKey.friends);
 const subtitle = i18n(I18nKey.friendsSubtitle);
 ---
 
-<MainGridLayout title={title} description={title}>
+<MainGridLayout title={title} description={title} layoutPolicy="content">
 	<!-- 只在友情链接页面加载脚本 -->
 	<script is:inline>
 		// 标记当前页面为友情链接页面

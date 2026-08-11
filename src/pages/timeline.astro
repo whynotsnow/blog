@@ -11,6 +11,10 @@ if (!siteConfig.featurePages.timeline) {
 const model = buildTimelinePageModel();
 ---
 
-<MainGridLayout title={model.title} description={model.subtitle}>
+<MainGridLayout
+	title={model.title}
+	description={model.subtitle}
+	layoutPolicy="content"
+>
 	<TimelinePage model={model} />
 </MainGridLayout>

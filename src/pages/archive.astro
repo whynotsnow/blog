@@ -12,7 +12,7 @@ const store = await getContentStore();
 const { groups, calendar } = await buildArchivePageData(store);
 ---
 
-<MainGridLayout title={i18n(I18nKey.archive)}>
+<MainGridLayout title={i18n(I18nKey.archive)} layoutPolicy="content">
 	<div class="ds-stack">
 		<ArchiveCalendar calendarData={calendar} />
 		<ArchiveTimeline groups={groups} client:only="svelte" />

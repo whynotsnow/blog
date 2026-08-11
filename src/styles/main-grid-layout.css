@@ -1,7 +1,6 @@
 /* Shared page-shell stylesheet. Keep import order explicit so layout rules do
  * not depend on a late responsive override. */
 @import "./layout/page-grid.css";
-@import "./layout/page-grid-legacy.css";
 @import "./layout/main-content.css";
 @import "./layout/banner-layout.css";
 @import "./layout/banner-motion.css";

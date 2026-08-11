@@ -849,6 +849,21 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 		)
 		.toBe(1);
 
+	await expect
+		.poll(() =>
+			page.evaluate(
+				() =>
+					(
+						window as typeof window & {
+							__twikooInitCalls?: Array<{
+								path?: string;
+								el?: string;
+							}>;
+						}
+					).__twikooInitCalls?.length ?? 0,
+			),
+		)
+		.toBe(2);
 	const afterSecondPostInitCalls = await page.evaluate(
 		() =>
 			(

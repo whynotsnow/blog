@@ -17,7 +17,7 @@
   width: 100%;
 }
 
-/* Home, category, and post pages respond to the actual shell width. */
+/* Page layouts respond to the actual shell width. */
 .main-grid-shell[data-shell-strategy="container-content"] {
   container-name: page-shell;
   container-type: inline-size;

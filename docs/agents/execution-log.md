@@ -380,3 +380,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Added a feature-local command contract for show, collapse, toggle, and message interactions so other pages and components do not reach into the iframe DOM.
 - Store outer mount state in `live2d-companion-mounted` and internal collapsed state in `live2d-companion-collapsed`.
 - Removed legacy selectors and config/type aliases; new code should use `Live2DCompanion`, `live2dCompanionConfig`, and the feature-local event helpers.
+
+## 2026-08-12
+
+### Removed legacy viewport page layout
+
+- Migrated remaining `MainGridLayout` pages to the `container-content` Shell through a dedicated `content` layout policy for ordinary no-support pages.
+- Removed the viewport Grid compatibility stylesheet, old Shell `--page-width` branches, and `siteConfig.pageScaling` root-font scaling.
+- Kept Post List View Mode independent from Page Layout Policy; saved list/grid preferences no longer imply a legacy shell.

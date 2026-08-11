@@ -600,7 +600,7 @@ test("post list view does not imply desktop page layout preference", async ({
 	const grid = page.locator("#main-grid");
 	await expect(grid).toHaveAttribute(
 		"data-shell-strategy",
-		"viewport-legacy",
+		"container-content",
 	);
 	await expect(grid).toHaveAttribute("data-post-list-view", "grid");
 	await expect(grid).toHaveAttribute("data-desktop-layout", "content-right");

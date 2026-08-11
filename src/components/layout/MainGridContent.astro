@@ -15,7 +15,6 @@ interface Props {
 
 const { viewModel, footer, hasSupportContent } = Astro.props;
 const { transparentClass } = viewModel.mainPanel;
-const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-content";
 ---
 
 	<div
@@ -23,10 +22,7 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 	>
 		<!-- The pointer-events-none here keeps fixed shell controls clickable above page content. -->
 		<div
-			class:list={[
-				"main-grid-shell relative mx-auto pointer-events-auto",
-				{ "max-w-(--page-width)": !usesContainerContent },
-			]}
+			class="main-grid-shell relative mx-auto pointer-events-auto"
 			data-shell-strategy={viewModel.pageLayout.shellStrategy}
 		>
 			<div
@@ -37,10 +33,7 @@ const usesContainerContent = viewModel.pageLayout.shellStrategy === "container-c
 			>
 			<div
 				id="main-grid"
-				class:list={[
-					"page-layout-grid transition duration-700 w-full left-0 right-0 grid grid-rows-none mx-auto",
-					{ "gap-4 px-2 md:px-4": !usesContainerContent },
-				]}
+				class="page-layout-grid transition duration-700 w-full left-0 right-0 grid grid-rows-none mx-auto"
 			data-desktop-layout={viewModel.pageLayout.desktop.layout}
 			data-shell-strategy={viewModel.pageLayout.shellStrategy}
 			data-has-support={String(hasSupportContent)}

@@ -59,7 +59,7 @@
 
 项目不再提供通用 Widget registry、placement preset 或跨端点 resolver。业务模块由页面显式拥有：首页通过 `MainGridLayout` 的 `support` slot 传入一份 Profile；归档页在主内容流中组合 Calendar 与 Timeline，只负责时间维度浏览；分类与 Tag 浏览由分类页持有；站点统计由 Footer service 和 Footer component 持有；文章 TOC 属于 post detail feature。
 
-`shellStrategy` 选择页面级响应式几何：`container-content` 使用 Page Shell Container Query，`viewport-legacy` 保留尚未迁移页面的 viewport Grid。`pageLayoutPolicies` 只声明 Shell Strategy 和由配置确定的 Desktop Layout，不再提供用户侧 Desktop Layout Preference，也不描述业务模块 inventory。新增模块时应在所属页面或 layout 中显式组合，不要向配置层添加通用 placement 描述。
+`shellStrategy` 选择页面级响应式几何：当前页面统一使用 `container-content` 的 Page Shell Container Query。`pageLayoutPolicies` 只声明页面语义策略和由配置确定的 Desktop Layout；`content` 用于普通无侧栏内容页，`listing` 用于首页与分类列表，`post` 用于文章详情。不再提供用户侧 Desktop Layout Preference，也不描述业务模块 inventory。新增模块时应在所属页面或 layout 中显式组合，不要向配置层添加通用 placement 描述。
 
 ## 网站通知
 
@@ -95,10 +95,10 @@
 - `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
 - `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。它只控制 Post List View，不再隐式改写页面级 Layout Policy。
 - 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 共享 `1280px` 外部最大宽度。首页在 `1200px` 以上使用最大 `992px` 的三列 Feed + Profile support，在 `880px–1199px` 使用最大 `656px` 的双列 Feed + Profile support，低于 `880px` 时把同一个 Profile DOM 放到 Main 前方；Feed 低于 `608px` 后退为单列。分类 Hub 和具体分类页提供 Category support，文章详情页提供 Post support；带 support 的页面在 `880px` 以上进入主内容 + 右栏布局。断点针对实际容器，不直接对应 viewport 宽度。
-- `siteConfig.pageScaling` 仅保留给尚未迁移的 `viewport-legacy` 页面；首页、分类页和文章详情页会主动清除根字号缩放，不能依赖该配置改变 Card、Sidebar 或 Typography 尺寸。
+- 页面 Shell 不再支持 `siteConfig.pageScaling` 根字号缩放；Card、Sidebar 或 Typography 尺寸必须通过 Design Semantic token、Feature-local token 或对应 Container Query 表达。
 - `siteConfig.toc.scrollOffset`：控制文章 TOC 点击定位与滚动 active 高亮共用的顶部偏移，单位为 px。未配置时运行时会优先读取页面布局变量 `--main-content-offset`，使 TOC 与 fixed Navbar 保持一致；读取失败时回退为 `0`。不要分别为点击滚动和 active 判断设置不同偏移。
 - `siteConfig.wallpaperMode.defaultMode`：支持 `banner`、`full-banner`、`full-wall`、`none`。`banner` 表示横幅模式；`full-banner` 表示全屏横幅；`full-wall` 显示全屏壁纸图层，并通过 CSS 变量控制壁纸和卡片透明效果；`none` 隐藏壁纸。
-- Banner、Navbar 与尚未迁移页面仍使用 viewport 断点：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。首页、分类页和文章详情页的内容布局不使用这些断点，而以 `page-shell` 与 `post-feed` Container Query 为准。
+- Banner 与部分 Feature-local 表现仍可使用 viewport 断点：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。页面内容布局以 `page-shell` 与 `post-feed` Container Query 为准。
 - 普通 Banner 使用 `--banner-block-size` 同步控制横幅高度与正文起始位置；低高度横屏约为 `60vh` 以优先正文。首页 Fullscreen Banner 始终为 `100dvh`，非首页移动端隐藏 Banner。
 - `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。当前入口只保留 UI 状态预览，不会写入运行时配置。
 - `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 waves。

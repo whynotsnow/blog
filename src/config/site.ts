@@ -44,12 +44,6 @@ export const siteConfig: SiteConfig = {
 		logo: "assets/home/default-logo.webp",
 	},
 
-	// 页面自动缩放配置
-	pageScaling: {
-		enable: true, // 是否开启自动缩放
-		targetWidth: 2000, // 目标宽度，低于此宽度时开始缩放
-	},
-
 	bangumi: {
 		userId: "your-bangumi-id", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
 		fetchOnDev: false, // 是否在开发环境下获取 Bangumi 数据（默认 false），获取前先执行 pnpm build 构建 json 文件

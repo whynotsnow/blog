@@ -6,10 +6,17 @@ describe("resolvePageLayout", () => {
 	it("normalizes the default policy", () => {
 		expect(resolvePageLayout()).toMatchObject({
 			name: "default",
-			shellStrategy: "viewport-legacy",
+			shellStrategy: "container-content",
 			desktop: {
 				layout: "content-right",
 			},
+		});
+	});
+
+	it("keeps ordinary content pages on the container shell", () => {
+		expect(resolvePageLayout("content")).toMatchObject({
+			name: "content",
+			shellStrategy: "container-content",
 		});
 	});
 

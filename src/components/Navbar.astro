@@ -11,7 +11,6 @@ import NavMenuPanel from "./navigation/NavMenuPanel.astro";
 import ActivityCenter from "@/features/activity-center/ActivityCenter.astro";
 
 const className = Astro.props.class;
-const containerContent = Astro.props.containerContent === true;
 
 // 获取导航栏透明模式配置
 const navbarTransparentMode =
@@ -40,7 +39,6 @@ const iconSrc = rawIcon.match(/^(http|https|\/\/)/) ? rawIcon : url(rawIcon);
 	    <div class:list={[
 			className,
 			"navbar__inner overflow-visible! mx-auto flex items-center justify-between px-4",
-			{ "max-w-(--page-width)": !containerContent },
 		]}>
 		<a href={url('/')} class="navbar__brand btn-plain scale-animation rounded-(--navbar-control-radius) h-10 md:h-13 md:in-[.enable-banner]:h-10 md:in-[.enable-banner]:group-[.scrolled]:h-13 px-5 font-bold active:scale-95 shrink-0 transition-all duration-300">
 			<div class="navbar__brand-content flex flex-row items-center text-md">

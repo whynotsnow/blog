@@ -50,7 +50,6 @@ const hasSupportContent = Astro.slots.has("support");
 		postSlug={postSlug}
 		canonicalUrl={canonicalUrl}
 	navbarBehavior={viewModel.interaction.navbar}
-	shellStrategy={viewModel.pageLayout.shellStrategy}
 >
 	<script>
 		import "@/components/layout/main-grid-client";
@@ -69,13 +68,7 @@ const hasSupportContent = Astro.slots.has("support");
 	<slot slot="head" name="head" />
 	<div
 		id="top-row"
-		class:list={[
-			"z-50 pointer-events-none relative transition-all duration-700 mx-auto",
-			{
-				"max-w-(--page-width) px-0 md:px-4":
-					viewModel.pageLayout.shellStrategy !== "container-content",
-			},
-		]}
+		class="z-50 pointer-events-none relative transition-all duration-700 mx-auto"
 		data-shell-strategy={viewModel.pageLayout.shellStrategy}
 	>
 		<div
@@ -83,10 +76,7 @@ const hasSupportContent = Astro.slots.has("support");
 			class="pointer-events-auto sticky top-0 transition-all"
 		>
 			<Navbar
-				containerContent={viewModel.pageLayout.shellStrategy === "container-content"}
-				class={viewModel.pageLayout.shellStrategy === "container-content"
-					? "navbar__inner--container-content"
-					: undefined}
+				class="navbar__inner--container-content"
 			/>
 		</div>
 	</div>
