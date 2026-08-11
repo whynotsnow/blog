@@ -164,10 +164,10 @@ const calculatePercentage = (value: number, total: number) => {
 };
 ---
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<div class="skills-chart grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
   <!-- 扇形图 -->
   <div class="bg-transparent rounded-xl border border-(--line-divider) p-6 shadow-sm hover:shadow-lg transition-shadow duration-300">
-    <h3 class="text-xl font-bold text-90 mb-6 flex items-center">
+    <h3 class="skills-chart__title font-bold text-90 mb-6 flex items-center">
       <span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
       {i18n(I18nKey.skillsByLevel)}
     </h3>
@@ -239,15 +239,15 @@ const calculatePercentage = (value: number, total: number) => {
             <div data-key={index} class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-600/10 dark:hover:bg-gray-700/50 transition-colors">
               <div class="flex items-center">
                 <div class="w-3 h-3 rounded-full mr-2" style={`background-color: ${item.color}`}></div>
-                <span class="text-sm text-70">
+                <span class="skills-chart__legend-label text-70">
                   {item.name}
                 </span>
               </div>
               <div class="flex items-center">
-                <span class="text-sm font-medium text-90 mr-1">
+                <span class="skills-chart__legend-value font-medium text-90 mr-1">
                   {item.value}
                 </span>
-                <span class="text-xs text-50">
+                <span class="skills-chart__legend-percent text-50">
                   {percentage}%
                 </span>
               </div>
@@ -260,7 +260,7 @@ const calculatePercentage = (value: number, total: number) => {
   
   <!-- 矩形图和统计数据 -->
   <div class="bg-transparent rounded-xl border border-(--line-divider) p-6 shadow-sm hover:shadow-lg transition-shadow duration-300">
-    <h3 class="text-xl font-bold text-90 mb-6 flex items-center">
+    <h3 class="skills-chart__title font-bold text-90 mb-6 flex items-center">
       <span class="w-3 h-3 rounded-full bg-purple-500 mr-2"></span>
       {i18n(I18nKey.skillsByCategory)}
     </h3>
@@ -270,10 +270,10 @@ const calculatePercentage = (value: number, total: number) => {
         const actualPercentage = calculatePercentage(item.value, stats.total);
         return (
           <div data-key={index}>
-            <div class="flex justify-between text-sm mb-2">
+            <div class="skills-chart__category-row flex justify-between mb-2">
               <div class="flex items-center">
                 <span class="text-90 font-medium">{item.name}</span>
-                <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-gray-600/20 dark:bg-gray-700 text-60">
+                <span class="skills-chart__count ml-2 px-2 py-0.5 rounded-full bg-gray-600/20 dark:bg-gray-700 text-60">
                   {item.value}
                 </span>
               </div>
@@ -293,25 +293,25 @@ const calculatePercentage = (value: number, total: number) => {
       <div class="pt-5 mt-5 border-t border-(--line-divider)">
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-blue-500/10 dark:bg-blue-900/30 rounded-lg p-4 border border-blue-500/20 dark:border-blue-900/30">
-            <div class="text-sm text-60 mb-1">
+            <div class="skills-chart__stat-label text-60 mb-1">
               {i18n(I18nKey.skillExperience)}
             </div>
-            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {totalExperience.years}<span class="text-lg">.{totalExperience.months.toString().padStart(2, '0')}</span>
+            <div class="skills-chart__stat-value font-bold text-blue-600 dark:text-blue-400">
+              {totalExperience.years}<span class="skills-chart__stat-decimal">.{totalExperience.months.toString().padStart(2, '0')}</span>
             </div>
-            <div class="text-xs text-50 mt-1">
+            <div class="skills-chart__stat-caption text-50 mt-1">
               {i18n(I18nKey.skillYears)}
             </div>
           </div>
           
           <div class="bg-green-500/10 dark:bg-green-900/30 rounded-lg p-4 border border-green-500/20 dark:border-green-900/30">
-            <div class="text-sm text-60 mb-1">
+            <div class="skills-chart__stat-label text-60 mb-1">
               {i18n(I18nKey.skillsTotal)}
             </div>
-            <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div class="skills-chart__stat-value font-bold text-green-600 dark:text-green-400">
               {stats.total}
             </div>
-            <div class="text-xs text-50 mt-1">
+            <div class="skills-chart__stat-caption text-50 mt-1">
               {i18n(I18nKey.skills)}
             </div>
           </div>
@@ -322,3 +322,37 @@ const calculatePercentage = (value: number, total: number) => {
 </div>
 
 <!-- 添加CSS样式 -->
+<style>
+  .skills-chart {
+    --skills-chart-title-size: var(--text-card-title-size);
+    --skills-chart-body-size: var(--text-ui-size);
+    --skills-chart-caption-size: var(--text-caption-size);
+    --skills-chart-value-size: var(--text-list-title-size);
+    --skills-chart-decimal-size: var(--text-section-title-size);
+  }
+
+  .skills-chart__title {
+    font-size: var(--skills-chart-title-size);
+  }
+
+  .skills-chart__legend-label,
+  .skills-chart__legend-value,
+  .skills-chart__category-row,
+  .skills-chart__stat-label {
+    font-size: var(--skills-chart-body-size);
+  }
+
+  .skills-chart__legend-percent,
+  .skills-chart__count,
+  .skills-chart__stat-caption {
+    font-size: var(--skills-chart-caption-size);
+  }
+
+  .skills-chart__stat-value {
+    font-size: var(--skills-chart-value-size);
+  }
+
+  .skills-chart__stat-decimal {
+    font-size: var(--skills-chart-decimal-size);
+  }
+</style>

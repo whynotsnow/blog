@@ -11,12 +11,12 @@ interface Props {
 const { model } = Astro.props;
 ---
 
-<div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+<div class="anime-page flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
 	<div class="card-base anime-card-base z-10 px-9 py-6 relative w-full">
 		<div class="relative w-full mb-8">
 			<div class="mb-6">
 				<h1
-					class="text-4xl font-bold text-90 mb-2 relative
+					class="anime-page__title font-bold text-90 mb-2 relative
                     before:w-1 before:h-8 before:rounded-md before:bg-(--primary)
                     before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 				>
@@ -53,3 +53,13 @@ const { model } = Astro.props;
 
 	initAnimePage();
 </script>
+
+<style>
+	.anime-page {
+		--anime-page-title-size: var(--text-page-title-size);
+	}
+
+	.anime-page__title {
+		font-size: var(--anime-page-title-size);
+	}
+</style>

@@ -62,19 +62,19 @@ const getCategoryText = (category: string) => {
 
 <MainGridLayout title={title} description={subtitle}>
 	<div
-		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+		class="projects-page flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
 		<div class="card-base z-10 px-9 py-6 relative w-full">
 			<!-- 页面标题 -->
 			<div class="flex flex-col items-start justify-center mb-8">
 				<h1
-					class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
+					class="projects-page__title font-bold text-black/90 dark:text-white/90 mb-2 relative
                   before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)]
                   before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 				>
 					{i18n(I18nKey.projects)}
 				</h1>
-				<p class="text-lg text-black/60 dark:text-white/60">
+				<p class="projects-page__subtitle text-black/60 dark:text-white/60">
 					{i18n(I18nKey.projectsSubtitle)}
 				</p>
 			</div>
@@ -85,11 +85,11 @@ const getCategoryText = (category: string) => {
 					class="bg-blue-500/10 dark:bg-blue-900/30 rounded-lg p-4 border border-blue-500/20 dark:border-blue-900/30 hover:shadow-lg transition-shadow duration-300"
 				>
 					<div
-						class="text-2xl font-bold text-blue-600 dark:text-blue-400"
+						class="projects-page__stat-value font-bold text-blue-600 dark:text-blue-400"
 					>
 						{stats.total}
 					</div>
-					<div class="text-sm text-blue-600/70 dark:text-blue-400/70">
+					<div class="projects-page__stat-label text-blue-600/70 dark:text-blue-400/70">
 						{i18n(I18nKey.projectsTotal)}
 					</div>
 				</div>
@@ -97,12 +97,12 @@ const getCategoryText = (category: string) => {
 					class="bg-green-500/10 dark:bg-green-900/30 rounded-lg p-4 border border-green-500/20 dark:border-green-900/30 hover:shadow-lg transition-shadow duration-300"
 				>
 					<div
-						class="text-2xl font-bold text-green-600 dark:text-green-400"
+						class="projects-page__stat-value font-bold text-green-600 dark:text-green-400"
 					>
 						{stats.byStatus.completed}
 					</div>
 					<div
-						class="text-sm text-green-600/70 dark:text-green-400/70"
+						class="projects-page__stat-label text-green-600/70 dark:text-green-400/70"
 					>
 						{i18n(I18nKey.projectsCompleted)}
 					</div>
@@ -111,12 +111,12 @@ const getCategoryText = (category: string) => {
 					class="bg-yellow-500/10 dark:bg-yellow-900/30 rounded-lg p-4 border border-yellow-500/20 dark:border-yellow-900/30 hover:shadow-lg transition-shadow duration-300"
 				>
 					<div
-						class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"
+						class="projects-page__stat-value font-bold text-yellow-600 dark:text-yellow-400"
 					>
 						{stats.byStatus.inProgress}
 					</div>
 					<div
-						class="text-sm text-yellow-600/70 dark:text-yellow-400/70"
+						class="projects-page__stat-label text-yellow-600/70 dark:text-yellow-400/70"
 					>
 						{i18n(I18nKey.projectsInProgress)}
 					</div>
@@ -125,12 +125,12 @@ const getCategoryText = (category: string) => {
 					class="bg-purple-500/10 dark:bg-purple-900/30 rounded-lg p-4 border border-purple-500/20 dark:border-purple-900/30 hover:shadow-lg transition-shadow duration-300"
 				>
 					<div
-						class="text-2xl font-bold text-purple-600 dark:text-purple-400"
+						class="projects-page__stat-value font-bold text-purple-600 dark:text-purple-400"
 					>
 						{allTechStack.length}
 					</div>
 					<div
-						class="text-sm text-purple-600/70 dark:text-purple-400/70"
+						class="projects-page__stat-label text-purple-600/70 dark:text-purple-400/70"
 					>
 						{i18n(I18nKey.projectsTechStack)}
 					</div>
@@ -142,7 +142,7 @@ const getCategoryText = (category: string) => {
 				featuredProjects.length > 0 && (
 					<div class="mb-8">
 						<h2
-							class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4 relative
+							class="projects-page__section-title font-bold text-black/90 dark:text-white/90 mb-4 relative
                     before:w-1 before:h-6 before:rounded-md before:bg-[var(--primary)]
                     before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 						>
@@ -162,11 +162,11 @@ const getCategoryText = (category: string) => {
 									)}
 									<div class="p-6">
 										<div class="flex items-start justify-between mb-3">
-											<h3 class="text-xl font-semibold text-black/90 dark:text-white/90">
+											<h3 class="projects-page__featured-title font-semibold text-black/90 dark:text-white/90">
 												{project.title}
 											</h3>
 											<span
-												class={`px-2 py-1 text-xs rounded-full ${
+												class={`projects-page__badge px-2 py-1 rounded-full ${
 													project.status ===
 													"completed"
 														? "bg-green-600/20 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -194,19 +194,19 @@ const getCategoryText = (category: string) => {
 											{project.techStack
 												.slice(0, 4)
 												.map((tech) => (
-													<span class="px-2 py-1 text-xs bg-blue-600/20 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+													<span class="projects-page__tag px-2 py-1 bg-blue-600/20 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded">
 														{tech}
 													</span>
 												))}
 											{project.techStack.length > 4 && (
-												<span class="px-2 py-1 text-xs bg-gray-600/20 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 rounded">
+												<span class="projects-page__tag px-2 py-1 bg-gray-600/20 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 rounded">
 													+
 													{project.techStack.length -
 														4}
 												</span>
 											)}
 										</div>
-										<div class="flex flex-wrap gap-2 text-sm">
+										<div class="projects-page__actions flex flex-wrap gap-2">
 											{project.visitUrl && (
 												<a
 													href={project.visitUrl}
@@ -216,7 +216,7 @@ const getCategoryText = (category: string) => {
 												>
 													<Icon
 														name="material-symbols:open-in-new"
-														class="text-lg"
+														class="projects-page__action-icon"
 													/>
 													{i18n(
 														I18nKey.projectsVisit,
@@ -232,7 +232,7 @@ const getCategoryText = (category: string) => {
 												>
 													<Icon
 														name="mdi:github"
-														class="text-lg"
+														class="projects-page__action-icon"
 													/>
 													{i18n(
 														I18nKey.projectsGitHub,
@@ -258,12 +258,12 @@ const getCategoryText = (category: string) => {
 						return (
 							<div>
 								<h2
-									class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4 relative
+									class="projects-page__section-title font-bold text-black/90 dark:text-white/90 mb-4 relative
                         before:w-1 before:h-6 before:rounded-md before:bg-[var(--primary)]
                         before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 								>
 									{getCategoryText(category)}
-									<span class="text-lg font-normal text-black/60 dark:text-white/60 ml-2">
+									<span class="projects-page__section-count font-normal text-black/60 dark:text-white/60 ml-2">
 										({categoryProjects.length})
 									</span>
 								</h2>
@@ -281,11 +281,11 @@ const getCategoryText = (category: string) => {
 											)}
 											<div class="p-4">
 												<div class="flex items-start justify-between mb-2">
-													<h3 class="text-lg font-semibold text-black/90 dark:text-white/90 line-clamp-1">
+													<h3 class="projects-page__card-title font-semibold text-black/90 dark:text-white/90 line-clamp-1">
 														{project.title}
 													</h3>
 													<span
-														class={`px-2 py-1 text-xs rounded-full shrink-0 ml-2 ${
+														class={`projects-page__badge px-2 py-1 rounded-full shrink-0 ml-2 ${
 															project.status ===
 															"completed"
 																? "bg-green-600/20 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -306,27 +306,27 @@ const getCategoryText = (category: string) => {
 														)}
 													</span>
 												</div>
-												<p class="text-black/60 dark:text-white/60 mb-3 text-sm line-clamp-2">
+												<p class="projects-page__description text-black/60 dark:text-white/60 mb-3 line-clamp-2">
 													{project.description}
 												</p>
 												<div class="flex flex-wrap gap-1 mb-3">
 													{project.techStack
 														.slice(0, 3)
 														.map((tech) => (
-															<span class="px-2 py-1 text-xs bg-blue-600/20 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+															<span class="projects-page__tag px-2 py-1 bg-blue-600/20 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded">
 																{tech}
 															</span>
 														))}
 													{project.techStack.length >
 														3 && (
-														<span class="px-2 py-1 text-xs bg-gray-600/20 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 rounded">
+														<span class="projects-page__tag px-2 py-1 bg-gray-600/20 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 rounded">
 															+
 															{project.techStack
 																.length - 3}
 														</span>
 													)}
 												</div>
-												<div class="flex flex-wrap gap-2 text-sm">
+												<div class="projects-page__actions flex flex-wrap gap-2">
 													{project.visitUrl && (
 														<a
 															href={
@@ -338,7 +338,7 @@ const getCategoryText = (category: string) => {
 														>
 															<Icon
 																name="material-symbols:open-in-new"
-																class="text-lg"
+																class="projects-page__action-icon"
 															/>
 															{i18n(
 																I18nKey.projectsVisit,
@@ -356,7 +356,7 @@ const getCategoryText = (category: string) => {
 														>
 															<Icon
 																name="mdi:github"
-																class="text-lg"
+																class="projects-page__action-icon"
 															/>
 															{i18n(
 																I18nKey.projectsGitHub,
@@ -379,14 +379,14 @@ const getCategoryText = (category: string) => {
 				class="mt-12 pt-8 border-t border-black/10 dark:border-white/10"
 			>
 				<h2
-					class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4"
+					class="projects-page__section-title font-bold text-black/90 dark:text-white/90 mb-4"
 				>
 					{i18n(I18nKey.projectsTechStack)}
 				</h2>
 				<div class="flex flex-wrap gap-2">
 					{
 						allTechStack.map((tech) => (
-							<span class="px-3 py-1 text-sm bg-gray-600/20 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-full">
+							<span class="projects-page__tech-chip px-3 py-1 bg-gray-600/20 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-full">
 								{tech}
 							</span>
 						))
@@ -398,6 +398,41 @@ const getCategoryText = (category: string) => {
 </MainGridLayout>
 
 <style>
+	.projects-page__title {
+		font-size: var(--text-page-title-size);
+	}
+
+	.projects-page__subtitle,
+	.projects-page__section-title,
+	.projects-page__card-title {
+		font-size: var(--text-section-title-size);
+	}
+
+	.projects-page__section-count,
+	.projects-page__stat-label,
+	.projects-page__description,
+	.projects-page__actions,
+	.projects-page__tech-chip {
+		font-size: var(--text-ui-size);
+	}
+
+	.projects-page__stat-value {
+		font-size: var(--text-list-title-size);
+	}
+
+	.projects-page__featured-title {
+		font-size: var(--text-card-title-size);
+	}
+
+	.projects-page__badge,
+	.projects-page__tag {
+		font-size: var(--text-caption-size);
+	}
+
+	.projects-page__action-icon {
+		font-size: var(--text-icon-inline-size);
+	}
+
 	.line-clamp-1 {
 		display: -webkit-box;
 		-webkit-line-clamp: 1;

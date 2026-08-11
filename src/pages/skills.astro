@@ -101,19 +101,19 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 	</script>
 
 	<div
-		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+		class="skills-page flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
 		<div class="card-base z-10 px-9 py-6 relative w-full">
 			<!-- 页面标题 -->
 			<div class="flex flex-col items-start justify-center mb-8">
 				<h1
-					class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
+					class="skills-page__title font-bold text-black/90 dark:text-white/90 mb-2 relative
                   before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)]
                   before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 				>
 					{i18n(I18nKey.skills)}
 				</h1>
-				<p class="text-lg text-black/60 dark:text-white/60">
+				<p class="skills-page__subtitle text-black/60 dark:text-white/60">
 					{i18n(I18nKey.skillsSubtitle)}
 				</p>
 			</div>
@@ -126,7 +126,7 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 				advancedSkills.length > 0 && (
 					<div class="mb-8">
 						<h2
-							class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4 relative
+							class="skills-page__section-title font-bold text-black/90 dark:text-white/90 mb-4 relative
                     before:w-1 before:h-6 before:rounded-md before:bg-[var(--primary)]
                     before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 						>
@@ -143,7 +143,7 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 											>
 												<Icon
 													icon={skill.icon}
-													class="text-2xl"
+													class="skills-page__featured-icon"
 													color={
 														skill.color &&
 														skill.color !==
@@ -160,11 +160,11 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 										)}
 										<div class="flex-1">
 											<div class="flex items-center justify-between mb-2">
-												<h3 class="text-xl font-semibold text-black/90 dark:text-white/90">
+												<h3 class="skills-page__featured-title font-semibold text-black/90 dark:text-white/90">
 													{skill.name}
 												</h3>
 												<span
-													class={`px-2 py-1 text-xs rounded-full ${getLevelColor(skill.level)}`}
+													class={`skills-page__badge px-2 py-1 rounded-full ${getLevelColor(skill.level)}`}
 												>
 													{skill.level === "expert"
 														? i18n(
@@ -185,11 +185,11 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 																	)}
 												</span>
 											</div>
-											<p class="text-black/60 dark:text-white/60 mb-3 text-sm">
+											<p class="skills-page__description text-black/60 dark:text-white/60 mb-3">
 												{skill.description}
 											</p>
 											<div class="mb-3">
-												<div class="flex justify-between text-sm mb-1">
+												<div class="skills-page__meta flex justify-between mb-1">
 													<span class="text-black/60 dark:text-white/60">
 														{i18n(
 															I18nKey.skillExperience,
@@ -219,7 +219,7 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 													<div class="flex flex-wrap gap-1">
 														{skill.certifications.map(
 															(cert) => (
-																<span class="px-2 py-1 text-xs bg-green-600/20 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded">
+																<span class="skills-page__tag px-2 py-1 bg-green-600/20 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded">
 																	{cert}
 																</span>
 															),
@@ -248,12 +248,12 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 						return (
 							<div>
 								<h2
-									class="text-2xl font-bold text-black/90 dark:text-white/90 mb-4 relative
+									class="skills-page__section-title font-bold text-black/90 dark:text-white/90 mb-4 relative
                         before:w-1 before:h-6 before:rounded-md before:bg-[var(--primary)]
                         before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 								>
 									{getCategoryText(category)}
-									<span class="text-lg font-normal text-black/60 dark:text-white/60 ml-2">
+									<span class="skills-page__section-count font-normal text-black/60 dark:text-white/60 ml-2">
 										({categorySkills.length})
 									</span>
 								</h2>
@@ -268,7 +268,7 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 													>
 														<Icon
 															icon={skill.icon}
-															class="text-lg"
+															class="skills-page__icon"
 															color={
 																skill.color &&
 																skill.color !==
@@ -285,11 +285,11 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 												)}
 												<div class="flex-1 min-w-0">
 													<div class="flex items-center justify-between mb-1">
-														<h3 class="text-lg font-semibold text-black/90 dark:text-white/90 truncate">
+														<h3 class="skills-page__card-title font-semibold text-black/90 dark:text-white/90 truncate">
 															{skill.name}
 														</h3>
 														<span
-															class={`px-2 py-1 text-xs rounded-full shrink-0 ml-2 ${getLevelColor(skill.level)}`}
+															class={`skills-page__badge px-2 py-1 rounded-full shrink-0 ml-2 ${getLevelColor(skill.level)}`}
 														>
 															{skill.level ===
 															"expert"
@@ -311,10 +311,10 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 																			)}
 														</span>
 													</div>
-													<p class="text-black/60 dark:text-white/60 mb-2 text-sm line-clamp-2">
+													<p class="skills-page__description text-black/60 dark:text-white/60 mb-2 line-clamp-2">
 														{skill.description}
 													</p>
-													<div class="text-xs text-black/60 dark:text-white/60">
+													<div class="skills-page__caption text-black/60 dark:text-white/60">
 														<span>
 															{
 																skill.experience
@@ -350,6 +350,40 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 </MainGridLayout>
 
 <style>
+	.skills-page__title {
+		font-size: var(--text-page-title-size);
+	}
+
+	.skills-page__subtitle,
+	.skills-page__section-title,
+	.skills-page__card-title {
+		font-size: var(--text-section-title-size);
+	}
+
+	.skills-page__section-count,
+	.skills-page__description,
+	.skills-page__meta {
+		font-size: var(--text-ui-size);
+	}
+
+	.skills-page__featured-title {
+		font-size: var(--text-card-title-size);
+	}
+
+	.skills-page__badge,
+	.skills-page__tag,
+	.skills-page__caption {
+		font-size: var(--text-caption-size);
+	}
+
+	.skills-page__featured-icon {
+		font-size: var(--text-icon-large-size);
+	}
+
+	.skills-page__icon {
+		font-size: var(--text-icon-inline-size);
+	}
+
 	/* 使用容器查询根据内容区域实际宽度决定列数 */
 	.skills-container {
 		/* 调试提示：显示容器宽度 */

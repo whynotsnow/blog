@@ -12,18 +12,18 @@ const { model } = Astro.props;
 ---
 
 <div
-	class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+	class="timeline-page flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 >
 	<div class="card-base z-10 px-6 py-8 md:px-9 md:py-1ss0 relative w-full">
 		<div class="flex flex-col items-start justify-center mb-10">
 			<h1
-				class="text-3xl md:text-4xl font-bold text-black/90 dark:text-white/90 mb-3 relative
+				class="timeline-page__title font-bold text-black/90 dark:text-white/90 mb-3 relative
                   before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)]
                   before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
 			>
 				{model.title}
 			</h1>
-			<p class="text-base md:text-lg text-black/60 dark:text-white/60">
+			<p class="timeline-page__subtitle text-black/60 dark:text-white/60">
 				{model.subtitle}
 			</p>
 		</div>
@@ -35,6 +35,19 @@ const { model } = Astro.props;
 </div>
 
 <style>
+	.timeline-page {
+		--timeline-page-title-size: var(--text-page-title-size);
+		--timeline-page-subtitle-size: var(--text-section-title-size);
+	}
+
+	.timeline-page__title {
+		font-size: var(--timeline-page-title-size);
+	}
+
+	.timeline-page__subtitle {
+		font-size: var(--timeline-page-subtitle-size);
+	}
+
 	.line-clamp-2 {
 		display: -webkit-box;
 		-webkit-line-clamp: 2;

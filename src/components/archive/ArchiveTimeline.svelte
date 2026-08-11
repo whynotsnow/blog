@@ -31,12 +31,12 @@
 	}
 </script>
 
-<div class="card-base px-8 py-6">
+<div class="archive-timeline card-base px-8 py-6">
 	{#each displayGroups as group (group.year)}
 		<div>
 			<div class="flex flex-row w-full items-center h-[3.75rem]">
 				<div
-					class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75"
+					class="archive-timeline__year w-[15%] md:w-[10%] transition font-bold text-right text-75"
 				>
 					{group.year}
 				</div>
@@ -67,7 +67,7 @@
 					>
 						<!-- date -->
 						<div
-							class="w-[15%] md:w-[10%] transition text-sm text-right text-50"
+							class="archive-timeline__date w-[15%] md:w-[10%] transition text-right text-50"
 						>
 							{formatDate(post.data.published)}
 						</div>
@@ -97,7 +97,7 @@
 
 						<!-- tag list -->
 						<div
-							class="hidden md:block md:w-[15%] text-left text-sm transition
+							class="archive-timeline__tags hidden md:block md:w-[15%] text-left transition
                      whitespace-nowrap overflow-ellipsis overflow-hidden text-30"
 						>
 							{formatTag(post.data.tags)}
@@ -108,3 +108,19 @@
 		</div>
 	{/each}
 </div>
+
+<style>
+	.archive-timeline {
+		--archive-timeline-year-size: var(--text-list-title-size);
+		--archive-timeline-body-size: var(--text-ui-size);
+	}
+
+	.archive-timeline__year {
+		font-size: var(--archive-timeline-year-size);
+	}
+
+	.archive-timeline__date,
+	.archive-timeline__tags {
+		font-size: var(--archive-timeline-body-size);
+	}
+</style>

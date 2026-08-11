@@ -60,7 +60,7 @@ const calendarClientData = JSON.stringify({
 >
 	<div class="flex justify-between items-center">
 		<div
-			class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative flex items-center"
+			class="archive-calendar__header font-bold transition text-neutral-900 dark:text-neutral-100 relative flex items-center"
 		>
 			<div
 				id="calendar-title-container"
@@ -68,7 +68,7 @@ const calendarClientData = JSON.stringify({
 			>
 				<span
 					id="calendar-title"
-					class="text-lg font-bold text-90 select-none"></span>
+					class="archive-calendar__title font-bold text-90 select-none"></span>
 			</div>
 		</div>
 
@@ -80,19 +80,19 @@ const calendarClientData = JSON.stringify({
 			>
 				<Icon
 					name="material-symbols:restart-alt-rounded"
-					class="text-xl"
+					class="archive-calendar__control-icon"
 				/>
 			</button>
 			<button
 				id="prev-month-btn"
-				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors text-xl font-extrabold"
+				class="archive-calendar__control p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors font-extrabold"
 				aria-label="Previous month"
 			>
 				＜
 			</button>
 			<button
 				id="next-month-btn"
-				class="p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors text-xl font-extrabold"
+				class="archive-calendar__control p-1.5 rounded-md hover:bg-(--btn-plain-bg-hover) text-75 hover:text-(--accent) transition-colors font-extrabold"
 				aria-label="Next month"
 			>
 				＞
@@ -104,7 +104,7 @@ const calendarClientData = JSON.stringify({
 			<div class="grid grid-cols-7 gap-1 mb-2">
 				{
 					weekDays.map((day) => (
-						<div class="text-center text-xs text-50 font-medium py-1">
+						<div class="archive-calendar__weekday text-center text-50 font-medium py-1">
 							{day}
 						</div>
 					))
@@ -147,3 +147,34 @@ const calendarClientData = JSON.stringify({
 <script>
 	import "./archive-calendar-client";
 </script>
+
+<style>
+	:global(#calendar-widget) {
+		--archive-calendar-title-size: var(--text-section-title-size);
+		--archive-calendar-control-size: var(--text-card-title-size);
+		--archive-calendar-body-size: var(--text-ui-size);
+		--archive-calendar-caption-size: var(--text-caption-size);
+	}
+
+	.archive-calendar__header,
+	.archive-calendar__title,
+	:global(.archive-calendar__picker-label) {
+		font-size: var(--archive-calendar-title-size);
+	}
+
+	.archive-calendar__control,
+	.archive-calendar__control-icon {
+		font-size: var(--archive-calendar-control-size);
+	}
+
+	.archive-calendar__weekday,
+	:global(.archive-calendar__post-link),
+	:global(.archive-calendar__picker-item) {
+		font-size: var(--archive-calendar-body-size);
+	}
+
+	:global(.archive-calendar__post-date),
+	:global(.archive-calendar__count) {
+		font-size: var(--archive-calendar-caption-size);
+	}
+</style>

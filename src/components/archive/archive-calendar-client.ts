@@ -112,11 +112,11 @@ export function initArchiveCalendar(): void {
 
 				const isCurrentPost = post.id === currentPostId;
 				let containerClass =
-					"flex items-center justify-between text-sm transition-colors px-2 py-2 rounded-lg group border border-transparent";
+					"archive-calendar__post-link flex items-center justify-between transition-colors px-2 py-2 rounded-lg group border border-transparent";
 				const titleClass =
 					"truncate flex-1 font-bold transition-colors";
 				let dateClass =
-					"text-xs ml-2 whitespace-nowrap transition-colors";
+					"archive-calendar__post-date ml-2 whitespace-nowrap transition-colors";
 
 				if (isCurrentPost) {
 					containerClass +=
@@ -192,7 +192,7 @@ export function initArchiveCalendar(): void {
 					data-date="${dateKey}">
 					${day}
 					${hasPost && !isSelected ? `<span class="absolute bottom-1 w-1 h-1 rounded-full bg-(--accent)"></span>` : ""}
-					${hasPost && count > 1 ? `<span class="absolute top-0.5 right-0.5 text-[9px] opacity-70 scale-75">${count}</span>` : ""}
+					${hasPost && count > 1 ? `<span class="archive-calendar__count absolute top-0.5 right-0.5 opacity-70 scale-75">${count}</span>` : ""}
 				</div>
 			`;
 		}
@@ -237,7 +237,7 @@ export function initArchiveCalendar(): void {
 
 			html += `
 				<div class="${cls}" data-month="${index}">
-					<span class="text-sm font-bold">${name}</span>
+					<span class="archive-calendar__picker-label font-bold">${name}</span>
 					${hasPost ? `<span class="w-1 h-1 rounded-full bg-(--accent) mt-1"></span>` : `<span class="w-1 h-1 mt-1"></span>`}
 				</div>
 			`;
@@ -263,7 +263,7 @@ export function initArchiveCalendar(): void {
 
 			html += `
 				<div class="${cls}" data-year="${y}" id="year-${y}">
-					<span class="text-sm font-bold">${y}</span>
+					<span class="archive-calendar__picker-label font-bold">${y}</span>
 					${hasPost ? `<span class="w-1.5 h-1.5 rounded-full bg-(--accent) mt-1"></span>` : `<span class="w-1.5 h-1.5 mt-1"></span>`}
 				</div>
 			`;

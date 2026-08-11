@@ -7,8 +7,23 @@ interface Props {
 const { message, description } = Astro.props;
 ---
 
-<div class="text-center py-12">
-	<div class="text-5xl mb-4">😢</div>
-	<h3 class="text-xl font-medium text-90 mb-2">{message}</h3>
+<div class="anime-empty-state text-center py-12">
+	<div class="anime-empty-state__icon mb-4">😢</div>
+	<h3 class="anime-empty-state__title font-medium text-90 mb-2">{message}</h3>
 	<p class="text-60">{description}</p>
 </div>
+
+<style>
+	.anime-empty-state {
+		--anime-empty-icon-size: var(--text-icon-display-size);
+		--anime-empty-title-size: var(--text-card-title-size);
+	}
+
+	.anime-empty-state__icon {
+		font-size: var(--anime-empty-icon-size);
+	}
+
+	.anime-empty-state__title {
+		font-size: var(--anime-empty-title-size);
+	}
+</style>

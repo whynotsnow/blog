@@ -53,14 +53,14 @@ const progressPercent =
 		</a>
 
 		<div
-			class={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium ${statusInfo.class}`}
+			class={`anime-card__badge absolute top-2 left-2 px-2 py-1 rounded-md font-medium ${statusInfo.class}`}
 		>
 			<span class="mr-1">{statusInfo.icon}</span>
 			<span>{statusInfo.text}</span>
 		</div>
 
 		<div
-			class="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1"
+			class="anime-card__badge absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-md font-medium flex items-center gap-1"
 		>
 			<svg
 				class="w-3 h-3 text-yellow-400"
@@ -83,7 +83,7 @@ const progressPercent =
 							style={`width: ${progressPercent}%`}
 						/>
 					</div>
-					<div class="text-white text-xs font-medium">
+					<div class="anime-card__badge text-white font-medium">
 						{anime.progress}/{anime.totalEpisodes} (
 						{Math.round(progressPercent)}%)
 					</div>
@@ -93,14 +93,14 @@ const progressPercent =
 	</div>
 
 	<div class="p-3">
-		<h3 class="text-sm font-bold text-90 mb-1 leading-tight">
+		<h3 class="anime-card__title font-bold text-90 mb-1 leading-tight">
 			{anime.title}
 		</h3>
-		<p class="text-60 text-xs mb-2 line-clamp-2" title={anime.description}>
+		<p class="anime-card__description text-60 mb-2 line-clamp-2" title={anime.description}>
 			{anime.description}
 		</p>
 
-		<div class="space-y-1 text-xs">
+		<div class="anime-card__meta space-y-1">
 			<div class="flex justify-between items-center">
 				<span class="text-50 shrink-0">{labels.year}</span>
 				<span class="text-70 truncate ml-2 text-right">{anime.year}</span>
@@ -117,7 +117,7 @@ const progressPercent =
 			<div class="flex flex-wrap gap-1 mt-2">
 				{
 					anime.genre.map((genre) => (
-						<span class="px-1.5 py-0.5 bg-(--btn-regular-bg) text-70 rounded text-xs">
+						<span class="anime-card__tag px-1.5 py-0.5 bg-(--btn-regular-bg) text-70 rounded">
 							{genre}
 						</span>
 					))
@@ -126,3 +126,21 @@ const progressPercent =
 		</div>
 	</div>
 </div>
+
+<style>
+	.group {
+		--anime-card-title-size: var(--text-ui-size);
+		--anime-card-caption-size: var(--text-caption-size);
+	}
+
+	.anime-card__title {
+		font-size: var(--anime-card-title-size);
+	}
+
+	.anime-card__badge,
+	.anime-card__description,
+	.anime-card__meta,
+	.anime-card__tag {
+		font-size: var(--anime-card-caption-size);
+	}
+</style>
