@@ -8,7 +8,7 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: var(--text-ui-size);
   transition:
     transform var(--motion-normal) var(--motion-ease-standard),
     background var(--motion-normal) var(--motion-ease-standard),
@@ -76,19 +76,19 @@
 /* 小尺寸按钮 */
 .btn-gradient-sm {
   padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
+  font-size: var(--text-caption-size);
 }
 
 /* 中等尺寸按钮 */
 .btn-gradient-md {
   padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  font-size: var(--text-ui-size);
 }
 
 /* 大尺寸按钮 */
 .btn-gradient-lg {
   padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  font-size: var(--text-body-regular-size);
 }
 
 /* 按钮图标样式 */
@@ -102,17 +102,17 @@
 @media (max-width: 768px) {
   .btn-gradient {
     padding: 0.4rem 0.8rem;
-    font-size: 0.8125rem;
+    font-size: var(--text-caption-size);
   }
 
   .btn-gradient-lg {
     padding: 0.6rem 1.2rem;
-    font-size: 0.9375rem;
+    font-size: var(--text-ui-size);
   }
 
   .btn-gradient-sm {
     padding: 0.2rem 0.6rem;
-    font-size: 0.75rem;
+    font-size: var(--text-caption-size);
   }
 
   /* 在小屏幕上堆叠按钮 */

@@ -98,13 +98,13 @@
 	.playlist-header h3 {
 		margin: 0;
 		color: var(--text-primary);
-		font-size: 0.78rem;
+		font-size: var(--text-ui-size);
 		font-weight: 650;
 	}
 
 	.playlist-header span {
 		color: var(--text-muted);
-		font-size: 0.65rem;
+		font-size: var(--text-caption-size);
 	}
 
 	.playlist-close {
@@ -204,13 +204,13 @@
 	}
 
 	.playlist-copy strong {
-		font-size: 0.75rem;
+		font-size: var(--text-caption-size);
 		font-weight: 650;
 	}
 
 	.playlist-copy small {
 		color: var(--text-muted);
-		font-size: 0.625rem;
+		font-size: var(--text-caption-size);
 	}
 
 	.playlist-status {

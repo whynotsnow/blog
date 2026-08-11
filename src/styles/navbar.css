@@ -8,7 +8,7 @@
   --navbar-shadow: var(--shadow-raised);
   --navbar-panel-bg: color-mix(in srgb, var(--surface-overlay) 90%, transparent);
   --navbar-panel-blur: blur(var(--navbar-blur-strength));
-  --navbar-font-size: 1rem;
+  --navbar-font-size: var(--text-body-regular-size);
   --navbar-inline-padding: 1rem;
   --navbar-brand-padding-inline: 1.25rem;
   --navbar-link-padding-inline: 1.25rem;
@@ -82,7 +82,7 @@
  * removed root scaling with container-content-owned type and spacing. */
 @media (min-width: 1281px) and (orientation: landscape) {
   #top-row[data-shell-strategy="container-content"] #navbar {
-    --navbar-font-size: clamp(0.9rem, 0.8vw, 1rem);
+    --navbar-font-size: clamp(var(--text-ui-size), 0.8vw, var(--text-body-regular-size));
     --navbar-inline-padding: clamp(0.9rem, 0.8vw, 1rem);
     --navbar-brand-padding-inline: clamp(1.125rem, 1vw, 1.25rem);
     --navbar-link-padding-inline: clamp(1.125rem, 1vw, 1.25rem);

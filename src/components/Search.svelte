@@ -315,7 +315,7 @@
 				search(keywordDesktop, true);
 			}}
 			onblur={handleBlur}
-			class="transition-all pl-10 text-sm bg-transparent outline-0
+			class="search-input transition-all pl-10 bg-transparent outline-0
                 h-full {isDesktopSearchExpanded
 				? 'w-36'
 				: 'w-0'} search-input-color"
@@ -351,7 +351,7 @@
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordMobile}
 			oninput={() => setTimeout(scheduleSearch)}
-			class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
+			class="search-input pl-10 absolute inset-0 bg-transparent outline-0
                focus:w-60 search-input-color"
 		/>
 	</div>
@@ -361,7 +361,7 @@
 			href={item.url}
 			onclick={(e) => handleResultClick(e, item.url)}
 			class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
-       rounded-xl text-lg px-3 py-2 hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active)"
+       rounded-xl search-result px-3 py-2 hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active)"
 		>
 			<div
 				class="transition text-90 inline-flex font-bold group-hover:text-(--primary)"
@@ -371,7 +371,7 @@
 					class="transition text-[0.75rem] translate-x-1 my-auto text-(--primary)"
 				/>
 			</div>
-			<div class="transition text-sm text-50">
+			<div class="search-result__excerpt transition text-50">
 				<!-- HTML is sanitized by sanitizeExcerpt; only attribute-free <mark> tags are preserved. -->
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html sanitizeExcerpt(item.excerpt)}
@@ -389,6 +389,15 @@
 	:global(.search-panel) {
 		max-height: calc(100vh - 100px);
 		overflow-y: auto;
+	}
+
+	.search-input,
+	.search-result__excerpt {
+		font-size: var(--text-ui-size);
+	}
+
+	.search-result {
+		font-size: var(--text-section-title-size);
 	}
 	.search-bar-bg {
 		@apply bg-black/4 hover:bg-black/6 focus-within:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10;

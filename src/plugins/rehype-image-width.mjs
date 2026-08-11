@@ -26,7 +26,7 @@ export function rehypeImageWidth() {
 							type: "element",
 							tagName: "figcaption",
 							properties: {
-								style: "text-align: center; margin-top: 0.5em; font-size: 0.9em; color: #666;",
+								style: "text-align: center; margin-top: 0.5em; font-size: var(--text-ui-size); color: #666;",
 							},
 							children: [
 								{

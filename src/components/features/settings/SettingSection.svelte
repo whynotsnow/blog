@@ -30,7 +30,7 @@
 	<div class="group flex items-center justify-between gap-2">
 		<button
 			type="button"
-			class="relative ml-3 flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left font-bold text-lg text-neutral-900 transition before:absolute before:-left-3 before:top-1/2 before:h-4 before:w-1 before:-translate-y-1/2 before:rounded-md before:bg-(--primary) dark:text-neutral-100"
+			class="setting-section__title relative ml-3 flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left font-bold text-neutral-900 transition before:absolute before:-left-3 before:top-1/2 before:h-4 before:w-1 before:-translate-y-1/2 before:rounded-md before:bg-(--primary) dark:text-neutral-100"
 			onclick={toggleSection}
 		>
 			<span class="min-w-0 flex-1 truncate">{title}</span>
@@ -72,3 +72,9 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	.setting-section__title {
+		font-size: var(--text-section-title-size);
+	}
+</style>

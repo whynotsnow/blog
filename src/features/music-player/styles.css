@@ -317,11 +317,11 @@
   }
 
   .song-title {
-    font-size: 14px;
+    font-size: var(--text-ui-size);
   }
 
   .song-artist {
-    font-size: 12px;
+    font-size: var(--text-caption-size);
   }
 }
 

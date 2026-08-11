@@ -47,11 +47,13 @@
 <div class="rounded-md bg-[var(--btn-regular-bg)] p-2 transition-colors">
 	<div class="mb-1.5 flex items-center justify-between gap-2">
 		<span
-			class="min-w-0 truncate text-sm font-medium text-[var(--btn-content)] opacity-85"
+			class="setting-slider__label min-w-0 truncate font-medium text-[var(--btn-content)] opacity-85"
 		>
 			{label}
 		</span>
-		<span class="shrink-0 text-xs font-mono text-[var(--btn-content)]">
+		<span
+			class="setting-slider__value shrink-0 font-mono text-[var(--btn-content)]"
+		>
 			{displayValue}
 		</span>
 	</div>
@@ -77,6 +79,14 @@
 		border-radius: 0.375rem;
 		cursor: pointer;
 		outline: none;
+	}
+
+	.setting-slider__label {
+		font-size: var(--text-ui-size);
+	}
+
+	.setting-slider__value {
+		font-size: var(--text-caption-size);
 	}
 
 	.range-slider {

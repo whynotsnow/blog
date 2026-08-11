@@ -46,18 +46,18 @@
 			>
 				{#if isLoading}
 					<span
-						class="local-loading-icon text-white text-xl"
+						class="local-loading-icon mini-player__control-icon text-white"
 						aria-hidden="true"
 					></span>
 				{:else if isPlaying}
 					<LocalIcon
 						name="material-symbols:pause"
-						class="text-white text-xl"
+						class="mini-player__control-icon text-white"
 					/>
 				{:else}
 					<LocalIcon
 						name="material-symbols:play-arrow"
-						class="text-white text-xl"
+						class="mini-player__control-icon text-white"
 					/>
 				{/if}
 			</div>
@@ -76,10 +76,12 @@
 			tabindex="0"
 			aria-label={labels.expand}
 		>
-			<div class="text-sm font-medium text-90 truncate">
+			<div class="mini-player__title font-medium text-90 truncate">
 				{currentSong.title}
 			</div>
-			<div class="text-xs text-50 truncate">{currentSong.artist}</div>
+			<div class="mini-player__artist text-50 truncate">
+				{currentSong.artist}
+			</div>
 		</div>
 
 		<div class="mini-player__actions flex items-center gap-1">
@@ -90,7 +92,7 @@
 			>
 				<LocalIcon
 					name="material-symbols:visibility-off"
-					class="text-lg"
+					class="mini-player__button-icon"
 				/>
 			</button>
 			<button
@@ -99,7 +101,7 @@
 			>
 				<LocalIcon
 					name="material-symbols:expand-less"
-					class="text-lg"
+					class="mini-player__button-icon"
 				/>
 			</button>
 		</div>
@@ -114,6 +116,22 @@
 		border-right-color: transparent;
 		border-radius: 999px;
 		animation: local-icon-spin 0.75s linear infinite;
+	}
+
+	.mini-player__control-icon {
+		font-size: var(--text-card-title-size);
+	}
+
+	.mini-player__title {
+		font-size: var(--text-ui-size);
+	}
+
+	.mini-player__artist {
+		font-size: var(--text-caption-size);
+	}
+
+	.mini-player__button-icon {
+		font-size: var(--text-section-title-size);
 	}
 
 	@keyframes local-icon-spin {

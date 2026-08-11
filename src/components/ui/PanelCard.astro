@@ -20,7 +20,7 @@ const className = Astro.props.class;
     class:list={["block pb-4 card-base ds-surface-card", className]}
     style={style}
 >
-    {name && <div class="font-bold transition text-lg text-90 relative ml-8 mt-4 mb-2 flex items-center gap-2
+    {name && <div class="panel-card__title font-bold transition text-90 relative ml-8 mt-4 mb-2 flex items-center gap-2
         before:w-1 before:h-4 before:rounded-md before:bg-(--accent)
         before:absolute before:left-[-16px] before:top-[5.5px]">
         {name}
@@ -39,6 +39,10 @@ const className = Astro.props.class;
 </panel-card>
 
 <style define:vars={{ collapsedHeight }}>
+    .panel-card__title {
+        font-size: var(--text-section-title-size);
+    }
+
     .collapsed {
         height: var(--collapsedHeight);
     }

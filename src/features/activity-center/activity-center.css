@@ -72,7 +72,7 @@
   background: var(--status-danger);
   border: 2px solid var(--surface-card);
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: var(--text-caption-size);
   font-weight: 700;
   line-height: 1;
 }
@@ -261,7 +261,7 @@
   color: var(--text-muted);
   background: color-mix(in oklch, var(--surface-raised) 74%, transparent);
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: var(--text-caption-size);
   font-weight: 700;
   line-height: 1;
 }
@@ -472,7 +472,7 @@
   margin: 0;
   overflow-wrap: anywhere;
   color: var(--text-primary);
-  font-size: 1.05rem;
+  font-size: var(--text-body-regular-size);
   line-height: 1.35;
 }
 
@@ -519,7 +519,7 @@
   background: var(--surface-raised);
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  font-size: 0.9em;
+  font-size: var(--text-ui-size);
 }
 
 .activity-center__dialog-actions {
@@ -684,7 +684,7 @@
   }
 
   .activity-center__dialog-header h2 {
-    font-size: 1rem;
+    font-size: var(--text-body-regular-size);
   }
 
   .activity-center__dialog-actions {

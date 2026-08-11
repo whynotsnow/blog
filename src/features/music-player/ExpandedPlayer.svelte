@@ -277,19 +277,19 @@
 	.player-copy h2 {
 		margin: 0 0 0.1rem;
 		color: var(--text-primary);
-		font-size: 0.95rem;
+		font-size: var(--text-ui-size);
 		font-weight: 680;
 	}
 
 	.player-copy p {
 		margin: 0 0 0.25rem;
 		color: var(--text-muted);
-		font-size: 0.72rem;
+		font-size: var(--text-caption-size);
 	}
 
 	.player-copy span {
 		color: var(--text-muted);
-		font-size: 0.64rem;
+		font-size: var(--text-caption-size);
 		font-variant-numeric: tabular-nums;
 	}
 

@@ -46,7 +46,7 @@
 						class="w-8 h-8 border-2 border-black/10 dark:border-white/10 rounded-full animate-spin"
 						style="border-top-color: {themeColor}"
 					></div>
-					<span class="text-sm text-60"
+					<span class="share-poster-modal__status text-60"
 						>{labels.generatingPoster}</span
 					>
 				</div>
@@ -61,10 +61,16 @@
 				on:click={copyLink}
 			>
 				{#if copied}
-					<LocalIcon name="material-symbols:check" class="text-xl" />
+					<LocalIcon
+						name="material-symbols:check"
+						class="share-poster-modal__icon"
+					/>
 					<span>{labels.copied}</span>
 				{:else}
-					<LocalIcon name="material-symbols:link" class="text-xl" />
+					<LocalIcon
+						name="material-symbols:link"
+						class="share-poster-modal__icon"
+					/>
 					<span>{labels.copyLink}</span>
 				{/if}
 			</button>
@@ -74,9 +80,22 @@
 				on:click={downloadPoster}
 				disabled={!posterImage}
 			>
-				<LocalIcon name="material-symbols:download" class="text-xl" />
+				<LocalIcon
+					name="material-symbols:download"
+					class="share-poster-modal__icon"
+				/>
 				{labels.savePoster}
 			</button>
 		</div>
 	</div>
 </div>
+
+<style>
+	.share-poster-modal__status {
+		font-size: var(--text-ui-size);
+	}
+
+	.share-poster-modal__icon {
+		font-size: var(--text-card-title-size);
+	}
+</style>

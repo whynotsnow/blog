@@ -26,7 +26,7 @@ const { class: className, style } = Astro.props;
 		>
 			<Icon
 				name="fa7-regular:address-card"
-				class="transition opacity-0 scale-90 group-hover:scale-100 group-hover:opacity-100 text-white text-5xl"
+				class="profile-card__avatar-icon transition opacity-0 scale-90 group-hover:scale-100 group-hover:opacity-100 text-white"
 			/>
 		</div>
 		<ImageWrapper
@@ -37,7 +37,7 @@ const { class: className, style } = Astro.props;
 	</a>
 	<div class="profile-card__content px-2">
 		<div
-			class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition"
+			class="profile-card__name font-bold text-center mb-1 dark:text-neutral-50 transition"
 		>
 			{profileConfig.name}
 		</div>
@@ -96,6 +96,16 @@ const { class: className, style } = Astro.props;
 
 	</div>
 </div>
+
+<style>
+	.profile-card__avatar-icon {
+		font-size: var(--text-icon-display-size);
+	}
+
+	.profile-card__name {
+		font-size: var(--text-card-title-size);
+	}
+</style>
 
 <style>
 	@container support-module (min-width: 256px) and (max-width: 447px) {

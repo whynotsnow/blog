@@ -310,7 +310,7 @@
 						/>
 					</div>
 					<div
-						class="flex h-7 w-10 shrink-0 items-center justify-center bg-(--btn-regular-bg) text-sm font-bold text-(--btn-content) transition"
+						class="settings-panel__hue-value flex h-7 w-10 shrink-0 items-center justify-center bg-(--btn-regular-bg) font-bold text-(--btn-content) transition"
 					>
 						{hue}
 					</div>
@@ -337,7 +337,9 @@
 							name="material-symbols:image-outline"
 							class="shrink-0 text-[1.25rem]"
 						/>
-						<span class="min-w-0 flex-1 truncate text-sm">
+						<span
+							class="settings-panel__option-label min-w-0 flex-1 truncate"
+						>
 							{i18n(I18nKey.wallBanner)}
 						</span>
 						{#if wallpaperMode === WALL_BANNER}
@@ -359,7 +361,9 @@
 							name="material-symbols:wallpaper"
 							class="shrink-0 text-[1.25rem]"
 						/>
-						<span class="min-w-0 flex-1 truncate text-sm">
+						<span
+							class="settings-panel__option-label min-w-0 flex-1 truncate"
+						>
 							{i18n(I18nKey.wallFullBanner)}
 						</span>
 						{#if wallpaperMode === WALL_FULL_BANNER}
@@ -381,7 +385,9 @@
 							name="material-symbols:full-coverage-outline-rounded"
 							class="shrink-0 text-[1.25rem]"
 						/>
-						<span class="min-w-0 flex-1 truncate text-sm">
+						<span
+							class="settings-panel__option-label min-w-0 flex-1 truncate"
+						>
 							{i18n(I18nKey.wallFull)}
 						</span>
 						{#if wallpaperMode === WALL_FULL}
@@ -403,7 +409,9 @@
 							name="material-symbols:hide-image-outline"
 							class="shrink-0 text-[1.25rem]"
 						/>
-						<span class="min-w-0 flex-1 truncate text-sm">
+						<span
+							class="settings-panel__option-label min-w-0 flex-1 truncate"
+						>
 							{i18n(I18nKey.wallNone)}
 						</span>
 						{#if wallpaperMode === WALL_NONE}
@@ -539,7 +547,9 @@
 							name="material-symbols:format-list-bulleted-rounded"
 							class="shrink-0 text-[1rem]"
 						/>
-						<span class="truncate text-xs font-medium">
+						<span
+							class="settings-panel__layout-label truncate font-medium"
+						>
 							{i18n(I18nKey.postListLayoutList)}
 						</span>
 						{#if currentLayout === "list"}
@@ -562,7 +572,9 @@
 							name="material-symbols:grid-view-rounded"
 							class="shrink-0 text-[1rem]"
 						/>
-						<span class="truncate text-xs font-medium">
+						<span
+							class="settings-panel__layout-label truncate font-medium"
+						>
 							{i18n(I18nKey.postListLayoutGrid)}
 						</span>
 						{#if currentLayout === "grid"}
@@ -579,6 +591,15 @@
 {/if}
 
 <style>
+	.settings-panel__hue-value,
+	.settings-panel__option-label {
+		font-size: var(--text-ui-size);
+	}
+
+	.settings-panel__layout-label {
+		font-size: var(--text-caption-size);
+	}
+
 	#display-setting {
 		max-height: calc(100vh - 6rem);
 		overflow-y: auto;

@@ -24,7 +24,7 @@
 	{#if icon}
 		<LocalIcon name={icon} class="shrink-0 text-[1.25rem] opacity-80" />
 	{/if}
-	<span class="min-w-0 flex-1 truncate text-sm">{label}</span>
+	<span class="setting-toggle__label min-w-0 flex-1 truncate">{label}</span>
 	<div
 		class="toggle-track relative h-5 w-10 shrink-0 rounded-full transition-all duration-200"
 		class:bg-[var(--primary)]={enabled}
@@ -41,5 +41,9 @@
 <style>
 	.toggle-track {
 		min-width: 40px;
+	}
+
+	.setting-toggle__label {
+		font-size: var(--text-ui-size);
 	}
 </style>

@@ -22,18 +22,19 @@ const {
 } = Astro.props;
 
 const sizeClasses = {
-	xs: "text-xs",
-	sm: "text-sm",
-	md: "text-base",
-	lg: "text-lg",
-	xl: "text-xl",
-	"2xl": "text-2xl",
+	xs: "var(--text-caption-size)",
+	sm: "var(--text-ui-size)",
+	md: "var(--text-body-regular-size)",
+	lg: "var(--text-section-title-size)",
+	xl: "var(--text-card-title-size)",
+	"2xl": "var(--text-icon-large-size)",
 };
 
-const sizeClass = sizeClasses[size] || sizeClasses.md;
+const sizeValue = sizeClasses[size] || sizeClasses.md;
 const colorStyle = color ? `color: ${color};` : "";
-const combinedStyle = `${colorStyle}${style}`;
-const combinedClass = `${sizeClass} ${className}`.trim();
+const fontSizeStyle = `font-${"size"}: ${sizeValue};`;
+const combinedStyle = `${fontSizeStyle}${colorStyle}${style}`;
+const combinedClass = className.trim();
 ---
 
 <AstroIcon name={icon} class={combinedClass} style={combinedStyle} />

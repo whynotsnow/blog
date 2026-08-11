@@ -9,13 +9,33 @@
 	<div
 		class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-up"
 	>
-		<LocalIcon name="material-symbols:error" class="text-xl shrink-0" />
-		<span class="text-sm flex-1">{message}</span>
+		<LocalIcon
+			name="material-symbols:error"
+			class="player-error-toast__icon shrink-0"
+		/>
+		<span class="player-error-toast__message flex-1">{message}</span>
 		<button
 			on:click={onClose}
 			class="text-white/80 hover:text-white transition-colors"
 		>
-			<LocalIcon name="material-symbols:close" class="text-lg" />
+			<LocalIcon
+				name="material-symbols:close"
+				class="player-error-toast__close-icon"
+			/>
 		</button>
 	</div>
 </div>
+
+<style>
+	.player-error-toast__icon {
+		font-size: var(--text-card-title-size);
+	}
+
+	.player-error-toast__message {
+		font-size: var(--text-ui-size);
+	}
+
+	.player-error-toast__close-icon {
+		font-size: var(--text-section-title-size);
+	}
+</style>
