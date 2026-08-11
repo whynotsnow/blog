@@ -74,6 +74,7 @@ async function processAlbumFolder(
 	const isExternalMode = info.mode === "external";
 	let photos: Photo[] = [];
 	let cover: string;
+	let coverThumbnail: string | undefined;
 
 	if (isExternalMode) {
 		// 外链模式：从 info.json 中获取封面和照片
@@ -83,22 +84,28 @@ async function processAlbumFolder(
 		}
 
 		cover = info.cover;
+		coverThumbnail = info.cover;
 		photos = processExternalPhotos(info.photos || [], folderName);
 	} else {
 		// 本地模式：检查本地文件
-		let coverPath = path.join(folderPath, "cover.webp");
-		const hasWebpCover = fs.existsSync(coverPath);
-		if (!hasWebpCover) {
-			coverPath = path.join(folderPath, "cover.jpg");
-			if (!fs.existsSync(coverPath)) {
-				console.warn(`相册 ${folderName} 缺少 cover 文件`);
-				return null;
-			}
+		const jpgCoverPath = path.join(folderPath, "cover.jpg");
+		const webpCoverPath = path.join(folderPath, "cover.webp");
+		const cardCoverPath = path.join(folderPath, "cover-card.webp");
+		const hasJpgCover = fs.existsSync(jpgCoverPath);
+		const hasWebpCover = fs.existsSync(webpCoverPath);
+		const hasCardCover = fs.existsSync(cardCoverPath);
+
+		if (!hasJpgCover && !hasWebpCover) {
+			console.warn(`相册 ${folderName} 缺少 cover 文件`);
+			return null;
 		}
 
-		cover = hasWebpCover
-			? `/images/albums/${folderName}/cover.webp`
-			: `/images/albums/${folderName}/cover.jpg`;
+		cover = hasJpgCover
+			? `/images/albums/${folderName}/cover.jpg`
+			: `/images/albums/${folderName}/cover.webp`;
+		coverThumbnail = hasCardCover
+			? `/images/albums/${folderName}/cover-card.webp`
+			: cover;
 		photos = scanPhotos(folderPath, folderName);
 	}
 
@@ -114,6 +121,7 @@ async function processAlbumFolder(
 		title: info.title || folderName,
 		description: info.description || "",
 		cover,
+		coverThumbnail,
 		date: info.date || new Date().toISOString().split("T")[0],
 		location: info.location || "",
 		tags: info.tags || [],
@@ -148,7 +156,8 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 		return (
 			imageExtensions.includes(ext) &&
 			file !== "cover.jpg" &&
-			file !== "cover.webp"
+			file !== "cover.webp" &&
+			file !== "cover-card.webp"
 		);
 	});
 

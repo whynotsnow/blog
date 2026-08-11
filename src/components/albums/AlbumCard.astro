@@ -8,6 +8,7 @@ interface Props {
 }
 
 const { album } = Astro.props;
+const coverSrc = album.coverThumbnail ?? album.cover;
 ---
 
 <a
@@ -17,7 +18,7 @@ const { album } = Astro.props;
 >
 	<div class="aspect-4/3 relative overflow-hidden bg-black/5 dark:bg-white/5">
 		<img
-			src={album.cover}
+			src={coverSrc}
 			alt={album.title}
 			class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 			loading="lazy"

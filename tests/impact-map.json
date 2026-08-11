@@ -230,6 +230,9 @@
 				"src/features/diary/**",
 				"src/styles/albums.css",
 				"src/styles/fancybox-custom.css",
+				"src/types/album.ts",
+				"src/utils/album-scanner.ts",
+				"public/images/albums/**",
 				"src/utils/timeFormat.ts"
 			],
 			"groups": [
@@ -240,6 +243,15 @@
 				"unit",
 				"albums-diary"
 			]
+		},
+		{
+			"patterns": [
+				"src/pages/about.astro",
+				"src/pages/friends.astro",
+				"src/components/friends/**",
+				"src/components/page/**"
+			],
+			"groups": ["lint", "type", "declaration-type", "astro", "design"]
 		},
 		{
 			"patterns": [

@@ -17,6 +17,7 @@ export interface AlbumGroup {
 	title: string;
 	description?: string;
 	cover: string;
+	coverThumbnail?: string;
 	date: string;
 	location?: string;
 	tags?: string[];
