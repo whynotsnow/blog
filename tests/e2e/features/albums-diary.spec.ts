@@ -51,6 +51,15 @@ test("album detail opens photos with Fancybox", async ({ page }) => {
 			}),
 		)
 		.toBe("64px");
+
+	const nextArrow = page.locator(".f-button.is-arrow.is-next");
+	await expect(nextArrow).toBeVisible();
+	const beforeHoverBox = await nextArrow.boundingBox();
+	expect(beforeHoverBox).not.toBeNull();
+	await nextArrow.hover({ position: { x: 22, y: 22 } });
+	const afterHoverBox = await nextArrow.boundingBox();
+	expect(afterHoverBox).not.toBeNull();
+	expect(Math.abs(afterHoverBox!.y - beforeHoverBox!.y)).toBeLessThan(0.5);
 });
 
 test("diary page renders static entries and opens images with Fancybox", async ({
