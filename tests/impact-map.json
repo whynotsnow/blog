@@ -114,6 +114,7 @@
 			"patterns": [
 				"src/design/**",
 				"scripts/check-design-system.mjs",
+				"scripts/typography-inventory.mjs",
 				"scripts/design-system-baseline.json"
 			],
 			"groups": ["lint", "astro", "design", "design-contract"]

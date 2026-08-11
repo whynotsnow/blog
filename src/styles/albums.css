@@ -58,7 +58,7 @@
   padding: 0.375rem 0.75rem;
   background: rgba(0, 0, 0, 0.32);
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.875rem;
+  font-size: var(--text-ui-size);
   backdrop-filter: blur(8px);
   transition:
     background-color 0.2s ease,
@@ -81,7 +81,7 @@
 
 .album-hero__content h1 {
   margin-bottom: 0.5rem;
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: var(--text-page-title-size);
   font-weight: 700;
   line-height: 1.15;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.32);
@@ -91,7 +91,7 @@
   max-width: 42rem;
   margin-bottom: 0.5rem;
   color: rgba(255, 255, 255, 0.78);
-  font-size: 0.875rem;
+  font-size: var(--text-ui-size);
   line-height: 1.6;
 }
 
@@ -105,7 +105,7 @@
 
 .album-hero__meta {
   color: rgba(255, 255, 255, 0.82);
-  font-size: 0.875rem;
+  font-size: var(--text-ui-size);
 }
 
 .album-hero__tags {
@@ -118,7 +118,7 @@
   padding: 0.125rem 0.5rem;
   background: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.92);
-  font-size: 0.75rem;
+  font-size: var(--text-caption-size);
   backdrop-filter: blur(8px);
 }
 

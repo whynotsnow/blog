@@ -105,11 +105,11 @@ function renderDiaryMoment(
 	return `
 		<article class="moment-card group relative rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" data-tags="${tagsAttr}">
 			<div class="moment-card__body p-5">
-				<p class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed mb-3">${escapeHtml(moment.content)}</p>
+				<p class="moment-card__content text-black/90 dark:text-white/90 leading-relaxed mb-3">${escapeHtml(moment.content)}</p>
 				${imagesHtml}
 				${tagsHtml}
 				<hr class="border-t border-black/5 dark:border-white/5 my-3" />
-				<div class="flex items-center justify-between text-xs text-black/50 dark:text-white/50 flex-wrap gap-2">
+				<div class="moment-card__meta flex items-center justify-between text-black/50 dark:text-white/50 flex-wrap gap-2">
 					<div class="flex items-center gap-1.5">
 						<time datetime="${escapeHtml(moment.date)}">${relativeTime}</time>
 					</div>
@@ -147,7 +147,7 @@ function renderDiaryTags(moment: DiaryItem): string {
 	const tags = moment.tags
 		.map(
 			(tag) =>
-				`<span class="btn-regular h-6 text-xs px-2 rounded-lg">${escapeHtml(tag)}</span>`,
+				`<span class="moment-card__tag btn-regular h-6 px-2 rounded-lg">${escapeHtml(tag)}</span>`,
 		)
 		.join("");
 

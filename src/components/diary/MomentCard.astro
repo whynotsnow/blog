@@ -20,9 +20,7 @@ const imageGroup = `diary-${index}`;
 	data-tags={moment.tags?.join(",") || ""}
 >
 	<div class="moment-card__body p-5">
-		<p
-			class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed mb-3"
-		>
+		<p class="moment-card__content text-black/90 dark:text-white/90 leading-relaxed mb-3">
 			{moment.content}
 		</p>
 
@@ -57,24 +55,24 @@ const imageGroup = `diary-${index}`;
 					))}
 				</div>
 			)
-		}
+	}
 
-		{
-			moment.tags && moment.tags.length > 0 && (
-				<div class="flex flex-wrap gap-1.5 mb-3">
-					{moment.tags.map((tag: string) => (
-						<span class="btn-regular h-6 text-xs px-2 rounded-lg">
-							{tag}
-						</span>
-					))}
-				</div>
-			)
-		}
+	{
+		moment.tags && moment.tags.length > 0 && (
+			<div class="flex flex-wrap gap-1.5 mb-3">
+				{moment.tags.map((tag: string) => (
+					<span class="moment-card__tag btn-regular h-6 px-2 rounded-lg">
+						{tag}
+					</span>
+				))}
+			</div>
+		)
+	}
 
 		<hr class="border-t border-black/5 dark:border-white/5 my-3" />
 
 		<div
-			class="flex items-center justify-between text-xs text-black/50 dark:text-white/50 flex-wrap gap-2"
+			class="moment-card__meta flex items-center justify-between text-black/50 dark:text-white/50 flex-wrap gap-2"
 		>
 			<div class="flex items-center gap-1.5">
 				<svg
@@ -127,6 +125,15 @@ const imageGroup = `diary-${index}`;
 	.moment-card__body {
 		position: relative;
 		z-index: 1;
+	}
+
+	.moment-card__content {
+		font-size: var(--text-body-regular-size);
+	}
+
+	.moment-card__tag,
+	.moment-card__meta {
+		font-size: var(--text-caption-size);
 	}
 
 	.moment-card__hover-layer {

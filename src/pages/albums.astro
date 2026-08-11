@@ -39,10 +39,8 @@ const subtitle = i18n(I18nKey.albumsSubtitle);
 		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
 	>
 		<div class="card-base z-10 px-6 sm:px-9 py-6 relative w-full">
-			<header class="mb-8">
-				<h1
-					class="text-3xl font-bold text-90 mb-3 relative before:w-1 before:h-8 before:rounded-md before:bg-(--primary) before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
-				>
+			<header class="albums-page-header mb-8">
+				<h1 class="albums-page-header__title text-90">
 					{title}
 				</h1>
 				<p class="text-60">{subtitle}</p>
@@ -61,8 +59,10 @@ const subtitle = i18n(I18nKey.albumsSubtitle);
 			</div>
 
 			<div id="no-results" class="hidden text-center py-16">
-				<div class="text-5xl text-50 mb-4" aria-hidden="true">⌕</div>
-				<p class="text-60 text-lg">
+				<div class="albums-empty-icon text-50 mb-4" aria-hidden="true">
+					⌕
+				</div>
+				<p class="albums-empty-message text-60">
 					{i18n(I18nKey.albumsNoResults)}
 				</p>
 			</div>
@@ -86,7 +86,7 @@ const subtitle = i18n(I18nKey.albumsSubtitle);
 								/>
 							</svg>
 						</div>
-						<h2 class="text-lg font-medium text-90 mb-2">
+						<h2 class="albums-empty-message font-medium text-90 mb-2">
 							{i18n(I18nKey.albumsEmpty)}
 						</h2>
 						<p class="text-60">
@@ -98,3 +98,33 @@ const subtitle = i18n(I18nKey.albumsSubtitle);
 		</div>
 	</div>
 </MainGridLayout>
+
+<style>
+	.albums-page-header__title {
+		position: relative;
+		margin-bottom: 0.75rem;
+		font-size: var(--text-page-title-size);
+		font-weight: 700;
+	}
+
+	.albums-page-header__title::before {
+		position: absolute;
+		top: 50%;
+		left: -1rem;
+		width: 0.25rem;
+		height: 2rem;
+		border-radius: 0.375rem;
+		background: var(--primary);
+		content: "";
+		transform: translateY(-50%);
+	}
+
+	.albums-empty-icon {
+		font-size: var(--text-icon-display-size);
+		line-height: 1;
+	}
+
+	.albums-empty-message {
+		font-size: var(--text-section-title-size);
+	}
+</style>

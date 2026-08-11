@@ -90,8 +90,10 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 				</div>
 
 				<div id="no-results" class="hidden text-center py-16">
-					<div class="text-5xl text-50 mb-4" aria-hidden="true">✎</div>
-					<p class="text-60 text-lg">
+					<div class="moments-empty-icon text-50 mb-4" aria-hidden="true">
+						✎
+					</div>
+					<p class="moments-empty-message text-60">
 						{i18n(I18nKey.diaryNoResults)}
 					</p>
 				</div>
@@ -99,17 +101,17 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 				{
 					moments.length === 0 && (
 						<div class="text-center py-16">
-							<div class="text-5xl text-50 mb-4" aria-hidden="true">
+							<div class="moments-empty-icon text-50 mb-4" aria-hidden="true">
 								✎
 							</div>
-							<h2 class="text-lg font-medium text-90 mb-2">
+							<h2 class="moments-empty-message font-medium text-90 mb-2">
 								{i18n(I18nKey.diaryNoResults)}
 							</h2>
 						</div>
 					)
 				}
 
-				<div class="text-center mt-8 text-75 text-sm italic">
+				<div class="moments-tips text-center mt-8 text-75 italic">
 					{i18n(I18nKey.diaryTips)}
 				</div>
 			</div>
@@ -139,7 +141,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 
 	.moments-header h1 {
 		margin-bottom: 0.25rem;
-		font-size: clamp(1.5rem, 3vw, 2rem);
+		font-size: var(--text-page-title-size);
 		font-weight: 700;
 		line-height: 1.15;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
@@ -148,7 +150,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 	.moments-header p {
 		overflow: hidden;
 		color: rgba(255, 255, 255, 0.82);
-		font-size: 0.875rem;
+		font-size: var(--text-ui-size);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
@@ -160,7 +162,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 
 	.moments-header__stats span {
 		display: block;
-		font-size: 1.75rem;
+		font-size: var(--text-list-title-size);
 		font-weight: 700;
 		line-height: 1;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
@@ -170,7 +172,20 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 		display: block;
 		margin-top: 0.25rem;
 		color: rgba(255, 255, 255, 0.72);
-		font-size: 0.75rem;
+		font-size: var(--text-caption-size);
+	}
+
+	.moments-empty-icon {
+		font-size: var(--text-icon-display-size);
+		line-height: 1;
+	}
+
+	.moments-empty-message {
+		font-size: var(--text-section-title-size);
+	}
+
+	.moments-tips {
+		font-size: var(--text-ui-size);
 	}
 
 	@media (width < 640px) {

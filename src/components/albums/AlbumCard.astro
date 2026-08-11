@@ -44,21 +44,21 @@ const { album } = Astro.props;
 					</span>
 				)
 			}
-			<span class="rounded-full bg-black/50 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+			<span class="album-card__count rounded-full bg-black/50 px-2 py-1 font-medium text-white backdrop-blur-sm">
 				{album.photos.length}
 				{i18n(I18nKey.albumsPhotosCount)}
 			</span>
 		</div>
 
 		<div class="absolute right-0 bottom-0 left-0 p-4">
-			<h2 class="line-clamp-1 text-base font-bold text-white drop-shadow-lg">
+			<h2 class="album-card__title line-clamp-1 font-bold text-white drop-shadow-lg">
 				{album.title}
 			</h2>
 
 			{
 				album.description && (
 					<p
-						class="mt-1 line-clamp-1 text-xs leading-relaxed text-white/75"
+						class="album-card__description mt-1 line-clamp-1 leading-relaxed text-white/75"
 						title={album.description}
 					>
 						{album.description}
@@ -66,7 +66,7 @@ const { album } = Astro.props;
 				)
 			}
 
-			<div class="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-white/70">
+			<div class="album-card__meta mt-1.5 flex flex-wrap items-center gap-3 text-white/70">
 				<time>{new Date(album.date).toLocaleDateString("zh-CN")}</time>
 				{
 					album.location && (
@@ -89,7 +89,7 @@ const { album } = Astro.props;
 				album.tags && album.tags.length > 0 && (
 					<div class="mt-2 flex flex-wrap gap-1">
 						{album.tags.slice(0, 4).map((tag) => (
-							<span class="rounded bg-white/20 px-1.5 py-0.5 text-[0.6rem] text-white/90 backdrop-blur-sm">
+							<span class="album-card__tag rounded bg-white/20 px-1.5 py-0.5 text-white/90 backdrop-blur-sm">
 								{tag}
 							</span>
 						))}
@@ -99,3 +99,16 @@ const { album } = Astro.props;
 		</div>
 	</div>
 </a>
+
+<style>
+	.album-card__count,
+	.album-card__description,
+	.album-card__meta,
+	.album-card__tag {
+		font-size: var(--text-caption-size);
+	}
+
+	.album-card__title {
+		font-size: var(--text-body-regular-size);
+	}
+</style>
