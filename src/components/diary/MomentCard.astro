@@ -19,7 +19,7 @@ const imageGroup = `diary-${index}`;
 	class="moment-card group relative rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
 	data-tags={moment.tags?.join(",") || ""}
 >
-	<div class="p-5">
+	<div class="moment-card__body p-5">
 		<p
 			class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed mb-3"
 		>
@@ -117,57 +117,25 @@ const imageGroup = `diary-${index}`;
 
 <style is:global>
 	.moment-card {
-		animation: fadeInUp 0.5s ease-out forwards;
-		opacity: 0;
+		opacity: 1;
 	}
 
 	.moment-card.filtered-out {
 		display: none;
 	}
 
+	.moment-card__body {
+		position: relative;
+		z-index: 1;
+	}
+
 	.moment-card__hover-layer {
+		z-index: 0;
 		background: linear-gradient(
 			to bottom right,
 			color-mix(in srgb, var(--accent) 5%, transparent),
 			transparent
 		);
-	}
-
-	.moment-card:nth-child(1) {
-		animation-delay: 0.03s;
-	}
-	.moment-card:nth-child(2) {
-		animation-delay: 0.06s;
-	}
-	.moment-card:nth-child(3) {
-		animation-delay: 0.09s;
-	}
-	.moment-card:nth-child(4) {
-		animation-delay: 0.12s;
-	}
-	.moment-card:nth-child(5) {
-		animation-delay: 0.15s;
-	}
-	.moment-card:nth-child(6) {
-		animation-delay: 0.18s;
-	}
-	.moment-card:nth-child(7) {
-		animation-delay: 0.21s;
-	}
-	.moment-card:nth-child(8) {
-		animation-delay: 0.24s;
-	}
-	.moment-card:nth-child(9) {
-		animation-delay: 0.27s;
-	}
-	.moment-card:nth-child(10) {
-		animation-delay: 0.3s;
-	}
-	.moment-card:nth-child(11) {
-		animation-delay: 0.33s;
-	}
-	.moment-card:nth-child(12) {
-		animation-delay: 0.36s;
 	}
 
 	.diary-images-single {

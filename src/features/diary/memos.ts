@@ -104,7 +104,7 @@ function renderDiaryMoment(
 
 	return `
 		<article class="moment-card group relative rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" data-tags="${tagsAttr}">
-			<div class="p-5">
+			<div class="moment-card__body p-5">
 				<p class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed mb-3">${escapeHtml(moment.content)}</p>
 				${imagesHtml}
 				${tagsHtml}

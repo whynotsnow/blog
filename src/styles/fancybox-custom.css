@@ -1,18 +1,39 @@
 /* Fancybox 自定义样式 */
-.fancybox__container {
-  --fancybox-bg: rgba(0, 0, 0, 0.9);
-  --fancybox-thumbs-width: 64px;
-  --fancybox-thumbs-ratio: 1;
-  --fancybox-thumbs-border-radius: 4px;
+html .fancybox__container {
+  --fancybox-backdrop-bg: rgba(0, 0, 0, 0.9);
+  --f-toolbar-bg: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+  --f-toolbar-padding: 8px;
+  --f-toolbar-backdrop-filter: blur(4px);
+  --f-button-width: 44px;
+  --f-button-height: 44px;
+  --f-button-border-radius: 50%;
+  --f-button-bg: rgba(0, 0, 0, 0.5);
+  --f-button-hover-bg: rgba(0, 0, 0, 0.7);
+  --f-button-svg-width: 24px;
+  --f-button-svg-height: 24px;
+  --f-button-svg-filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  --f-arrow-bg: rgba(0, 0, 0, 0.5);
+  --f-arrow-hover-bg: rgba(0, 0, 0, 0.7);
+  --f-arrow-border-radius: 50%;
+  --f-thumbs-bg: rgba(0, 0, 0, 0.7);
+  --f-thumbs-padding-x: 8px;
+  --f-thumbs-padding-y: 8px;
+  --f-thumb-width: 64px;
+  --f-thumb-height: 64px;
+  --f-thumb-border-radius: 4px;
+  --f-thumb-img-fit: cover;
+  z-index: 9999;
 }
 
-.fancybox__toolbar {
+html .fancybox__container .f-carousel__toolbar,
+html .fancybox__container .fancybox__toolbar {
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
   padding: 8px;
   backdrop-filter: blur(4px);
 }
 
-.fancybox__caption {
+html .fancybox__container .fancybox__caption,
+html .fancybox__container .f-caption {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   color: white;
   font-size: 1rem;
@@ -20,63 +41,88 @@
   text-align: center;
   backdrop-filter: blur(4px);
   border-radius: 8px;
-  margin: 0 1rem 1rem 1rem;
+  margin: 0 1rem 1rem;
 }
 
-.fancybox__nav {
+html .fancybox__container .fancybox__nav {
   --carousel-button-svg-width: 24px;
   --carousel-button-svg-height: 24px;
 }
 
-.fancybox__thumbs {
+html .fancybox__container .fancybox__thumbs,
+html .fancybox__container .f-thumbs {
   background: rgba(0, 0, 0, 0.7);
   padding: 2px;
   border-radius: 8px;
   backdrop-filter: blur(4px);
 }
 
-.fancybox__thumb {
+html .fancybox__container .fancybox__thumb,
+html .fancybox__container .f-thumbs__slide button {
+  border: 2px solid transparent;
   border-radius: 4px;
   overflow: hidden;
-  border: 2px solid transparent;
   transition: all 0.2s ease;
 }
 
-.fancybox__thumb.is-loading {
+html .fancybox__container .fancybox__thumb.is-loading {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.fancybox__thumb:hover {
+html .fancybox__container .fancybox__thumb:hover,
+html .fancybox__container .f-thumbs__slide:hover button {
   border-color: rgba(255, 255, 255, 0.5);
   transform: scale(1.05);
 }
 
-.fancybox__thumb.is-active {
+html .fancybox__container .fancybox__thumb.is-active,
+html .fancybox__container .f-thumbs__slide.is-selected button {
   border-color: #fff;
 }
 
+html .fancybox__container .fancybox__viewport {
+  padding: 0 1rem;
+}
+
+html .fancybox__container .fancybox__slide {
+  padding: 4rem 0 1.5rem;
+}
+
+html .fancybox__container .fancybox__slide .f-panzoom__content,
+html .fancybox__container .fancybox__slide img.f-panzoom__content {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 10rem);
+  object-fit: contain;
+}
+
 /* 按钮样式 */
-.fancybox__button {
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
+html .fancybox__container .fancybox__button,
+html .fancybox__container .f-button {
   width: 44px;
   height: 44px;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
 }
 
-.fancybox__button:hover {
+html .fancybox__container .fancybox__button:hover,
+html .fancybox__container .f-button:hover:not([aria-disabled]) {
+  border-color: rgba(255, 255, 255, 0.3);
   background: rgba(0, 0, 0, 0.7);
   transform: scale(1.1);
-  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.fancybox__button svg {
+html .fancybox__container .fancybox__button svg,
+html .fancybox__container .f-button svg {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
-.fancybox__infobar {
+html .fancybox__container .fancybox__infobar,
+html .fancybox__container .f-counter {
   color: white;
   font-size: 0.9rem;
   padding: 0 8px;
@@ -84,38 +130,58 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .fancybox__toolbar {
+  html .fancybox__container {
+    --f-button-width: 36px;
+    --f-button-height: 36px;
+    --f-thumb-width: 48px;
+    --f-thumb-height: 48px;
+  }
+
+  html .fancybox__container .f-carousel__toolbar,
+  html .fancybox__container .fancybox__toolbar {
     padding: 4px;
   }
 
-  .fancybox__button {
+  html .fancybox__container .fancybox__button,
+  html .fancybox__container .f-button {
     width: 36px;
     height: 36px;
   }
 
-  .fancybox__caption {
+  html .fancybox__container .fancybox__caption,
+  html .fancybox__container .f-caption {
     font-size: 0.9rem;
     padding: 0.5rem;
-    margin: 0 0.5rem 0.5rem 0.5rem;
+    margin: 0 0.5rem 0.5rem;
   }
 
-  .fancybox__thumbs {
-    --fancybox-thumbs-width: 48px;
+  html .fancybox__container .fancybox__slide {
+    padding-top: 3.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .fancybox__button {
+  html .fancybox__container {
+    --f-button-width: 32px;
+    --f-button-height: 32px;
+    --f-thumb-width: 40px;
+    --f-thumb-height: 40px;
+  }
+
+  html .fancybox__container .fancybox__button,
+  html .fancybox__container .f-button {
     width: 32px;
     height: 32px;
   }
 
-  .fancybox__caption {
+  html .fancybox__container .fancybox__caption,
+  html .fancybox__container .f-caption {
     font-size: 0.8rem;
     padding: 0.4rem;
   }
 
-  .fancybox__thumbs {
-    --fancybox-thumbs-width: 40px;
+  html .fancybox__container .fancybox__slide .f-panzoom__content,
+  html .fancybox__container .fancybox__slide img.f-panzoom__content {
+    max-height: calc(100vh - 8rem);
   }
 }

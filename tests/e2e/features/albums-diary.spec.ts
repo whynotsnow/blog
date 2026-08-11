@@ -6,6 +6,14 @@ test("albums page renders filter tabs and album cards", async ({ page }) => {
 
 	expect(response?.ok()).toBe(true);
 	await expect(page.locator("#albums-grid .album-card")).toHaveCount(1);
+	await expect
+		.poll(() =>
+			page
+				.locator("#albums-grid .album-card")
+				.first()
+				.evaluate((card) => getComputedStyle(card).opacity),
+		)
+		.toBe("1");
 
 	const filter = page.locator(".filter-tabs__item", { hasText: "Kawai" });
 	await expect(filter).toBeVisible();
@@ -35,6 +43,14 @@ test("album detail opens photos with Fancybox", async ({ page }) => {
 
 	await expect(page).toHaveURL(/\/albums\/AcgExample\/$/);
 	await expect(page.locator(".fancybox__container")).toBeVisible();
+	await expect
+		.poll(() =>
+			page.locator(".fancybox__container").evaluate((container) => {
+				const styles = getComputedStyle(container);
+				return styles.getPropertyValue("--f-thumb-width").trim();
+			}),
+		)
+		.toBe("64px");
 });
 
 test("diary page renders static entries and opens images with Fancybox", async ({
@@ -44,6 +60,14 @@ test("diary page renders static entries and opens images with Fancybox", async (
 
 	expect(response?.ok()).toBe(true);
 	await expect(page.locator("#diary-list .moment-card")).toHaveCount(1);
+	await expect
+		.poll(() =>
+			page
+				.locator("#diary-list .moment-card")
+				.first()
+				.evaluate((card) => getComputedStyle(card).opacity),
+		)
+		.toBe("1");
 
 	const firstLoadedImage = page.locator(".diary-images img").first();
 	await expect(firstLoadedImage).toBeVisible();
@@ -61,4 +85,12 @@ test("diary page renders static entries and opens images with Fancybox", async (
 
 	await expect(page).toHaveURL(/\/diary\/$/);
 	await expect(page.locator(".fancybox__container")).toBeVisible();
+	await expect
+		.poll(() =>
+			page.locator(".fancybox__container").evaluate((container) => {
+				const styles = getComputedStyle(container);
+				return styles.getPropertyValue("--f-button-width").trim();
+			}),
+		)
+		.toBe("44px");
 });

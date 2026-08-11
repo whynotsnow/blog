@@ -143,6 +143,16 @@
 			"playbook": "docs/agents/runtime-playbook.md#fullscreen-banner-responsive-override"
 		},
 		{
+			"id": "feature-media-visibility-and-lightbox-drift",
+			"cluster": "styles",
+			"symptoms": [
+				"album or diary cards render clickable blank regions because opacity remains 0",
+				"Fancybox opens but project styling or image sizing is not applied after migrating feature media",
+				"Fancybox v6 DOM uses f-carousel, f-button, f-thumbs, or f-panzoom classes while custom CSS targets older class names"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#feature-media-visibility-and-lightbox-drift"
+		},
+		{
 			"id": "banner-entry-geometry-feedback",
 			"cluster": "runtime-layout",
 			"symptoms": [

@@ -228,6 +228,7 @@
 				"src/components/filter-tabs/**",
 				"src/features/diary/**",
 				"src/styles/albums.css",
+				"src/styles/fancybox-custom.css",
 				"src/utils/timeFormat.ts"
 			],
 			"groups": [

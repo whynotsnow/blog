@@ -202,6 +202,22 @@ Use:
 - Apply height inheritance to `#banner-carousel`, `.carousel-list`, `.carousel-item`, image wrapper slots, `#banner-single-container`, and images.
 - Scope wave positioning to `#header-waves` and restore `#header-waves > svg` to normal in-container sizing when generic `.waves` mobile rules would affect both the outer container and inner svg.
 
+### feature-media-visibility-and-lightbox-drift
+
+Pattern:
+
+- Migrated feature cards render semantic content and image anchors, but the user sees blank clickable regions because the card starts at `opacity: 0` and relies on an animation to restore visibility.
+- A hover overlay is appended after the card body and can visually cover text or images when stacking order is not explicit.
+- Fancybox opens, but project styling does not apply because `@fancyapps/ui` v6 emits `f-carousel__toolbar`, `f-button`, `f-thumbs`, and `f-panzoom__content` while older custom CSS only targets legacy `.fancybox__toolbar`, `.fancybox__button`, or `.fancybox__thumb`.
+- Fancybox default CSS can load after project CSS, so same-specificity selectors or outdated CSS variables appear ignored.
+
+Use:
+
+- Do not make feature cards invisible by default. Prefer `opacity: 1` fallback and avoid `opacity: 0 + animation-fill-mode` as the only path to visible content.
+- Give card body and decorative hover layers explicit stacking order when the layer is an absolutely positioned sibling of the content.
+- For Fancybox v6, style both the old compatibility classes and the current `f-*` classes. Use selectors with enough specificity to survive the default package CSS load order.
+- Keep gallery trigger contracts testable: anchors should stay on the current page after click, Fancybox container should appear, card opacity should compute to `1`, and lightbox CSS variables or image `object-fit: contain` should be asserted in Playwright.
+
 ### banner-entry-geometry-feedback
 
 Symptoms:
