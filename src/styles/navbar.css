@@ -82,7 +82,7 @@
  * removed root scaling with container-content-owned type and spacing. */
 @media (min-width: 1281px) and (orientation: landscape) {
   #top-row[data-shell-strategy="container-content"] #navbar {
-    --navbar-font-size: clamp(var(--text-ui-size), 0.8vw, var(--text-body-regular-size));
+    --navbar-font-size: clamp(calc(var(--text-body-regular-size) * 0.9), 0.8vw, var(--text-body-regular-size));
     --navbar-inline-padding: clamp(0.9rem, 0.8vw, 1rem);
     --navbar-brand-padding-inline: clamp(1.125rem, 1vw, 1.25rem);
     --navbar-link-padding-inline: clamp(1.125rem, 1vw, 1.25rem);

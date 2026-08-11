@@ -1054,7 +1054,7 @@ test("global motion and scrollbar utilities stay active", async ({ page }) => {
 		.evaluate((node) => getComputedStyle(node).animationName);
 	expect(postItemAnimation).toContain("post-list-item-enter");
 
-	await gotoPage(page, "/timeline/");
-	const timeline = page.locator("#timeline-scrollbar");
-	await expect(timeline).toHaveCSS("scrollbar-width", "thin");
+	await gotoPage(page, "/archive/");
+	const archivePostsList = page.locator("#calendar-posts-list");
+	await expect(archivePostsList).toHaveCSS("scrollbar-width", "thin");
 });

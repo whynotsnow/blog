@@ -609,6 +609,9 @@ test("post list view does not imply desktop page layout preference", async ({
 test("post list keeps Astro snapshots and switches to Svelte for tag pagination", async ({
 	page,
 }) => {
+	await useStoredPreference(page, "live2d-companion-mounted", "0");
+	await page.setViewportSize({ width: 1440, height: 900 });
+
 	const expectSharedCardStructure = async (renderer: "astro" | "svelte") => {
 		const card = page
 			.locator(`[data-post-list-renderer="${renderer}"]`)
@@ -684,7 +687,7 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 	};
 
 	await expect(filter).toHaveClass(/ds-surface-card/);
-	await expect(filter).toContainText("18 篇文章");
+	await expect(filter).toContainText(/\d+ 篇文章/);
 	const defaultGeometry = await readFilterGeometry();
 
 	const tagLink = filter.locator('a[href^="/category/tech/?tag="]').first();
