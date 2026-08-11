@@ -19,10 +19,21 @@ test("albums page renders filter tabs and album cards", async ({ page }) => {
 test("album detail opens photos with Fancybox", async ({ page }) => {
 	await gotoPage(page, "/albums/AcgExample/");
 
+	const firstImage = page.locator(".gallery-masonry img").first();
+	await expect(firstImage).toBeVisible();
+	await expect
+		.poll(() =>
+			firstImage.evaluate((image) =>
+				image instanceof HTMLImageElement ? image.naturalWidth : 0,
+			),
+		)
+		.toBeGreaterThan(0);
+
 	const firstPhoto = page.locator(".gallery-masonry [data-fancybox]").first();
 	await expect(firstPhoto).toBeVisible();
 	await firstPhoto.click();
 
+	await expect(page).toHaveURL(/\/albums\/AcgExample\/$/);
 	await expect(page.locator(".fancybox__container")).toBeVisible();
 });
 
@@ -34,9 +45,20 @@ test("diary page renders static entries and opens images with Fancybox", async (
 	expect(response?.ok()).toBe(true);
 	await expect(page.locator("#diary-list .moment-card")).toHaveCount(1);
 
+	const firstLoadedImage = page.locator(".diary-images img").first();
+	await expect(firstLoadedImage).toBeVisible();
+	await expect
+		.poll(() =>
+			firstLoadedImage.evaluate((image) =>
+				image instanceof HTMLImageElement ? image.naturalWidth : 0,
+			),
+		)
+		.toBeGreaterThan(0);
+
 	const firstImage = page.locator(".diary-images [data-fancybox]").first();
 	await expect(firstImage).toBeVisible();
 	await firstImage.click();
 
+	await expect(page).toHaveURL(/\/diary\/$/);
 	await expect(page.locator(".fancybox__container")).toBeVisible();
 });

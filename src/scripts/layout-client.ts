@@ -138,8 +138,29 @@ let fancyboxSelectors: string[] = [];
 type FancyboxApi = {
 	bind: (selector: string, options?: Record<string, unknown>) => void;
 	unbind: (selector: string) => void;
+	fromTriggerEl?: (
+		triggerEl: HTMLElement,
+		options?: Record<string, unknown>,
+	) => unknown;
 };
 let Fancybox: FancyboxApi | undefined;
+let fancyboxClickFallbackBound = false;
+
+const albumImagesSelector =
+	".custom-md img, #post-cover img, .moment-images img";
+const groupedFancyboxSelector = [
+	".moment-images [data-fancybox]",
+	".diary-images [data-fancybox]",
+	".photo-gallery [data-fancybox]",
+	".gallery-masonry [data-fancybox]",
+].join(", ");
+const singleFancyboxSelector = [
+	"[data-fancybox]",
+	":not(.moment-images [data-fancybox])",
+	":not(.diary-images [data-fancybox])",
+	":not(.photo-gallery [data-fancybox])",
+	":not(.gallery-masonry [data-fancybox])",
+].join("");
 
 // 数学公式按需加载
 function checkKatex() {
@@ -148,42 +169,8 @@ function checkKatex() {
 	}
 }
 
-// 图片灯箱按需加载
-async function initFancybox() {
-	const albumImagesSelector =
-		".custom-md img, #post-cover img, .moment-images img";
-	const groupedFancyboxSelector = [
-		".moment-images [data-fancybox]",
-		".diary-images [data-fancybox]",
-		".photo-gallery [data-fancybox]",
-		".gallery-masonry [data-fancybox]",
-	].join(", ");
-	const singleFancyboxSelector = [
-		"[data-fancybox]",
-		":not(.moment-images [data-fancybox])",
-		":not(.diary-images [data-fancybox])",
-		":not(.photo-gallery [data-fancybox])",
-		":not(.gallery-masonry [data-fancybox])",
-	].join("");
-
-	const hasImages =
-		document.querySelector(albumImagesSelector) ||
-		document.querySelector(groupedFancyboxSelector) ||
-		document.querySelector(singleFancyboxSelector);
-
-	if (!hasImages) return;
-
-	if (!Fancybox) {
-		const mod = await import("@fancyapps/ui");
-		Fancybox = mod.Fancybox;
-		await import("@fancyapps/ui/dist/fancybox/fancybox.css");
-	}
-
-	if (fancyboxSelectors.length > 0) {
-		return; // 已经初始化，直接返回
-	}
-
-	const commonConfig = {
+function getFancyboxConfig() {
+	return {
 		Thumbs: { autoStart: true, showOnStart: "yes" },
 		Toolbar: {
 			display: {
@@ -218,10 +205,46 @@ async function initFancybox() {
 		infinite: true,
 		Panzoom: { maxScale: 3, minScale: 1 },
 		caption: false,
+		Hash: false,
 	};
+}
+
+async function loadFancybox() {
+	if (Fancybox) return;
+
+	const mod = await import("@fancyapps/ui");
+	Fancybox = mod.Fancybox;
+	window.Fancybox = Fancybox;
+	await import("@fancyapps/ui/dist/fancybox/fancybox.css");
+}
+
+const sourceFromTrigger = (el: HTMLElement) => {
+	const href = el.getAttribute("href");
+	if (href && href !== "javascript:void(0)") {
+		return href;
+	}
+	return el.getAttribute("data-src") || href || "";
+};
+
+// 图片灯箱按需加载
+async function initFancybox() {
+	const hasImages =
+		document.querySelector(albumImagesSelector) ||
+		document.querySelector(groupedFancyboxSelector) ||
+		document.querySelector(singleFancyboxSelector);
+
+	if (!hasImages) return;
+
+	await loadFancybox();
+
+	if (fancyboxSelectors.length > 0) {
+		return; // 已经初始化，直接返回
+	}
+
+	const commonConfig = getFancyboxConfig();
 
 	// 绑定相册/文章图片
-	Fancybox.bind(albumImagesSelector, {
+	Fancybox?.bind(albumImagesSelector, {
 		...commonConfig,
 		groupAll: true,
 		Carousel: {
@@ -231,26 +254,52 @@ async function initFancybox() {
 	});
 	fancyboxSelectors.push(albumImagesSelector);
 
-	const sourceFromTrigger = (el: HTMLElement) => {
-		const href = el.getAttribute("href");
-		if (href && href !== "javascript:void(0)") {
-			return href;
-		}
-		return el.getAttribute("data-src") || href || "";
-	};
-
-	Fancybox.bind(groupedFancyboxSelector, {
+	Fancybox?.bind(groupedFancyboxSelector, {
 		...commonConfig,
 		source: sourceFromTrigger,
 	});
 	fancyboxSelectors.push(groupedFancyboxSelector);
 
 	// 绑定单独的 fancybox 图片
-	Fancybox.bind(singleFancyboxSelector, {
+	Fancybox?.bind(singleFancyboxSelector, {
 		...commonConfig,
 		source: sourceFromTrigger,
 	});
 	fancyboxSelectors.push(singleFancyboxSelector);
+}
+
+function bindFancyboxClickFallback() {
+	if (fancyboxClickFallbackBound) return;
+	fancyboxClickFallbackBound = true;
+
+	document.addEventListener(
+		"click",
+		(event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+
+			const trigger = target.closest<HTMLElement>(
+				groupedFancyboxSelector,
+			);
+			if (!trigger) return;
+
+			event.preventDefault();
+			event.stopPropagation();
+
+			void (async () => {
+				await initFancybox();
+				await loadFancybox();
+
+				if (Fancybox?.fromTriggerEl) {
+					Fancybox.fromTriggerEl(trigger, {
+						...getFancyboxConfig(),
+						source: sourceFromTrigger,
+					});
+				}
+			})();
+		},
+		true,
+	);
 }
 
 // 清理 Fancybox 实例
@@ -445,6 +494,7 @@ const setup = () => {
 	});
 };
 
+bindFancyboxClickFallback();
 initFancybox();
 initFilterTabs();
 checkKatex();
