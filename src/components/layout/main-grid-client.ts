@@ -1,4 +1,4 @@
-import { sakuraConfig, siteConfig } from "@/config";
+import { effectsConfig, sakuraConfig, siteConfig } from "@/config";
 import {
 	BANNER_HEIGHT_HOME,
 	BANNER_HEIGHT_FULLSCREEN,
@@ -119,7 +119,7 @@ function getStoredBoolean(key: string, fallback: boolean): boolean {
 function applyWavesSetting(
 	enabled = getStoredBoolean(
 		"wavesEnabled",
-		siteConfig.banner?.waves?.enable ?? true,
+		effectsConfig.waves.enable ?? true,
 	),
 ) {
 	document.documentElement.setAttribute(

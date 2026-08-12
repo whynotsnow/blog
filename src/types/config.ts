@@ -125,12 +125,6 @@ export type SiteConfig = {
 			interval: number; // 轮播间隔时间（秒）
 			switchable?: boolean; // 是否允许在设置面板中切换
 		};
-		waves?: {
-			enable: boolean; // 是否启用水波纹效果
-			performanceMode?: boolean; // 性能模式：减少动画复杂度
-			mobileDisable?: boolean; // 移动端禁用
-			switchable?: boolean; // 是否允许在设置面板中切换
-		};
 		imageApi?: {
 			enable: boolean; // 是否启用图片API
 			url: string; // API地址，返回每行一个图片链接的文本
@@ -305,6 +299,18 @@ export type SakuraConfig = {
 		fadeSpeed: number; // 消失速度
 	};
 	zIndex: number; // 层级，确保樱花在合适的层级显示
+};
+
+export type WavesEffectConfig = {
+	enable: boolean; // 是否启用水波纹效果
+	performanceMode?: boolean; // 性能模式：减少动画复杂度
+	mobileDisable?: boolean; // 移动端禁用
+	switchable?: boolean; // 是否允许在设置面板中切换
+};
+
+export type EffectsConfig = {
+	waves: WavesEffectConfig;
+	sakura: SakuraConfig;
 };
 
 export type WallConfig = {

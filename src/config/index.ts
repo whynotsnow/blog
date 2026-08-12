@@ -6,7 +6,7 @@ export {
 	type CategoryDefinition,
 } from "./category-slugs";
 export { commentConfig } from "./comments";
-export { sakuraConfig } from "./effects";
+export { effectsConfig, sakuraConfig } from "./effects";
 export { expressiveCodeConfig } from "./expressive-code";
 export { footerConfig } from "./footer";
 export { licenseConfig } from "./license";

@@ -27,7 +27,7 @@
 | `src/config/wallpaper.ts` | 全屏壁纸 `wallConfig`。 |
 | `src/services/layout/presets.ts` | 页面布局 `PageLayoutPolicy` 预设。 |
 | `src/config/music.ts` | 音乐播放器 `musicPlayerConfig`。 |
-| `src/config/effects.ts` | 站点特效 `sakuraConfig`。 |
+| `src/config/effects.ts` | 站点特效 `effectsConfig`，并兼容导出 `sakuraConfig`。 |
 | `src/config/comments.ts` | 评论系统 `commentConfig`。 |
 | `src/config/analytics.ts` | 统计脚本、GTM、Clarity、Umami 配置。 |
 | `src/config/category-slugs.ts` | 分类 slug 映射。 |
@@ -38,7 +38,8 @@
 
 | 配置 | 说明 |
 | --- | --- |
-| `siteConfig` | 站点信息、语言、特色页面、横幅、主题和文章列表等。 |
+| `siteConfig` | 站点信息、语言、特色页面、横幅和主题等。 |
+| `effectsConfig` | Waves、Sakura 等站点视觉特效。 |
 | `wallConfig` | 全屏壁纸资源与效果行为。 |
 | `navBarConfig` | 顶部导航链接。 |
 | `profileConfig` | 首页作者资料模块内容。 |
@@ -100,12 +101,12 @@
 - Banner 与部分 Feature-local 表现仍可使用 viewport 断点：`0–479px` 小屏手机、`480–767px` 大屏手机、`768–1279px` 平板、`>=1280px` 桌面。页面内容布局以 `page-shell` 与 `post-feed` Container Query 为准。
 - 普通 Banner 使用 `--banner-block-size` 同步控制横幅高度与正文起始位置；低高度横屏约为 `60vh` 以优先正文。首页 Fullscreen Banner 始终为 `100dvh`，非首页移动端隐藏 Banner。
 - `siteConfig.banner.carousel.switchable`：控制横幅轮播设置入口。当前入口只保留 UI 状态预览，不会写入运行时配置。
-- `siteConfig.banner.waves.switchable`：控制横幅 waves 设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 waves。
+- `effectsConfig.waves.switchable`：控制 waves 特效设置入口。用户设置会写入 `localStorage.wavesEnabled` 并实时显示/隐藏 Banner 底部承载的 waves。
 - `siteConfig.banner.homeText.switchable`：控制首页 banner 文案设置入口。用户设置会写入 `localStorage.bannerTitleEnabled` 并实时显示/隐藏首页文案。`homeText.subtitle` 在 `typewriter.enable=true` 时交给 Typewriter 轮播；关闭 Typewriter 时渲染第一条副标题作为静态文案。
 - `wallConfig.enable` 和 `wallConfig.switchable`：控制全屏壁纸资源与壁纸模式切换入口。
 - `wallConfig.effects`：提供全屏壁纸的默认 `opacity`、`blur`、`cardOpacity`，以及各滑块的 `switchable` 配置。用户设置会分别写入 `localStorage.wallOpacity`、`localStorage.wallBlur`、`localStorage.wallCardOpacity`。
 - 横幅模式与全屏横幅共用 `siteConfig.banner.carousel`，差异只来自 Banner 几何与页面 Shell 表现；`wallConfig.carousel` 只作用于 `full-wall` 模式的 `[data-wallpaper]` 全屏壁纸图层。
-- `sakuraConfig.switchable`：控制樱花特效设置入口。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
+- `effectsConfig.sakura.switchable`：控制樱花特效设置入口。兼容导出的 `sakuraConfig` 仍指向同一配置。用户设置会写入 `localStorage.sakuraEnabled` 并通过 `sakura-manager` 启停运行时。
 - `live2dCompanionConfig.enable` 仅提供 Live2D Companion 的默认页面挂载状态，Floating Tools 的看板娘入口仍可重新挂载组件。访客挂载、内部收起、统一位置锚点和模型索引分别写入独立 `localStorage` key；拖拽边界可通过 `ui.positionBounds` 配置，其中 `horizontalDock` 默认锁定到配置侧，`horizontalInset` 默认让组件贴合左右边缘。模型、expression、idle playback、iframe host、拖拽、同源 iframe header 和旧 widget 配置边界详见 [Live2D Companion 维护指南](./live2d-companion-maintenance.md)。
 - `musicPlayerConfig.enable` 仅提供音乐播放器 UI 的默认页面挂载状态；即使设为 `false`，Floating Tools 的 Music 入口仍然存在并可重新显示播放器，访客选择写入 `localStorage.music-player-mounted`。播放器自身继续拥有播放、Default、Mini、Expanded 与 Playlist 状态，Floating Tools 只通过 Feature-local Event Contract 控制模块 UI 是否展示，不直接操作 Audio 或内部面板状态。
 - Music Player 默认以右下角圆形封面出现，点击后进入 Mini，Mini 再进入 Expanded；播放与非播放状态使用同一套 UI 交互。Default 封面使用不改变外轮廓尺寸的轻微上浮 Hover，并允许阴影与过渡内容越过状态容器，避免固定宽度裁切封面或留下半圆阴影。Default ↔ Mini 使用同一组裁切、缩放与旋转插值反向播放，确保往返动画互为镜像；Mini ↔ Expanded 的两个 Surface 共用同一时长、easing、clip-path、blur 与 transform 轨迹。Floating Tools 的 FLIP 位移由同一个 easing 函数生成关键帧，并使用播放器传出的 transition 起始时间校正事件延迟，因此展开与回落都会沿同一条 `420ms` 时间轴运行。所有状态过渡均在 `prefers-reduced-motion` 下取消时长。

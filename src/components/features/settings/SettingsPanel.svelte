@@ -9,7 +9,12 @@
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
 	import { onMount } from "svelte";
-	import { wallConfig, sakuraConfig, siteConfig } from "@/config";
+	import {
+		effectsConfig,
+		wallConfig,
+		sakuraConfig,
+		siteConfig,
+	} from "@/config";
 	import {
 		getDefaultBannerTitleEnabled,
 		getDefaultHue,
@@ -63,17 +68,15 @@
 		isWallBlurSwitchable ||
 		isWallCardOpacitySwitchable;
 
-	const isWavesSwitchable = siteConfig.banner?.waves?.switchable ?? false;
+	const isWavesSwitchable = effectsConfig.waves.switchable ?? false;
 	const isBannerTitleSwitchable =
 		siteConfig.banner?.homeText?.switchable ?? false;
 	const isBannerCarouselSwitchable =
 		siteConfig.banner?.carousel?.switchable ?? false;
 	const hasBannerSettings =
-		isWavesSwitchable ||
-		isBannerTitleSwitchable ||
-		isBannerCarouselSwitchable;
+		isBannerTitleSwitchable || isBannerCarouselSwitchable;
 	const isSakuraSwitchable = sakuraConfig.switchable ?? false;
-	const hasEffectsSettings = isSakuraSwitchable;
+	const hasEffectsSettings = isWavesSwitchable || isSakuraSwitchable;
 
 	const showModeValue = siteConfig.wallpaperMode.showModeSwitchOnMobile;
 	let isMobile = $state(false);
@@ -127,13 +130,13 @@
 	const bannerSettingsIsDefault = $derived(
 		(!isBannerTitleSwitchable ||
 			bannerTitleEnabled === defaultBannerTitleEnabled) &&
-			(!isWavesSwitchable || wavesEnabled === defaultWavesEnabled) &&
 			(!isBannerCarouselSwitchable ||
 				bannerCarouselEnabled === defaultBannerCarouselEnabled),
 	);
 
 	const effectsSettingsIsDefault = $derived(
-		!isSakuraSwitchable || sakuraEnabled === defaultSakuraEnabled,
+		(!isWavesSwitchable || wavesEnabled === defaultWavesEnabled) &&
+			(!isSakuraSwitchable || sakuraEnabled === defaultSakuraEnabled),
 	);
 
 	function getPreviewSafeWallpaperMode(): WALL_MODE {
@@ -170,14 +173,14 @@
 		if (isBannerTitleSwitchable) {
 			setBannerTitleEnabled(defaultBannerTitleEnabled);
 		}
-		wavesEnabled = defaultWavesEnabled;
-		if (isWavesSwitchable) {
-			setWavesEnabled(defaultWavesEnabled);
-		}
 		bannerCarouselEnabled = defaultBannerCarouselEnabled;
 	}
 
 	function resetEffectsSettings() {
+		wavesEnabled = defaultWavesEnabled;
+		if (isWavesSwitchable) {
+			setWavesEnabled(defaultWavesEnabled);
+		}
 		sakuraEnabled = defaultSakuraEnabled;
 		if (isSakuraSwitchable) {
 			setSakuraEnabled(defaultSakuraEnabled);
@@ -441,14 +444,6 @@
 						onToggle={toggleBannerTitleEnabled}
 					/>
 				{/if}
-				{#if isWavesSwitchable}
-					<SettingToggle
-						icon="material-symbols:airwave-rounded"
-						label={i18n(I18nKey.wavesAnimation)}
-						enabled={wavesEnabled}
-						onToggle={toggleWavesEnabled}
-					/>
-				{/if}
 				{#if isBannerCarouselSwitchable}
 					<SettingToggle
 						icon="material-symbols:view-carousel-outline-rounded"
@@ -467,6 +462,14 @@
 				showReset={!effectsSettingsIsDefault}
 				onreset={resetEffectsSettings}
 			>
+				{#if isWavesSwitchable}
+					<SettingToggle
+						icon="material-symbols:airwave-rounded"
+						label={i18n(I18nKey.wavesAnimation)}
+						enabled={wavesEnabled}
+						onToggle={toggleWavesEnabled}
+					/>
+				{/if}
 				{#if isSakuraSwitchable}
 					<SettingToggle
 						icon="material-symbols:spa-outline-rounded"

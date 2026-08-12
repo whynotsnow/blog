@@ -408,3 +408,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Removed user-facing List/Grid switching from Floating Tools SettingsPanel and deleted the unused layout switch component.
 - Retired the `postListLayout` config contract, `localStorage.postListLayout` synchronization, and `postListViewChange` runtime event path.
 - Kept post Feed renderers and Shell synchronization fixed to `grid-mode`; legacy stored list preferences no longer affect Feed geometry.
+
+### Moved waves under Effects configuration
+
+- Moved waves defaults and switchability from `siteConfig.banner.waves` to `effectsConfig.waves`.
+- SettingsPanel now groups waves with Sakura under Effects; Banner settings only own Banner title and carousel controls.
+- Banner remains the DOM/rendering carrier for waves, while Effects owns the user-facing configuration and stored toggle default.

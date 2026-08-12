@@ -44,6 +44,19 @@ async function openMiniPlayer(page: Page) {
 	return miniPlayer;
 }
 
+async function waitForFloatingToolsClient(page: Page) {
+	await expect(page.locator("#floating-tools-switch")).toBeVisible({
+		timeout: 30_000,
+	});
+	await expect(page.locator("#floating-tools #scheme-switch")).toHaveCount(
+		1,
+		{ timeout: 30_000 },
+	);
+	await expect(
+		page.locator("#floating-tools #display-settings-switch"),
+	).toHaveCount(1, { timeout: 30_000 });
+}
+
 async function expectCompanionMenuIcon(
 	page: Page,
 	label: string,
@@ -58,6 +71,7 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 	page,
 }) => {
 	await gotoPage(page, "/posts/markdown-tutorial/");
+	await waitForFloatingToolsClient(page);
 
 	const tools = page.locator("#floating-tools");
 	const toggle = page.locator("#floating-tools-switch");
@@ -126,6 +140,20 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 	expect(settingsGeometry.right).toBeGreaterThanOrEqual(8);
 	expect(settingsGeometry.bottom).toBeGreaterThanOrEqual(8);
 	expect(settingsGeometry.left).toBeGreaterThanOrEqual(8);
+
+	const bannerSettings = page
+		.getByRole("button", { name: "横幅", exact: true })
+		.locator("xpath=ancestor::*[contains(@class, 'setting-section')][1]");
+	const effectsSettings = page
+		.getByRole("button", { name: "特效设置", exact: true })
+		.locator("xpath=ancestor::*[contains(@class, 'setting-section')][1]");
+	await expect(
+		bannerSettings.getByRole("button", { name: "波纹动画" }),
+	).toHaveCount(0);
+	await expect(
+		effectsSettings.getByRole("button", { name: "波纹动画" }),
+	).toBeVisible();
+
 	await page.locator(".post-detail__header h1").click();
 	await expect(page.locator("#display-setting")).toHaveClass(
 		/float-panel-closed/,
@@ -281,6 +309,7 @@ test("floating tools controls music visibility while the player owns its present
 		};
 	});
 	await gotoPage(page, "/");
+	await waitForFloatingToolsClient(page);
 
 	const tools = page.locator("#floating-tools");
 	const miniPlayer = page.locator(".mini-player");
@@ -687,6 +716,7 @@ test("hidden music control moves from playlist loading fallback to the first cov
 		});
 	});
 	await gotoPage(page, "/");
+	await waitForFloatingToolsClient(page);
 
 	const hiddenOrb = page.locator(".orb-player");
 	const fallback = hiddenOrb.locator(".orb-player__fallback-icon");
@@ -725,6 +755,7 @@ test("hidden music control falls back to the themed icon when cover loading fail
 		};
 	});
 	await gotoPage(page, "/");
+	await waitForFloatingToolsClient(page);
 
 	const miniPlayer = await openMiniPlayer(page);
 	await miniPlayer.getByRole("button", { name: "展开音乐播放器" }).click();
@@ -742,6 +773,7 @@ test("hidden music control falls back to the themed icon when cover loading fail
 test("floating tools keeps a safe mobile touch target", async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await gotoPage(page, "/");
+	await waitForFloatingToolsClient(page);
 
 	const geometry = await page
 		.locator("#floating-tools-switch")
@@ -808,6 +840,7 @@ test("floating tools controls the Live2D companion preference", async ({
 		localStorage.removeItem("live2d-companion-model-index");
 	});
 	await gotoPage(page, "/");
+	await waitForFloatingToolsClient(page);
 
 	await expect(page.locator("#floating-tools-switch")).toBeVisible({
 		timeout: 15_000,
@@ -1688,6 +1721,7 @@ test("Live2D companion remains available on medium and small viewports", async (
 		localStorage.removeItem("live2d-companion-model-index");
 	});
 	await gotoPage(page, "/");
+	await waitForFloatingToolsClient(page);
 
 	await expect(page.locator("#floating-tools-switch")).toBeVisible({
 		timeout: 15_000,
@@ -1713,6 +1747,7 @@ test("playlist attaches above the player and floating tools clears the full surf
 	await mockMusicPlaylist(page);
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await gotoPage(page, "/");
+	await waitForFloatingToolsClient(page);
 
 	const miniPlayer = await openMiniPlayer(page);
 	await miniPlayer.getByRole("button", { name: "展开音乐播放器" }).click();

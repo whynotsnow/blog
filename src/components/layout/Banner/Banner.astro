@@ -2,6 +2,7 @@
 import type { BannerImages } from "@/services/banner";
 import type { ResponsiveShellStrategy } from "@/services/layout/types";
 import type { SiteConfig } from "@/types/config";
+import { effectsConfig } from "@/config";
 import BannerCarousel from "./BannerCarousel.astro";
 import BannerHomeText from "./BannerHomeText.astro";
 import BannerWaves from "./BannerWaves.astro";
@@ -67,5 +68,5 @@ const hasCarousel =
 	}
 
 	<BannerHomeText homeText={config.homeText} showHomeText={showHomeText} />
-	<BannerWaves enabled={config.waves?.enable} />
+	<BannerWaves enabled={effectsConfig.waves.enable} />
 </div>

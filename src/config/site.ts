@@ -100,13 +100,6 @@ export const siteConfig: SiteConfig = {
 			switchable: true, // 设置面板入口保留，真实开关在后续阶段接入
 		},
 
-		waves: {
-			enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
-			performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
-			mobileDisable: false, // 移动端禁用
-			switchable: true, // 设置面板入口保留，真实开关在后续阶段接入
-		},
-
 		// PicFlow API支持(智能图片API)
 		imageApi: {
 			enable: false, // 启用图片API

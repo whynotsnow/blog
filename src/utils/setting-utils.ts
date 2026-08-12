@@ -1,5 +1,5 @@
 import { DARK_MODE, DEFAULT_THEME, LIGHT_MODE } from "@constants/constants";
-import { sakuraConfig, siteConfig, wallConfig } from "@/config";
+import { effectsConfig, sakuraConfig, siteConfig, wallConfig } from "@/config";
 import type { LIGHT_DARK_MODE, WALL_MODE } from "@/types/config";
 
 export function getDefaultHue(): number {
@@ -266,7 +266,7 @@ export function applyWallpaperVisualSettings(mode?: WALL_MODE): void {
 }
 
 export function getDefaultWavesEnabled(): boolean {
-	return getBooleanConfigDefault(siteConfig.banner.waves?.enable, true);
+	return getBooleanConfigDefault(effectsConfig.waves.enable, true);
 }
 
 export function getStoredWavesEnabled(): boolean {
