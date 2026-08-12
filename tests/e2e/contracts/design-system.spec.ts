@@ -21,6 +21,22 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 	expect(lightTokens.surface).not.toBe("");
 	expect(lightTokens.text).not.toBe("");
 
+	const profileCard = page.locator(".profile-card");
+	await page.evaluate(() => {
+		document.body.classList.add("wallpaper-full");
+		document.documentElement.style.setProperty(
+			"--card-transparent-opacity",
+			"0.35",
+		);
+	});
+	await expect
+		.poll(() =>
+			profileCard.evaluate(
+				(node) => getComputedStyle(node).backgroundColor,
+			),
+		)
+		.toContain("0.35");
+
 	await gotoPage(page, "/archive/");
 	await expect(page.locator("panel-card").first()).toHaveClass(
 		/ds-surface-card/,
@@ -72,6 +88,19 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 	expect(wallpaperSurface.background).not.toBe("rgba(0, 0, 0, 0)");
 	expect(wallpaperSurface.blur).toContain("blur");
 	expect(wallpaperSurface.radius).not.toBe("0px");
+
+	await page.evaluate(() => {
+		document.body.classList.add("wallpaper-full");
+		document.documentElement.style.setProperty(
+			"--card-transparent-opacity",
+			"0.35",
+		);
+	});
+	await expect
+		.poll(() =>
+			article.evaluate((node) => getComputedStyle(node).backgroundColor),
+		)
+		.toContain("0.35");
 
 	const widthContract = await readingFlow.evaluate((node) => {
 		const rootSize = Number.parseFloat(

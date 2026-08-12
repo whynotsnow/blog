@@ -1,10 +1,11 @@
 body.wallpaper-transparent,
 body.wallpaper-full {
-  --card-transparent-opacity: 0.8;
-  --surface-card: rgb(255 255 255 / var(--card-transparent-opacity));
+  --surface-card: rgb(255 255 255 / var(--card-transparent-opacity, 0.8));
+  --card-bg: var(--surface-card);
+  --card-bg-transparent: var(--surface-card);
 }
 
 :root.dark body.wallpaper-transparent,
 :root.dark body.wallpaper-full {
-  --surface-card: rgb(23 23 23 / var(--card-transparent-opacity));
+  --surface-card: rgb(23 23 23 / var(--card-transparent-opacity, 0.8));
 }
