@@ -1,8 +1,3 @@
-import {
-	applyPostListViewMode,
-	getPostListViewMode,
-} from "@/utils/post-list-view-mode";
-
 const observedTagContainers = new WeakSet<Element>();
 const tagResizeObserver =
 	typeof ResizeObserver === "undefined"
@@ -64,7 +59,8 @@ export function initializePostCardTagFitting(
 export function initializePostList(container: HTMLElement): void {
 	requestAnimationFrame(() => {
 		if (!container.isConnected) return;
-		applyPostListViewMode(getPostListViewMode());
+		container.classList.add("grid-mode", "js-initialized");
+		container.classList.remove("list-mode");
 		initializePostCardTagFitting(container);
 	});
 }

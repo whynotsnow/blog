@@ -333,16 +333,12 @@ export const zh_TW: Translation = {
 	[Key.bannerCarousel]: "橫幅輪播",
 	[Key.sakuraEffect]: "櫻花特效",
 	[Key.effectsSettings]: "特效設定",
-	[Key.postListLayout]: "文章布局",
-	[Key.postListLayoutList]: "列表",
-	[Key.postListLayoutGrid]: "網格",
 	[Key.resetAll]: "全部重置",
 	[Key.settingsThemeColor]: "主題色",
 	[Key.settingsWall]: "壁紙",
 	[Key.settingsWallFx]: "壁紙效果",
 	[Key.settingsBanner]: "橫幅",
 	[Key.settingsEffects]: "特效",
-	[Key.settingsLayout]: "布局",
 
 	// 站點統計
 	[Key.siteStats]: "站點統計",
@@ -397,8 +393,4 @@ export const zh_TW: Translation = {
 	// 頁面瀏覽統計
 	[Key.pageViewsLoading]: "統計載入中...",
 	[Key.pageViewsUnavailable]: "統計不可用",
-
-	// 布局切換按鈕
-	[Key.switchToGridMode]: "切換到網格模式",
-	[Key.switchToListMode]: "切換到列表模式",
 };

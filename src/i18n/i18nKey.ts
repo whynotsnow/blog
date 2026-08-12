@@ -322,16 +322,12 @@ enum I18nKey {
 	bannerCarousel = "bannerCarousel",
 	sakuraEffect = "sakuraEffect",
 	effectsSettings = "effectsSettings",
-	postListLayout = "postListLayout",
-	postListLayoutList = "postListLayoutList",
-	postListLayoutGrid = "postListLayoutGrid",
 	resetAll = "resetAll",
 	settingsThemeColor = "settingsThemeColor",
 	settingsWall = "settingsWall",
 	settingsWallFx = "settingsWallFx",
 	settingsBanner = "settingsBanner",
 	settingsEffects = "settingsEffects",
-	settingsLayout = "settingsLayout",
 
 	// 站点统计
 	siteStats = "siteStats",
@@ -385,10 +381,6 @@ enum I18nKey {
 	// 页面访问量统计
 	pageViewsLoading = "pageViewsLoading",
 	pageViewsUnavailable = "pageViewsUnavailable",
-
-	// 布局切换按钮
-	switchToGridMode = "switchToGridMode",
-	switchToListMode = "switchToListMode",
 }
 
 export default I18nKey;

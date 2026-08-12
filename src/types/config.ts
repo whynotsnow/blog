@@ -70,16 +70,6 @@ export type SiteConfig = {
 		devices: boolean; // 设备页面开关
 	};
 
-	// 文章列表布局配置
-	postListLayout: {
-		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式
-		enable?: boolean; // 是否启用布局切换功能
-		allowSwitch: boolean; // 是否允许用户切换布局
-		categoryBar?: {
-			enable: boolean; // 是否在文章列表页显示分类导航条
-		};
-	};
-
 	// 顶栏标题配置
 	navbarTitle?: {
 		mode?: "text-icon" | "logo"; // 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo

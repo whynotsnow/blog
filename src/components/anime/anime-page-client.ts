@@ -2,7 +2,6 @@ type FilterListener = [Element, string, EventListener];
 
 interface AnimePageState {
 	animeFilterEventListeners?: FilterListener[];
-	__animePostListViewChangeHandler?: EventListener;
 	__animeLazyObserver?: IntersectionObserver;
 }
 
@@ -137,8 +136,7 @@ function updateAnimeListLayout(layout: string, shouldAnimate = true) {
 function initAnimeLayout() {
 	const animeListContainer = document.getElementById("anime-list-container");
 	if (!animeListContainer) return false;
-	const currentLayout = localStorage.getItem("postListLayout") || "list";
-	updateAnimeListLayout(currentLayout, false);
+	updateAnimeListLayout("list", false);
 	requestAnimationFrame(() => {
 		animeListContainer.classList.remove("opacity-0");
 	});
@@ -163,9 +161,7 @@ function tryInitAnimeLayout() {
 				"anime-list-container",
 			);
 			if (animeListContainer) {
-				const currentLayout =
-					localStorage.getItem("postListLayout") || "list";
-				updateAnimeListLayout(currentLayout, false);
+				updateAnimeListLayout("list", false);
 				animeListContainer.classList.remove("opacity-0");
 			}
 		}, 2000);
@@ -395,27 +391,8 @@ function initFilterButtons() {
 	}
 }
 
-function bindPostListViewChangeListener() {
-	if (animePageState.__animePostListViewChangeHandler) {
-		window.removeEventListener(
-			"postListViewChange",
-			animePageState.__animePostListViewChangeHandler,
-		);
-	}
-
-	animePageState.__animePostListViewChangeHandler = (event) => {
-		if (!(event instanceof CustomEvent)) return;
-		updateAnimeListLayout(event.detail.view);
-	};
-	window.addEventListener(
-		"postListViewChange",
-		animePageState.__animePostListViewChangeHandler,
-	);
-}
-
 export function initAnimePage(): void {
 	tryInitAnimeLayout();
-	bindPostListViewChangeListener();
 
 	const initFilters = () => setTimeout(initFilterButtons, 150);
 	if (document.readyState === "loading") {

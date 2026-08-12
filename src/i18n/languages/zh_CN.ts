@@ -331,16 +331,12 @@ export const zh_CN: Translation = {
 	[Key.bannerCarousel]: "横幅轮播",
 	[Key.sakuraEffect]: "樱花特效",
 	[Key.effectsSettings]: "特效设置",
-	[Key.postListLayout]: "文章布局",
-	[Key.postListLayoutList]: "列表",
-	[Key.postListLayoutGrid]: "网格",
 	[Key.resetAll]: "全部重置",
 	[Key.settingsThemeColor]: "主题色",
 	[Key.settingsWall]: "壁纸",
 	[Key.settingsWallFx]: "壁纸效果",
 	[Key.settingsBanner]: "横幅",
 	[Key.settingsEffects]: "特效",
-	[Key.settingsLayout]: "布局",
 
 	// 站点统计
 	[Key.siteStats]: "站点统计",
@@ -395,8 +391,4 @@ export const zh_CN: Translation = {
 	// 页面访问量统计
 	[Key.pageViewsLoading]: "统计加载中...",
 	[Key.pageViewsUnavailable]: "统计不可用",
-
-	// 布局切换按钮
-	[Key.switchToGridMode]: "切换到网格模式",
-	[Key.switchToListMode]: "切换到列表模式",
 };

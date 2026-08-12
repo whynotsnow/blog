@@ -28,7 +28,6 @@ const readCssLengthPx = async (
 test("responsive width budgets preserve Card and support module stability", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
 	await page.setViewportSize({ width: 1000, height: 900 });
 	await gotoPage(page, "/");
 
@@ -194,7 +193,6 @@ test("container-content pages keep supported widths and post detail rail budgets
 test("container breakpoints retain minimum safe budgets after Shell contraction", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
 	await page.setViewportSize({ width: 1920, height: 1080 });
 	await gotoPage(page, "/");
 

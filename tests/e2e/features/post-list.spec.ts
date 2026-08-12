@@ -2,11 +2,9 @@ import { expect, test } from "@playwright/test";
 import { gotoPage } from "../../support/navigation";
 import { useStoredPreference } from "../../support/preferences";
 
-test("saved Grid preference follows the post Feed container width", async ({
+test("fixed Grid view follows the post Feed container width", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
-
 	await page.setViewportSize({ width: 375, height: 812 });
 	await gotoPage(page, "/");
 
@@ -138,7 +136,6 @@ test("category recent view renders recently updated posts", async ({
 test("Grid Card height follows its cover while Content keeps a bounded budget", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
 	await page.setViewportSize({ width: 1920, height: 1080 });
 	await gotoPage(page, "/");
 
@@ -244,7 +241,6 @@ test("Grid Card height follows its cover while Content keeps a bounded budget", 
 test("fluid two-column post Grid fills the Feed and keeps the semantic gap", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
 	await page.setViewportSize({ width: 1000, height: 900 });
 	await gotoPage(page, "/");
 
@@ -289,8 +285,6 @@ test("fluid two-column post Grid fills the Feed and keeps the semantic gap", asy
 test("multi-column post Card derives height from Cover and Content across desktop compensation", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
-
 	const readCardGeometry = async (renderer: "astro" | "svelte") => {
 		const postList = page
 			.locator(`[data-post-list-renderer="${renderer}"]`)
@@ -416,8 +410,6 @@ test("multi-column post Card derives height from Cover and Content across deskto
 test("Grid Card typography stays fixed across the former root breakpoint", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
-
 	for (const width of [767, 768, 769]) {
 		await page.setViewportSize({ width, height: 900 });
 		await gotoPage(page, "/");
@@ -453,7 +445,6 @@ test("Grid Card typography stays fixed across the former root breakpoint", async
 test("Grid Card reserves stable content slots and exposes full clipped text", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
 	await page.setViewportSize({ width: 1536, height: 900 });
 	await gotoPage(page, "/");
 
@@ -538,7 +529,6 @@ test("Grid Card reserves stable content slots and exposes full clipped text", as
 test("Grid Card hides Meta icons only at the confirmed compact threshold", async ({
 	page,
 }) => {
-	await useStoredPreference(page, "postListLayout", "grid");
 	await page.setViewportSize({ width: 1536, height: 900 });
 	await gotoPage(page, "/");
 
@@ -588,11 +578,11 @@ test("Grid Card hides Meta icons only at the confirmed compact threshold", async
 	expect(regularCategoryWidth).toBeGreaterThanOrEqual(60);
 });
 
-test("post list view does not imply desktop page layout preference", async ({
+test("legacy post list storage does not imply desktop page layout preference", async ({
 	page,
 }) => {
 	await page.addInitScript(() => {
-		localStorage.setItem("postListLayout", "grid");
+		localStorage.setItem("postListLayout", "list");
 	});
 	await page.setViewportSize({ width: 1400, height: 900 });
 	await gotoPage(page, "/anime/");
@@ -602,7 +592,6 @@ test("post list view does not imply desktop page layout preference", async ({
 		"data-shell-strategy",
 		"container-content",
 	);
-	await expect(grid).toHaveAttribute("data-post-list-view", "grid");
 	await expect(grid).toHaveAttribute("data-desktop-layout", "content-right");
 });
 

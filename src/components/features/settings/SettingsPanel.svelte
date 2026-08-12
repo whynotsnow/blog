@@ -35,13 +35,7 @@
 		setWallpaperMode,
 		setWavesEnabled,
 	} from "@/utils/setting-utils";
-	import {
-		getPostListViewMode,
-		setPostListViewMode,
-		type PostListViewMode,
-	} from "@/utils/post-list-view-mode";
 	import type { WALL_MODE } from "@/types/config";
-	import { onPageLifecycle } from "@/utils/page-lifecycle";
 	import SettingSection from "./SettingSection.svelte";
 	import SettingSlider from "./SettingSlider.svelte";
 	import SettingToggle from "./SettingToggle.svelte";
@@ -49,11 +43,6 @@
 	let { className = "" }: { className?: string } = $props();
 
 	const showThemeColor = !siteConfig.themeColor.fixed;
-	const allowLayoutSwitch =
-		(siteConfig.postListLayout.enable ?? true) &&
-		siteConfig.postListLayout.allowSwitch;
-	const defaultLayout: PostListViewMode =
-		siteConfig.postListLayout.defaultMode === "grid" ? "grid" : "list";
 	const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 
 	const wallSwitchable = wallConfig.effects?.switchable ?? false;
@@ -88,7 +77,6 @@
 
 	const showModeValue = siteConfig.wallpaperMode.showModeSwitchOnMobile;
 	let isMobile = $state(false);
-	let pageHasPostList = $state(false);
 
 	const isWallpaperModeSwitchable = $derived(
 		(showModeValue === "both" ||
@@ -101,7 +89,6 @@
 	const hasAnyContent = $derived(
 		showThemeColor ||
 			isWallpaperModeSwitchable ||
-			(allowLayoutSwitch && pageHasPostList) ||
 			hasWallSettings ||
 			hasBannerSettings ||
 			hasEffectsSettings,
@@ -110,7 +97,6 @@
 	let hue = $state(getDefaultHue());
 	const defaultHue = getDefaultHue();
 	let wallpaperMode = $state(defaultWallpaperMode as WALL_MODE);
-	let currentLayout = $state(defaultLayout);
 
 	let wallOpacity = $state(getDefaultWallOpacity());
 	const defaultWallOpacity = getDefaultWallOpacity();
@@ -162,11 +148,6 @@
 	function resetWallpaperMode() {
 		wallpaperMode = defaultWallpaperMode as WALL_MODE;
 		setWallpaperMode(wallpaperMode);
-	}
-
-	function resetLayout() {
-		currentLayout = defaultLayout;
-		setPostListViewMode(defaultLayout);
 	}
 
 	function resetWallSettings() {
@@ -230,24 +211,13 @@
 		}
 	}
 
-	function setLayout(newLayout: PostListViewMode) {
-		currentLayout = newLayout;
-		setPostListViewMode(newLayout);
-	}
-
 	function checkMobile() {
 		isMobile = window.innerWidth <= 768;
-	}
-
-	function syncPostListAvailability() {
-		pageHasPostList =
-			document.querySelector("[data-post-list-renderer]") !== null;
 	}
 
 	onMount(() => {
 		hue = getHue();
 		wallpaperMode = getPreviewSafeWallpaperMode();
-		currentLayout = getPostListViewMode();
 		wallOpacity = getStoredWallOpacity();
 		wallBlur = getStoredWallBlur();
 		wallCardOpacity = getStoredWallCardOpacity();
@@ -255,29 +225,10 @@
 		bannerTitleEnabled = getStoredBannerTitleEnabled();
 		sakuraEnabled = getStoredSakuraEnabled();
 		checkMobile();
-		syncPostListAvailability();
 		window.addEventListener("resize", checkMobile);
-		const unsubscribeContentReplace = onPageLifecycle(
-			"content-replace",
-			syncPostListAvailability,
-		);
-
-		const handlePostListViewChange = (event: Event) => {
-			const layout = (event as CustomEvent<{ view?: PostListViewMode }>)
-				.detail?.view;
-			if (layout === "list" || layout === "grid") {
-				currentLayout = layout;
-			}
-		};
-		window.addEventListener("postListViewChange", handlePostListViewChange);
 
 		return () => {
 			window.removeEventListener("resize", checkMobile);
-			window.removeEventListener(
-				"postListViewChange",
-				handlePostListViewChange,
-			);
-			unsubscribeContentReplace();
 		};
 	});
 </script>
@@ -526,67 +477,6 @@
 				{/if}
 			</SettingSection>
 		{/if}
-
-		{#if allowLayoutSwitch && pageHasPostList}
-			<SettingSection
-				title={i18n(I18nKey.settingsLayout)}
-				showReset={currentLayout !== defaultLayout}
-				onreset={resetLayout}
-			>
-				<div class="grid grid-cols-2 gap-2">
-					<button
-						type="button"
-						aria-label={i18n(I18nKey.postListLayoutList)}
-						class="btn-regular relative flex min-w-0 items-center justify-center gap-2 overflow-hidden rounded-md px-3 py-2 transition-all active:scale-95"
-						class:opacity-60={currentLayout !== "list"}
-						class:bg-[var(--btn-regular-bg-hover)]={currentLayout ===
-							"list"}
-						onclick={() => setLayout("list")}
-					>
-						<LocalIcon
-							name="material-symbols:format-list-bulleted-rounded"
-							class="shrink-0 text-[1rem]"
-						/>
-						<span
-							class="settings-panel__layout-label truncate font-medium"
-						>
-							{i18n(I18nKey.postListLayoutList)}
-						</span>
-						{#if currentLayout === "list"}
-							<LocalIcon
-								name="material-symbols:check-circle"
-								class="shrink-0 text-[1rem] text-(--primary)"
-							/>
-						{/if}
-					</button>
-					<button
-						type="button"
-						aria-label={i18n(I18nKey.postListLayoutGrid)}
-						class="btn-regular relative flex min-w-0 items-center justify-center gap-2 overflow-hidden rounded-md px-3 py-2 transition-all active:scale-95"
-						class:opacity-60={currentLayout !== "grid"}
-						class:bg-[var(--btn-regular-bg-hover)]={currentLayout ===
-							"grid"}
-						onclick={() => setLayout("grid")}
-					>
-						<LocalIcon
-							name="material-symbols:grid-view-rounded"
-							class="shrink-0 text-[1rem]"
-						/>
-						<span
-							class="settings-panel__layout-label truncate font-medium"
-						>
-							{i18n(I18nKey.postListLayoutGrid)}
-						</span>
-						{#if currentLayout === "grid"}
-							<LocalIcon
-								name="material-symbols:check-circle"
-								class="shrink-0 text-[1rem] text-(--primary)"
-							/>
-						{/if}
-					</button>
-				</div>
-			</SettingSection>
-		{/if}
 	</div>
 {/if}
 
@@ -594,10 +484,6 @@
 	.settings-panel__hue-value,
 	.settings-panel__option-label {
 		font-size: var(--text-ui-size);
-	}
-
-	.settings-panel__layout-label {
-		font-size: var(--text-caption-size);
 	}
 
 	#display-setting {

@@ -263,16 +263,12 @@ export const en: Translation = {
 	[Key.bannerCarousel]: "Banner Carousel",
 	[Key.sakuraEffect]: "Sakura Effect",
 	[Key.effectsSettings]: "Effects",
-	[Key.postListLayout]: "Post Layout",
-	[Key.postListLayoutList]: "List",
-	[Key.postListLayoutGrid]: "Grid",
 	[Key.resetAll]: "Reset All",
 	[Key.settingsThemeColor]: "Theme Color",
 	[Key.settingsWall]: "Wallpaper",
 	[Key.settingsWallFx]: "Wallpaper Effects",
 	[Key.settingsBanner]: "Banner",
 	[Key.settingsEffects]: "Effects",
-	[Key.settingsLayout]: "Layout",
 
 	// Skills Page
 	[Key.skills]: "Skills",
@@ -408,8 +404,4 @@ export const en: Translation = {
 	// Page Views Stats
 	[Key.pageViewsLoading]: "Loading stats...",
 	[Key.pageViewsUnavailable]: "Stats unavailable",
-
-	// Layout Switch Button
-	[Key.switchToGridMode]: "Switch to Grid Mode",
-	[Key.switchToListMode]: "Switch to List Mode",
 };

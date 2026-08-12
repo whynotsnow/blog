@@ -3,10 +3,6 @@ import {
 	BANNER_HEIGHT_HOME,
 	BANNER_HEIGHT_FULLSCREEN,
 } from "@/constants/constants";
-import {
-	applyPostListViewMode,
-	bindPostListViewModeEvents,
-} from "@/utils/post-list-view-mode";
 import { initializePostCardTagFitting } from "@/features/post-list/controller";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
@@ -106,6 +102,15 @@ function syncMainContentPosition(mode: WALL_MODE) {
 	mainContent.classList.add("no-banner-layout");
 }
 
+function applyFixedPostListGrid() {
+	document
+		.querySelectorAll<HTMLElement>("[data-post-list-renderer]")
+		.forEach((postListContainer) => {
+			postListContainer.classList.add("grid-mode", "js-initialized");
+			postListContainer.classList.remove("list-mode");
+		});
+}
+
 function getStoredBoolean(key: string, fallback: boolean): boolean {
 	const stored = localStorage.getItem(key);
 	return stored !== null ? stored === "true" : fallback;
@@ -196,7 +201,7 @@ function applyInitialPageShell() {
 
 	requestAnimationFrame(() => {
 		syncMainContentPosition(wallpaperMode);
-		applyPostListViewMode();
+		applyFixedPostListGrid();
 	});
 }
 
@@ -319,11 +324,10 @@ export function applyWallpaperMode(): void {
 }
 
 function syncPageShell() {
-	bindPostListViewModeEvents();
 	window.applyWallpaperMode?.();
 	applyWallpaperVisualSettings();
 	requestAnimationFrame(() => {
-		applyPostListViewMode();
+		applyFixedPostListGrid();
 		initializePostCardTagFitting();
 	});
 	applyWavesSetting();

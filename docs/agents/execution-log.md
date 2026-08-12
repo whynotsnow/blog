@@ -400,3 +400,11 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Moved Pagefind runtime loading out of the Navbar inline script and into the Search component's browser runtime, with one global Promise shared across remounts.
 - Learned that Swup-replaced shells can make one-shot custom ready events and inline fallback stubs drift from hydrated Svelte state; search should await the actual loader instead of inferring availability from an event that may already have fired.
 - Kept development explicit: Astro dev does not serve the post-build Pagefind index, so the search panel should show an unavailable state instead of fake results.
+
+## 2026-08-13
+
+### Fixed Post List View to grid
+
+- Removed user-facing List/Grid switching from Floating Tools SettingsPanel and deleted the unused layout switch component.
+- Retired the `postListLayout` config contract, `localStorage.postListLayout` synchronization, and `postListViewChange` runtime event path.
+- Kept post Feed renderers and Shell synchronization fixed to `grid-mode`; legacy stored list preferences no longer affect Feed geometry.

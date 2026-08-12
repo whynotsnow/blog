@@ -90,10 +90,9 @@
 
 ## SettingsPanel 相关配置
 
-统一设置面板从 Navbar 迁入右下角 Floating Tools。Tools 收起时保留主入口与按滚动状态出现的 Back to Top，展开后提供 Theme、Music、Floating TOC（当前页面存在标题时）和 Settings 入口。Settings 打开后 Tools Rail 自动收起；桌面端面板根据入口所在的 viewport 侧动态对齐，并把完整高度限制在 Safe Area 内，移动端使用底部 Sheet。设置面板继续使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应配置项。
+统一设置面板从 Navbar 迁入右下角 Floating Tools。Tools 收起时保留主入口与按滚动状态出现的 Back to Top，展开后提供 Theme、Music、Floating TOC（当前页面存在标题时）和 Settings 入口。Settings 打开后 Tools Rail 自动收起；桌面端面板根据入口所在的 viewport 侧动态对齐，并把完整高度限制在 Safe Area 内，移动端使用底部 Sheet。设置面板继续使用现有配置作为默认值来源，并通过 `switchable` 字段决定是否展示对应配置项；文章列表 Layout 切换不再出现在 SettingsPanel 中。
 
-- `siteConfig.postListLayout.enable`：控制文章列表布局切换入口是否启用，`allowSwitch` 仍表示是否允许用户切换。
-- `postListLayout` 默认使用 `grid`，偏好会写入既有的 `localStorage.postListLayout`，已保存的 List 偏好不会被重置。它只控制 Post List View，不再隐式改写页面级 Layout Policy。
+- 文章 Feed 固定使用 `grid` 优先的 Post List View，不再提供 `siteConfig.postListLayout` 配置、List/Grid 切换入口或 `localStorage.postListLayout` 用户偏好同步。历史浏览器里残留的 `postListLayout` 值不会再覆盖 Feed 布局。
 - 首页、分类页和文章详情页使用 Container Query：Banner 始终铺满 viewport，Navbar 与 Main Shell 共享 `1280px` 外部最大宽度。首页在 `1200px` 以上使用最大 `992px` 的三列 Feed + Profile support，在 `880px–1199px` 使用最大 `656px` 的双列 Feed + Profile support，低于 `880px` 时把同一个 Profile DOM 放到 Main 前方；Feed 低于 `608px` 后退为单列。分类 Hub 和具体分类页提供 Category support，文章详情页提供 Post support；带 support 的页面在 `880px` 以上进入主内容 + 右栏布局。断点针对实际容器，不直接对应 viewport 宽度。
 - 页面 Shell 不再支持 `siteConfig.pageScaling` 根字号缩放；Card、Sidebar 或 Typography 尺寸必须通过 Design Semantic token、Feature-local token 或对应 Container Query 表达。
 - `siteConfig.toc.scrollOffset`：控制文章 TOC 点击定位与滚动 active 高亮共用的顶部偏移，单位为 px。未配置时运行时会优先读取页面布局变量 `--main-content-offset`，使 TOC 与 fixed Navbar 保持一致；读取失败时回退为 `0`。不要分别为点击滚动和 active 判断设置不同偏移。

@@ -265,16 +265,12 @@ export const ja: Translation = {
 	[Key.bannerCarousel]: "バナーカルーセル",
 	[Key.sakuraEffect]: "桜エフェクト",
 	[Key.effectsSettings]: "エフェクト設定",
-	[Key.postListLayout]: "投稿レイアウト",
-	[Key.postListLayoutList]: "リスト",
-	[Key.postListLayoutGrid]: "グリッド",
 	[Key.resetAll]: "すべてリセット",
 	[Key.settingsThemeColor]: "テーマカラー",
 	[Key.settingsWall]: "壁紙",
 	[Key.settingsWallFx]: "壁紙エフェクト",
 	[Key.settingsBanner]: "バナー",
 	[Key.settingsEffects]: "エフェクト",
-	[Key.settingsLayout]: "レイアウト",
 
 	// スキルページ
 	[Key.skills]: "スキル",
@@ -411,8 +407,4 @@ export const ja: Translation = {
 	// ページビューの統計
 	[Key.pageViewsLoading]: "統計を読み込み中...",
 	[Key.pageViewsUnavailable]: "統計は利用できません",
-
-	// レイアウト切り替えボタン
-	[Key.switchToGridMode]: "グリッド表示に切り替え",
-	[Key.switchToListMode]: "リスト表示に切り替え",
 };
