@@ -15,18 +15,18 @@ import remarkDirective from "remark-directive";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
 import { siteConfig } from "./src/config.ts";
-import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
+import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.ts";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
-import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
-import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
-import { rehypeMermaid } from "./src/plugins/rehype-mermaid.mjs";
-import { rehypeWrapTable } from "./src/plugins/rehype-wrap-table.mjs";
-import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
-import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
-import { remarkContent } from "./src/plugins/remark-content.mjs";
-import { rehypeImageWidth } from "./src/plugins/rehype-image-width.mjs";
+import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.ts";
+import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.ts";
+import { rehypeMermaid } from "./src/plugins/rehype-mermaid.ts";
+import { rehypeWrapTable } from "./src/plugins/rehype-wrap-table.ts";
+import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.ts";
+import { remarkMermaid } from "./src/plugins/remark-mermaid.ts";
+import { remarkContent } from "./src/plugins/remark-content.ts";
+import { rehypeImageWidth } from "./src/plugins/rehype-image-width.ts";
 import rehypeExternalLinks from "rehype-external-links";
-import { remarkFixGithubAdmonitions } from "./src/plugins/remark-fix-github-admonitions.js";
+import { remarkFixGithubAdmonitions } from "./src/plugins/remark-fix-github-admonitions.ts";
 import { FONT_BUILD_DIR, FONT_PACKAGES } from "./scripts/fonts/config.mjs";
 
 const fonts = FONT_PACKAGES.map((fontPackage) => ({

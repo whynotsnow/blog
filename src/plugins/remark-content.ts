@@ -1,8 +1,19 @@
 import getReadingTime from "reading-time";
+import type { Root, RootContent } from "mdast";
 import { visit } from "unist-util-visit";
 
-export function remarkContent() {
-	return (tree, { data }) => {
+type AstroData = {
+	astro?: {
+		frontmatter?: Record<string, unknown>;
+	};
+};
+
+type AstroVFile = {
+	data: AstroData;
+};
+
+export function remarkContent(): (tree: Root, file: AstroVFile) => void {
+	return function transform(tree: Root, { data }: AstroVFile): void {
 		// --- 安全性检查：确保 data.astro 存在 ---
 		if (!data.astro) {
 			data.astro = {};
@@ -87,7 +98,7 @@ export function remarkContent() {
 /**
  * 辅助函数：递归从节点中提取纯文本
  */
-function getNodeText(node) {
+function getNodeText(node: RootContent | undefined): string {
 	// 安全性检查
 	if (!node) return "";
 
@@ -106,7 +117,7 @@ function getNodeText(node) {
 		return "";
 
 	// 递归处理子节点
-	if (node.children && Array.isArray(node.children)) {
+	if ("children" in node && Array.isArray(node.children)) {
 		return node.children.map(getNodeText).join("");
 	}
 

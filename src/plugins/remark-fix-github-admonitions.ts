@@ -1,16 +1,31 @@
+import type { Root } from "mdast";
 import { visit } from "unist-util-visit";
 
 const GITHUB_ALERT_DECLARATION_REGEX = /^\s*\[!(?<type>\w+)\]\s*$/;
 const GITHUB_ALERT_TYPES = ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"];
+const TYPE_TO_DIRECTIVE_NAME = {
+	NOTE: "note",
+	TIP: "tip",
+	IMPORTANT: "important",
+	WARNING: "warning",
+	CAUTION: "caution",
+} as const;
 
-function parseGithubAlertDeclaration(text) {
+type GithubAlertType = keyof typeof TYPE_TO_DIRECTIVE_NAME;
+type UnknownParent = {
+	children: unknown[];
+};
+
+function parseGithubAlertDeclaration(text: string): GithubAlertType | null {
 	const match = text.match(GITHUB_ALERT_DECLARATION_REGEX);
 	const type = match?.groups?.type?.toUpperCase();
-	return GITHUB_ALERT_TYPES.includes(type) ? type : null;
+	return GITHUB_ALERT_TYPES.includes(type ?? "")
+		? (type as GithubAlertType)
+		: null;
 }
 
-export function remarkFixGithubAdmonitions() {
-	return (tree) => {
+export function remarkFixGithubAdmonitions(): (tree: Root) => void {
+	return function transform(tree: Root): void {
 		visit(tree, "blockquote", (node, index, parent) => {
 			if (!parent || index === undefined) return;
 
@@ -27,15 +42,7 @@ export function remarkFixGithubAdmonitions() {
 			const type = parseGithubAlertDeclaration(possibleTypeDeclaration);
 			if (!type) return;
 
-			const typeToDirectiveName = {
-				NOTE: "note",
-				TIP: "tip",
-				IMPORTANT: "important",
-				WARNING: "warning",
-				CAUTION: "caution",
-			};
-
-			const directiveName = typeToDirectiveName[type];
+			const directiveName = TYPE_TO_DIRECTIVE_NAME[type];
 			if (!directiveName) return;
 
 			const textNodeChildren =
@@ -70,7 +77,7 @@ export function remarkFixGithubAdmonitions() {
 				],
 			};
 
-			parent.children[index] = directive;
+			(parent as UnknownParent).children[index] = directive;
 		});
 	};
 }

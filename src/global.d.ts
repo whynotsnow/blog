@@ -77,6 +77,11 @@ declare global {
 		};
 		mobileTOCInit?: (runtimeRoot?: Element) => void;
 		renderMermaidDiagrams?: () => void;
+		themeOptimizer?: {
+			hideCodeBlocksDuringTransition: boolean;
+		};
+		CodeBlockCollapser?: unknown;
+		codeBlockCollapser?: unknown;
 		initSemifullScrollDetection?: () => void;
 		applyWallpaperMode?: () => void;
 		onPageLifecycle?: typeof onPageLifecycle;

@@ -1,21 +1,29 @@
 import { h } from "hastscript";
+import type { Element, Root } from "hast";
 import { visit } from "unist-util-visit";
 import mermaidRenderScript from "./mermaid-render-script.js?raw";
 
-export function rehypeMermaid() {
-	return (tree) => {
+export function rehypeMermaid(): (tree: Root) => void {
+	return function transform(tree: Root): void {
 		visit(tree, "element", (node) => {
+			const className = node.properties?.className;
+			const classNames = Array.isArray(className)
+				? className.map(String)
+				: typeof className === "string"
+					? className.split(/\s+/)
+					: [];
+
 			if (
 				node.tagName === "div" &&
-				node.properties &&
-				node.properties.className &&
-				node.properties.className.includes("mermaid-container")
+				classNames.includes("mermaid-container")
 			) {
-				const mermaidCode = node.properties["data-mermaid-code"] || "";
+				const mermaidCode = String(
+					node.properties["data-mermaid-code"] || "",
+				);
 				const mermaidId = `mermaid-${Math.random().toString(36).slice(-6)}`;
 
 				// 创建 Mermaid 容器
-				const mermaidContainer = h(
+				const mermaidContainer: Element = h(
 					"div",
 					{
 						class: "mermaid-wrapper",
@@ -34,7 +42,7 @@ export function rehypeMermaid() {
 				);
 
 				// 创建客户端渲染脚本
-				const renderScript = h(
+				const renderScript: Element = h(
 					"script",
 					{
 						type: "text/javascript",

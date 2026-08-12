@@ -14,7 +14,28 @@
 
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 
+type HiddenElementState = {
+	element: HTMLElement;
+	originalVisibility: string;
+};
+
+type CompositedElementState = {
+	element: HTMLElement;
+	original: string;
+};
+
 class ThemeOptimizer {
+	visibleBlocks: Set<Element>;
+	pendingThemeUpdate: string | null;
+	codeBlockObserver: IntersectionObserver | null;
+	hideCodeBlocksDuringTransition: boolean;
+	isOptimizing: boolean;
+	heavySelectors: string[];
+	tempStyleSheet: HTMLStyleElement | null;
+	hiddenElements: HiddenElementState[] | null;
+	compositedElements: CompositedElementState[] | null;
+	useViewTransition: boolean;
+
 	constructor() {
 		// 代码块优化相关
 		this.visibleBlocks = new Set();
@@ -27,6 +48,10 @@ class ThemeOptimizer {
 
 		// 性能优化相关
 		this.isOptimizing = false;
+		this.tempStyleSheet = null;
+		this.hiddenElements = null;
+		this.compositedElements = null;
+		this.useViewTransition = false;
 		this.heavySelectors = [
 			".float-panel",
 			"#navbar",
@@ -84,7 +109,8 @@ class ThemeOptimizer {
 
 	forceApplyThemeTransitionStyles() {
 		// 强制应用主题切换样式，确保在页面切换后也能正确工作
-		const codeBlocks = document.querySelectorAll(".expressive-code");
+		const codeBlocks =
+			document.querySelectorAll<HTMLElement>(".expressive-code");
 
 		codeBlocks.forEach((block) => {
 			// 确保代码块有正确的类
@@ -147,7 +173,8 @@ class ThemeOptimizer {
 
 	applyCodeBlockTransitionBehavior() {
 		// 应用代码块在主题切换期间的行为设置
-		const codeBlocks = document.querySelectorAll(".expressive-code");
+		const codeBlocks =
+			document.querySelectorAll<HTMLElement>(".expressive-code");
 
 		codeBlocks.forEach((block) => {
 			if (this.hideCodeBlocksDuringTransition) {
@@ -167,7 +194,7 @@ class ThemeOptimizer {
 		// 如果临时样式表存在，更新其内容以反映当前设置
 		if (this.tempStyleSheet) {
 			// 获取当前内容
-			let content = this.tempStyleSheet.textContent;
+			let content = this.tempStyleSheet.textContent ?? "";
 
 			// 更新代码块隐藏规则
 			const hideRule = `.is-theme-transitioning .expressive-code {
@@ -234,7 +261,7 @@ class ThemeOptimizer {
 		requestAnimationFrame(() => {
 			const codeBlocks = document.querySelectorAll(".expressive-code");
 			codeBlocks.forEach((block) => {
-				this.codeBlockObserver.observe(block);
+				this.codeBlockObserver?.observe(block);
 
 				// 根据配置设置代码块在主题切换时的行为
 				if (this.hideCodeBlocksDuringTransition) {
@@ -268,7 +295,7 @@ class ThemeOptimizer {
 		});
 	}
 
-	handleThemeChange(newTheme) {
+	handleThemeChange(newTheme: string | null) {
 		this.pendingThemeUpdate = newTheme;
 
 		const visibleBlocksArray = Array.from(this.visibleBlocks);
@@ -279,7 +306,7 @@ class ThemeOptimizer {
 		this.batchUpdateBlocks(visibleBlocksArray, newTheme);
 	}
 
-	batchUpdateBlocks(blocks, theme) {
+	batchUpdateBlocks(blocks: Element[], theme: string | null) {
 		const batchSize = 3;
 		let currentIndex = 0;
 
@@ -302,9 +329,11 @@ class ThemeOptimizer {
 		processBatch();
 	}
 
-	applyThemeToBlock(block, theme) {
+	applyThemeToBlock(block: Element, theme: string | null) {
 		// 标记该代码块已更新
-		block.dataset.themeUpdated = theme;
+		if (block instanceof HTMLElement && theme) {
+			block.dataset.themeUpdated = theme;
+		}
 	}
 
 	// ==================== 重型元素优化 ====================
@@ -420,10 +449,11 @@ class ThemeOptimizer {
 		const viewportHeight = window.innerHeight;
 		const scrollTop = window.scrollY;
 
-		this.hiddenElements = [];
+		const hiddenElements: HiddenElementState[] = [];
+		this.hiddenElements = hiddenElements;
 
 		this.heavySelectors.forEach((selector) => {
-			const elements = document.querySelectorAll(selector);
+			const elements = document.querySelectorAll<HTMLElement>(selector);
 			elements.forEach((element) => {
 				const rect = element.getBoundingClientRect();
 				const elementTop = rect.top + scrollTop;
@@ -436,28 +466,29 @@ class ThemeOptimizer {
 				) {
 					const originalVisibility = element.style.contentVisibility;
 					element.style.contentVisibility = "hidden";
-					this.hiddenElements.push({ element, originalVisibility });
+					hiddenElements.push({ element, originalVisibility });
 				}
 			});
 		});
 	}
 
 	forceCompositing() {
-		const criticalElements = document.querySelectorAll(`
+		const criticalElements = document.querySelectorAll<HTMLElement>(`
       .expressive-code,
       .post-card,
       .widget,
       #navbar
     `);
 
-		this.compositedElements = [];
+		const compositedElements: CompositedElementState[] = [];
+		this.compositedElements = compositedElements;
 
 		criticalElements.forEach((element) => {
 			const original = element.style.transform;
 			element.style.transform = "translateZ(0)";
 			element.style.willChange = "transform";
 
-			this.compositedElements.push({ element, original });
+			compositedElements.push({ element, original });
 		});
 	}
 

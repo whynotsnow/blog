@@ -1,6 +1,11 @@
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 
 class CodeBlockCollapser {
+	processedBlocks: WeakSet<Element>;
+	observer: MutationObserver | null;
+	isThemeChanging: boolean;
+	debug: boolean;
+
 	constructor() {
 		this.processedBlocks = new WeakSet();
 		this.observer = null;
@@ -9,7 +14,7 @@ class CodeBlockCollapser {
 		this.init();
 	}
 
-	log(...args) {
+	log(...args: unknown[]) {
 		if (this.debug) {
 			console.log("[CodeBlockCollapser]", ...args);
 		}
@@ -104,7 +109,7 @@ class CodeBlockCollapser {
 
 						// 性能优化：临时禁用代码块的动画和过渡
 						document
-							.querySelectorAll(".expressive-code")
+							.querySelectorAll<HTMLElement>(".expressive-code")
 							.forEach((block) => {
 								block.style.transition = "none";
 							});
@@ -115,7 +120,9 @@ class CodeBlockCollapser {
 						requestAnimationFrame(() => {
 							// 恢复代码块的过渡效果
 							document
-								.querySelectorAll(".expressive-code")
+								.querySelectorAll<HTMLElement>(
+									".expressive-code",
+								)
 								.forEach((block) => {
 									block.style.transition = "";
 								});
@@ -154,7 +161,7 @@ class CodeBlockCollapser {
 		});
 	}
 
-	enhanceCodeBlock(codeBlock) {
+	enhanceCodeBlock(codeBlock: Element) {
 		const frame = codeBlock.querySelector(".frame");
 		if (!frame) {
 			this.log("No frame found in code block, skipping");
@@ -193,7 +200,7 @@ class CodeBlockCollapser {
 		return button;
 	}
 
-	bindToggleEvents(codeBlock, button) {
+	bindToggleEvents(codeBlock: Element, button: HTMLButtonElement) {
 		button.addEventListener("click", (e) => {
 			e.preventDefault();
 			e.stopPropagation();
@@ -208,7 +215,7 @@ class CodeBlockCollapser {
 		});
 	}
 
-	toggleCollapse(codeBlock) {
+	toggleCollapse(codeBlock: Element) {
 		const isCollapsed = codeBlock.classList.contains("collapsed");
 
 		requestAnimationFrame(() => {
@@ -236,7 +243,7 @@ class CodeBlockCollapser {
 			this.observer.disconnect();
 		}
 
-		let debounceTimer = null;
+		let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 		this.observer = new MutationObserver((mutations) => {
 			// 如果正在主题切换，忽略所有变化
@@ -253,7 +260,7 @@ class CodeBlockCollapser {
 					// 内层循环：遍历新增节点
 					for (const node of mutation.addedNodes) {
 						// 只检查元素节点 (nodeType 1)
-						if (node.nodeType === Node.ELEMENT_NODE) {
+						if (node instanceof Element) {
 							if (
 								node.classList.contains("expressive-code") ||
 								(node.getElementsByClassName &&
