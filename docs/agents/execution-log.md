@@ -388,3 +388,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Migrated remaining `MainGridLayout` pages to the `container-content` Shell through a dedicated `content` layout policy for ordinary no-support pages.
 - Removed the viewport Grid compatibility stylesheet, old Shell `--page-width` branches, and `siteConfig.pageScaling` root-font scaling.
 - Kept Post List View Mode independent from Page Layout Policy; saved list/grid preferences no longer imply a legacy shell.
+
+### Stabilized impact-selection unit tests in CI
+
+- Fixed `tests/unit/tooling/test-impact.test.ts` so local-mode expectations pass `--mode=local` explicitly when spawning `scripts/test-impact.mjs`.
+- Learned that GitHub Actions exports `CI=true`, which makes `scripts/test-impact.mjs` default to CI mode even inside unit tests unless the spawned command pins the intended mode.
+- Kept the explicit `--mode=ci` assertion as the override case so the test still covers both local and CI impact-selection behavior.

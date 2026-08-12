@@ -14,8 +14,9 @@ function planFor(file: string, extraArgs: string[] = []): ImpactPlan {
 			[
 				"scripts/test-impact.mjs",
 				`--file=${file}`,
-				"--json",
 				...extraArgs,
+				"--mode=local",
+				"--json",
 			],
 			{ cwd: process.cwd(), encoding: "utf8" },
 		),
@@ -119,6 +120,7 @@ describe("impact-based validation selection", () => {
 				[
 					"scripts/test-impact.mjs",
 					"--base=0000000000000000000000000000000000000001",
+					"--mode=local",
 					"--json",
 				],
 				{ cwd: process.cwd(), encoding: "utf8" },
