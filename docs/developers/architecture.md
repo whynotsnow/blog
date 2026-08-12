@@ -74,7 +74,7 @@ src/features/music-player/
 
 拆分时优先把 helper 和类型留在所属功能目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
 
-首页与分类页使用独立页面组合，并共享 Post Card 与 Grid 契约。首页由 `src/services/home.ts` 依次输出最近更新、推荐阅读、技术文章三个区块；最近更新与推荐阅读各 3 篇，技术文章上限 6 篇。首页区块右上角入口优先导向分类发现体系：最近更新进入 `/category/recent/` 的最近更新视图，推荐阅读进入 `/category/recommended/` 的推荐视图，技术文章进入 `/category/tech/`。`/category/` 是分类 Hub，不是具体分类；它展示分类卡片、热门 Tag 和每类最近文章。`/category/recent/` 与 `/category/recommended/` 复用分类 Hub 壳层，分别按全站最近活动时间和 `sortByScore()` 展示文章，不参与具体分类的 Tag JSON 索引。具体分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro SSG 页面 props 只保留当前页文章与不含 `data` 的分页元数据；每个具体分类另外生成一份 `/api/categories/{slug}.json/` 紧凑索引。普通分类页在首屏 `load` 完成且页面可见、在线、未启用 `Save-Data`、网络不属于 `2g` 或 `slow-2g` 时，才在浏览器 idle 阶段低优先级预取索引；合法 Tag 查询仍会立即加载，因网络条件跳过的预取不会阻止后续请求。索引 Promise 按完整 URL 隔离并以 3 个分类为上限执行 LRU 淘汰，因此同一分类的预取、Tag 切换、分页和 history 共用请求，而旧分类响应不会写入当前组件状态。查询参数、请求状态、失败重试、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
+首页与分类页使用独立页面组合，并共享 Post Card、Category Card 与 Grid 契约。首页由 `src/services/home.ts` 输出最近更新、推荐阅读和文章分类三个区块；最近更新与推荐阅读各 3 篇，文章分类复用分类 Hub card 视图模型并最多展示前 6 个分类，但隐藏每类最近文章列表，让首页分类 card 保持入口职责。首页区块右上角入口优先导向分类发现体系：最近更新进入 `/category/recent/` 的最近更新视图，推荐阅读进入 `/category/recommended/` 的推荐视图，文章分类进入 `/category/`。`/category/` 是分类 Hub，不是具体分类；它展示分类卡片、热门 Tag 和每类最近文章。`/category/recent/` 与 `/category/recommended/` 复用分类 Hub 壳层，分别按全站最近活动时间和 `sortByScore()` 展示文章，不参与具体分类的 Tag JSON 索引。具体分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro SSG 页面 props 只保留当前页文章与不含 `data` 的分页元数据；每个具体分类另外生成一份 `/api/categories/{slug}.json/` 紧凑索引。普通分类页在首屏 `load` 完成且页面可见、在线、未启用 `Save-Data`、网络不属于 `2g` 或 `slow-2g` 时，才在浏览器 idle 阶段低优先级预取索引；合法 Tag 查询仍会立即加载，因网络条件跳过的预取不会阻止后续请求。索引 Promise 按完整 URL 隔离并以 3 个分类为上限执行 LRU 淘汰，因此同一分类的预取、Tag 切换、分页和 history 共用请求，而旧分类响应不会写入当前组件状态。查询参数、请求状态、失败重试、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
 所有 `MainGridLayout` 页面使用 `container-content` 布局策略。Banner 始终铺满 viewport，Navbar 与 Main Shell 使用统一的 `1280px` 外部最大宽度。首页显式提供一份 Profile support 内容：`1200px` 以上为最大 `992px` 的三列 Feed + `248px–272px` support column，`880px–1199px` 为最大 `656px` 的双列 Feed + support column，低于 `880px` 时同一个 Profile DOM 移到 Main 前方；Feed 在 `608px` 以下退为单列，并在 `932px` 进入三列。普通 `content` 页面无 support 时在 `1200px` 以下最大 `656px`，达到 `1200px` 后最大 `992px`。全站发现入口由 `src/services/support.ts` 统一生成，并通过 `GlobalDiscoveryCard.astro` 渲染：全部分类 card 展示分类项，最近更新与推荐阅读 card 展示文章项。分类 Hub 会隐藏当前视图对应的发现 card，只展示其他发现入口；具体分类页展示全部全站发现入口，并且这些 card 使用全站文章池，当前分类文章列表与 Tag 筛选只留在主内容区，右栏不再重复当前分类上下文模块。文章详情页提供 `PostSupport` support slot：桌面承载文章目录与同一组全站发现入口，局部相关推荐和随机文章保留在正文后置区域，低于 `880px` 时隐藏侧栏并由正文后的移动端模块补足推荐入口；文章正文内部仍使用阅读宽度。站点统计由 `src/services/footer.ts` 生成 View Model，并由 `src/components/footer` 在 Footer 中渲染一次。归档页在主内容流中拥有 Calendar 与 Timeline，只负责时间维度浏览；分类和 Tag 浏览由分类页持有。`PanelCard.astro` 只负责通用卡片 Surface，不负责注册、解析或放置业务组件。
 
@@ -166,7 +166,7 @@ RawPost
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码。共享 URL 拼接使用 `src/utils/url.ts`，分类与标签规范化使用 `src/services/core/taxonomy.ts`，文章 canonical URL 使用 `src/services/core/post-routes.ts`。图片 glob、Astro Content 类型与 Node API 只属于 `src/services/core/content-assets.ts`，不得进入客户端依赖图。
 
-首页的“技术文章”区块通过 Content Store 的规范 `tech` taxonomy 选取并按推荐分排序；不得通过全局推荐列表的固定切片模拟分类内容。分类为空时不输出该区块，文章不足上限时不跨分类补位。
+首页的“文章分类”区块通过 Content Store 的分类导航数据构建，复用 `src/services/category-hub.ts` 的分类 card 视图模型；首页只截取前 6 个分类，并通过 `CategoryCardGrid` 的展示开关隐藏最近文章列表，不在组件中重新计算分类、标签或文章 URL。
 
 ## 首页与文章视觉基础
 

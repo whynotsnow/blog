@@ -1,0 +1,57 @@
+---
+import CategoryCardGrid from "@components/category/CategoryCardGrid.astro";
+import type { HomeCategorySection } from "@/services/home";
+
+interface Props {
+	section: HomeCategorySection;
+}
+
+const { section } = Astro.props;
+---
+
+<section class="home-section ds-stack" style="--stack-space: var(--space-grid-gap);">
+	<header class="home-section__header ds-cluster items-end justify-between" style="--cluster-space: var(--space-cluster);">
+		<h2 class="home-section__title min-w-0 font-heading font-bold text-(--text-primary)">{section.title}</h2>
+		<a class="home-section__link ds-cluster shrink-0 font-semibold text-(--accent) hover:text-(--accent-hover)" href={section.href}>
+			{section.linkLabel}
+		</a>
+	</header>
+	<CategoryCardGrid
+		categories={section.categories}
+		label={section.title}
+		showRecentPosts={false}
+	/>
+</section>
+
+<style>
+	.home-section__header {
+		--home-section-title-size: var(--text-section-title-size);
+		--home-section-link-size: var(--text-ui-size);
+		width: 100%;
+		max-width: var(--width-feed-one-max);
+		margin-inline: auto;
+	}
+
+	.home-section__title {
+		font-size: var(--home-section-title-size);
+		line-height: 1.25;
+		text-wrap: balance;
+	}
+
+	.home-section__link {
+		font-size: var(--home-section-link-size);
+		line-height: 1.25;
+	}
+
+	@container post-feed (min-width: 608px) {
+		.home-section__header {
+			max-width: var(--width-feed-two-max);
+		}
+	}
+
+	@container post-feed (min-width: 932px) {
+		.home-section__header {
+			max-width: var(--width-feed-three-max);
+		}
+	}
+</style>

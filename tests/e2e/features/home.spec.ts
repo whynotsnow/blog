@@ -9,7 +9,7 @@ test("home sections expose configured guide destinations", async ({ page }) => {
 	await expect(sections).toHaveCount(3);
 	await expect(sections.nth(0).locator("h2")).toHaveText("最近更新");
 	await expect(sections.nth(1).locator("h2")).toHaveText("推荐阅读");
-	await expect(sections.nth(2).locator("h2")).toHaveText("技术文章");
+	await expect(sections.nth(2).locator("h2")).toHaveText("文章分类");
 	await expect(
 		sections
 			.nth(0)
@@ -21,15 +21,15 @@ test("home sections expose configured guide destinations", async ({ page }) => {
 			.locator('.home-section__link[href="/category/recommended/"]'),
 	).toBeVisible();
 	await expect(
-		sections.nth(2).locator('.home-section__link[href="/category/tech/"]'),
+		sections.nth(2).locator('.home-section__link[href="/category/"]'),
 	).toBeVisible();
 	await expect(sections.locator(".home-section__link")).toHaveText([
 		"更多",
 		"更多",
-		"更多",
+		"全部分类",
 	]);
 
-	for (const [index, expectedCount] of [3, 3, 6].entries()) {
+	for (const [index, expectedCount] of [3, 3].entries()) {
 		const cards = sections.nth(index).locator(".post-list__item");
 		await expect(cards).toHaveCount(expectedCount);
 		await expect(cards.locator(".home-post-card__cover")).toHaveCount(
@@ -41,6 +41,15 @@ test("home sections expose configured guide destinations", async ({ page }) => {
 		expect(new Set(heights).size).toBe(1);
 		expect(Number.parseFloat(heights[0])).toBeGreaterThan(350);
 	}
+	await expect(sections.nth(2).locator("[data-category-card]")).toHaveCount(
+		5,
+	);
+	await expect(
+		sections.nth(2).locator('[data-category-card="tech"]'),
+	).toBeVisible();
+	await expect(
+		sections.nth(2).locator(".category-hub-card__posts"),
+	).toHaveCount(0);
 
 	const desktopSectionGap = await page
 		.locator(".home-page")

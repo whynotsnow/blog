@@ -1,17 +1,16 @@
 import {
+	HOME_CATEGORY_SECTION_SIZE,
 	HOME_FEATURED_SECTION_SIZE,
-	HOME_TECHNOLOGY_SECTION_SIZE,
 } from "@constants/constants";
-import { CATEGORY_SLUGS } from "@/config";
 import {
-	getCategoryPageUrl,
+	getCategoryHubUrl,
 	getCategoryRecentUrl,
 	getCategoryRecommendedUrl,
 } from "@/utils/url";
+import { buildCategoryCards, type CategoryHubCard } from "./category-hub";
 import { toPostCardViewModel } from "./core/inject";
 import type { PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
-import { sortByScore } from "./core/sort";
 import {
 	buildGlobalDiscoveryCards,
 	toSupportTagLink,
@@ -29,7 +28,16 @@ export interface HomePostSection {
 
 export interface HomePageViewModel {
 	sections: HomePostSection[];
+	categorySection: HomeCategorySection;
 	support: HomeSupportViewModel;
+}
+
+export interface HomeCategorySection {
+	id: string;
+	title: string;
+	href: string;
+	linkLabel: string;
+	categories: CategoryHubCard[];
 }
 
 export interface HomeSupportViewModel {
@@ -56,22 +64,10 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 		)
 		.slice(0, HOME_FEATURED_SECTION_SIZE)
 		.map(toPostCardViewModel);
-	const technology = sortByScore(
-		store.categoryMap.get(CATEGORY_SLUGS.technology)?.posts ?? [],
-	)
-		.slice(0, HOME_TECHNOLOGY_SECTION_SIZE)
-		.map(toPostCardViewModel);
-	const technologySection: HomePostSection[] = technology.length
-		? [
-				{
-					id: "technology",
-					title: "技术文章",
-					href: getCategoryPageUrl(CATEGORY_SLUGS.technology),
-					linkLabel: "更多",
-					posts: technology,
-				},
-			]
-		: [];
+	const categories = buildCategoryCards(store).slice(
+		0,
+		HOME_CATEGORY_SECTION_SIZE,
+	);
 	const allTagLinks = Array.from(store.categoryMap.values()).flatMap(
 		(entry) =>
 			Array.from(entry.tags.values()).map((tag) =>
@@ -99,8 +95,14 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
 				linkLabel: "更多",
 				posts: recommended,
 			},
-			...technologySection,
 		],
+		categorySection: {
+			id: "categories",
+			title: "文章分类",
+			href: getCategoryHubUrl(),
+			linkLabel: "全部分类",
+			categories,
+		},
 		support: {
 			stats: {
 				postCount: store.stats.postCount,

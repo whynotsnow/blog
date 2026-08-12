@@ -9,7 +9,7 @@ import {
 	categoryAssets,
 	type CategoryImageAsset,
 } from "@/data/category-assets";
-import type { PostCardViewModel } from "./core/types";
+import type { CategoryTaxonomy, PostCardViewModel } from "./core/types";
 import { getContentStore } from "./core/content-store";
 import { toPostCardViewModel } from "./core/inject";
 import { sortByScore } from "./core/sort";
@@ -88,36 +88,7 @@ async function buildCategoryHubPageViewModel(
 	activeView: CategoryHubView,
 ): Promise<CategoryHubPageViewModel> {
 	const store = await getContentStore();
-	const categories = store.categories.map((category) => {
-		const entry = store.categoryMap.get(category.slug);
-		const sortedRecentPosts = sortByRecentActivity(entry?.posts ?? []);
-		const latestPost = sortedRecentPosts[0];
-		const tags = (entry ? Array.from(entry.tags.values()) : category.tags)
-			.slice()
-			.sort((a, b) => b.count - a.count)
-			.slice(0, CATEGORY_HUB_TAG_LIMIT)
-			.map((tag) => toSupportTagLink(tag, category.slug));
-		const recentPosts = sortedRecentPosts
-			.slice(0, CATEGORY_HUB_RECENT_LIMIT)
-			.map(toSupportPostLink);
-		const link = toSupportCategoryLink(category);
-		const asset = categoryAssets[category.slug];
-
-		return {
-			slug: category.slug,
-			name: category.name,
-			url: link.url || getCategoryPageUrl(category.slug),
-			count: category.count,
-			tagCount: entry?.tags.size ?? category.tags.length,
-			description: asset?.description,
-			image: asset?.image,
-			updated: latestPost
-				? (latestPost.updated ?? latestPost.published).toISOString()
-				: undefined,
-			tags,
-			recentPosts,
-		};
-	});
+	const categories = buildCategoryCards(store);
 	const posts =
 		activeView === "all"
 			? []
@@ -172,6 +143,41 @@ async function buildCategoryHubPageViewModel(
 			tags: supportTags,
 		},
 	};
+}
+
+export function buildCategoryCards(
+	taxonomy: CategoryTaxonomy,
+): CategoryHubCard[] {
+	return taxonomy.categories.map((category) => {
+		const entry = taxonomy.categoryMap.get(category.slug);
+		const sortedRecentPosts = sortByRecentActivity(entry?.posts ?? []);
+		const latestPost = sortedRecentPosts[0];
+		const tags = (entry ? Array.from(entry.tags.values()) : category.tags)
+			.slice()
+			.sort((a, b) => b.count - a.count)
+			.slice(0, CATEGORY_HUB_TAG_LIMIT)
+			.map((tag) => toSupportTagLink(tag, category.slug));
+		const recentPosts = sortedRecentPosts
+			.slice(0, CATEGORY_HUB_RECENT_LIMIT)
+			.map(toSupportPostLink);
+		const link = toSupportCategoryLink(category);
+		const asset = categoryAssets[category.slug];
+
+		return {
+			slug: category.slug,
+			name: category.name,
+			url: link.url || getCategoryPageUrl(category.slug),
+			count: category.count,
+			tagCount: entry?.tags.size ?? category.tags.length,
+			description: asset?.description,
+			image: asset?.image,
+			updated: latestPost
+				? (latestPost.updated ?? latestPost.published).toISOString()
+				: undefined,
+			tags,
+			recentPosts,
+		};
+	});
 }
 
 export async function getCategoryHubPageViewModel(): Promise<CategoryHubPageViewModel> {

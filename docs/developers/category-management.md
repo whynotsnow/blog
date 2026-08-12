@@ -188,7 +188,7 @@ Tag 不在 `src/config/category-slugs.ts` 中集中声明，而是从文章 fron
 
 - 不要在组件中重新计算分类、标签或文章 URL。
 - 不要把 Astro Content Collection 查询放进组件。
-- 不要修改 `.category-hub-grid` 的列数、断点或最大宽度来解决卡片内部展示问题；卡片内部优化应限定在 `category-hub-card__*` 槽位。
+- 不要修改 `.category-card-grid` 的列数、断点或最大宽度来解决卡片内部展示问题；卡片内部优化应限定在 `category-hub-card__*` 槽位。
 - 分类卡片视觉应尽量和首页文章 Grid Card 的封面、标题、meta、摘要和 Tag 槽位语言保持一致。
 
 ## 验证清单

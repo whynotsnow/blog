@@ -122,48 +122,55 @@ function buildStore(posts: PostIndexEntry[]): ContentStore {
 describe("home page content selection", () => {
 	beforeEach(() => getContentStore.mockReset());
 
-	it("selects and ranks only canonical technology posts", async () => {
-		const technologyPosts = [
-			post("tech-low", "tech", 1),
-			post("tech-high", "tech", 10),
-		];
-		const other = post("other", "notes", 100);
+	it("builds recent, recommended, and category guide sections", async () => {
 		getContentStore.mockResolvedValue(
-			buildStore([other, ...technologyPosts]),
+			buildStore([
+				post("tech-new", "tech", 1),
+				post("notes-high", "notes", 100),
+				post("guide", "guides", 20),
+			]),
 		);
 
 		const page = await getHomePageViewModel();
-		const technology = page.sections.find(
-			(section) => section.id === "technology",
-		);
 
-		expect(technology?.href).toBe("/category/tech/");
-		expect(technology?.posts.map((entry) => entry.id)).toEqual([
-			"tech-high",
-			"tech-low",
+		expect(page.sections.map((section) => section.id)).toEqual([
+			"recent",
+			"recommended",
 		]);
+		expect(page.sections[0].href).toBe("/category/recent/");
+		expect(page.sections[1].href).toBe("/category/recommended/");
+		expect(page.categorySection).toMatchObject({
+			id: "categories",
+			title: "文章分类",
+			href: "/category/",
+			linkLabel: "全部分类",
+		});
 		expect(
-			technology?.posts.every((entry) => entry.category.slug === "tech"),
-		).toBe(true);
+			page.categorySection.categories.map((category) => category.slug),
+		).toEqual(["tech", "notes", "guides"]);
 	});
 
-	it("does not backfill a short technology section", async () => {
-		const onlyTechnologyPost = post("only-tech", "tech", 1);
+	it("limits category cards to the first six categories", async () => {
 		getContentStore.mockResolvedValue(
-			buildStore([onlyTechnologyPost, post("other", "notes", 100)]),
+			buildStore(
+				Array.from({ length: 7 }, (_, index) =>
+					post(`post-${index}`, `cat-${index}`, index),
+				),
+			),
 		);
 
 		const page = await getHomePageViewModel();
+
 		expect(
-			page.sections.find((section) => section.id === "technology")?.posts,
-		).toHaveLength(1);
+			page.categorySection.categories.map((category) => category.slug),
+		).toEqual(["cat-0", "cat-1", "cat-2", "cat-3", "cat-4", "cat-5"]);
 	});
 
-	it("limits recent and recommended sections separately from technology", async () => {
-		const technologyPosts = Array.from({ length: 7 }, (_, index) =>
-			post(`tech-${index}`, "tech", index),
+	it("limits recent and recommended sections separately from categories", async () => {
+		const posts = Array.from({ length: 7 }, (_, index) =>
+			post(`post-${index}`, `cat-${index}`, index),
 		);
-		getContentStore.mockResolvedValue(buildStore(technologyPosts));
+		getContentStore.mockResolvedValue(buildStore(posts));
 
 		const page = await getHomePageViewModel();
 
@@ -174,20 +181,42 @@ describe("home page content selection", () => {
 			page.sections.find((section) => section.id === "recommended")
 				?.posts,
 		).toHaveLength(3);
-		expect(
-			page.sections.find((section) => section.id === "technology")?.posts,
-		).toHaveLength(6);
+		expect(page.categorySection.categories).toHaveLength(6);
 	});
 
-	it("omits the technology section when the category is empty", async () => {
+	it("reuses category card data for homepage category previews", async () => {
 		getContentStore.mockResolvedValue(
-			buildStore([post("other", "notes", 100)]),
+			buildStore([
+				post("tech-new", "tech", 1),
+				post("tech-old", "tech", 2),
+			]),
 		);
 
 		const page = await getHomePageViewModel();
-		expect(page.sections.map((section) => section.id)).toEqual([
-			"recent",
-			"recommended",
+		const [category] = page.categorySection.categories;
+
+		expect(category).toMatchObject({
+			slug: "tech",
+			name: "tech",
+			url: "/category/tech/",
+			count: 2,
+			tagCount: 1,
+			description: "记录前端工程、框架实践、构建工具与技术问题处理。",
+			image: {
+				src: "/assets/desktop-banner/1.webp",
+			},
+		});
+		expect(category.tags).toEqual([
+			{
+				slug: "tech-tag",
+				name: "tech-tag",
+				count: 2,
+				url: "/category/tech/?tag=tech-tag",
+			},
+		]);
+		expect(category.recentPosts.map((post) => post.title)).toEqual([
+			"tech-new",
+			"tech-old",
 		]);
 	});
 });

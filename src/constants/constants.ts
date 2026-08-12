@@ -1,5 +1,5 @@
 export const HOME_FEATURED_SECTION_SIZE: number = 3;
-export const HOME_TECHNOLOGY_SECTION_SIZE: number = 6;
+export const HOME_CATEGORY_SECTION_SIZE: number = 6;
 export const CATEGORY_PAGE_SIZE: number = 12;
 
 export const LIGHT_MODE = "light" as const,
