@@ -1,6 +1,5 @@
 ---
 import { getEntry, render } from "astro:content";
-import Comment from "@components/comment/index.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import PageHeader from "@components/page/PageHeader.astro";
 import I18nKey from "../i18n/i18nKey";
@@ -29,9 +28,5 @@ const title = i18n(I18nKey.about);
 				<Content />
 			</Markdown>
 		</div>
-	</div>
-
-	<div class="mt-4">
-		<Comment enabled={true} path="/about/" />
 	</div>
 </MainGridLayout>

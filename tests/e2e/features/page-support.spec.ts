@@ -165,3 +165,38 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	).toHaveCount(0);
 	await expect(page.locator(".sidebar-toc-region--container")).toHaveCount(0);
 });
+
+test("ordinary content pages do not render comment modules", async ({
+	page,
+}) => {
+	await gotoPage(page, "/about/");
+	await expect(page.locator("#main-grid")).toHaveAttribute(
+		"data-shell-strategy",
+		"container-content",
+	);
+	await expect(page.locator("#main-grid")).toHaveAttribute(
+		"data-has-support",
+		"false",
+	);
+	await expect(page.locator("[data-comment-service]")).toHaveCount(0);
+	await expect(page.locator("#tcomment")).toHaveCount(0);
+
+	await gotoPage(page, "/friends/");
+	await expect(page.locator("#main-grid")).toHaveAttribute(
+		"data-shell-strategy",
+		"container-content",
+	);
+	await expect(page.locator("#main-grid")).toHaveAttribute(
+		"data-has-support",
+		"false",
+	);
+	await expect(page.locator("[data-comment-service]")).toHaveCount(0);
+	await expect(page.locator("#tcomment")).toHaveCount(0);
+
+	await gotoPage(page, "/posts/markdown-tutorial/");
+	await expect(
+		page.locator(
+			".post-detail__comment-card[data-comment-service='twikoo']",
+		),
+	).toHaveCount(1);
+});

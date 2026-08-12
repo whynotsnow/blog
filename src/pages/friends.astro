@@ -1,6 +1,5 @@
 ---
 import { getEntry, render } from "astro:content";
-import Comment from "@components/comment/index.astro";
 import FriendCard from "@components/friends/FriendCard.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import PageHeader from "@components/page/PageHeader.astro";
@@ -132,10 +131,6 @@ const subtitle = i18n(I18nKey.friendsSubtitle);
 
 	<!-- 引用全局脚本 -->
 	<script is:inline src="/js/friends-page-handler.js"></script>
-
-	<div class="mt-4">
-		<Comment enabled={true} path="/friends/" />
-	</div>
 </MainGridLayout>
 
 <style>
