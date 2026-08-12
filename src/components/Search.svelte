@@ -6,37 +6,27 @@
 	import { panelManager } from "@utils/panel-manager";
 	import { url } from "@utils/url";
 	import { onMount, onDestroy } from "svelte";
-	import type { SearchResult } from "@/global";
+	import type { PagefindInstance, SearchResult } from "@/global";
 
 	let keywordDesktop = $state("");
 	let keywordMobile = $state("");
 	let result: SearchResult[] = $state([]);
-	let pagefindLoaded = false;
-	let initialized = $state(false);
+	let searchMessage = $state("");
+	let searchStatus = $state<
+		| "idle"
+		| "loading"
+		| "ready"
+		| "searching"
+		| "empty"
+		| "unavailable"
+		| "error"
+	>("idle");
+	let pagefind: PagefindInstance | null = null;
 	let isDesktopSearchExpanded = $state(false);
 	let debounceTimer: NodeJS.Timeout;
 	let windowJustFocused = false;
 	let focusTimer: NodeJS.Timeout;
 	let blurTimer: NodeJS.Timeout;
-
-	const fakeResult: SearchResult[] = [
-		{
-			url: url("/"),
-			meta: {
-				title: "This Is a Fake Search Result",
-			},
-			excerpt:
-				"Because the search cannot work in the <mark>dev</mark> environment.",
-		},
-		{
-			url: url("/"),
-			meta: {
-				title: "If You Want to Test the Search",
-			},
-			excerpt:
-				"Try running <mark>npm build && npm preview</mark> instead.",
-		},
-	];
 
 	const escapeHtml = (html: string): string =>
 		html.replace(
@@ -86,6 +76,54 @@
 		return doc.body.innerHTML;
 	};
 
+	const loadPagefind = async (): Promise<PagefindInstance | null> => {
+		if (import.meta.env.DEV) {
+			return null;
+		}
+
+		if (window.pagefind?.search) {
+			return window.pagefind;
+		}
+
+		window.__pagefindLoadPromise ??= (async () => {
+			const pagefindModule = (await import(
+				/* @vite-ignore */ url("/pagefind/pagefind.js")
+			)) as PagefindInstance;
+			await pagefindModule.options?.({
+				excerptLength: 20,
+			});
+			window.pagefind = pagefindModule;
+			return pagefindModule;
+		})();
+
+		return window.__pagefindLoadPromise;
+	};
+
+	const ensureSearchReady = async (): Promise<boolean> => {
+		if (pagefind?.search) return true;
+
+		searchStatus = "loading";
+		try {
+			pagefind = await loadPagefind();
+			if (pagefind?.search) {
+				searchStatus = "ready";
+				searchMessage = "";
+				return true;
+			}
+			searchStatus = "unavailable";
+			searchMessage = import.meta.env.DEV
+				? "搜索索引只在生产构建后可用，请使用 `pnpm build` 后预览。"
+				: "搜索索引暂不可用，请稍后再试。";
+			return false;
+		} catch (error) {
+			window.__pagefindLoadPromise = undefined;
+			searchStatus = "error";
+			searchMessage = "搜索索引加载失败，请稍后再试。";
+			console.error("Failed to load Pagefind:", error);
+			return false;
+		}
+	};
+
 	const togglePanel = async () => {
 		await panelManager.togglePanel("search-panel");
 	};
@@ -99,10 +137,8 @@
 		}
 	};
 
-	const scheduleSearch = (): void => {
-		if (!initialized) return;
+	const scheduleSearch = (isDesktop: boolean): void => {
 		const keyword = keywordDesktop || keywordMobile;
-		const isDesktop = !!keywordDesktop || isDesktopSearchExpanded;
 
 		clearTimeout(debounceTimer);
 		if (keyword) {
@@ -115,6 +151,13 @@
 		}
 	};
 
+	const focusDesktopSearchInput = (): void => {
+		const input = document.getElementById(
+			"search-input-desktop",
+		) as HTMLInputElement | null;
+		input?.focus();
+	};
+
 	const toggleDesktopSearch = () => {
 		// 如果窗口刚获得焦点，不自动展开搜索框
 		if (windowJustFocused) {
@@ -123,12 +166,7 @@
 		isDesktopSearchExpanded = !isDesktopSearchExpanded;
 		syncNavbarSearchState();
 		if (isDesktopSearchExpanded) {
-			setTimeout(() => {
-				const input = document.getElementById(
-					"search-input-desktop",
-				) as HTMLInputElement;
-				input?.focus();
-			}, 0);
+			setTimeout(focusDesktopSearchInput, 0);
 		}
 	};
 
@@ -137,6 +175,12 @@
 			isDesktopSearchExpanded = false;
 			syncNavbarSearchState();
 		}
+	};
+
+	const handleSearchBarKeydown = (event: KeyboardEvent): void => {
+		if (event.key !== "Enter" && event.key !== " ") return;
+		event.preventDefault();
+		focusDesktopSearchInput();
 	};
 
 	const handleBlur = () => {
@@ -169,6 +213,8 @@
 		keywordDesktop = "";
 		keywordMobile = "";
 		result = [];
+		searchStatus = pagefind?.search ? "ready" : "idle";
+		searchMessage = "";
 	};
 
 	const handleResultClick = (event: Event, url: string): void => {
@@ -186,66 +232,36 @@
 			result = [];
 			return;
 		}
-		if (!initialized) {
+
+		setPanelVisibility(true, isDesktop);
+		const ready = await ensureSearchReady();
+		if (!ready || !pagefind) {
+			result = [];
 			return;
 		}
+
 		try {
-			let searchResults: SearchResult[] = [];
-			if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
-				const response = await window.pagefind.search(keyword);
-				searchResults = await Promise.all(
-					response.results.map((item) => item.data()),
-				);
-			} else if (import.meta.env.DEV) {
-				searchResults = fakeResult;
-			} else {
-				searchResults = [];
-				console.error(
-					"Pagefind is not available in production environment.",
-				);
-			}
+			searchStatus = "searching";
+			const response = await pagefind.search(keyword);
+			const searchResults = await Promise.all(
+				response.results.map((item) => item.data()),
+			);
 			result = searchResults;
-			setPanelVisibility(result.length > 0, isDesktop);
+			searchStatus = result.length > 0 ? "ready" : "empty";
+			searchMessage =
+				result.length > 0 ? "" : `没有找到与“${keyword}”匹配的内容。`;
+			setPanelVisibility(true, isDesktop);
 		} catch (error) {
 			console.error("Search error:", error);
 			result = [];
-			setPanelVisibility(false, isDesktop);
+			searchStatus = "error";
+			searchMessage = "搜索失败，请稍后再试。";
+			setPanelVisibility(true, isDesktop);
 		}
 	};
 
 	onMount(() => {
-		const initializeSearch = () => {
-			initialized = true;
-			pagefindLoaded =
-				typeof window !== "undefined" &&
-				!!window.pagefind &&
-				typeof window.pagefind.search === "function";
-			console.log("Pagefind status on init:", pagefindLoaded);
-		};
-		if (import.meta.env.DEV) {
-			console.log(
-				"Pagefind is not available in development mode. Using mock data.",
-			);
-			initializeSearch();
-		} else {
-			document.addEventListener("pagefindready", () => {
-				console.log("Pagefind ready event received.");
-				initializeSearch();
-			});
-			document.addEventListener("pagefindloaderror", () => {
-				console.warn(
-					"Pagefind load error event received. Search functionality will be limited.",
-				);
-				initializeSearch(); // Initialize with pagefindLoaded as false
-			});
-			// Fallback in case events are not caught or pagefind is already loaded by the time this script runs
-			setTimeout(() => {
-				if (!initialized) {
-					console.log("Fallback: Initializing search after timeout.");
-					initializeSearch();
-				}
-			}, 2000); // Adjust timeout as needed
-		}
+		void ensureSearchReady();
 
 		// 监听窗口焦点事件，防止切换窗口时自动展开搜索框
 		const handleFocus = () => {
@@ -270,6 +286,7 @@
 		}
 		clearTimeout(debounceTimer);
 		clearTimeout(focusTimer);
+		clearTimeout(blurTimer);
 	});
 </script>
 
@@ -285,16 +302,12 @@
 		role="button"
 		tabindex="0"
 		aria-label="Search"
+		onkeydown={handleSearchBarKeydown}
 		onmouseenter={() => {
 			if (!isDesktopSearchExpanded) toggleDesktopSearch();
 		}}
 		onmouseleave={collapseDesktopSearch}
-		onclick={() => {
-			const input = document.getElementById(
-				"search-input-desktop",
-			) as HTMLInputElement;
-			input?.focus();
-		}}
+		onclick={focusDesktopSearchInput}
 	>
 		<LocalIcon
 			name="material-symbols:search"
@@ -308,7 +321,7 @@
 			id="search-input-desktop"
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordDesktop}
-			oninput={() => setTimeout(scheduleSearch)}
+			oninput={() => setTimeout(() => scheduleSearch(true))}
 			onfocus={() => {
 				clearTimeout(blurTimer);
 				if (!isDesktopSearchExpanded) toggleDesktopSearch();
@@ -350,13 +363,24 @@
 		<input
 			placeholder={i18n(I18nKey.search)}
 			bind:value={keywordMobile}
-			oninput={() => setTimeout(scheduleSearch)}
+			oninput={() => setTimeout(() => scheduleSearch(false))}
 			class="search-input pl-10 absolute inset-0 bg-transparent outline-0
                focus:w-60 search-input-color"
 		/>
 	</div>
 	<!-- search results -->
-	{#each result as item (item.url)}
+	{#if searchStatus === "loading" || searchStatus === "searching" || searchMessage}
+		<div class="search-state px-3 py-3 text-50">
+			{#if searchStatus === "loading"}
+				正在加载搜索索引...
+			{:else if searchStatus === "searching"}
+				正在搜索...
+			{:else}
+				{searchMessage}
+			{/if}
+		</div>
+	{/if}
+	{#each result as item, index (`${item.url}-${index}`)}
 		<a
 			href={item.url}
 			onclick={(e) => handleResultClick(e, item.url)}
@@ -381,8 +405,6 @@
 </div>
 
 <style>
-	@reference "../styles/main.css";
-
 	input:focus {
 		outline: 0;
 	}
@@ -392,20 +414,46 @@
 	}
 
 	.search-input,
-	.search-result__excerpt {
+	.search-result__excerpt,
+	.search-state {
 		font-size: var(--text-ui-size);
 	}
 
 	.search-result {
 		font-size: var(--text-section-title-size);
 	}
+
 	.search-bar-bg {
-		@apply bg-black/4 hover:bg-black/6 focus-within:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10;
+		background-color: rgb(0 0 0 / 4%);
 	}
-	.search-icon-color {
-		@apply text-black/30 dark:text-white/30;
+
+	.search-bar-bg:hover,
+	.search-bar-bg:focus-within {
+		background-color: rgb(0 0 0 / 6%);
 	}
+
+	:global(.dark) .search-bar-bg {
+		background-color: rgb(255 255 255 / 5%);
+	}
+
+	:global(.dark) .search-bar-bg:hover,
+	:global(.dark) .search-bar-bg:focus-within {
+		background-color: rgb(255 255 255 / 10%);
+	}
+
+	:global(.search-icon-color) {
+		color: rgb(0 0 0 / 30%);
+	}
+
+	:global(.dark .search-icon-color) {
+		color: rgb(255 255 255 / 30%);
+	}
+
 	.search-input-color {
-		@apply text-black/50 dark:text-white/50;
+		color: rgb(0 0 0 / 50%);
+	}
+
+	:global(.dark) .search-input-color {
+		color: rgb(255 255 255 / 50%);
 	}
 </style>

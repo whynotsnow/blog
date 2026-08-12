@@ -394,3 +394,9 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 - Fixed `tests/unit/tooling/test-impact.test.ts` so local-mode expectations pass `--mode=local` explicitly when spawning `scripts/test-impact.mjs`.
 - Learned that GitHub Actions exports `CI=true`, which makes `scripts/test-impact.mjs` default to CI mode even inside unit tests unless the spawned command pins the intended mode.
 - Kept the explicit `--mode=ci` assertion as the override case so the test still covers both local and CI impact-selection behavior.
+
+### Stabilized Pagefind search loading under Swup
+
+- Moved Pagefind runtime loading out of the Navbar inline script and into the Search component's browser runtime, with one global Promise shared across remounts.
+- Learned that Swup-replaced shells can make one-shot custom ready events and inline fallback stubs drift from hydrated Svelte state; search should await the actual loader instead of inferring availability from an event that may already have fired.
+- Kept development explicit: Astro dev does not serve the post-build Pagefind index, so the search panel should show an unavailable state instead of fake results.

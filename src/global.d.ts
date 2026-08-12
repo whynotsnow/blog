@@ -45,13 +45,8 @@ declare global {
 	interface Window {
 		// Define swup type directly since @swup/astro doesn't export AstroIntegration
 		swup: SwupInstance;
-		pagefind: {
-			search: (query: string) => Promise<{
-				results: Array<{
-					data: () => Promise<SearchResult>;
-				}>;
-			}>;
-		};
+		pagefind?: PagefindInstance;
+		__pagefindLoadPromise?: Promise<PagefindInstance>;
 
 		CryptoJS?: {
 			AES: {
@@ -104,7 +99,16 @@ declare global {
 	}
 }
 
-interface SearchResult {
+export interface PagefindInstance {
+	search: (query: string) => Promise<{
+		results: Array<{
+			data: () => Promise<SearchResult>;
+		}>;
+	}>;
+	options?: (options: { excerptLength?: number }) => Promise<void> | void;
+}
+
+export interface SearchResult {
 	url: string;
 	meta: {
 		title: string;
