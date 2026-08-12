@@ -9,6 +9,7 @@
 		"markdown": ["pnpm", "lint:md"],
 		"lint": ["pnpm", "lint"],
 		"type": ["pnpm", "type-check"],
+		"script-type": ["pnpm", "type-check:scripts"],
 		"svelte-type": ["pnpm", "type-check:svelte"],
 		"test-type": ["pnpm", "type-check:tests"],
 		"astro": ["pnpm", "check"],
@@ -210,6 +211,31 @@
 				"shell",
 				"smoke"
 			]
+		},
+		{
+			"patterns": ["src/scripts/**"],
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"shell",
+				"smoke"
+			]
+		},
+		{
+			"patterns": ["src/plugins/**"],
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"astro-build"
+			]
+		},
+		{
+			"patterns": ["public/js/**"],
+			"groups": ["lint", "astro"]
 		},
 		{
 			"patterns": [
@@ -417,6 +443,7 @@
 				"scripts/pre-commit-check.mjs",
 				"scripts/test-impact.mjs",
 				"scripts/check-env.mjs",
+				"tsconfig.scripts.json",
 				".nvmrc",
 				".github/workflows/**"
 			],
@@ -425,6 +452,7 @@
 				"type",
 				"declaration-type",
 				"svelte-type",
+				"script-type",
 				"test-type",
 				"unit",
 				"astro"
@@ -438,8 +466,17 @@
 				"scripts/init-content-repo.js",
 				"scripts/fonts/**"
 			],
-			"groups": ["lint", "integration", "astro-build"],
+			"groups": ["lint", "script-type", "integration", "astro-build"],
 			"ciGroups": ["full"]
+		},
+		{
+			"patterns": [
+				"scripts/*.js",
+				"scripts/*.mjs",
+				"scripts/**/*.js",
+				"scripts/**/*.mjs"
+			],
+			"groups": ["lint", "script-type"]
 		}
 	],
 	"fallback": [],

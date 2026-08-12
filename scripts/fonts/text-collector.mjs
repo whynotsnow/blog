@@ -62,10 +62,10 @@ export function resolveContentDirectory(rootDir, environment = process.env) {
 	return path.resolve(rootDir, "src/content");
 }
 
-export function collectSiteCjkCharset({
-	rootDir,
-	environment = process.env,
-} = {}) {
+/**
+ * @param {{ rootDir: string, environment?: NodeJS.ProcessEnv }} options
+ */
+export function collectSiteCjkCharset({ rootDir, environment = process.env }) {
 	if (!rootDir) throw new Error("rootDir is required to collect font text");
 
 	const characters = new Set(CJK_SAFELIST);
@@ -98,6 +98,10 @@ export function collectSiteCjkCharset({
 	return [...characters].sort().join("");
 }
 
+/**
+ * @param {{ charset: string, id: string }} fontPackage
+ * @param {{ rootDir: string, environment?: NodeJS.ProcessEnv }} options
+ */
 export function collectCharset(fontPackage, options) {
 	switch (fontPackage.charset) {
 		case "ascii":

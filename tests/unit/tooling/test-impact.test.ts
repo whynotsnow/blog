@@ -93,6 +93,7 @@ describe("impact-based validation selection", () => {
 			"type",
 			"declaration-type",
 			"svelte-type",
+			"script-type",
 			"test-type",
 			"unit",
 			"astro",

@@ -88,6 +88,7 @@ pnpm build
 ```bash
 pnpm check
 pnpm type-check
+pnpm type-check:scripts
 pnpm type-check:svelte
 pnpm type-check:tests
 pnpm type-check:declarations
@@ -104,7 +105,7 @@ pnpm lint
 pnpm lint:md
 ```
 
-先运行 `pnpm test:plan` 查看本地快速模式的改动影响范围；需要自动执行选择结果时运行 `pnpm test:affected`。本地模式不会自动执行 `verify:full`，无法分类或建议完整回归的路径会以风险提示输出。CI 或远程 Push 场景使用 `pnpm test:plan:ci` 与 `pnpm test:affected:ci`，此时高风险路径会升级到完整回归。`pnpm test:impact:check` 会确认 `src/features/**` 与 `tests/e2e/**` 均已录入 Impact Map，避免新增模块在 CI 中静默回退到全量验证。`pnpm type-check` 检查纯 TypeScript 项目，`pnpm type-check:declarations` 使用 `--isolatedDeclarations` 检查导出声明边界，已接入 CI Quality Checks，但不会在本地 precommit 中阻塞提交。`pnpm type-check:svelte` 使用 `svelte-check` 检查 `.svelte` 组件脚本、模板和 Props 诊断，`pnpm type-check:tests` 检查 Unit、Integration、Playwright 和测试配置。`pnpm test:fast` 运行 Vitest 快速层。
+先运行 `pnpm test:plan` 查看本地快速模式的改动影响范围；需要自动执行选择结果时运行 `pnpm test:affected`。本地模式不会自动执行 `verify:full`，无法分类或建议完整回归的路径会以风险提示输出。CI 或远程 Push 场景使用 `pnpm test:plan:ci` 与 `pnpm test:affected:ci`，此时高风险路径会升级到完整回归。`pnpm test:impact:check` 会确认 `src/features/**` 与 `tests/e2e/**` 均已录入 Impact Map，避免新增模块在 CI 中静默回退到全量验证。`pnpm type-check` 检查纯 TypeScript 项目，`pnpm type-check:scripts` 使用 `tsconfig.scripts.json` 对 Node 脚本执行 `checkJs` 检查，`pnpm type-check:declarations` 使用 `--isolatedDeclarations` 检查导出声明边界，已接入 CI Quality Checks，但不会在本地 precommit 中阻塞提交。`pnpm type-check:svelte` 使用 `svelte-check` 检查 `.svelte` 组件脚本、模板和 Props 诊断，`pnpm type-check:tests` 检查 Unit、Integration、Playwright 和测试配置。`pnpm test:fast` 运行 Vitest 快速层。
 
 需要浏览器冒烟测试时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。该命令只运行关键路由；完整浏览器回归使用 `pnpm test:e2e:full`。Playwright 会自动启动 Astro dev server，不需要手动运行 `pnpm dev`。
 

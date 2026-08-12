@@ -79,6 +79,7 @@ Do not place unrelated behavior in a convenient existing spec. Avoid duplicating
 | Command | Scope |
 | --- | --- |
 | `pnpm test:fast` | All Unit and Integration tests |
+| `pnpm type-check:scripts` | Node script checkJs diagnostics through `tsconfig.scripts.json` |
 | `pnpm type-check:svelte` | Svelte component diagnostics through `svelte-check` |
 | `pnpm test:smoke` | Critical-route Playwright smoke only |
 | `pnpm test:e2e:shell` | Navigation and responsive Shell contracts |

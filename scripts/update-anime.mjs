@@ -24,6 +24,10 @@ async function getAnimeModeFromConfig() {
 	}
 }
 
+/**
+ * @param {string} scriptPath
+ * @returns {Promise<void>}
+ */
 function runScript(scriptPath) {
 	return new Promise((resolve, reject) => {
 		const script = spawn("node", [scriptPath], {
@@ -33,7 +37,7 @@ function runScript(scriptPath) {
 
 		script.on("close", (code) => {
 			if (code === 0) {
-				resolve();
+				resolve(undefined);
 			} else {
 				reject(new Error(`Script exited with code ${code}`));
 			}

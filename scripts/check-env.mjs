@@ -17,7 +17,10 @@ if (!match) {
 	fail("package.json must declare packageManager as pnpm@<version>.");
 }
 
-const expectedPnpmVersion = match[1];
+const expectedPnpmVersion = match?.[1];
+if (!expectedPnpmVersion) {
+	fail("package.json must declare packageManager as pnpm@<version>.");
+}
 
 function getPnpmVersionFromUserAgent() {
 	const userAgent = process.env.npm_config_user_agent ?? "";

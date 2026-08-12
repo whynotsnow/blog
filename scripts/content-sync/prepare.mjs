@@ -207,7 +207,8 @@ function installManagedMappings(config, fsApi = fs) {
 			fsApi.renameSync(destination, backup);
 			completed.push({ mapping, destination, backup, linked: false });
 			createDirectoryLink(externalSource, destination, fsApi);
-			completed.at(-1).linked = true;
+			const completedMapping = completed.at(-1);
+			if (completedMapping) completedMapping.linked = true;
 		}
 	} catch (error) {
 		for (const item of completed.reverse()) {

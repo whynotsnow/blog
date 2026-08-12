@@ -10,6 +10,26 @@ import {
 } from "./config.mjs";
 import { collectCharset } from "./text-collector.mjs";
 
+/**
+ * @typedef {{
+ *   src: (sourcePath: string) => FontminPipeline,
+ *   use: (plugin: unknown) => FontminPipeline,
+ *   dest: (destinationPath: string) => FontminPipeline,
+ *   run: (callback: (error?: Error | null) => void) => void
+ * }} FontminPipeline
+ *
+ * @typedef {{
+ *   new (): FontminPipeline,
+ *   glyph: (options: { text: string, hinting: boolean }) => unknown,
+ *   ttf2woff2: (options: { clone: boolean, deflate: boolean }) => unknown
+ * }} FontminFactory
+ */
+
+/** @type {FontminFactory} */
+const FontminCompiler = /** @type {FontminFactory} */ (
+	/** @type {unknown} */ (Fontmin)
+);
+
 const ROOT_DIR = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../..",
@@ -70,12 +90,12 @@ function cleanStaleFontOutputs(buildDir) {
 
 async function compileFont({ sourcePath, outputPath, charset, temporaryDir }) {
 	await new Promise((resolve, reject) => {
-		new Fontmin()
+		new FontminCompiler()
 			.src(sourcePath)
-			.use(Fontmin.glyph({ text: charset, hinting: false }))
-			.use(Fontmin.ttf2woff2({ clone: false, deflate: true }))
+			.use(FontminCompiler.glyph({ text: charset, hinting: false }))
+			.use(FontminCompiler.ttf2woff2({ clone: false, deflate: true }))
 			.dest(temporaryDir)
-			.run((error) => (error ? reject(error) : resolve()));
+			.run((error) => (error ? reject(error) : resolve(undefined)));
 	});
 
 	const generatedPath = fs

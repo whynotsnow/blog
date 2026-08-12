@@ -1,0 +1,14 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"declaration": false,
+		"emitDeclarationOnly": false,
+		"moduleResolution": "nodenext",
+		"module": "NodeNext",
+		"noEmit": true,
+		"types": ["node"]
+	},
+	"include": ["scripts/**/*.js", "scripts/**/*.mjs"]
+}
