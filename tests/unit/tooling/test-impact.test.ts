@@ -72,7 +72,7 @@ describe("impact-based validation selection", () => {
 			planFor("src/components/post-toc/toc-graph.ts"),
 			planFor("src/components/post-toc/toc-desktop-state.ts"),
 			planFor("src/components/post-toc/toc-desktop-presenter.ts"),
-			planFor("src/components/MobileTOC.svelte"),
+			planFor("src/components/post-toc/MobileTOC.svelte"),
 		];
 
 		for (const plan of plans) {

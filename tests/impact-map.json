@@ -154,8 +154,24 @@
 		},
 		{
 			"patterns": [
+				"src/components/Navbar.astro",
+				"src/components/modules/shell-controls/**",
+				"src/components/modules/shell-panels/**"
+			],
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"svelte-type",
+				"astro",
+				"design",
+				"shell",
+				"smoke"
+			]
+		},
+		{
+			"patterns": [
 				"src/components/modules/**",
-				"src/components/LightDarkSwitch.svelte",
 				"src/components/modules/floating-tools/BackToTop.astro",
 				"src/components/modules/floating-tools/settings/**",
 				"src/components/ui/local-icons.ts",
@@ -367,10 +383,7 @@
 			]
 		},
 		{
-			"patterns": [
-				"src/components/MobileTOC.svelte",
-				"src/components/post-toc/**"
-			],
+			"patterns": ["src/components/post-toc/**"],
 			"groups": [
 				"lint",
 				"type",

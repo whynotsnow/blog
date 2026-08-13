@@ -1,7 +1,7 @@
 export {};
 
 import type { SiteConfig } from "./types/config";
-import type { panelManager } from "./utils/panel-manager";
+import type { panelManager } from "./components/modules/shell-panels/panel-manager";
 import type { onPageLifecycle } from "./utils/page-lifecycle";
 
 type SwupHookName =

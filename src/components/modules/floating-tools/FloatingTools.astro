@@ -2,7 +2,7 @@
 import LocalIcon from "@/components/ui/LocalIcon.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import LightDarkSwitch from "@components/LightDarkSwitch.svelte";
+import LightDarkSwitch from "@/components/modules/shell-controls/LightDarkSwitch.svelte";
 import MusicPlayer from "@/components/modules/music-player/MusicPlayer.svelte";
 import { musicPlayerConfig } from "@/config";
 import BackToTop from "./BackToTop.astro";
@@ -357,7 +357,9 @@ import SettingsPanel from "./settings/SettingsPanel.svelte";
 				settingsPanel &&
 				!settingsPanel.classList.contains("float-panel-closed")
 			) {
-				const { panelManager } = await import("@/utils/panel-manager");
+				const { panelManager } = await import(
+					"@/components/modules/shell-panels/panel-manager"
+				);
 				await panelManager.closePanel("display-setting");
 				settingsToggle?.focus();
 			}

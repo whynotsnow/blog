@@ -31,7 +31,7 @@ flowchart TD
 | `src/services` | 首页、归档、分类、Feed、日历数据、组件、文章详情等业务服务。 |
 | `src/content` | Astro 内容集合，包含文章和特殊页面。 |
 | `src/data` | 时间线、日记、友链、项目、设备、技能等非文章数据。 |
-| `src/utils` | URL、日期、内容处理、组件和客户端行为工具。 |
+| `src/utils` | URL、日期、内容处理、导航和生命周期等纯工具或底层工具。组件自有 runtime 协调应放在 `src/components/modules`。 |
 | `public` | 构建时原样复制的静态资源。 |
 | `scripts` | 内容同步、文章创建、番剧数据、字体压缩、索引提交等脚本。 |
 | `docs` | 项目文档，按开发者和 Agent 分区维护。 |
@@ -48,6 +48,7 @@ flowchart TD
 - `src/components/ui/` 是 Design contract 的组件实现层，可以消费 Semantic token 和 `ds-` Pattern class，但不定义新的跨项目视觉系统。
 - `src/components/modules/` 承载组件级应用模块。模块内部可以有 `controller.ts`、`runtime.ts`、`storage.ts`、`events.ts`、`state.ts` 和 `types.ts`，这些文件只服务于本模块。
 - 浏览器运行时交互不放入 `src/services/`，例如 DOM 监听、音频播放、pointer/mouse/touch 事件、localStorage UI 状态、Svelte runtime store，应放在所属组件或 module 目录旁边。
+- Navbar 或 Floating Tools 挂载、但不属于某个更具体模块的 Shell 交互控件，放在 `src/components/modules/shell-controls/`；共享的 Shell 浮窗协调器放在 `src/components/modules/shell-panels/`，不要再回流到 `src/utils`。
 - `src/services/core` 仍然是内容管线边界。普通文章集合、分类、标签、归档和文章详情数据不要绕过 `getContentStore()`。
 
 厚页面推荐拆分方式：

@@ -7,7 +7,7 @@ const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
 import { sakuraConfig } from "../config";
 import { initSakura } from "../utils/sakura-manager";
-import type { PanelId } from "../utils/panel-manager";
+import type { PanelId } from "../components/modules/shell-panels/panel-manager";
 import { onPageLifecycle } from "../utils/page-lifecycle";
 import { initFilterTabs } from "../components/filter-tabs/filter-tabs-client";
 
@@ -36,7 +36,8 @@ let mainContentOffset = readMainContentOffset();
 // 导入面板管理器
 async function initializePanelManager() {
 	try {
-		const { panelManager } = await import("../utils/panel-manager.js");
+		const { panelManager } =
+			await import("../components/modules/shell-panels/panel-manager.js");
 
 		if (!panelToggleDelegationBound) {
 			panelToggleDelegationBound = true;
@@ -606,7 +607,7 @@ if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", async () => {
 		// 初始化面板管理器
 		try {
-			await import("../utils/panel-manager.js");
+			await import("../components/modules/shell-panels/panel-manager.js");
 			console.log("Panel manager initialized");
 		} catch (error) {
 			console.error("Failed to initialize panel manager:", error);
@@ -616,7 +617,7 @@ if (document.readyState === "loading") {
 	// 页面已经加载完成，立即初始化面板管理器
 	(async () => {
 		try {
-			await import("../utils/panel-manager.js");
+			await import("../components/modules/shell-panels/panel-manager.js");
 			console.log("Panel manager initialized");
 		} catch (error) {
 			console.error("Failed to initialize panel manager:", error);

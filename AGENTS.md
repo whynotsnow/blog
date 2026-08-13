@@ -111,6 +111,7 @@ If Playwright cannot run, do not treat Browser as an execution fallback; route P
   - `src/components/` and `src/layouts/` own rendering and local presentation. Extracted page components should stay mostly presentational.
   - `src/components/ui/` owns reusable renderable UI pieces. It consumes the Design contract but should not read business data or become a placement registry.
   - `src/components/modules/` owns component modules with browser-only interaction state such as DOM listeners, audio playback, pointer events, localStorage UI state, event contracts, runtime controllers, and Svelte stores.
+  - Shell controls mounted by Navbar or Floating Tools but not owned by a more specific module live under `src/components/modules/shell-controls/`; shared shell panel coordination lives under `src/components/modules/shell-panels/`.
   - Browser-only interaction state should live beside the owning component module, not in `src/services/`.
 - Prefer module-local directories for large interactive component splits. Keep helpers and types beside the module until they are reused by multiple unrelated modules; only then promote them to shared `src/utils` or shared services.
 - All architectural changes must respect the `src/services/core` pipeline.

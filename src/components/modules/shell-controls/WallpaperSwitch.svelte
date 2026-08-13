@@ -13,7 +13,7 @@
 		setWallpaperMode,
 	} from "@utils/setting-utils";
 	import type { WALL_MODE } from "@/types/config";
-	import { panelManager } from "../utils/panel-manager.js";
+	import { panelManager } from "@/components/modules/shell-panels/panel-manager";
 	import { onMount } from "svelte";
 
 	const wallpaperOptions: {

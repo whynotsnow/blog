@@ -2,21 +2,18 @@
 	import LocalIcon from "@/components/ui/LocalIcon.svelte";
 	import { onMount } from "svelte";
 	import { slide } from "svelte/transition";
-	import I18nKey from "../i18n/i18nKey";
-	import { i18n } from "../i18n/translation";
-	import { navigateToPage } from "../utils/navigation-utils";
-	import { onPageLifecycle } from "../utils/page-lifecycle";
-	import { panelManager } from "../utils/panel-manager.js";
-	import { buildTocGraph, getTocBranchIndexes } from "./post-toc/toc-graph";
+	import I18nKey from "@/i18n/i18nKey";
+	import { i18n } from "@/i18n/translation";
+	import { navigateToPage } from "@/utils/navigation-utils";
+	import { onPageLifecycle } from "@/utils/page-lifecycle";
+	import { panelManager } from "@/components/modules/shell-panels/panel-manager";
+	import { buildTocGraph, getTocBranchIndexes } from "./toc-graph";
 	import {
 		scrollToHeading as scrollToPostHeading,
 		type TocItem,
-	} from "./post-toc/toc-runtime";
-	import {
-		getPostTocStore,
-		type TocStoreSnapshot,
-	} from "./post-toc/toc-store";
-	import { resolveTocBranchView } from "./post-toc/toc-view";
+	} from "./toc-runtime";
+	import { getPostTocStore, type TocStoreSnapshot } from "./toc-store";
+	import { resolveTocBranchView } from "./toc-view";
 
 	let tocItems: TocItem[] = [];
 	let postItems: Array<{

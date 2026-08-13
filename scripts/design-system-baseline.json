@@ -7,7 +7,7 @@
 		],
 		"--card-bg": [
 			"src/components/ArchivePanel.svelte",
-			"src/components/MobileTOC.svelte",
+			"src/components/post-toc/MobileTOC.svelte",
 			"src/components/Navbar.astro",
 			"src/components/anime/AnimeCard.astro",
 			"src/components/control/ButtonTag.astro",
@@ -43,11 +43,11 @@
 		"--primary": [
 			"src/components/ArchivePanel.svelte",
 			"src/components/Footer.astro",
-			"src/components/MobileTOC.svelte",
+			"src/components/post-toc/MobileTOC.svelte",
 			"src/components/PostCard.astro",
 			"src/components/PostMeta.astro",
-			"src/components/Search.svelte",
-			"src/components/WallpaperSwitch.svelte",
+			"src/components/modules/shell-controls/Search.svelte",
+			"src/components/modules/shell-controls/WallpaperSwitch.svelte",
 			"src/components/anime/AnimeGrid.astro",
 			"src/components/anime/AnimePage.astro",
 			"src/components/modules/floating-tools/BackToTop.astro",
@@ -122,7 +122,7 @@
 			"src/styles/markdown.css"
 		],
 		"--line-color": [
-			"src/components/MobileTOC.svelte",
+			"src/components/post-toc/MobileTOC.svelte",
 			"src/components/modules/floating-tools/FloatingTOC.astro",
 			"src/styles/main.css"
 		],

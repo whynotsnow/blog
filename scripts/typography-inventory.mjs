@@ -21,7 +21,6 @@ const PRIORITY_PATHS = [
 	"src/components/post-detail",
 	"src/components/post-toc",
 	"src/components/PostMeta.astro",
-	"src/components/MobileTOC.svelte",
 	"src/components/modules/floating-tools/FloatingTOC.astro",
 	"src/components/comment",
 	"src/components/misc/License.astro",

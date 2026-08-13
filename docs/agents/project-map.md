@@ -34,7 +34,7 @@ flowchart TD
 | `src/services` | Feature-level data access for home, archive, categories, feeds, footer statistics, calendar data, and post detail pages. |
 | `src/content` | Astro content collections for posts and special pages. |
 | `src/data` | Typed data for non-post pages such as timeline, diary, friends, projects, devices, and skills. |
-| `src/utils` | Shared utility functions for URLs, dates, content, panels, and client behavior. |
+| `src/utils` | Shared pure or low-level utilities such as URLs, dates, content helpers, navigation, and lifecycle hooks. Component-owned runtime coordination should stay under `src/components/modules`. |
 | `public` | Static files copied directly to the built site. |
 | `scripts` | Local automation for content sync, post creation, anime data, fonts, and search indexing support. |
 | `docs` | Maintained project documentation. |
@@ -51,6 +51,7 @@ Large file splitting should preserve the existing service-oriented architecture:
 - `src/components/ui/` implements generic UI components on top of `src/design` tokens and `ds-` Pattern classes; it must not become a business placement registry.
 - `src/components/modules/` owns component-level application modules. Module-local `controller.ts`, `runtime.ts`, `storage.ts`, `events.ts`, `state.ts`, and `types.ts` are allowed when they serve only that module.
 - Runtime browser interaction state does not belong in `src/services/`. Keep DOM listeners, audio playback, pointer events, localStorage UI state, and Svelte runtime stores beside the owning component module.
+- Shell-level interactive controls live under `src/components/modules/shell-controls/` when they are mounted by Navbar or Floating Tools but are not owned by one more specific module. Shared shell panel coordination lives under `src/components/modules/shell-panels/`; do not put panel runtime state back in `src/utils`.
 - `src/services/core` remains the content pipeline boundary. Normal post collection data must continue to flow through `getContentStore()`.
 
 Recommended split pattern for a thick route:
