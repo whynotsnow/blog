@@ -389,6 +389,21 @@
 		},
 		{
 			"patterns": [
+				"src/components/misc/SharePoster.svelte",
+				"src/components/misc/share-poster/**"
+			],
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"svelte-type",
+				"astro",
+				"design",
+				"post-detail"
+			]
+		},
+		{
+			"patterns": [
 				"public/assets/js/twikoo.all.min.js",
 				"public/assets/js/twikoo.nocss.js",
 				"public/assets/js/twikoo.nocss.js.LICENSE.txt",

@@ -11,7 +11,7 @@
 	>
 		<LocalIcon
 			name="material-symbols:error"
-			class="player-error-toast__icon shrink-0"
+			class="shrink-0 text-[var(--text-card-title-size)]"
 		/>
 		<span class="player-error-toast__message flex-1">{message}</span>
 		<button
@@ -20,22 +20,14 @@
 		>
 			<LocalIcon
 				name="material-symbols:close"
-				class="player-error-toast__close-icon"
+				class="text-[var(--text-section-title-size)]"
 			/>
 		</button>
 	</div>
 </div>
 
 <style>
-	.player-error-toast__icon {
-		font-size: var(--text-card-title-size);
-	}
-
 	.player-error-toast__message {
 		font-size: var(--text-ui-size);
-	}
-
-	.player-error-toast__close-icon {
-		font-size: var(--text-section-title-size);
 	}
 </style>

@@ -92,7 +92,7 @@
 			>
 				<LocalIcon
 					name="material-symbols:visibility-off"
-					class="mini-player__button-icon"
+					class="text-[var(--text-section-title-size)]"
 				/>
 			</button>
 			<button
@@ -101,7 +101,7 @@
 			>
 				<LocalIcon
 					name="material-symbols:expand-less"
-					class="mini-player__button-icon"
+					class="text-[var(--text-section-title-size)]"
 				/>
 			</button>
 		</div>
@@ -129,11 +129,6 @@
 	.mini-player__artist {
 		font-size: var(--text-caption-size);
 	}
-
-	.mini-player__button-icon {
-		font-size: var(--text-section-title-size);
-	}
-
 	@keyframes local-icon-spin {
 		to {
 			transform: rotate(360deg);

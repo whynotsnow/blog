@@ -24,12 +24,16 @@
 
 <div
 	use:portal
-	class="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity"
-	on:click={closeModal}
+	class="fixed inset-0 z-9999 flex items-center justify-center p-4 transition-opacity"
 >
+	<button
+		type="button"
+		class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+		aria-label="Close"
+		on:click={closeModal}
+	></button>
 	<div
-		class="bg-(--card-bg) rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl transform transition-all"
-		on:click|stopPropagation
+		class="relative bg-(--card-bg) rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl transform transition-all"
 	>
 		<div
 			class="p-6 flex justify-center bg-(--card-bg) min-h-[200px] items-center"
@@ -63,13 +67,13 @@
 				{#if copied}
 					<LocalIcon
 						name="material-symbols:check"
-						class="share-poster-modal__icon"
+						class="text-[var(--text-card-title-size)]"
 					/>
 					<span>{labels.copied}</span>
 				{:else}
 					<LocalIcon
 						name="material-symbols:link"
-						class="share-poster-modal__icon"
+						class="text-[var(--text-card-title-size)]"
 					/>
 					<span>{labels.copyLink}</span>
 				{/if}
@@ -82,7 +86,7 @@
 			>
 				<LocalIcon
 					name="material-symbols:download"
-					class="share-poster-modal__icon"
+					class="text-[var(--text-card-title-size)]"
 				/>
 				{labels.savePoster}
 			</button>
@@ -93,9 +97,5 @@
 <style>
 	.share-poster-modal__status {
 		font-size: var(--text-ui-size);
-	}
-
-	.share-poster-modal__icon {
-		font-size: var(--text-card-title-size);
 	}
 </style>
