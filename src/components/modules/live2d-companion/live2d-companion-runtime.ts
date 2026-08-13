@@ -134,6 +134,7 @@ export function createLive2DCompanionRuntime(
 	let suppressCollapsedAvatarClick = false;
 
 	function postToFrame(message: Record<string, unknown>): void {
+		// 父页面只通过 postMessage 与 iframe 通信，避免跨边界直接操作 Live2D 渲染 DOM。
 		const iframeEl = options.getIframeEl();
 		if (!iframeEl?.contentWindow) return;
 		iframeEl.contentWindow.postMessage(message, "*");
@@ -141,6 +142,7 @@ export function createLive2DCompanionRuntime(
 
 	function readThemeTokens(): Live2DThemeTokens {
 		if (live2dCompanionConfig.ui?.themeMode === "custom") return {};
+		// iframe 内部不能直接消费站点 CSS token，由父页面读取后同步一份稳定主题快照。
 		const styles = window.getComputedStyle(document.documentElement);
 		const read = (name: string) => styles.getPropertyValue(name).trim();
 		const isDark = document.documentElement.classList.contains("dark");
@@ -239,6 +241,7 @@ export function createLive2DCompanionRuntime(
 			pendingInit = window.setTimeout(postInit, 0);
 		};
 
+		// Live2D 初始化较重，优先让首屏渲染完成；timeout 保证空闲回调不可用时仍会启动。
 		if (idleWindow.requestIdleCallback) {
 			idleWindow.requestIdleCallback(run, { timeout: 2000 });
 		} else {
@@ -299,6 +302,7 @@ export function createLive2DCompanionRuntime(
 		closeExpressionPanel();
 		options.setDragging(true);
 		options.setDragReady(true);
+		// 展开态拖拽保存锚点而非裸坐标，窗口尺寸变化后仍能按相对位置恢复。
 		dragOffset = {
 			x: clientPoint.x - rect.left,
 			y: clientPoint.y - rect.top,
@@ -408,6 +412,7 @@ export function createLive2DCompanionRuntime(
 		) {
 			return;
 		}
+		// collapsed avatar 只有超过阈值才进入拖拽，保留普通点击展开的手感。
 		const movement = Math.hypot(
 			event.clientX - collapsedAvatarDragStart.x,
 			event.clientY - collapsedAvatarDragStart.y,
@@ -453,6 +458,7 @@ export function createLive2DCompanionRuntime(
 		options.setCollapsedAvatarDragging(false);
 		collapsedAvatarPointerId = undefined;
 		const previewPosition = options.getCollapsedAvatarPreviewPosition();
+		// 拖拽结束只提交预览位置；未进入拖拽的 pointerup 仍视为展开点击。
 		if (collapsedAvatarDragStarted && previewPosition) {
 			setCollapsedAvatarSnapEdge(
 				options.position.getCollapsedAvatarPreviewSnapEdge(

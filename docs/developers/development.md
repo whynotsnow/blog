@@ -129,6 +129,14 @@ pnpm format
 当前格式化配置会忽略 Markdown 和 Astro 文件，避免对文章内容和复杂 Astro 模板做大范围无关改动。
 Markdown 规范检查由 `markdownlint-cli2` 单独处理，不会自动重写文章内容。需要自动修复 fenced code block 空行时运行 `pnpm lint:md:fix`。
 
+## 代码注释与可读性
+
+代码注释主要服务人类开发者，新增注释统一使用中文。必要的英文技术词可以保留，例如 `ContentStore`、`Swup`、`ViewModel`、`requestAnimationFrame`、`TOC indicator` 和 `iframe`。
+
+优先注释维护者容易误改的关键点：核心状态机、缓存或索引边界、路由规则、跨模块事件契约、动画时序和性能保护。注释应简短解释“为什么这样做”或“这里的边界是什么”，不需要给每个函数补完整 JSDoc。
+
+避免复述代码本身，例如“获取元素”“初始化变量”“遍历列表”这类注释。AI Agent 的操作约束和架构记忆继续放在 `AGENTS.md`、`docs/agents/*` 和相关开发者文档中，不写进业务代码注释。
+
 ## Git hooks
 
 依赖安装后会通过 `prepare` 自动执行 `scripts/install-git-hooks.mjs`，将本仓库的 Git hooks 路径设置为 `.githooks`。

@@ -108,6 +108,7 @@ export function toClientPostCard(post: PostIndexEntry): ClientPostCard {
 export function buildCategoryTagIndex(
 	posts: PostIndexEntry[],
 ): ClientPostCard[] {
+	// Tag runtime 只需要轻量卡片索引；不要把完整 ContentStore 或 RawPost 下发到浏览器。
 	return sortByScore(posts).map(toClientPostCard);
 }
 
@@ -127,6 +128,7 @@ function buildCategoryPage(
 	slug: string,
 	currentPage: number,
 ): { posts: PostCardViewModel[]; pagination: CategoryPaginationViewModel } {
+	// 分类第一页固定使用 /category/{slug}/，分页路由只从第 2 页开始生成。
 	const lastPageNumber = Math.ceil(allPosts.length / CATEGORY_PAGE_SIZE);
 	const start = (currentPage - 1) * CATEGORY_PAGE_SIZE;
 	const end = start + CATEGORY_PAGE_SIZE;
@@ -186,6 +188,7 @@ function buildCategoryPageProps(params: {
 		categories,
 		tagIndexUrl: url(`/api/categories/${slug}.json/`),
 		support: {
+			// 侧栏结构保持完整 ViewModel，具体展示模块由页面组合层逐步接入。
 			modules: [],
 			recentPosts: [],
 			discoveryCards: buildGlobalDiscoveryCards({
@@ -234,6 +237,7 @@ export async function getCategoryPaginatedStaticPaths(): Promise<
 		const lastPageNumber = Math.ceil(
 			sortedPosts.length / CATEGORY_PAGE_SIZE,
 		);
+		// 第一页已有规范路由，静态路径这里只生成 /page/2/ 及之后的页面。
 		const paginatedPageCount = Math.max(0, lastPageNumber - 1);
 
 		return Array.from({ length: paginatedPageCount }, (_, index) => {

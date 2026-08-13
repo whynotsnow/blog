@@ -119,6 +119,7 @@ If Playwright cannot run, do not treat Browser as an execution fallback; route P
 - Keep configuration shape changes in `src/types/config.ts` and document them in `docs/developers/configuration.md`.
 - Do not edit generated folders such as `dist` or `node_modules`.
 - Do not commit secrets. Environment variables belong in `.env` locally or platform secrets in production.
+- Code comments are for human maintainers and should be written in Chinese. Keep them short and explain key reasons, boundaries, or maintenance traps; AI-agent constraints belong in `AGENTS.md` and `docs/agents/*`, not in business-code comments.
 - Store machine-specific paths, personal identities, raw command output, and unreviewed runtime observations under `.agent-workspace/local/`, `.agent-workspace/raw/`, or `.agent-workspace/quarantine/`. These directories are private and ignored by Git.
 - Only promote sanitized, reusable knowledge into tracked Agent Workspace Spec documents. Follow `docs/agents/disclosure-policy.md` and run `node .agent-workspace/tools/agent-workspace.mjs validate` before committing.
 - Preserve local customizations in `src/config.ts`; this repository is intentionally personal and not a clean upstream Mizuki copy.

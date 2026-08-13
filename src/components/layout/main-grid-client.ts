@@ -57,6 +57,7 @@ function syncMainContentPosition(mode: WALL_MODE) {
 	const bannerWrapper = document.getElementById("banner-wrapper");
 	if (!mainContent) return;
 
+	// Wallpaper、Banner 和 Main Shell 的几何状态必须一起同步，避免移动端保留上一页的布局类。
 	const isMobile = window.innerWidth < 1280;
 	const isHomePage =
 		window.location.pathname === "/" || window.location.pathname === "";
@@ -414,6 +415,7 @@ function stabilizePageHeight() {
 	const guard = getPageHeightGuard();
 	if (!guard || !activeVisitUsesHeightGuard) return;
 
+	// Swup 替换前后页面高度可能不同，用 guard 临时补偿，防止入口滚动目标被浏览器夹回旧高度。
 	guard.style.transition = "none";
 	guard.style.height = "0px";
 	guard.dataset.state = "active";
@@ -478,6 +480,7 @@ function animatePageEntry(
 	cancelOnExternalScroll = false,
 	onComplete?: () => void,
 ) {
+	// 入口滚动自己驱动 scrollTop，先关闭 CSS transition，避免 Banner 状态变化反向影响目标测量。
 	cancelPageEntryAnimation();
 	pageEntryAnimationComplete = onComplete;
 	const mainContent = getMainContent();
@@ -542,6 +545,7 @@ function animatePageEntry(
 		}
 	};
 
+	// 用户输入优先于自动入口动画；历史访问还要识别浏览器恢复滚动造成的外部 scroll。
 	window.addEventListener("wheel", interrupt, { passive: true });
 	window.addEventListener("touchstart", interrupt, { passive: true });
 	window.addEventListener("pointerdown", interrupt, { passive: true });
@@ -610,6 +614,7 @@ function applyPageEntryScrollPolicy(visit?: {
 		usesMainRegionEntry();
 
 	if (targetsContentStart) {
+		// 分类页和文章页在 Banner 模式下由 Shell 统一对齐内容区，不能让 Swup 先重置滚动。
 		visit.scroll.reset = false;
 		visit.scroll.target = false;
 	}

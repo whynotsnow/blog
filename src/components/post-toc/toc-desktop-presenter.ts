@@ -66,6 +66,7 @@ export class DesktopTocPresenter {
 			state,
 		);
 		this.previousState = state;
+		// Presenter 只负责把状态渲染到 DOM；active 计算和视口状态机由上游模块维护。
 		this.host.dataset.tocViewportKey = [
 			state.mode,
 			state.activeIndex,
@@ -91,6 +92,7 @@ export class DesktopTocPresenter {
 			this.pendingSettledPlan = null;
 			this.applyEntryState(state);
 			this.hideIndicator();
+			// roots-only 收起时先等高亮淡出，再折叠子项，避免 TOC indicator 滑向即将消失的节点。
 			this.afterHighlightExit(planId, () => {
 				this.renderExpandedRegion(state.expandedRootIndex);
 				this.scrollRoot.scrollTo({
@@ -105,6 +107,7 @@ export class DesktopTocPresenter {
 		if (plan.deferIndicatorUntilSlotSettled) {
 			this.cancelIndicatorMotion();
 			this.pendingSettledPlan = plan;
+			// 展开槽高度还在过渡时先隐藏 indicator，等 slot settled 后再按最终几何定位。
 			this.hideIndicator({ immediate: true });
 		} else {
 			this.pendingSettledPlan = null;
@@ -198,6 +201,7 @@ export class DesktopTocPresenter {
 			return;
 		}
 
+		// 一个根分支可能同时有旧 slot 收起和新 slot 展开；全部 settled 后才能恢复高亮定位。
 		let pendingTransitions = 1;
 		const waitForTransition = (): (() => void) => {
 			pendingTransitions += 1;
@@ -435,6 +439,7 @@ export class DesktopTocPresenter {
 		if (this.scrollRaf) cancelAnimationFrame(this.scrollRaf);
 		if (this.finalizeTimer) window.clearTimeout(this.finalizeTimer);
 
+		// 先在下一帧修正可见区，再用 timer 兜底过渡后的最终高度。
 		this.scrollRaf = requestAnimationFrame(() => {
 			this.scrollRaf = 0;
 			if (planId !== this.planSequence) return;
@@ -597,6 +602,7 @@ export class DesktopTocPresenter {
 			viewportHeight - VISIBILITY_PADDING * 2,
 		);
 
+		// 优先保留当前标题和祖先上下文；如果整段放不下，再逐步缩小到 active entry。
 		for (let start = 0; start < candidateEntries.length; start += 1) {
 			const ranges = candidateEntries
 				.slice(start)

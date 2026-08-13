@@ -190,6 +190,7 @@
 	}
 
 	function transitionMiniPlayer(node: Element, params: { duration: number }) {
+		// Mini 与 Expanded 共享一条 surface 变形路径，避免两个方向出现不同步的跳变。
 		return transitionEdge === "mini-expanded"
 			? morphPanelSurface(node, params)
 			: morphMiniPlayer(node, params);
@@ -218,6 +219,7 @@
 		if (playlistInitialized) return;
 		playlistInitialized = true;
 
+		// 播放列表只初始化一次；Meting 走远程接口，本地模式直接使用配置快照。
 		if (mode === "meting") {
 			fetchMetingPlaylist();
 			return;
@@ -373,6 +375,7 @@
 
 	function publishUiState() {
 		if (typeof window === "undefined") return;
+		// Floating Tools 只消费显式事件，不从 DOM 反推播放器状态。
 		const detail: MusicPlayerUiState = {
 			isExpanded,
 			isLoading,
@@ -474,6 +477,7 @@
 			const playPromise = audio.play();
 			if (playPromise !== undefined) {
 				playPromise.catch((error) => {
+					// 浏览器可能拦截非用户手势播放，保留失败状态等待下一次用户交互恢复。
 					console.warn("自动播放被拦截，等待用户交互:", error);
 					autoplayFailed = true;
 					isPlaying = false;
@@ -489,6 +493,7 @@
 			if (playPromise !== undefined) {
 				playPromise
 					.then(() => {
+						// 用户交互后的恢复只清掉自动播放失败，不重新加载当前歌曲。
 						autoplayFailed = false;
 					})
 					.catch(() => {});
