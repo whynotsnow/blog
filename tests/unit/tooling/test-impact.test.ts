@@ -26,7 +26,7 @@ function planFor(file: string, extraArgs: string[] = []): ImpactPlan {
 describe("impact-based validation selection", () => {
 	it("selects the owning Music and Floating Tools checks", () => {
 		const sourcePlan = planFor(
-			"src/features/music-player/MusicPlayer.svelte",
+			"src/components/modules/music-player/MusicPlayer.svelte",
 		);
 		const testPlan = planFor("tests/e2e/features/floating-tools.spec.ts");
 
@@ -45,7 +45,9 @@ describe("impact-based validation selection", () => {
 	});
 
 	it("keeps floating TOC changes on shell and post-detail checks", () => {
-		const plan = planFor("src/components/control/FloatingTOC.astro");
+		const plan = planFor(
+			"src/components/modules/floating-tools/FloatingTOC.astro",
+		);
 
 		expect(plan.groups).toEqual([
 			"lint",

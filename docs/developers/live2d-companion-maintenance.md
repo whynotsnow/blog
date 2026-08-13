@@ -4,7 +4,7 @@
 
 ## 功能边界
 
-Live2D Companion 是一个浏览器端 Feature，源码位于 `src/features/live2d-companion/`，静态运行资源位于 `public/live2d-companion/`。
+Live2D Companion 是一个浏览器端组件 module，源码位于 `src/components/modules/live2d-companion/`，静态运行资源位于 `public/live2d-companion/`。
 
 它负责：
 
@@ -24,7 +24,7 @@ Live2D Companion 是一个浏览器端 Feature，源码位于 `src/features/live
 ## 文件结构
 
 ```text
-src/features/live2d-companion/
+src/components/modules/live2d-companion/
   Live2DCompanion.svelte
   Live2DCompanionModule.svelte
   events.ts
@@ -55,7 +55,7 @@ public/live2d-companion/
 
 - 调用 `useLive2DCompanionModule()` 获取 `view` store 和事件 handler。
 - 绑定 `rootEl`、`iframeEl`、`expressionPanelEl` 给 controller。
-- 保留 iframe、收起头像、完整 expression 面板和 Feature-local CSS。
+- 保留 iframe、收起头像、完整 expression 面板和 module-local CSS。
 
 不要把大量状态逻辑重新写回这个文件。
 
@@ -105,7 +105,7 @@ public/live2d-companion/
 
 ### 类型
 
-`types.ts` 只放 feature-local 类型。配置对外类型仍由 `src/types/config.ts` 维护。
+`types.ts` 只放 module-local 类型。配置对外类型仍由 `src/types/config.ts` 维护。
 
 ## 配置入口
 
@@ -143,7 +143,7 @@ public/live2d-companion/
 
 ## 事件契约
 
-页面和其他组件必须通过 `src/features/live2d-companion/events.ts` 控制看板娘：
+页面和其他组件必须通过 `src/components/modules/live2d-companion/events.ts` 控制看板娘：
 
 ```ts
 showLive2DCompanion();
@@ -224,7 +224,7 @@ Expression 有两层：
 
 ## 主题和样式
 
-Live2D 外层样式属于 Feature-local CSS：
+Live2D 外层样式属于 module-local CSS：
 
 - 可使用 `--surface-*`、`--text-*`、`--border-*`、`--accent`、`--shadow-*` 等 Semantic token。
 - 不新增全局 Design API，除非多个无关 Feature 都需要复用。

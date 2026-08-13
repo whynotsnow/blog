@@ -5,7 +5,7 @@ import {
 	renderDiaryMoments,
 	transformMemosToDiary,
 	type Memo,
-} from "@/features/diary/memos";
+} from "@/components/modules/diary/memos";
 
 const baseMemo: Memo = {
 	state: "NORMAL",

@@ -11,7 +11,7 @@
 			"src/components/Navbar.astro",
 			"src/components/anime/AnimeCard.astro",
 			"src/components/control/ButtonTag.astro",
-			"src/components/control/FloatingTOC.astro",
+			"src/components/modules/floating-tools/FloatingTOC.astro",
 			"src/components/control/Pagination.astro",
 			"src/components/misc/share-poster/SharePosterModal.svelte",
 			"src/components/post-detail/post-detail.css",
@@ -50,14 +50,14 @@
 			"src/components/WallpaperSwitch.svelte",
 			"src/components/anime/AnimeGrid.astro",
 			"src/components/anime/AnimePage.astro",
-			"src/components/control/BackToTop.astro",
+			"src/components/modules/floating-tools/BackToTop.astro",
 			"src/components/control/ButtonLink.astro",
-			"src/components/control/FloatingTOC.astro",
+			"src/components/modules/floating-tools/FloatingTOC.astro",
 			"src/components/control/Pagination.astro",
-			"src/components/features/settings/SettingSection.svelte",
-			"src/components/features/settings/SettingSlider.svelte",
-			"src/components/features/settings/SettingToggle.svelte",
-			"src/components/features/settings/SettingsPanel.svelte",
+			"src/components/modules/floating-tools/settings/SettingSection.svelte",
+			"src/components/modules/floating-tools/settings/SettingSlider.svelte",
+			"src/components/modules/floating-tools/settings/SettingToggle.svelte",
+			"src/components/modules/floating-tools/settings/SettingsPanel.svelte",
 			"src/components/misc/License.astro",
 			"src/components/misc/share-poster/assets.ts",
 			"src/components/password-protection/PasswordProtectionView.astro",
@@ -104,7 +104,7 @@
 		],
 		"--line-divider": [
 			"src/components/anime/AnimeCard.astro",
-			"src/components/control/FloatingTOC.astro",
+			"src/components/modules/floating-tools/FloatingTOC.astro",
 			"src/components/password-protection/PasswordProtectionView.astro",
 			"src/components/post-detail/PostHeader.astro",
 			"src/components/post/PostTaxonomyNav.svelte",
@@ -123,7 +123,7 @@
 		],
 		"--line-color": [
 			"src/components/MobileTOC.svelte",
-			"src/components/control/FloatingTOC.astro",
+			"src/components/modules/floating-tools/FloatingTOC.astro",
 			"src/styles/main.css"
 		],
 		"--content-meta": [
@@ -162,7 +162,7 @@
 	"primitiveTokens": {
 		"--color-primary-rgb": ["src/pages/devices.astro"],
 		"--color-selection-bar": [
-			"src/components/features/settings/SettingsPanel.svelte",
+			"src/components/modules/floating-tools/settings/SettingsPanel.svelte",
 			"src/components/widget/DisplaySettings.svelte",
 			"src/styles/variables.styl"
 		]

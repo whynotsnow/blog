@@ -96,7 +96,7 @@
 		"full": ["pnpm", "verify:full"],
 		"declaration-type": ["pnpm", "type-check:declarations"]
 	},
-	"coverage": ["src/features/**", "tests/e2e/**"],
+	"coverage": ["src/components/modules/**", "tests/e2e/**"],
 	"rules": [
 		{
 			"patterns": [
@@ -138,7 +138,9 @@
 			]
 		},
 		{
-			"patterns": ["src/components/control/FloatingTOC.astro"],
+			"patterns": [
+				"src/components/modules/floating-tools/FloatingTOC.astro"
+			],
 			"groups": [
 				"lint",
 				"type",
@@ -152,10 +154,10 @@
 		},
 		{
 			"patterns": [
-				"src/features/**",
+				"src/components/modules/**",
 				"src/components/LightDarkSwitch.svelte",
-				"src/components/control/BackToTop.astro",
-				"src/components/features/settings/**",
+				"src/components/modules/floating-tools/BackToTop.astro",
+				"src/components/modules/floating-tools/settings/**",
 				"src/components/ui/local-icons.ts",
 				"src/config/live2d-companion.ts",
 				"src/config/music.ts"
@@ -253,7 +255,7 @@
 				"src/components/albums/**",
 				"src/components/diary/**",
 				"src/components/filter-tabs/**",
-				"src/features/diary/**",
+				"src/components/modules/diary/**",
 				"src/styles/albums.css",
 				"src/styles/fancybox-custom.css",
 				"src/types/album.ts",
@@ -303,7 +305,7 @@
 			"patterns": [
 				"src/services/site-notice.ts",
 				"src/content/notifications/**",
-				"src/features/activity-center/**"
+				"src/components/modules/activity-center/**"
 			],
 			"groups": [
 				"lint",
@@ -320,7 +322,7 @@
 				"src/pages/api/categories/**",
 				"src/components/category/**",
 				"src/components/post/**",
-				"src/features/post-list/**",
+				"src/components/modules/post-list/**",
 				"src/services/category-page.ts"
 			],
 			"groups": ["lint", "type", "declaration-type", "astro", "post-list"]
@@ -352,7 +354,7 @@
 				"src/components/password-protection/**",
 				"src/components/Encryptor.astro",
 				"src/components/PasswordProtection.astro",
-				"src/features/post-content/**",
+				"src/components/modules/post-content/**",
 				"src/services/post-detail/**",
 				"src/pages/posts/**"
 			],

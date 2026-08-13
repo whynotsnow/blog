@@ -5,7 +5,7 @@
 	import { i18n } from "@/i18n/translation";
 	import { formatDateToYYYYMMDD } from "@/utils/date-utils";
 	import { siteConfig } from "@/config";
-	import { formatPostCardWordCount } from "@/features/post-list/word-count";
+	import { formatPostCardWordCount } from "@/components/modules/post-list/word-count";
 
 	export let post: Pick<ClientPostCard, "published" | "category" | "words">;
 

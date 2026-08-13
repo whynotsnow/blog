@@ -69,7 +69,7 @@ function collectBaseline() {
 		"src/pages",
 		"src/components",
 		"src/layouts",
-		"src/features",
+		"src/components/modules",
 		"src/styles",
 	].flatMap(walk);
 	const legacyTokens = Object.fromEntries(

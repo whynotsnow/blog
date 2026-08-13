@@ -23,8 +23,10 @@ flowchart TD
 | --- | --- |
 | `src/pages` | Astro 路由和静态端点。页面应尽量保持轻量。 |
 | `src/layouts` | 页面外壳和网格布局。 |
-| `src/components` | Astro 与 Svelte UI 组件。 |
-| `src/design` | 跨功能视觉规则的唯一所有者：token、Theme、Foundation、Pattern 与 Legacy 兼容。 |
+| `src/components` | Astro 与 Svelte UI 组件。普通业务展示组件按领域放置。 |
+| `src/components/ui` | 通用可渲染 UI 组件实现层，例如 Icon、Panel、Button 等不绑定具体业务的组件。 |
+| `src/components/modules` | 有自有交互逻辑、runtime controller、事件协议、storage 或 Svelte store 的组件模块。 |
+| `src/design` | 跨功能视觉规则的唯一所有者：token、Theme、Foundation、Pattern 与 Legacy 兼容；不放 Astro/Svelte 组件。 |
 | `src/services/core` | 内容读取、排序、派生元数据、分类标签索引、内容缓存。 |
 | `src/services` | 首页、归档、分类、Feed、日历数据、组件、文章详情等业务服务。 |
 | `src/content` | Astro 内容集合，包含文章和特殊页面。 |
@@ -43,7 +45,9 @@ flowchart TD
 - `src/services/` 负责页面逻辑、数据适配、配置归一化、static paths 构建、页面级 view model 生成。
 - `src/pages/` 只负责路由入口：调用 service、组合 layout/component、把 view model 传给展示组件。
 - `src/components/` 与 `src/layouts/` 负责渲染和局部展示结构。由页面拆出的组件应尽量是 presentational component。
-- 浏览器运行时交互不放入 `src/services/`，例如 DOM 监听、音频播放、pointer/mouse/touch 事件、localStorage UI 状态、Svelte runtime store，应放在所属组件或 feature 目录旁边。
+- `src/components/ui/` 是 Design contract 的组件实现层，可以消费 Semantic token 和 `ds-` Pattern class，但不定义新的跨项目视觉系统。
+- `src/components/modules/` 承载组件级应用模块。模块内部可以有 `controller.ts`、`runtime.ts`、`storage.ts`、`events.ts`、`state.ts` 和 `types.ts`，这些文件只服务于本模块。
+- 浏览器运行时交互不放入 `src/services/`，例如 DOM 监听、音频播放、pointer/mouse/touch 事件、localStorage UI 状态、Svelte runtime store，应放在所属组件或 module 目录旁边。
 - `src/services/core` 仍然是内容管线边界。普通文章集合、分类、标签、归档和文章详情数据不要绕过 `getContentStore()`。
 
 厚页面推荐拆分方式：
@@ -59,10 +63,10 @@ src/components/anime/
   types.ts
 ```
 
-复杂运行时功能推荐使用 feature-local 结构：
+复杂运行时功能推荐使用 module-local 结构：
 
 ```text
-src/features/music-player/
+src/components/modules/music-player/
   MusicPlayer.svelte
   MiniPlayer.svelte
   ExpandedPlayer.svelte
@@ -72,7 +76,7 @@ src/features/music-player/
   types.ts
 ```
 
-拆分时优先把 helper 和类型留在所属功能目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
+拆分时优先把 helper 和类型留在所属 module 目录内。只有当多个无关功能都复用同一段逻辑时，才提升到共享的 `src/utils` 或通用 service。
 
 首页与分类页使用独立页面组合，并共享 Post Card、Category Card 与 Grid 契约。首页由 `src/services/home.ts` 输出最近更新、推荐阅读和文章分类三个区块；最近更新与推荐阅读各 3 篇，文章分类复用分类 Hub card 视图模型并最多展示前 6 个分类，但隐藏每类最近文章列表，让首页分类 card 保持入口职责。首页区块右上角入口优先导向分类发现体系：最近更新进入 `/category/recent/` 的最近更新视图，推荐阅读进入 `/category/recommended/` 的推荐视图，文章分类进入 `/category/`。`/category/` 是分类 Hub，不是具体分类；它展示分类卡片、热门 Tag 和每类最近文章。`/category/recent/` 与 `/category/recommended/` 复用分类 Hub 壳层，分别按全站最近活动时间和 `sortByScore()` 展示文章，不参与具体分类的 Tag JSON 索引。具体分类页每页 12 篇，并在主内容顶部拥有分类与 Tag 筛选器。Astro SSG 页面 props 只保留当前页文章与不含 `data` 的分页元数据；每个具体分类另外生成一份 `/api/categories/{slug}.json/` 紧凑索引。普通分类页在首屏 `load` 完成且页面可见、在线、未启用 `Save-Data`、网络不属于 `2g` 或 `slow-2g` 时，才在浏览器 idle 阶段低优先级预取索引；合法 Tag 查询仍会立即加载，因网络条件跳过的预取不会阻止后续请求。索引 Promise 按完整 URL 隔离并以 3 个分类为上限执行 LRU 淘汰，因此同一分类的预取、Tag 切换、分页和 history 共用请求，而旧分类响应不会写入当前组件状态。查询参数、请求状态、失败重试、过滤和客户端分页逻辑与分类组件共置在 `src/components/category/category-page-client.ts`。
 
@@ -92,7 +96,7 @@ Shell 自有的顶部 Navigation Progress 使用 Semantic `--accent` 与 Motion 
 
 文章详情路由保持轻量：`src/pages/posts/[...slug].astro` 负责 static paths 并把页面模型转交给 `src/components/post-detail/PostDetailPage.astro`。Header、最后修改时间、上下篇导航和页面级样式与展示组件放在同一 feature 目录；TOC 等运行时消费者继续使用稳定的 `#post-container` 与 `.markdown-content` hook，但不得各自重复全页面 heading 扫描、文本清洗、active heading 计算或滚动 offset 逻辑。
 
-`src/components/misc/Markdown.astro` 是普通文章与加密文章共用的唯一内容样式入口，统一加载 Markdown、扩展内容和 Expressive Code 样式；加密组件只负责保护与解密状态。代码复制交互位于 `src/features/post-content/post-content-client.ts`，不再混入展示容器。
+`src/components/misc/Markdown.astro` 是普通文章与加密文章共用的唯一内容样式入口，统一加载 Markdown、扩展内容和 Expressive Code 样式；加密组件只负责保护与解密状态。代码复制交互位于 `src/components/modules/post-content/post-content-client.ts`，不再混入展示容器。
 
 路由切换动画由 `#swup-container` 的 `.transition-swup-layout` 单点负责。Navbar 与页面模块可以保留各自有意义的入场效果，文章列表项保留序列动画；文章详情内部区块不再叠加通用入场动画，避免嵌套位移和重复延迟。
 
@@ -159,10 +163,10 @@ RawPost
 - 新增非文章数据：优先放到 `src/data`。
 - 新增页面模块：放入所属领域目录，通过路由或 layout 显式组合；只有被多个无关功能复用的视觉外壳才提升为 `src/components/ui` 组件。不要恢复通用 placement registry。
 - 网站级通知由 `src/content/notifications/*.md` 编写正文与元数据，`src/services/site-notice.ts` 负责路由可见性、默认值和 Activity Center View Model。Activity Center 是 Navbar 级基础设施，始终渲染；没有通知内容时展示空通知状态。通知正文由 Astro 构建期 Markdown 管线渲染，再交给 Svelte 弹窗展示；浏览器端不解析 Markdown。
-- 右上角 Activity Center 由 `src/features/activity-center` 统一拥有，是信息入口而不是快捷操作入口。Navbar 中的 Bell Badge 只表达未读通知数，外圈只表达文章阅读进度；Panel 组合通知摘要列表与当前文章的阅读百分比、当前 Heading、预计剩余时间和本地续读位置。点击通知打开完整 Markdown 弹窗并写入已读；需要确认的通知只有点击“我知道了”才写入确认。`normal`、`important`、`urgent`、`critical` 等级控制排序和打扰强度，其中 `important`/`urgent` 未读时每个浏览器会话自动展开一次面板，`critical` 未确认时每个浏览器会话自动打开一次弹窗；`pinned` 独立表达置顶和自动打开策略。`info`、`success`、`warning`、`danger` 仍只表达视觉状态。阅读状态只读取 `#post-container` 暴露的标题与分钟元数据，并把浏览器交互状态保留在 Feature 内，不进入 `src/services`。
+- 右上角 Activity Center 由 `src/components/modules/activity-center` 统一拥有，是信息入口而不是快捷操作入口。Navbar 中的 Bell Badge 只表达未读通知数，外圈只表达文章阅读进度；Panel 组合通知摘要列表与当前文章的阅读百分比、当前 Heading、预计剩余时间和本地续读位置。点击通知打开完整 Markdown 弹窗并写入已读；需要确认的通知只有点击“我知道了”才写入确认。`normal`、`important`、`urgent`、`critical` 等级控制排序和打扰强度，其中 `important`/`urgent` 未读时每个浏览器会话自动展开一次面板，`critical` 未确认时每个浏览器会话自动打开一次弹窗；`pinned` 独立表达置顶和自动打开策略。`info`、`success`、`warning`、`danger` 仍只表达视觉状态。阅读状态只读取 `#post-container` 暴露的标题与分钟元数据，并把浏览器交互状态保留在 Feature 内，不进入 `src/services`。
 - Activity Center 与 Floating Tools 新增的 Shell Icon 必须保存到 `src/assets/icons/material-symbols`，并在 `src/components/ui/local-icons.ts` 显式登记，由 Astro/Svelte 两个 `LocalIcon` Renderer 以本地 Mask Asset 呈现，不得在运行时请求 Iconify API。Activity Center 遇到未登记的动态通知图标时回退为本地 Info Icon；新增通知图标时应同步补充 SVG 与 Registry。
-- 右下角 Floating Tools 由 `src/features/floating-tools` 统一拥有 viewport placement、响应式触摸尺寸与展开状态，并在 `MainGridContent.astro` 中挂载到整个动画 Main Content Layer 外。Theme、Music、Settings、Floating TOC 与 Back to Top 继续拥有各自行为，只把入口组合进统一 Rail；新的 Shell 悬浮入口不得再单独声明互相竞争的右下角 fixed 坐标。Settings 必须使用传入的 Feature class 形成真正的 viewport Panel，不能把 Astro 的 `class:list` 语法用于 Svelte 组件。
-- Live2D Companion 与 Music Player 的 `enable` 配置只提供首次默认挂载状态，不能作为功能可用性的硬门槛；Floating Tools 始终保留对应入口，并分别通过 `live2d-companion-mounted` 与 `music-player-mounted` 记录访客选择。Live2D Companion 的 iframe 隔离、事件入口、expression 面板、拖拽位置和模型维护规则集中记录在 [Live2D Companion 维护指南](./live2d-companion-maintenance.md)。Music Player 通过 `src/features/music-player/events.ts` 接收模块 UI 显隐命令并发布播放、加载、可见与展开状态；Floating Tools 只消费该契约并根据播放器占用高度避让，不直接持有 Audio 或面板状态，也不通过 DOM Mutation 反推播放器状态。
+- 右下角 Floating Tools 由 `src/components/modules/floating-tools` 统一拥有 viewport placement、响应式触摸尺寸与展开状态，并在 `MainGridContent.astro` 中挂载到整个动画 Main Content Layer 外。Theme、Music、Settings、Floating TOC 与 Back to Top 继续拥有各自行为，只把入口组合进统一 Rail；新的 Shell 悬浮入口不得再单独声明互相竞争的右下角 fixed 坐标。Settings 必须使用传入的 Feature class 形成真正的 viewport Panel，不能把 Astro 的 `class:list` 语法用于 Svelte 组件。
+- Live2D Companion 与 Music Player 的 `enable` 配置只提供首次默认挂载状态，不能作为功能可用性的硬门槛；Floating Tools 始终保留对应入口，并分别通过 `live2d-companion-mounted` 与 `music-player-mounted` 记录访客选择。Live2D Companion 的 iframe 隔离、事件入口、expression 面板、拖拽位置和模型维护规则集中记录在 [Live2D Companion 维护指南](./live2d-companion-maintenance.md)。Music Player 通过 `src/components/modules/music-player/events.ts` 接收模块 UI 显隐命令并发布播放、加载、可见与展开状态；Floating Tools 只消费该契约并根据播放器占用高度避让，不直接持有 Audio 或面板状态，也不通过 DOM Mutation 反推播放器状态。
 - 新增页面逻辑：先封装到 `src/services`，再接入 `src/pages`。
 - 分类、标签和文章 URL 不要硬编码。共享 URL 拼接使用 `src/utils/url.ts`，分类与标签规范化使用 `src/services/core/taxonomy.ts`，文章 canonical URL 使用 `src/services/core/post-routes.ts`。图片 glob、Astro Content 类型与 Node API 只属于 `src/services/core/content-assets.ts`，不得进入客户端依赖图。
 

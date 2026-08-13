@@ -2,8 +2,8 @@
 	import { onMount } from "svelte";
 	import type { ClientPostCard } from "@/services/category-page";
 	import PostCardView from "./PostCardView.svelte";
-	import { initializePostList } from "@/features/post-list/controller";
-	import "@/features/post-list/post-list.css";
+	import { initializePostList } from "@/components/modules/post-list/controller";
+	import "@/components/modules/post-list/post-list.css";
 
 	export let posts: ClientPostCard[];
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatPostCardWordCount } from "@/features/post-list/word-count";
+import { formatPostCardWordCount } from "@/components/modules/post-list/word-count";
 
 describe("formatPostCardWordCount", () => {
 	it("keeps short Chinese counts exact", () => {

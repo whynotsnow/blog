@@ -1,6 +1,6 @@
-import type { DiaryItem } from "../../data/diary";
-import type { RelativeTimeLabels } from "../../utils/timeFormat";
-import { formatRelativeTime } from "../../utils/timeFormat";
+import type { DiaryItem } from "@/data/diary";
+import type { RelativeTimeLabels } from "@/utils/timeFormat";
+import { formatRelativeTime } from "@/utils/timeFormat";
 
 export interface MemoAttachment {
 	name: string;

@@ -3,13 +3,13 @@ import LocalIcon from "@/components/ui/LocalIcon.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import LightDarkSwitch from "@components/LightDarkSwitch.svelte";
-import SettingsPanel from "@components/features/settings/SettingsPanel.svelte";
-import BackToTop from "@components/control/BackToTop.astro";
-import FloatingTOC from "@components/control/FloatingTOC.astro";
-import MusicPlayer from "@/features/music-player/MusicPlayer.svelte";
+import MusicPlayer from "@/components/modules/music-player/MusicPlayer.svelte";
 import { musicPlayerConfig } from "@/config";
+import BackToTop from "./BackToTop.astro";
+import FloatingTOC from "./FloatingTOC.astro";
 import Live2DCompanionToggle from "./Live2DCompanionToggle.svelte";
 import "./floating-tools.css";
+import SettingsPanel from "./settings/SettingsPanel.svelte";
 ---
 
 <div class="floating-tools-layer">
@@ -112,7 +112,7 @@ import "./floating-tools.css";
 		musicPlayerPanelEasing,
 		type MusicPlayerCommand,
 		type MusicPlayerUiState,
-	} from "@/features/music-player/events";
+	} from "@/components/modules/music-player/events";
 
 	const ROOT_ID = "floating-tools";
 	const SWITCH_ID = "floating-tools-switch";

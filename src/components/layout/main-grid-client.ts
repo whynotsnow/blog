@@ -3,7 +3,7 @@ import {
 	BANNER_HEIGHT_HOME,
 	BANNER_HEIGHT_FULLSCREEN,
 } from "@/constants/constants";
-import { initializePostCardTagFitting } from "@/features/post-list/controller";
+import { initializePostCardTagFitting } from "@/components/modules/post-list/controller";
 import { onPageLifecycle } from "@/utils/page-lifecycle";
 import { initSakura, stopSakura } from "@/utils/sakura-manager";
 import { applyWallpaperVisualSettings } from "@/utils/setting-utils";

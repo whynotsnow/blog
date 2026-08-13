@@ -87,7 +87,7 @@ Do not place unrelated behavior in a convenient existing spec. Avoid duplicating
 | `pnpm build:astro` | Content/font preparation plus the Astro build stage, without Pagefind |
 | `pnpm verify:full` | Static checks, fast tests, full E2E, and complete production build |
 
-Pre-commit uses staged-file categories for local static gates and never runs browser tests. Local `test:plan` and `test:affected` favor fast, determined checks and report full-regression recommendations as risks instead of executing `verify:full`. Pull request and ordinary `main` push CI consume the CI-mode impact plan. Weekly scheduled runs, manual full runs, releases, and risk-based escalation keep L6 as the mapping safety net. `pnpm test:impact:check` guards `src/features/**` and `tests/e2e/**` so newly added paths cannot silently fall through to full validation in CI.
+Pre-commit uses staged-file categories for local static gates and never runs browser tests. Local `test:plan` and `test:affected` favor fast, determined checks and report full-regression recommendations as risks instead of executing `verify:full`. Pull request and ordinary `main` push CI consume the CI-mode impact plan. Weekly scheduled runs, manual full runs, releases, and risk-based escalation keep L6 as the mapping safety net. `pnpm test:impact:check` guards `src/components/modules/**` and `tests/e2e/**` so newly added paths cannot silently fall through to full validation in CI.
 
 ## Handoff Evidence
 

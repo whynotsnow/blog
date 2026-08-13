@@ -9,7 +9,7 @@
 		LIVE2D_COMPANION_MOUNT_EVENT,
 		setLive2DCompanionMounted,
 		type Live2DCompanionMountChangeDetail,
-	} from "@/features/live2d-companion/preferences";
+	} from "@/components/modules/live2d-companion/preferences";
 
 	let mounted = $state(live2dCompanionConfig.enable);
 	let available = $state(false);

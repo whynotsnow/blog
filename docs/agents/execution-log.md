@@ -153,7 +153,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 - Added a fixed listing layout policy with responsive one-, two-, and three-column post grids plus explicit home and category Widget placements.
 - Made home a six-post section-based guide while category pages use independent twelve-post Astro/Svelte pagination.
-- Kept category URL, history, Tag filtering, and client pagination behavior beside the category components instead of adding another `src/features` module.
+- Kept category URL, history, Tag filtering, and client pagination behavior beside the category components instead of adding another `src/components/modules` module.
 - Expanded home into three six-post guide sections and normalized Grid Cards with fixed geometry plus a semantic fallback cover.
 
 ### Decoupled content-page entry scrolling from Banner geometry
@@ -376,7 +376,7 @@ Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playb
 
 ### Generalized the Live2D companion boundary
 
-- Replaced the model-specific companion feature with `src/features/live2d-companion`, keeping the iframe renderer as an isolation boundary instead of a cross-component API surface.
+- Replaced the model-specific companion feature with `src/components/modules/live2d-companion`, keeping the iframe renderer as an isolation boundary instead of a cross-component API surface.
 - Added a feature-local command contract for show, collapse, toggle, and message interactions so other pages and components do not reach into the iframe DOM.
 - Store outer mount state in `live2d-companion-mounted` and internal collapsed state in `live2d-companion-collapsed`.
 - Removed legacy selectors and config/type aliases; new code should use `Live2DCompanion`, `live2dCompanionConfig`, and the feature-local event helpers.

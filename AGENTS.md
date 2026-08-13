@@ -30,6 +30,9 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - Content source: `src/content/posts` and `src/content/spec`, optionally prepared from a pinned external commit by `scripts/prepare-content.mjs`.
 - Core content pipeline: `src/services/core`.
 - UI-facing service layer: `src/services`.
+- Stateful component modules: `src/components/modules`.
+- Shared renderable UI primitives: `src/components/ui`.
+- Design contract: `src/design`.
 - Site configuration: `src/config.ts` and `src/types/config.ts`.
 - Static assets: `public`.
 - Documentation: `docs`.
@@ -106,8 +109,10 @@ If Playwright cannot run, do not treat Browser as an execution fallback; route P
   - `src/services/` owns page logic, data adaptation, configuration normalization, static path builders, and page-level view models.
   - `src/pages/` owns routing only: call services, compose layouts/components, and pass view models down.
   - `src/components/` and `src/layouts/` own rendering and local presentation. Extracted page components should stay mostly presentational.
-  - Browser-only interaction state such as DOM listeners, audio playback, pointer events, localStorage UI state, and Svelte runtime stores should live beside the owning component or feature, not in `src/services/`.
-- Prefer feature-local directories for large splits. Keep helpers and types beside the feature until they are reused by multiple unrelated features; only then promote them to shared `src/utils` or shared services.
+  - `src/components/ui/` owns reusable renderable UI pieces. It consumes the Design contract but should not read business data or become a placement registry.
+  - `src/components/modules/` owns component modules with browser-only interaction state such as DOM listeners, audio playback, pointer events, localStorage UI state, event contracts, runtime controllers, and Svelte stores.
+  - Browser-only interaction state should live beside the owning component module, not in `src/services/`.
+- Prefer module-local directories for large interactive component splits. Keep helpers and types beside the module until they are reused by multiple unrelated modules; only then promote them to shared `src/utils` or shared services.
 - All architectural changes must respect the `src/services/core` pipeline.
 - Do not bypass the `content-store` layer or `getContentStore()` for normal post collection data.
 - Keep content schema changes in `src/content.config.ts` and document them in `docs/developers/content-guide.md`.
@@ -117,7 +122,7 @@ If Playwright cannot run, do not treat Browser as an execution fallback; route P
 - Store machine-specific paths, personal identities, raw command output, and unreviewed runtime observations under `.agent-workspace/local/`, `.agent-workspace/raw/`, or `.agent-workspace/quarantine/`. These directories are private and ignored by Git.
 - Only promote sanitized, reusable knowledge into tracked Agent Workspace Spec documents. Follow `docs/agents/disclosure-policy.md` and run `node .agent-workspace/tools/agent-workspace.mjs validate` before committing.
 - Preserve local customizations in `src/config.ts`; this repository is intentionally personal and not a clean upstream Mizuki copy.
-- UI changes must consume the project Design layer in `src/design/` when an existing Semantic token or `ds-` Pattern covers the requirement. Primitive `--color-*` tokens are Design-only, and Feature-local tokens should reference Semantic tokens. Read `docs/developers/design-system.md` before non-trivial UI work.
+- UI changes must consume the project Design layer in `src/design/` when an existing Semantic token or `ds-` Pattern covers the requirement. Primitive `--color-*` tokens are Design-only, module-local tokens should reference Semantic tokens, and `src/design/` must not contain Astro or Svelte components. Read `docs/developers/design-system.md` before non-trivial UI work.
 
 ## Documentation Reading Rules
 
