@@ -85,6 +85,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: splitting a large spec into multiple files unexpectedly increases worker concurrency, dev-server load, timeouts, or readiness flakes even though assertions did not change.
 - Playbook: [playwright-spec-split-concurrency-drift](./runtime-playbook.md#playwright-spec-split-concurrency-drift)
 
+### playwright-stale-dev-server-reuse
+
+- Symptom: full Playwright regression reports missing client islands across unrelated modules, often with `Cannot read properties of undefined (reading 'call')`, while the same suites pass after stopping an old Astro/Vite server.
+- Playbook: [playwright-stale-dev-server-reuse](./runtime-playbook.md#playwright-stale-dev-server-reuse)
+
 ### playwright-chromium-mac-sandbox
 
 - Symptom: Playwright Chromium launch fails with `MachPortRendezvousServer` and `Permission denied (1100)` before localhost navigation.

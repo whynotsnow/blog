@@ -18,7 +18,7 @@ Resolve actual capability state from the active local profiles under `.agent-wor
 
 - Playwright is installed as `@playwright/test`.
 - `pnpm test:smoke` is the critical-route browser check; `pnpm test:e2e:full` is the deterministic full browser regression command.
-- `playwright.config.ts` starts the Astro development server; a separate `pnpm dev` process is not required.
+- `playwright.config.ts` starts the Astro development server; a separate `pnpm dev` process is not required. Existing local servers are not reused by default. Set `PLAYWRIGHT_REUSE_SERVER=1` only when deliberately attaching Playwright to a known-good running server.
 - Agents must not control Chrome. A budgeted in-app Browser visual result, a developer-reported manual Chrome result, and an agent- or developer-run Playwright result are distinct and must be reported separately.
 - In-app Browser availability and local URL support are session capabilities, not guaranteed project capabilities. Do not retry or switch to Computer Use when local access is unavailable.
 - A browser launch failure before navigation is not a page assertion failure.

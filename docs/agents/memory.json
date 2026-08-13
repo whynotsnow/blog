@@ -1,6 +1,6 @@
 {
 	"version": 2,
-	"updated": "2026-07-27",
+	"updated": "2026-08-13",
 	"principle": "This project is not debugged repeatedly. It is learned once and reused forever.",
 	"architecture_constraints": [
 		{
@@ -15,8 +15,8 @@
 		},
 		{
 			"id": "runtime-feature-boundary",
-			"rule": "Browser-only runtime interaction state such as DOM listeners, audio playback, pointer events, localStorage UI state, and Svelte runtime stores should live beside the owning component or feature, not in src/services/.",
-			"reason": "src/services is for build-time/page-level logic and view models, while client interaction code is feature-local runtime behavior."
+			"rule": "Browser-only runtime interaction state such as DOM listeners, audio playback, pointer events, localStorage UI state, event contracts, controllers, and Svelte runtime stores should live beside the owning component module under src/components/modules/, not in src/services/.",
+			"reason": "src/services is for build-time/page-level logic and view models, while client interaction code is module-local runtime behavior."
 		},
 		{
 			"id": "content-store-contract",
@@ -38,6 +38,16 @@
 				"unchanged assertions begin timing out or observing app globals before readiness"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#playwright-spec-split-concurrency-drift"
+		},
+		{
+			"id": "playwright-stale-dev-server-reuse",
+			"cluster": "browser-verification",
+			"symptoms": [
+				"full Playwright regression reports missing client islands across unrelated modules",
+				"browser console reports Cannot read properties of undefined (reading 'call')",
+				"same suites pass after stopping an old Astro or Vite dev server and starting a fresh one"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#playwright-stale-dev-server-reuse"
 		},
 		{
 			"id": "zsh-glob-expansion",

@@ -4,6 +4,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 const port = Number(process.env.PLAYWRIGHT_PORT ?? 4321);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}`;
+const reuseExistingServer =
+	!process.env.CI && process.env.PLAYWRIGHT_REUSE_SERVER === "1";
 
 export default defineConfig({
 	testDir: "./tests/e2e",
@@ -32,7 +34,7 @@ export default defineConfig({
 	webServer: {
 		command: `pnpm content:prepare && pnpm font:prepare && astro dev --host 127.0.0.1 --port ${port}`,
 		url: baseURL,
-		reuseExistingServer: !process.env.CI,
+		reuseExistingServer,
 		timeout: 60_000,
 	},
 });

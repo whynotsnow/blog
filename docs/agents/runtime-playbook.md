@@ -275,6 +275,22 @@ Use:
 - Re-run failing owner specs independently to distinguish a behavior regression from concurrency pressure.
 - Do not add retries merely to hide an implicit worker-count change.
 
+### playwright-stale-dev-server-reuse
+
+Pattern:
+
+- Full Playwright regression reuses an old Astro/Vite dev server on the configured port.
+- SSR markup is present, but client islands or runtime modules are missing across unrelated areas, such as Search, Activity Center, Floating Tools, Fancybox, or category tag mode.
+- Browser console errors may include `Cannot read properties of undefined (reading 'call')`.
+- Re-running the same suites after stopping the old server makes the failures disappear.
+
+Use:
+
+- Do not diagnose broad missing-island failures as separate feature regressions until the dev server process is known to be fresh.
+- Check for and stop stale listeners on the Playwright port before rerunning full browser validation.
+- Keep `playwright.config.ts` on a clean-server default. Use `PLAYWRIGHT_REUSE_SERVER=1` only when intentionally testing against a known-good existing server.
+- If this pattern appears after dependency optimization or file moves, rerun the failing command with a freshly started server before changing application code.
+
 ### playwright-chromium-mac-sandbox
 
 Pattern:

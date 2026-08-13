@@ -60,6 +60,7 @@ pnpm verify:full
 - `test:smoke` 只负责关键路由可用性，不等于完整浏览器回归。
 - `build:astro` 不运行 Pagefind、字体压缩和完整 Build 编排。
 - `verify:full` 用于 CI 中的依赖、工具链、CI、未知影响，以及手动完整验证、定时回归和发布场景。
+- Playwright 默认启动干净的 Astro dev server，不复用已有服务；只有显式设置 `PLAYWRIGHT_REUSE_SERVER=1` 时才会连接当前端口上的服务。
 
 Pre-commit 只对 staged 文件运行相关静态门禁，不执行浏览器测试。Pull Request CI 和普通 `main` Push CI 使用同一 CI 模式影响映射选择 Fast、Browser 和 Build job；手动完整验证、定时任务和发布验证仍运行 L6。
 
