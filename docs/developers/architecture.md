@@ -139,6 +139,7 @@ RawPost
 | `src/pages/category/[slug]/page/[page].astro` | 分类分页，底层由 `src/services/category-page.ts` 生成页面数据。 |
 | `src/pages/api/categories/[slug].json.ts` | 每分类一份紧凑 Tag 索引；普通分类访问不会下载。 |
 | `src/pages/archive.astro` | 归档页。 |
+| `src/pages/projects.astro` | Projects 页面薄路由，底层由 `src/services/projects.ts` 生成页面模型，并交给 `src/components/projects/` 渲染。 |
 | `src/pages/rss.xml.ts`、`src/pages/atom.xml.ts` | 摘要型 Feed 输出，底层由 `src/services/feed.ts` 统一数据和 XML 语义。 |
 | `src/pages/og/[...slug].png.ts` | Open Graph 图片生成。 |
 

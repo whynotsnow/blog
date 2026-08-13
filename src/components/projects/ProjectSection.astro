@@ -1,0 +1,41 @@
+---
+import type { Project } from "@/data/projects";
+import ProjectCard from "./ProjectCard.astro";
+
+interface Props {
+	title: string;
+	projects: Project[];
+	showCount?: boolean;
+	variant?: "featured" | "compact";
+}
+
+const { title, projects, showCount = false, variant = "compact" } = Astro.props;
+const gridClass =
+	variant === "featured"
+		? "grid grid-cols-1 md:grid-cols-2 gap-6"
+		: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+---
+
+{
+	projects.length > 0 && (
+		<div class={variant === "featured" ? "mb-8" : undefined}>
+			<h2
+				class="projects-page__section-title font-bold text-black/90 dark:text-white/90 mb-4 relative
+                    before:w-1 before:h-6 before:rounded-md before:bg-[var(--accent)]
+                    before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
+			>
+				{title}
+				{showCount && (
+					<span class="projects-page__section-count font-normal text-black/60 dark:text-white/60 ml-2">
+						({projects.length})
+					</span>
+				)}
+			</h2>
+			<div class={gridClass}>
+				{projects.map((project) => (
+					<ProjectCard {project} {variant} />
+				))}
+			</div>
+		</div>
+	)
+}

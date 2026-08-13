@@ -311,6 +311,22 @@
 		},
 		{
 			"patterns": [
+				"src/pages/projects.astro",
+				"src/components/projects/**",
+				"src/services/projects.ts"
+			],
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"design",
+				"astro-build",
+				"smoke"
+			]
+		},
+		{
+			"patterns": [
 				"src/components/footer/**",
 				"src/components/profile/**",
 				"src/components/layout/MainGridContent.astro",

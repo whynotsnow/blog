@@ -1,0 +1,55 @@
+---
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import type { ProjectsPageModel } from "@/services/projects";
+
+interface Props {
+	model: Pick<ProjectsPageModel, "stats" | "allTechStack">;
+}
+
+const { model } = Astro.props;
+const { stats, allTechStack } = model;
+---
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+	<div
+		class="bg-blue-500/10 dark:bg-blue-900/30 rounded-lg p-4 border border-blue-500/20 dark:border-blue-900/30 hover:shadow-lg transition-shadow duration-300"
+	>
+		<div class="projects-page__stat-value font-bold text-blue-600 dark:text-blue-400">
+			{stats.total}
+		</div>
+		<div class="projects-page__stat-label text-blue-600/70 dark:text-blue-400/70">
+			{i18n(I18nKey.projectsTotal)}
+		</div>
+	</div>
+	<div
+		class="bg-green-500/10 dark:bg-green-900/30 rounded-lg p-4 border border-green-500/20 dark:border-green-900/30 hover:shadow-lg transition-shadow duration-300"
+	>
+		<div class="projects-page__stat-value font-bold text-green-600 dark:text-green-400">
+			{stats.byStatus.completed}
+		</div>
+		<div class="projects-page__stat-label text-green-600/70 dark:text-green-400/70">
+			{i18n(I18nKey.projectsCompleted)}
+		</div>
+	</div>
+	<div
+		class="bg-yellow-500/10 dark:bg-yellow-900/30 rounded-lg p-4 border border-yellow-500/20 dark:border-yellow-900/30 hover:shadow-lg transition-shadow duration-300"
+	>
+		<div class="projects-page__stat-value font-bold text-yellow-600 dark:text-yellow-400">
+			{stats.byStatus.inProgress}
+		</div>
+		<div class="projects-page__stat-label text-yellow-600/70 dark:text-yellow-400/70">
+			{i18n(I18nKey.projectsInProgress)}
+		</div>
+	</div>
+	<div
+		class="bg-purple-500/10 dark:bg-purple-900/30 rounded-lg p-4 border border-purple-500/20 dark:border-purple-900/30 hover:shadow-lg transition-shadow duration-300"
+	>
+		<div class="projects-page__stat-value font-bold text-purple-600 dark:text-purple-400">
+			{allTechStack.length}
+		</div>
+		<div class="projects-page__stat-label text-purple-600/70 dark:text-purple-400/70">
+			{i18n(I18nKey.projectsTechStack)}
+		</div>
+	</div>
+</div>

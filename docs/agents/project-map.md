@@ -153,6 +153,7 @@ Important routes:
 | `src/pages/category/[slug]/page/[page].astro` | Category pagination from page 2 onward; page 1 is intentionally absent. |
 | `src/pages/api/categories/[slug].json.ts` | Compact per-category Tag index loaded by conditional idle prefetch or immediately by Tag mode. |
 | `src/pages/archive.astro` | Archive page. |
+| `src/pages/projects.astro` | Thin Projects route backed by `src/services/projects.ts` and rendered by `src/components/projects/`. |
 | `src/pages/rss.xml.ts`, `src/pages/atom.xml.ts` | Feeds backed by `src/services/feed.ts`. |
 | `src/pages/og/[...slug].png.ts` | Open Graph image generation when enabled. |
 

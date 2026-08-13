@@ -1,0 +1,25 @@
+---
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+
+interface Props {
+	items: string[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="mt-12 pt-8 border-t border-black/10 dark:border-white/10">
+	<h2 class="projects-page__section-title font-bold text-black/90 dark:text-white/90 mb-4">
+		{i18n(I18nKey.projectsTechStack)}
+	</h2>
+	<div class="flex flex-wrap gap-2">
+		{
+			items.map((tech) => (
+				<span class="projects-page__tech-chip px-3 py-1 bg-gray-600/20 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-full">
+					{tech}
+				</span>
+			))
+		}
+	</div>
+</div>

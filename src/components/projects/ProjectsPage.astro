@@ -1,0 +1,55 @@
+---
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import type { ProjectsPageModel } from "@/services/projects";
+import ProjectSection from "./ProjectSection.astro";
+import ProjectsStats from "./ProjectsStats.astro";
+import ProjectsTechStack from "./ProjectsTechStack.astro";
+
+interface Props {
+	model: ProjectsPageModel;
+}
+
+const { model } = Astro.props;
+---
+
+<div
+	class="projects-page flex w-full rounded-[var(--radius-lg)] overflow-hidden relative min-h-32"
+>
+	<div class="card-base z-10 px-9 py-6 relative w-full">
+		<div class="flex flex-col items-start justify-center mb-8">
+			<h1
+				class="projects-page__title font-bold text-black/90 dark:text-white/90 mb-2 relative
+                  before:w-1 before:h-8 before:rounded-md before:bg-[var(--accent)]
+                  before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
+			>
+				{model.title}
+			</h1>
+			<p class="projects-page__subtitle text-black/60 dark:text-white/60">
+				{model.subtitle}
+			</p>
+		</div>
+
+		<ProjectsStats model={model} />
+
+		<ProjectSection
+			title={i18n(I18nKey.projectsFeatured)}
+			projects={model.featuredProjects}
+			variant="featured"
+		/>
+
+		<div class="space-y-8">
+			{
+				model.categories.map((group) => (
+					<ProjectSection
+						title={group.label}
+						projects={group.projects}
+						showCount
+					/>
+				))
+			}
+		</div>
+
+		<ProjectsTechStack items={model.allTechStack} />
+	</div>
+</div>

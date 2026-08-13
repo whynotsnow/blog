@@ -1,0 +1,123 @@
+---
+import { Icon } from "astro-icon/components";
+import type { Project } from "@/data/projects";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+
+interface Props {
+	project: Project;
+	variant?: "featured" | "compact";
+}
+
+const { project, variant = "compact" } = Astro.props;
+const isFeatured = variant === "featured";
+const techLimit = isFeatured ? 4 : 3;
+
+const statusClass =
+	project.status === "completed"
+		? "bg-green-600/20 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+		: project.status === "in-progress"
+			? "bg-yellow-600/20 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+			: "bg-gray-600/20 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400";
+
+const statusLabel =
+	project.status === "completed"
+		? i18n(I18nKey.projectsCompleted)
+		: project.status === "in-progress"
+			? i18n(I18nKey.projectsInProgress)
+			: i18n(I18nKey.projectsPlanned);
+---
+
+<div
+	class="bg-transparent rounded-lg border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+>
+	{
+		project.image && (
+			<div class="aspect-video overflow-hidden">
+				<img
+					src={project.image}
+					alt={project.title}
+					class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+				/>
+			</div>
+		)
+	}
+	<div class={isFeatured ? "p-6" : "p-4"}>
+		<div class={`flex items-start justify-between ${isFeatured ? "mb-3" : "mb-2"}`}>
+			<h3
+				class:list={[
+					isFeatured
+						? "projects-page__featured-title"
+						: "projects-page__card-title line-clamp-1",
+					"font-semibold text-black/90 dark:text-white/90",
+				]}
+			>
+				{project.title}
+			</h3>
+			<span
+				class:list={[
+					"projects-page__badge px-2 py-1 rounded-full",
+					!isFeatured && "shrink-0 ml-2",
+					statusClass,
+				]}
+			>
+				{statusLabel}
+			</span>
+		</div>
+		<p
+			class:list={[
+				"text-black/60 dark:text-white/60 line-clamp-2",
+				isFeatured ? "mb-4" : "projects-page__description mb-3",
+			]}
+		>
+			{project.description}
+		</p>
+		<div class={`flex flex-wrap ${isFeatured ? "gap-2 mb-4" : "gap-1 mb-3"}`}>
+			{
+				project.techStack.slice(0, techLimit).map((tech) => (
+					<span class="projects-page__tag px-2 py-1 bg-blue-600/20 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+						{tech}
+					</span>
+				))
+			}
+			{
+				project.techStack.length > techLimit && (
+					<span class="projects-page__tag px-2 py-1 bg-gray-600/20 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 rounded">
+						+{project.techStack.length - techLimit}
+					</span>
+				)
+			}
+		</div>
+		<div class="projects-page__actions flex flex-wrap gap-2">
+			{
+				project.visitUrl && (
+					<a
+						href={project.visitUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="btn-gradient btn-gradient-primary btn-gradient-md"
+					>
+						<Icon
+							name="material-symbols:open-in-new"
+							class="projects-page__action-icon"
+						/>
+						{i18n(I18nKey.projectsVisit)}
+					</a>
+				)
+			}
+			{
+				project.sourceCode && (
+					<a
+						href={project.sourceCode}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="btn-gradient btn-github btn-gradient-md"
+					>
+						<Icon name="mdi:github" class="projects-page__action-icon" />
+						{i18n(I18nKey.projectsGitHub)}
+					</a>
+				)
+			}
+		</div>
+	</div>
+</div>

@@ -22,37 +22,37 @@
 
 /* 主题色渐变按钮 */
 .btn-gradient-primary {
-  background: linear-gradient(135deg, oklch(from var(--primary) l c h) 0%, oklch(from var(--primary) calc(l + 0.1) c calc(h + 30)) 100%);
-  color: white;
-  box-shadow: 0 2px 4px oklch(from var(--primary) l c h / 0.3);
+  background: linear-gradient(135deg, oklch(from var(--accent) l c h) 0%, oklch(from var(--accent) calc(l + 0.1) c calc(h + 30)) 100%);
+  color: var(--text-on-accent);
+  box-shadow: 0 2px 4px oklch(from var(--accent) l c h / 0.3);
 }
 
 /* 夜间模式下主题色渐变按钮更暗 */
 .dark .btn-gradient-primary {
-  background: linear-gradient(135deg, oklch(from var(--primary) calc(l - 0.1) c h) 0%, oklch(from var(--primary) l c calc(h + 30)) 100%);
-  box-shadow: 0 2px 4px oklch(from var(--primary) calc(l - 0.1) c h / 0.4);
+  background: linear-gradient(135deg, oklch(from var(--accent) calc(l - 0.1) c h) 0%, oklch(from var(--accent) l c calc(h + 30)) 100%);
+  box-shadow: 0 2px 4px oklch(from var(--accent) calc(l - 0.1) c h / 0.4);
 }
 
 .btn-gradient-primary:hover {
-  background: linear-gradient(135deg, oklch(from var(--primary) calc(l + 0.05) c h) 0%, oklch(from var(--primary) calc(l + 0.15) c calc(h + 30)) 100%);
-  box-shadow: 0 4px 8px oklch(from var(--primary) l c h / 0.4);
+  background: linear-gradient(135deg, oklch(from var(--accent) calc(l + 0.05) c h) 0%, oklch(from var(--accent) calc(l + 0.15) c calc(h + 30)) 100%);
+  box-shadow: 0 4px 8px oklch(from var(--accent) l c h / 0.4);
   transform: translateY(-2px);
 }
 
 /* 夜间模式下悬停效果 */
 .dark .btn-gradient-primary:hover {
-  background: linear-gradient(135deg, oklch(from var(--primary) l c h) 0%, oklch(from var(--primary) calc(l + 0.1) c calc(h + 30)) 100%);
-  box-shadow: 0 4px 8px oklch(from var(--primary) l c h / 0.5);
+  background: linear-gradient(135deg, oklch(from var(--accent) l c h) 0%, oklch(from var(--accent) calc(l + 0.1) c calc(h + 30)) 100%);
+  box-shadow: 0 4px 8px oklch(from var(--accent) l c h / 0.5);
 }
 
 .btn-gradient-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px oklch(from var(--primary) l c h / 0.3);
+  box-shadow: 0 2px 4px oklch(from var(--accent) l c h / 0.3);
 }
 
 /* 夜间模式下激活效果 */
 .dark .btn-gradient-primary:active {
-  box-shadow: 0 2px 4px oklch(from var(--primary) calc(l - 0.1) c h / 0.4);
+  box-shadow: 0 2px 4px oklch(from var(--accent) calc(l - 0.1) c h / 0.4);
 }
 
 /* GitHub按钮样式 */
@@ -140,4 +140,53 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+.projects-page__title {
+  font-size: var(--text-page-title-size);
+}
+
+.projects-page__subtitle,
+.projects-page__section-title,
+.projects-page__card-title {
+  font-size: var(--text-section-title-size);
+}
+
+.projects-page__section-count,
+.projects-page__stat-label,
+.projects-page__description,
+.projects-page__actions,
+.projects-page__tech-chip {
+  font-size: var(--text-ui-size);
+}
+
+.projects-page__stat-value {
+  font-size: var(--text-list-title-size);
+}
+
+.projects-page__featured-title {
+  font-size: var(--text-card-title-size);
+}
+
+.projects-page__badge,
+.projects-page__tag {
+  font-size: var(--text-caption-size);
+}
+
+.projects-page__action-icon {
+  font-size: var(--text-icon-inline-size);
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
