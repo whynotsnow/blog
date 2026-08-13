@@ -61,6 +61,7 @@ async function runPostDecryptHooks(contentDiv: HTMLElement): Promise<void> {
 		});
 	}
 
+	// 解密内容没有静态 TOC 数据，必须在写入 DOM 后刷新运行时 headings。
 	refreshRuntimeHeadings(contentDiv);
 
 	if (window.Fancybox?.bind) {
@@ -93,6 +94,7 @@ async function runPostDecryptHooks(contentDiv: HTMLElement): Promise<void> {
 		}, delay);
 	});
 
+	// Mermaid 依赖脚本重放和 DOM 稳定，稍后执行比立即渲染更可靠。
 	if (window.renderMermaidDiagrams) {
 		await new Promise((resolve) => setTimeout(resolve, 100));
 		window.renderMermaidDiagrams();
@@ -101,6 +103,7 @@ async function runPostDecryptHooks(contentDiv: HTMLElement): Promise<void> {
 
 async function replayScripts(contentDiv: HTMLElement): Promise<void> {
 	const scripts = contentDiv.querySelectorAll("script");
+	// innerHTML 插入的 script 不会自动执行，需要替换成新节点重放。
 	const scriptPromises = Array.from(scripts).map((script) => {
 		return new Promise<void>((resolve) => {
 			const newScript = document.createElement("script");
@@ -133,6 +136,7 @@ export async function initPasswordProtection(): Promise<void> {
 	const protectionElement = protectionDiv;
 
 	if (savedPassword) {
+		// 自动解锁时先隐藏输入区；失败后再恢复，避免页面闪现密码表单。
 		const inputGroup = protectionElement.querySelector<HTMLElement>(
 			".password-input-group",
 		);

@@ -7,6 +7,7 @@ const SESSION_AUTO_OPEN_PREFIX = "site-notice:auto-opened:";
 const SESSION_AUTO_EXPAND_KEY = "site-notice:auto-expanded";
 const SESSION_PANEL_SUPPRESSED_KEY = "site-notice:panel-suppressed";
 
+// 已读/关闭/确认是跨会话状态；自动打开和面板抑制只在当前 session 内生效。
 export type SiteNoticeStateChangeDetail = {
 	id: string;
 	read: boolean;
@@ -84,6 +85,7 @@ export function markSiteNoticeRead(id: string): void {
 
 export function acknowledgeSiteNotice(id: string): void {
 	if (typeof window === "undefined") return;
+	// 确认同时标记已读，避免 critical 通知关闭后仍留在未读计数里。
 	window.localStorage.setItem(`${ACKNOWLEDGED_PREFIX}${id}`, "true");
 	window.localStorage.setItem(`${READ_PREFIX}${id}`, "true");
 	publish(id);

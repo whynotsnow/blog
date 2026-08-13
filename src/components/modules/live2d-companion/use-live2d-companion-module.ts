@@ -231,6 +231,7 @@ export function useLive2DCompanionModule(): Live2DCompanionModule {
 		collapsing = true;
 		commitView();
 		window.clearTimeout(pendingCollapse);
+		// 先提交 collapsing 状态，让 Svelte 播放收起过渡，再切到 collapsed avatar。
 		pendingCollapse = window.setTimeout(() => {
 			setCollapsed(true);
 			collapsing = false;
@@ -243,6 +244,7 @@ export function useLive2DCompanionModule(): Live2DCompanionModule {
 			const nextAnchor = anchor ?? positionController.getDefaultAnchor();
 			anchor = nextAnchor;
 			positionController.saveAnchor(nextAnchor);
+			// 展开位置从 anchor 还原，保证折叠头像和完整面板共享同一停靠语义。
 			storedPosition =
 				positionController.getExpandedPositionFromAnchor(nextAnchor);
 		}
@@ -292,6 +294,7 @@ export function useLive2DCompanionModule(): Live2DCompanionModule {
 	}
 
 	function handleMessage(event: MessageEvent): void {
+		// 只接受当前 iframe 发出的消息，避免同页其他 iframe 误触发组件状态。
 		if (!iframeEl || event.source !== iframeEl.contentWindow) return;
 		if (event.data?.type === "l2d-loaded") {
 			runtime.applyLoadedMessage(event);
@@ -388,6 +391,7 @@ export function useLive2DCompanionModule(): Live2DCompanionModule {
 		window.addEventListener("resize", clampPositionsToViewport);
 		window.addEventListener(LIVE2D_COMPANION_COMMAND_EVENT, handleCommand);
 		themeObserver = new MutationObserver(runtime.postTheme);
+		// 主题可能由 class、data-theme 或 hue style 改变，统一同步给 iframe。
 		themeObserver.observe(document.documentElement, {
 			attributeFilter: ["class", "data-theme", "style"],
 			attributes: true,

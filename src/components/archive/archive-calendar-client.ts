@@ -30,6 +30,7 @@ export function initArchiveCalendar(): void {
 	const widget = document.getElementById("calendar-widget");
 	if (!widget || widget.dataset.calendarInitialized === "true") return;
 
+	// 日历会在 Swup 生命周期中重复初始化，用 data 标记避免重复绑定事件。
 	const config = readCalendarConfig();
 	if (!config) return;
 
@@ -187,6 +188,7 @@ export function initArchiveCalendar(): void {
 					"font-bold text-90 hover:bg-(--btn-plain-bg-hover) border border-transparent";
 			}
 
+			// 每个日期格直接携带 dateKey，点击时无需重新从文本和月份推导日期。
 			html += `
 				<div class="calendar-day aspect-square flex items-center justify-center rounded-md cursor-pointer relative transition-all duration-200 ${bgClass}"
 					data-date="${dateKey}">
@@ -251,6 +253,7 @@ export function initArchiveCalendar(): void {
 		dom.selectionContent.className =
 			"w-full h-full p-2 grid grid-cols-4 gap-2 content-start overflow-y-auto";
 
+		// 年份范围来自构建期统计，避免客户端根据当前渲染月份反推边界。
 		let html = "";
 		for (let y = stats.minYear; y <= stats.maxYear; y++) {
 			const isCurrent = y === currentYear;

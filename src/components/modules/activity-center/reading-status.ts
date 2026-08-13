@@ -42,6 +42,7 @@ export function collectReadingStatus(): ReadingStatus {
 	const article = document.getElementById("post-container");
 	if (!article) return emptyStatus;
 
+	// 阅读进度以文章容器为范围，不使用整页高度，避免评论区和推荐区稀释进度。
 	const rect = article.getBoundingClientRect();
 	const articleTop = window.scrollY + rect.top;
 	const readableDistance = Math.max(
@@ -73,6 +74,7 @@ export function collectReadingStatus(): ReadingStatus {
 			? saved.scrollY
 			: undefined;
 
+	// 距离过近时不显示恢复入口，避免按钮只把读者带回几乎相同的位置。
 	return {
 		active: true,
 		title: article.dataset.readingTitle || document.title,
@@ -86,6 +88,7 @@ export function collectReadingStatus(): ReadingStatus {
 export function saveReadingPosition(status: ReadingStatus): void {
 	if (!status.active || status.progress <= 0.01 || status.progress >= 0.99)
 		return;
+	// 只保存正文中段位置，开头和结尾不作为有价值的恢复点。
 	const value: SavedReadingPosition = {
 		scrollY: window.scrollY,
 		progress: status.progress,

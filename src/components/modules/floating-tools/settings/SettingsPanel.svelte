@@ -81,6 +81,7 @@
 	const showModeValue = siteConfig.wallpaperMode.showModeSwitchOnMobile;
 	let isMobile = $state(false);
 
+	// 壁纸模式开关是否显示由配置和当前 viewport 共同决定。
 	const isWallpaperModeSwitchable = $derived(
 		(showModeValue === "both" ||
 			(showModeValue === "mobile" && isMobile) ||
@@ -140,6 +141,7 @@
 	);
 
 	function getPreviewSafeWallpaperMode(): WALL_MODE {
+		// 设置面板打开时读取已持久化模式，避免 SSR 默认值覆盖用户选择。
 		return getStoredWallpaperMode();
 	}
 
@@ -155,6 +157,7 @@
 
 	function resetWallSettings() {
 		wallOpacity = defaultWallOpacity;
+		// 只有配置允许切换的项才写入存储，避免生成无效的用户偏好键。
 		if (isWallOpacitySwitchable) {
 			setWallOpacity(defaultWallOpacity);
 		}
@@ -173,6 +176,7 @@
 		if (isBannerTitleSwitchable) {
 			setBannerTitleEnabled(defaultBannerTitleEnabled);
 		}
+		// Banner Carousel 当前只保留面板态，实际轮播开关由 Banner 模块消费配置默认值。
 		bannerCarouselEnabled = defaultBannerCarouselEnabled;
 	}
 
@@ -206,6 +210,7 @@
 		wallpaperMode = newMode;
 		setWallpaperMode(newMode);
 		if (newMode === WALL_FULL) {
+			// 只有全壁纸模式会消费壁纸透明度/模糊度，切换进入时再同步这些设置。
 			if (isWallOpacitySwitchable) setWallOpacity(wallOpacity);
 			if (isWallBlurSwitchable) setWallBlur(wallBlur);
 			if (isWallCardOpacitySwitchable) {
@@ -219,6 +224,7 @@
 	}
 
 	onMount(() => {
+		// 客户端挂载后再读取 localStorage，避免 SSR 阶段访问浏览器状态。
 		hue = getHue();
 		wallpaperMode = getPreviewSafeWallpaperMode();
 		wallOpacity = getStoredWallOpacity();

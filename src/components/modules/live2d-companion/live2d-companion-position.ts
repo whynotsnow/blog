@@ -130,6 +130,7 @@ export function createLive2DPositionController(
 			minTop,
 			window.innerHeight - size - viewportMargin,
 		);
+		// 折叠头像靠近上下边缘时吸附到角落，展开后仍尽量保持同一视觉锚点。
 		return {
 			topEnd: clamp(
 				viewportMargin +
@@ -233,6 +234,7 @@ export function createLive2DPositionController(
 		);
 		const top = clamp(position.top, minTop, maxTop);
 		const edge = resolveAnchorEdge(position.left + size / 2);
+		// 拖拽预览时可暂时关闭角落吸附，提交位置时再决定是否吸附。
 		const snapEdge = options.suppressCornerSnap
 			? undefined
 			: getCollapsedAvatarPreviewSnapEdge({ ...position, top });
@@ -301,6 +303,7 @@ export function createLive2DPositionController(
 	): Live2DCompanionStoredPosition {
 		const width = getExpandedWidth();
 		const height = getExpandedHeight();
+		// 展开态允许有限溢出，让模型能贴边停靠，但仍保留可拖回视口的面积。
 		let minLeft = horizontalInset - width * expandedHorizontalOverflowRatio;
 		let maxLeft =
 			window.innerWidth -
@@ -418,6 +421,7 @@ export function createLive2DPositionController(
 		const base = `--live2d-companion-width: ${options.widgetWidth}px; --live2d-companion-height: ${options.frameHeight}px;`;
 		const previewPosition = options.getCollapsedAvatarPreviewPosition();
 		if (options.getCollapsedAvatarDragging() && previewPosition) {
+			// 拖拽中的 collapsed avatar 使用预览坐标，不提前改写持久化 anchor。
 			const position = clampCollapsedAvatarPreviewPosition(
 				previewPosition,
 				{ suppressCornerSnap: true },

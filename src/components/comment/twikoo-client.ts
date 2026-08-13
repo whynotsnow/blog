@@ -72,6 +72,7 @@ function ensureTwikooScript() {
 	if (window.twikoo) return Promise.resolve();
 	if (scriptLoadPromise) return scriptLoadPromise;
 
+	// Swup 可能保留旧 script 标签但丢失运行时状态，完整加载后遇到旧标签要重建一次。
 	let existingScript = document.querySelector<HTMLScriptElement>(
 		`script[src="${TWIKOO_SCRIPT_SRC}"]`,
 	);
@@ -203,6 +204,7 @@ function ensureTwikooThemeStyle() {
 		style.textContent = twikooThemeCss;
 	}
 
+	// 主题覆盖必须始终位于 head 末尾，压过 Twikoo/Vue 后续动态插入的样式。
 	if (style.parentElement !== document.head || style.nextSibling) {
 		document.head.append(style);
 	}
@@ -254,6 +256,7 @@ function initTwikoo(reason = "page-view") {
 	root.dataset.twikooState = "loading";
 	root.dataset[INIT_KEY_ATTR] = initKey;
 
+	// 初始化开始就写入 key，阻止 content-replace 和 page-view 对同一根节点重复初始化。
 	ensureTwikooStylesheet().catch((error) => {
 		console.warn("[Twikoo] Failed to load official styles.", error);
 	});
@@ -268,6 +271,7 @@ function initTwikoo(reason = "page-view") {
 			}
 
 			const activeRoot = findRoot();
+			// 异步加载期间页面可能已替换，旧 root 不能继续写入新页面状态。
 			if (activeRoot !== root) return;
 
 			root.innerHTML = "";

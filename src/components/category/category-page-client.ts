@@ -47,6 +47,7 @@ function touchCategoryTagIndexCache(
 	indexUrl: string,
 	request: Promise<ClientPostCard[]>,
 ): void {
+	// Category Tag 索引按 URL 做小型 LRU，避免多个分类页切换时长期保留所有 JSON。
 	tagIndexCache.delete(indexUrl);
 	tagIndexCache.set(indexUrl, request);
 
@@ -150,6 +151,7 @@ export function loadCategoryTagIndex(
 			return data as ClientPostCard[];
 		})
 		.catch((error: unknown) => {
+			// 只清除当前失败的同一个 Promise，避免新请求被旧失败回调误删。
 			if (tagIndexCache.get(indexUrl) === request) {
 				tagIndexCache.delete(indexUrl);
 			}
@@ -168,6 +170,7 @@ export function scheduleCategoryTagIndexPrefetch(indexUrl: string): () => void {
 	const prefetch = () => {
 		if (disposed) return;
 		const connection = getNetworkInformation();
+		// 预取只服务无 Tag 的初始页，且尊重可见性、离线状态和 Save-Data。
 		if (
 			!shouldPrefetchCategoryTagIndex({
 				isVisible: document.visibilityState === "visible",
@@ -267,10 +270,12 @@ export function useCategoryPagination(
 
 		try {
 			const loadedPosts = await loadCategoryTagIndex(options.tagIndexUrl);
+			// URL 已变化时丢弃旧响应，避免慢请求覆盖新的 Tag 分页状态。
 			if (version !== syncVersion) return;
 			posts.set(loadedPosts);
 			loadState.set("ready");
 		} catch {
+			// 错误态同样受版本保护，旧请求失败不应影响当前页面。
 			if (version !== syncVersion) return;
 			posts.set([]);
 			loadState.set("error");

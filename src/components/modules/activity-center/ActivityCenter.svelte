@@ -205,6 +205,7 @@
 		const media = window.matchMedia("(max-width: 767px)");
 
 		function syncPortal() {
+			// 移动端 panel 提升到 body，避免被 Navbar/Shell 的 stacking context 裁切。
 			if (media.matches) {
 				if (node.parentNode !== document.body) {
 					node.before(placeholder);
@@ -234,6 +235,7 @@
 
 	function readRenderedNoticeContent() {
 		const nextContent: Record<string, string> = {};
+		// 通知 Markdown 已由 Astro 渲染到 template，Svelte 只接管弹窗状态和已读状态。
 		document
 			.querySelectorAll<HTMLTemplateElement>(
 				"template[data-notification-content]",
@@ -275,6 +277,7 @@
 		const scrollbarWidth =
 			window.innerWidth - document.documentElement.clientWidth;
 		lockedScrollY = window.scrollY;
+		// 弹窗锁滚动时补偿滚动条宽度，避免页面内容横向跳动。
 		previousBodyStyles = {
 			overflow: document.body.style.overflow,
 			paddingRight: document.body.style.paddingRight,
@@ -368,6 +371,7 @@
 
 	function maybeOpenCriticalNotice() {
 		const autoOpenNotice = sortedNotices.find((notice) => {
+			// critical 和 pinned 通知需要主动打断一次，但每个 session 只自动打开一次。
 			if (!notice.pinned && notice.level !== "critical") return false;
 			if (wasSiteNoticeAutoOpenedInSession(notice.id)) return false;
 			if (isSiteNoticeDismissed(notice.id)) return false;
@@ -390,6 +394,7 @@
 		) {
 			return;
 		}
+		// important/urgent 只自动展开面板，不直接打开详情，避免普通通知过度打断阅读。
 		const hasImportantUnread = sortedNotices.some(
 			(notice) =>
 				isUnread(notice.id) &&

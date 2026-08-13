@@ -28,6 +28,7 @@ function updateAnimeListLayout(layout: string, shouldAnimate = true) {
 	>();
 
 	if (shouldAnimate) {
+		// 布局切换使用 FLIP：先记录旧位置，再切换 class，最后用 transform 补偿位移。
 		visibleItems.forEach((item) => {
 			const rect = item.getBoundingClientRect();
 			firstPositions.set(item, {
@@ -42,6 +43,7 @@ function updateAnimeListLayout(layout: string, shouldAnimate = true) {
 	const style = document.createElement("style");
 	style.innerHTML = `.anime-grid-container .group { transition: none !important; }`;
 	document.head.appendChild(style);
+	// 切换布局期间临时禁用卡片内部 transition，避免和外层 FLIP 动画叠加。
 	animeListContainer.classList.remove("anime-list-mode", "anime-grid-mode");
 	animeListContainer.classList.remove(
 		"grid-cols-1",
@@ -151,6 +153,7 @@ function tryInitAnimeLayout() {
 		if (initAnimeLayout()) return;
 		if (retryCount < maxRetries) {
 			retryCount++;
+			// Swup 或 island hydration 可能让列表稍后出现，指数退避避免死循环轮询。
 			const delay = Math.min(100 * Math.pow(1.5, retryCount), 1000);
 			setTimeout(tryInit, delay);
 			return;
@@ -222,6 +225,7 @@ function initFilterButtons() {
 			activeTag.classList.add("anime-active");
 
 			if (lazyStore) {
+				// 筛选前先展开懒加载模板，保证状态统计和动画基于完整列表。
 				moveLazyItemsToList(lazyStore, listContainer);
 			}
 
@@ -356,6 +360,7 @@ function initFilterButtons() {
 			(entries) => {
 				if (!entries[0].isIntersecting) return;
 
+				// 每次只搬运一批模板节点，避免大量番剧卡片一次性进入 DOM 造成卡顿。
 				const batchSize = 24;
 				if (lazyStore.content.children.length === 0) {
 					sentinel.style.display = "none";
