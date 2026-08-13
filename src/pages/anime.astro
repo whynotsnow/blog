@@ -2,7 +2,7 @@
 import AnimePage from "../components/anime/AnimePage.astro";
 import { siteConfig } from "../config";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import "../styles/anime.css";
+import "@/components/anime/anime.css";
 import { buildAnimePageModel } from "@/services/anime";
 
 if (!siteConfig.featurePages.anime) {

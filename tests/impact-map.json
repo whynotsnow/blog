@@ -264,6 +264,18 @@
 			"groups": ["lint", "astro", "home"]
 		},
 		{
+			"patterns": ["src/pages/anime.astro", "src/components/anime/**"],
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"design",
+				"astro-build",
+				"smoke"
+			]
+		},
+		{
 			"patterns": [
 				"src/pages/albums.astro",
 				"src/pages/albums/**",
@@ -272,7 +284,7 @@
 				"src/components/diary/**",
 				"src/components/filter-tabs/**",
 				"src/components/modules/diary/**",
-				"src/styles/albums.css",
+				"src/components/albums/albums.css",
 				"src/styles/fancybox-custom.css",
 				"src/types/album.ts",
 				"src/utils/album-scanner.ts",

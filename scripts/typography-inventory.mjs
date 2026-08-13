@@ -36,7 +36,7 @@ const PRIORITY_PATHS = [
 	"src/components/page",
 	"src/components/filter-tabs",
 	"src/components/modules/diary",
-	"src/styles/albums.css",
+	"src/components/albums/albums.css",
 	"src/components/modules/post-list",
 	"src/styles/markdown.css",
 	"src/styles/markdown-extend.styl",
