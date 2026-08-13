@@ -1,6 +1,6 @@
 ---
 import type { PostCardViewModel } from "@/services/core/types";
-import PostCard from "@components/PostCard.astro";
+import PostCard from "./PostCard.astro";
 import "@/components/modules/post-list/post-list.css";
 
 interface Props {
@@ -15,7 +15,7 @@ const { posts, class: className, renderer = "astro", id } = Astro.props;
 
 <div
 	{id}
-	class:list={["post-list home-post-list grid-mode", className]}
+	class:list={["post-list post-list-grid grid-mode", className]}
 	data-default-layout="grid"
 	data-post-list-renderer={renderer}
 >

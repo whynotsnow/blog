@@ -153,22 +153,22 @@ test("Grid Card height follows its cover while Content keeps a bounded budget", 
 	};
 	const readCardGeometry = () =>
 		firstCard.evaluate((node) => {
-			const card = node.matches(".home-post-card")
+			const card = node.matches(".post-list-card")
 				? node
-				: node.querySelector<HTMLElement>(".home-post-card")!;
+				: node.querySelector<HTMLElement>(".post-list-card")!;
 			const summary = card.querySelector<HTMLElement>(
-				".home-post-card__summary",
+				".post-list-card__summary",
 			)!;
 			const tags = card.querySelector<HTMLElement>(
-				".home-post-card__tags",
+				".post-list-card__tags",
 			)!;
 			const content = card.querySelector<HTMLElement>(
-				".home-post-card__content",
+				".post-list-card__content",
 			)!;
 			const tagsStyle = getComputedStyle(tags);
 			const contentStyle = getComputedStyle(content);
 			const cover = card.querySelector<HTMLElement>(
-				".home-post-card__cover",
+				".post-list-card__cover",
 			)!;
 			return {
 				columnCount: getComputedStyle(
@@ -276,7 +276,7 @@ test("fluid two-column post Grid fills the Feed and keeps the semantic gap", asy
 
 	const coverHeight = await cards
 		.first()
-		.locator(".home-post-card__cover")
+		.locator(".post-list-card__cover")
 		.evaluate((node) => Number.parseFloat(getComputedStyle(node).height));
 	expect(coverHeight).toBeGreaterThanOrEqual(160);
 	expect(coverHeight).toBeLessThanOrEqual(224);
@@ -293,26 +293,26 @@ test("multi-column post Card derives height from Cover and Content across deskto
 		await expect(item).toBeVisible();
 
 		return item.evaluate((node) => {
-			const card = node.matches(".home-post-card")
+			const card = node.matches(".post-list-card")
 				? node
-				: node.querySelector<HTMLElement>(".home-post-card")!;
+				: node.querySelector<HTMLElement>(".post-list-card")!;
 			const cover = card.querySelector<HTMLElement>(
-				".home-post-card__cover",
+				".post-list-card__cover",
 			)!;
 			const content = card.querySelector<HTMLElement>(
-				".home-post-card__content",
+				".post-list-card__content",
 			)!;
 			const title = card.querySelector<HTMLElement>(
-				".home-post-card__title",
+				".post-list-card__title",
 			)!;
 			const summary = card.querySelector<HTMLElement>(
-				".home-post-card__summary",
+				".post-list-card__summary",
 			)!;
 			const tag = card.querySelector<HTMLElement>(
-				".home-post-card__tags > :first-child",
+				".post-list-card__tags > :first-child",
 			)!;
 			const meta = card.querySelector<HTMLElement>(
-				".home-post-card__meta",
+				".post-list-card__meta",
 			);
 			const itemStyle = getComputedStyle(node);
 			const cardStyle = getComputedStyle(card);
@@ -414,7 +414,7 @@ test("Grid Card typography stays fixed across the former root breakpoint", async
 		await page.setViewportSize({ width, height: 900 });
 		await gotoPage(page, "/");
 
-		const card = page.locator(".home-post-card").first();
+		const card = page.locator(".post-list-card").first();
 		const typography = await card.evaluate((node) => {
 			const readSize = (selector: string) =>
 				Number.parseFloat(
@@ -425,10 +425,10 @@ test("Grid Card typography stays fixed across the former root breakpoint", async
 				root: Number.parseFloat(
 					getComputedStyle(document.documentElement).fontSize,
 				),
-				title: readSize(".home-post-card__title"),
-				summary: readSize(".home-post-card__summary"),
-				meta: readSize(".home-post-card__meta"),
-				tag: readSize(".home-post-card__tag"),
+				title: readSize(".post-list-card__title"),
+				summary: readSize(".post-list-card__summary"),
+				meta: readSize(".post-list-card__meta"),
+				tag: readSize(".post-list-card__tag"),
 			};
 		});
 
@@ -448,29 +448,29 @@ test("Grid Card reserves stable content slots and exposes full clipped text", as
 	await page.setViewportSize({ width: 1536, height: 900 });
 	await gotoPage(page, "/");
 
-	const card = page.locator(".home-post-card").first();
+	const card = page.locator(".post-list-card").first();
 	const contract = await card.evaluate((node) => {
 		const title = node.querySelector<HTMLElement>(
-			".home-post-card__title",
+			".post-list-card__title",
 		)!;
 		const summary = node.querySelector<HTMLElement>(
-			".home-post-card__summary",
+			".post-list-card__summary",
 		)!;
-		const meta = node.querySelector<HTMLElement>(".home-post-card__meta")!;
+		const meta = node.querySelector<HTMLElement>(".post-list-card__meta")!;
 		const categoryMeta = meta.querySelector<HTMLElement>(
-			".home-post-card__meta-item--category",
+			".post-list-card__meta-item--category",
 		)!;
 		const wordsMeta = meta.querySelector<HTMLElement>(
-			".home-post-card__meta-item--words",
+			".post-list-card__meta-item--words",
 		)!;
 		const categoryLink = categoryMeta.querySelector<HTMLElement>(
-			".home-post-card__meta-link",
+			".post-list-card__meta-link",
 		)!;
 		categoryLink.textContent = "这是一个用于验证收缩规则的超长文章分类";
-		const tags = node.querySelector<HTMLElement>(".home-post-card__tags")!;
+		const tags = node.querySelector<HTMLElement>(".post-list-card__tags")!;
 		const visibleTags = Array.from(
 			tags.querySelectorAll<HTMLElement>(
-				".home-post-card__tag:not([hidden])",
+				".post-list-card__tag:not([hidden])",
 			),
 		);
 		return {
@@ -518,12 +518,12 @@ test("Grid Card reserves stable content slots and exposes full clipped text", as
 	expect(contract.tagsOverflow).toBe(false);
 
 	const pinnedCard = page
-		.locator('.home-post-card[data-pinned="true"]')
+		.locator('.post-list-card[data-pinned="true"]')
 		.first();
 	await expect(
-		pinnedCard.locator(".home-post-card__pinned-badge"),
+		pinnedCard.locator(".post-list-card__pinned-badge"),
 	).toHaveText("置顶");
-	await expect(pinnedCard.locator(".home-post-card__pin")).toHaveCount(0);
+	await expect(pinnedCard.locator(".post-list-card__pin")).toHaveCount(0);
 });
 
 test("Grid Card hides Meta icons only at the confirmed compact threshold", async ({
@@ -540,26 +540,26 @@ test("Grid Card hides Meta icons only at the confirmed compact threshold", async
 		list.style.width = "304px";
 		node.style.width = "304px";
 		const category = node.querySelector<HTMLElement>(
-			".home-post-card__meta-link",
+			".post-list-card__meta-link",
 		);
 		const words = node.querySelector<HTMLElement>(
-			".home-post-card__meta-item--words span",
+			".post-list-card__meta-item--words span",
 		);
 		if (category) category.textContent = "前端工程实践指南";
 		if (words) words.textContent = "9.9万字";
 	});
 
-	const icons = card.locator(".home-post-card__meta-icon");
+	const icons = card.locator(".post-list-card__meta-icon");
 	await expect(icons.first()).toHaveCSS("display", "none");
 	const compact = await card.evaluate((node) => ({
 		categoryWidth:
 			node
-				.querySelector<HTMLElement>(".home-post-card__meta-link")
+				.querySelector<HTMLElement>(".post-list-card__meta-link")
 				?.getBoundingClientRect().width ?? 0,
 		wordsVisible:
 			getComputedStyle(
 				node.querySelector<HTMLElement>(
-					".home-post-card__meta-item--words",
+					".post-list-card__meta-item--words",
 				)!,
 			).display !== "none",
 	}));
@@ -573,7 +573,7 @@ test("Grid Card hides Meta icons only at the confirmed compact threshold", async
 	});
 	await expect(icons.first()).not.toHaveCSS("display", "none");
 	const regularCategoryWidth = await card
-		.locator(".home-post-card__meta-link")
+		.locator(".post-list-card__meta-link")
 		.evaluate((node) => node.getBoundingClientRect().width);
 	expect(regularCategoryWidth).toBeGreaterThanOrEqual(60);
 });
@@ -614,16 +614,16 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 			/true|false/,
 		);
 		await expect(
-			card.locator(":scope > .home-post-card__content"),
+			card.locator(":scope > .post-list-card__content"),
 		).toHaveCount(1);
 		await expect(
-			card.locator(":scope > .home-post-card__cover"),
+			card.locator(":scope > .post-list-card__cover"),
 		).toHaveCount(1);
-		await expect(card.locator(".home-post-card__title")).toHaveCount(1);
-		await expect(card.locator(".home-post-card__meta")).toHaveCount(1);
-		await expect(card.locator(".home-post-card__meta-item")).toHaveCount(3);
-		await expect(card.locator(".home-post-card__summary")).toHaveCount(1);
-		await expect(card.locator(".home-post-card__tags")).toHaveCount(1);
+		await expect(card.locator(".post-list-card__title")).toHaveCount(1);
+		await expect(card.locator(".post-list-card__meta")).toHaveCount(1);
+		await expect(card.locator(".post-list-card__meta-item")).toHaveCount(3);
+		await expect(card.locator(".post-list-card__summary")).toHaveCount(1);
+		await expect(card.locator(".post-list-card__tags")).toHaveCount(1);
 	};
 
 	await gotoPage(page, "/");

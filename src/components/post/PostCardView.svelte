@@ -24,7 +24,7 @@
 </script>
 
 <div
-	class={`post-card post-item home-post-card ds-surface-card ${className}`}
+	class={`post-card post-item post-list-card ds-surface-card ${className}`}
 	style={`--coverWidth:${coverWidth}; ${style ?? ""}`}
 	data-tags={dataTags}
 	data-card-variant="adaptive"
@@ -34,11 +34,11 @@
 	data-pinned={post.pinned}
 >
 	<!-- ================= 内容区域 ================= -->
-	<div class="home-post-card__content">
+	<div class="post-list-card__content">
 		<!-- ================= 标题 ================= -->
 		<a
 			href={url}
-			class="home-post-card__title transition"
+			class="post-list-card__title transition"
 			title={post.title}
 		>
 			{post.title}
@@ -46,13 +46,13 @@
 			<!-- 移动端箭头 -->
 			<LocalIcon
 				name="material-symbols:chevron-right-rounded"
-				class="home-post-card__title-chevron home-post-card__title-chevron--mobile"
+				class="post-list-card__title-chevron post-list-card__title-chevron--mobile"
 			/>
 
 			<!-- 桌面 hover 箭头 -->
 			<LocalIcon
 				name="material-symbols:chevron-right-rounded"
-				class="home-post-card__title-chevron home-post-card__title-chevron--desktop transition"
+				class="post-list-card__title-chevron post-list-card__title-chevron--desktop transition"
 			/>
 		</a>
 
@@ -61,31 +61,31 @@
 
 		<!-- ================= 描述 ================= -->
 		<div
-			class="home-post-card__summary transition text-75"
+			class="post-list-card__summary transition text-75"
 			title={post.summary}
 		>
 			{post.summary}
 		</div>
 
 		<!-- ================= 标签 ================= -->
-		<div class="home-post-card__tags">
+		<div class="post-list-card__tags">
 			{#if post.tags && post.tags.length > 0}
 				{#each post.tags.slice(0, 6) as tag (tag.slug)}
 					<a
 						href={tag.url}
-						class={`home-post-card__tag transition ${useNewTagStyle ? "link-lg" : "btn-regular"}`}
+						class={`post-list-card__tag transition ${useNewTagStyle ? "link-lg" : "btn-regular"}`}
 						aria-label={`View all posts tagged with ${tag.name}`}
 						title={tag.name}
 					>
 						<span
-							class="home-post-card__tag-label transition-transform"
+							class="post-list-card__tag-label transition-transform"
 						>
 							# {tag.name}
 						</span>
 					</a>
 				{/each}
 			{:else}
-				<span class="home-post-card__tag-empty"
+				<span class="post-list-card__tag-empty"
 					>{i18n(I18nKey.noTags)}</span
 				>
 			{/if}
@@ -93,21 +93,21 @@
 	</div>
 
 	<!-- ================= 封面区域 ================= -->
-	<a href={url} aria-label={post.title} class="home-post-card__cover">
+	<a href={url} aria-label={post.title} class="post-list-card__cover">
 		{#if post.pinned}
-			<span class="home-post-card__pinned-badge">
+			<span class="post-list-card__pinned-badge">
 				{i18n(I18nKey.pinned)}
 			</span>
 		{/if}
 
 		<!-- hover 蒙层 -->
-		<div class="home-post-card__cover-overlay transition"></div>
+		<div class="post-list-card__cover-overlay transition"></div>
 
 		<!-- 中心箭头 -->
-		<div class="home-post-card__cover-enter">
+		<div class="post-list-card__cover-enter">
 			<LocalIcon
 				name="material-symbols:chevron-right-rounded"
-				class="home-post-card__cover-enter-icon transition"
+				class="post-list-card__cover-enter-icon transition"
 			/>
 		</div>
 
@@ -115,14 +115,14 @@
 			<ImageWrapper
 				src={post.image}
 				alt={post.title}
-				className="home-post-card__image"
+				className="post-list-card__image"
 				loading="lazy"
 			/>
 		{:else}
-			<div class="home-post-card__cover-placeholder" aria-hidden="true">
+			<div class="post-list-card__cover-placeholder" aria-hidden="true">
 				<LocalIcon
 					name="material-symbols:article-outline-rounded"
-					class="home-post-card__cover-placeholder-icon"
+					class="post-list-card__cover-placeholder-icon"
 				/>
 			</div>
 		{/if}

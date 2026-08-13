@@ -32,7 +32,7 @@ test("home sections expose configured guide destinations", async ({ page }) => {
 	for (const [index, expectedCount] of [3, 3].entries()) {
 		const cards = sections.nth(index).locator(".post-list__item");
 		await expect(cards).toHaveCount(expectedCount);
-		await expect(cards.locator(".home-post-card__cover")).toHaveCount(
+		await expect(cards.locator(".post-list-card__cover")).toHaveCount(
 			expectedCount,
 		);
 		const heights = await cards.evaluateAll((items) =>

@@ -17,7 +17,7 @@
 <div
 	bind:this={container}
 	id="post-list-container"
-	class="post-list home-post-list grid-mode"
+	class="post-list post-list-grid grid-mode"
 	data-default-layout="grid"
 	data-post-list-renderer="svelte"
 >

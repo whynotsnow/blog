@@ -44,7 +44,7 @@
 			"src/components/ArchivePanel.svelte",
 			"src/components/Footer.astro",
 			"src/components/post-toc/MobileTOC.svelte",
-			"src/components/PostCard.astro",
+			"src/components/post/PostCard.astro",
 			"src/components/PostMeta.astro",
 			"src/components/modules/shell-controls/Search.svelte",
 			"src/components/modules/shell-controls/WallpaperSwitch.svelte",
@@ -99,7 +99,7 @@
 			"src/styles/markdown.css"
 		],
 		"--title-active": [
-			"src/components/PostCard.astro",
+			"src/components/post/PostCard.astro",
 			"src/components/post/PostCardView.svelte"
 		],
 		"--line-divider": [
@@ -131,7 +131,7 @@
 			"src/components/widget/music-player/PlaylistPanel.svelte"
 		],
 		"--radius-large": [
-			"src/components/PostCard.astro",
+			"src/components/post/PostCard.astro",
 			"src/components/PostPage.astro",
 			"src/components/anime/AnimeCard.astro",
 			"src/components/anime/AnimePage.astro",

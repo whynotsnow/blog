@@ -12,7 +12,7 @@ function fitPostCardTagRows(container: HTMLElement): void {
 	const postList = container.closest<HTMLElement>(".post-list");
 	const tags = Array.from(
 		container.querySelectorAll<HTMLElement>(
-			":scope > .home-post-card__tag",
+			":scope > .post-list-card__tag",
 		),
 	);
 
@@ -40,7 +40,7 @@ export function initializePostCardTagFitting(
 	root: ParentNode = document,
 ): void {
 	const containers = root.querySelectorAll<HTMLElement>(
-		".home-post-card__tags",
+		".post-list-card__tags",
 	);
 
 	for (const container of containers) {

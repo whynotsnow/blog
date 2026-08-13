@@ -1,10 +1,10 @@
 ---
 import { Icon } from "astro-icon/components";
-import { siteConfig } from "../config";
-import I18nKey from "../i18n/i18nKey";
-import { i18n } from "../i18n/translation";
-import ImageWrapper from "./misc/ImageWrapper.astro";
-import PostCardMeta from "./post/PostCardMeta.astro";
+import { siteConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import ImageWrapper from "../misc/ImageWrapper.astro";
+import PostCardMeta from "./PostCardMeta.astro";
 import type { PostCardViewModel } from "@/services/core/types";
 
 interface Props {
@@ -33,7 +33,7 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 
 <div
 	class:list={[
-		"post-card post-item home-post-card ds-surface-card",
+		"post-card post-item post-list-card ds-surface-card",
 		className,
 	]}
 	style={style}
@@ -44,19 +44,19 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 	data-tag-style={useNewTagStyle ? "new" : "legacy"}
 	data-pinned={pinned}
 >
-	<div class="home-post-card__content">
+	<div class="post-list-card__content">
 		<a
 			href={url}
-			class="home-post-card__title transition"
+			class="post-list-card__title transition"
 			title={title}
 		>
 			{title}
 			<Icon
-				class="home-post-card__title-chevron home-post-card__title-chevron--mobile"
+				class="post-list-card__title-chevron post-list-card__title-chevron--mobile"
 				name="material-symbols:chevron-right-rounded"
 			/>
 			<Icon
-				class="home-post-card__title-chevron home-post-card__title-chevron--desktop transition"
+				class="post-list-card__title-chevron post-list-card__title-chevron--desktop transition"
 				name="material-symbols:chevron-right-rounded"
 			/>
 		</a>
@@ -64,32 +64,32 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 		<PostCardMeta post={entry} />
 
 		<div
-			class="home-post-card__summary transition text-75"
+			class="post-list-card__summary transition text-75"
 			title={description || entry.meta.excerpt}
 		>
 			{description || entry.meta.excerpt}
 		</div>
 
-		<div class="home-post-card__tags">
+		<div class="post-list-card__tags">
 			{
 				tags && tags.length > 0 ? (
 					tags.slice(0, 6).map((tag) => (
 						<a
 							href={tag.url}
 							class:list={[
-								"home-post-card__tag transition",
+								"post-list-card__tag transition",
 								useNewTagStyle ? "link-lg" : "btn-regular",
 							]}
 							aria-label={`View all posts tagged with ${tag.name}`}
 							title={tag.name}
 						>
-							<span class="home-post-card__tag-label transition-transform">
+							<span class="post-list-card__tag-label transition-transform">
 							# {tag.name}
 							</span>
 						</a>
 					))
 				) : (
-					<span class="home-post-card__tag-empty">{i18n(I18nKey.noTags)}</span>
+					<span class="post-list-card__tag-empty">{i18n(I18nKey.noTags)}</span>
 				)
 			}
 		</div>
@@ -98,23 +98,23 @@ const useNewTagStyle = Boolean(siteConfig.tagStyle?.useNewStyle);
 	<a
 		href={url}
 		aria-label={title}
-		class="home-post-card__cover"
+		class="post-list-card__cover"
 	>
-		{pinned && <span class="home-post-card__pinned-badge">{i18n(I18nKey.pinned)}</span>}
-		<div class="home-post-card__cover-overlay transition" />
-		<div class="home-post-card__cover-enter">
-			<Icon name="material-symbols:chevron-right-rounded" class="home-post-card__cover-enter-icon transition" />
+		{pinned && <span class="post-list-card__pinned-badge">{i18n(I18nKey.pinned)}</span>}
+		<div class="post-list-card__cover-overlay transition" />
+		<div class="post-list-card__cover-enter">
+			<Icon name="material-symbols:chevron-right-rounded" class="post-list-card__cover-enter-icon transition" />
 		</div>
 		{
 			hasCover ? (
 				<ImageWrapper
 					src={image}
 					alt={title}
-					class="home-post-card__image"
+					class="post-list-card__image"
 				/>
 			) : (
-				<div class="home-post-card__cover-placeholder" aria-hidden="true">
-					<Icon name="material-symbols:article-outline-rounded" class="home-post-card__cover-placeholder-icon" />
+				<div class="post-list-card__cover-placeholder" aria-hidden="true">
+					<Icon name="material-symbols:article-outline-rounded" class="post-list-card__cover-placeholder-icon" />
 				</div>
 			)
 		}
