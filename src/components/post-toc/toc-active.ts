@@ -132,6 +132,7 @@ export class TocActiveTracker {
 
 		const probeY = scrollY + this.offset;
 		if (this.activeIndex < 0 || this.scrollDirection === "jump") {
+			// 大幅跳转可能跨过多个 heading，重新测量后用二分定位更稳。
 			this.measure();
 			this.activeIndex = findIndexAtProbe(this.nodes, probeY);
 			this.activeId = this.getActiveNode()?.id ?? "";
@@ -153,6 +154,7 @@ export class TocActiveTracker {
 				this.activeIndex >= 0 &&
 				this.nodes[this.activeIndex].rangeStart > probeY
 			) {
+				// 向上滚动回到上一节点链，避免只按数组前一项破坏父子 heading 关系。
 				this.activeIndex = this.nodes[this.activeIndex].prevIndex ?? -1;
 			}
 		}

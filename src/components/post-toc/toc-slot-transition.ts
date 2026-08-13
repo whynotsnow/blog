@@ -22,6 +22,7 @@ export class TocSlotTransitionController {
 	expand(slot: HTMLElement, nextHTML: string, onSettled?: () => void): void {
 		this.clearTimer(slot);
 		const previousHeight = slot.childElementCount ? slot.scrollHeight : 0;
+		// 先锁定旧高度再替换内容，避免浏览器直接跳到新高度而没有过渡。
 		slot.style.height = `${previousHeight}px`;
 		slot.style.opacity = previousHeight > 0 ? "1" : "0";
 		slot.style.transform =
@@ -93,6 +94,7 @@ export class TocSlotTransitionController {
 		};
 		const active: SlotCleanup = {
 			slot,
+			// transitionend 可能因 display/DOM 替换丢失，timer 是最终清理兜底。
 			timer: window.setTimeout(finish, TOC_SLOT_TRANSITION_MS + 60),
 			listener,
 		};

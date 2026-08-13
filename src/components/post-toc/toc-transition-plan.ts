@@ -15,6 +15,7 @@ export function resolveTocTransitionPlan(
 	previous: DesktopTocViewState | null,
 	state: DesktopTocViewState,
 ): TocTransitionPlan {
+	// 这里只产出动画计划，不直接操作 DOM；Presenter 根据计划决定 indicator 和 slot 的时序。
 	const slotAction: TocSlotAction = (() => {
 		if (!previous) return state.expandedRootIndex >= 0 ? "expand" : "none";
 		if (previous.expandedRootIndex === state.expandedRootIndex)
@@ -55,6 +56,7 @@ export function resolveTocTransitionPlan(
 		slotAction,
 		highlightMode,
 		deferHighlightUntilSlotSettled: false,
+		// 展开或切换分支时先等 slot 高度稳定，再显示 TOC indicator。
 		deferIndicatorUntilSlotSettled:
 			state.highlightIndex >= 0 &&
 			(slotAction === "expand" || slotAction === "switch"),

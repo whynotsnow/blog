@@ -115,6 +115,7 @@ export function getHeadingElementsForItems(
 export function resolveTocRuntimeState(runtimeRoot?: Element): TocRuntimeState {
 	const root: Element | null = runtimeRoot || getPostContentRoot();
 	const staticItems: TocItem[] = runtimeRoot ? [] : readStaticTocItems();
+	// 普通文章优先使用构建期 TOC；传入 runtimeRoot 时才从解密/动态内容重新收集 headings。
 	const items: TocItem[] =
 		staticItems.length > 0
 			? staticItems
@@ -182,6 +183,7 @@ export function ensureTocTargetsScrollable(
 	);
 	if (requiredCompensation <= 0) return;
 
+	// 最后一个标题接近页尾时需要补高度，否则无法滚到足够位置激活对应 TOC 项。
 	const guard = document.getElementById("page-height-guard");
 	if (!guard) return;
 

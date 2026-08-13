@@ -48,6 +48,7 @@ function resolveTransitionType({
 }: ResolveDesktopTocViewOptions & {
 	activeRootIndex: number;
 }): DesktopTocTransitionType {
+	// 外部 reason 表示边界事件，优先级高于 activeIndex 的普通变化。
 	if (rootsOnly) return "roots-only";
 	if (
 		reason === "init" ||
@@ -88,12 +89,14 @@ export function resolveDesktopTocViewState(
 			options.previous?.mode === "roots-only" &&
 			options.previous.rootsOnlyReason === "bottom"
 		) {
+			// 从底部 roots-only 回到正文时锚定底部，避免展开分支后视图跳到顶部。
 			return "bottom";
 		}
 		if (
 			transitionType === "root-switch" &&
 			options.scrollDirection === "up"
 		) {
+			// 向上跨 root 时优先保留新分支底部上下文。
 			return "bottom";
 		}
 		return "active";

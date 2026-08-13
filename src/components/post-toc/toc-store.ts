@@ -92,6 +92,7 @@ export class PostTocStore {
 		root: Element | null = getPostContentRoot(),
 		reason: TocStoreReason = "init",
 	): TocStoreSnapshot {
+		// setItems 服务静态 TOC 注入；后续动态内容变化走 refresh，避免混淆数据来源。
 		this.root = root;
 		this.items = items;
 		this.headings = getHeadingElementsForItems(root, items);
@@ -172,6 +173,7 @@ export class PostTocStore {
 		if (this.scrollSettleTimer) {
 			window.clearTimeout(this.scrollSettleTimer);
 		}
+		// 滚动中用 RAF 更新 active，停下后再精确测量一次布局。
 		this.scrollSettleTimer = window.setTimeout(() => {
 			this.scrollSettleTimer = 0;
 			this.measure("scroll-settle");

@@ -306,6 +306,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 			this.bindEvents();
 			this.removeStoreSubscriber = this.store.subscribe((snapshot) => {
+				// Floating TOC 只订阅共享 PostTocStore，不自己重新扫描标题。
 				this.renderFromStore(snapshot);
 				this.updateProgress();
 			});
@@ -320,6 +321,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			const contentWrapper = document.getElementById("post-container");
 			if (contentWrapper) {
 				this.observer = new MutationObserver(() => {
+					// 图片、解密内容或 Mermaid 改变高度后，只触发布局重测，不重建 TOC 数据。
 					this.store.measure("layout-remeasure");
 					this.updateProgress();
 				});
@@ -411,6 +413,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 				.map((index) => this.getLink(index))
 				.filter((link): link is HTMLElement => Boolean(link));
 			const candidates = [...ancestorLinks, activeLink];
+			// 面板打开时尽量保留祖先标题上下文，空间不足再退回只显示 active 项。
 			const maxRangeHeight = Math.max(
 				activeRange.bottom - activeRange.top,
 				viewportHeight - padding * 2,
@@ -483,6 +486,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		) {
 			if (!this.content || this.renderedRootIndex === rootIndex) return;
 
+			// 移动 TOC 与桌面 TOC 使用同一 slot 过渡控制器，保证分支展开时序一致。
 			for (const slot of this.content.querySelectorAll<HTMLElement>(
 				".floating-toc-expanded-region",
 			)) {
@@ -531,6 +535,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.wrapper?.classList.add("active-toc");
 			this.tocItems = snapshot.items;
 			if (this.renderedVersion !== snapshot.version) {
+				// version 变化才重建 shell；滚动只更新 active class 和展开分支。
 				const html = renderFloatingTocShell(snapshot.items);
 
 				if (this.content) {
@@ -579,6 +584,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 		reinit() {
 			this.close();
+			// Swup page-view 后重新读取当前页面 TOC，同时保留同一个组件实例和事件绑定。
 			this.generateTOC("page-view");
 			this.observeContent();
 			this.updateProgress();
