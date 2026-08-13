@@ -108,6 +108,7 @@ export function buildGlobalDiscoveryCards(params: {
 	itemLimit?: number;
 }): GlobalDiscoveryCardViewModel[] {
 	const { posts, categories, current, include, itemLimit = 4 } = params;
+	// 全局发现卡只消费轻量索引，避免 sidebar 为展示摘要触发正文渲染。
 	const categoryItems = categories
 		.slice(0, itemLimit)
 		.map((category): GlobalDiscoveryCardItem => {
@@ -216,6 +217,7 @@ export function buildRecommendedPostLinks(params: {
 	const { current, posts, limit } = params;
 	const currentTags = new Set(current.tags.map((tag) => tag.slug));
 
+	// 推荐列表排除草稿和加密文章，避免侧栏暴露不应直接访问的内容入口。
 	return posts
 		.filter(
 			(post) => post.id !== current.id && !post.draft && !post.encrypted,
@@ -270,6 +272,7 @@ export function buildDeterministicRandomPostLinks(params: {
 	const { seed, posts, excludeIds, limit } = params;
 	const excluded = new Set(excludeIds);
 
+	// 随机推荐必须由文章 id 稳定驱动，保证静态构建和客户端看到的顺序一致。
 	return posts
 		.filter(
 			(post) => !excluded.has(post.id) && !post.draft && !post.encrypted,

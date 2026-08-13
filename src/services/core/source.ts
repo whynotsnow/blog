@@ -8,6 +8,7 @@ export async function getAllPostsRaw(): Promise<RawPost[]> {
 	const posts = await getCollection("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
+	// 路由合法性在内容进入索引前验证，避免下游服务拿到不可发布的 canonical URL。
 	validatePostRoutes(
 		posts.map((post) => ({
 			id: post.id,
@@ -29,6 +30,7 @@ export async function buildPostIndex(
 ): Promise<PostIndexBuildResult> {
 	const rawPosts = await getAllPostsRaw();
 	const sortedPosts = sortByDate(rawPosts);
+	// routes 与 indexedPosts 基于同一份排序后的 rawPosts 构建，保证 route 引用身份一致。
 	const routes = buildPostRouteIndex(
 		sortedPosts.map((post) => ({
 			id: post.id,

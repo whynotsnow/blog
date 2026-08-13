@@ -33,6 +33,7 @@ export function buildCategoryDefinitionIndex(
 		}
 		slugOwners.set(slug, definition);
 
+		// name 和 aliases 都映射到同一个 canonical definition，避免 Technology/技术 分裂成两个分类。
 		for (const input of [definition.name, ...(definition.aliases ?? [])]) {
 			const key = normalizeCategoryKey(input);
 			if (!key) throw new Error("Category aliases must not be empty");
@@ -58,6 +59,7 @@ export function resolveCategory(name: string): CanonicalCategory {
 		normalizeCategoryKey(normalizedName),
 	);
 	if (definition) {
+		// 命中配置定义时返回 canonical 名称和 slug，不保留输入别名。
 		return { name: definition.name, slug: definition.slug };
 	}
 

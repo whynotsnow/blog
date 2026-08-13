@@ -89,6 +89,7 @@ async function buildCategoryHubPageViewModel(
 ): Promise<CategoryHubPageViewModel> {
 	const store = await getContentStore();
 	const categories = buildCategoryCards(store);
+	// Hub 的 all 视图只展示分类卡；recent/recommended 才输出文章列表。
 	const posts =
 		activeView === "all"
 			? []
@@ -107,6 +108,7 @@ async function buildCategoryHubPageViewModel(
 		.sort((a, b) => b.count - a.count)
 		.slice(0, CATEGORY_HUB_SUPPORT_TAG_LIMIT);
 
+	// support 复用全局导航结构，但会隐藏当前 Hub 视图对应的发现卡。
 	return {
 		activeView,
 		title:
@@ -150,6 +152,7 @@ export function buildCategoryCards(
 ): CategoryHubCard[] {
 	return taxonomy.categories.map((category) => {
 		const entry = taxonomy.categoryMap.get(category.slug);
+		// 卡片展示从 taxonomy 派生，不重新扫描内容集合，保持分类统计的单一来源。
 		const sortedRecentPosts = sortByRecentActivity(entry?.posts ?? []);
 		const latestPost = sortedRecentPosts[0];
 		const tags = (entry ? Array.from(entry.tags.values()) : category.tags)

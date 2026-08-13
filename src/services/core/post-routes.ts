@@ -46,6 +46,7 @@ function validateSlugSegments(value: string): void {
 		throw new Error("contains an empty path segment");
 	}
 
+	// alias 会直接进入静态路由，必须拒绝可能逃逸当前目录语义的路径片段。
 	if (segments.some((segment) => segment === "." || segment === "..")) {
 		throw new Error('contains a forbidden "." or ".." path segment');
 	}
@@ -64,6 +65,7 @@ export function normalizePostSlug(value: string): string {
 		.normalize("NFC")
 		.replace(/^\/+|\/+$/g, "");
 	if (/^posts\//i.test(normalized)) {
+		// 允许作者误写 posts/ 前缀，但内部索引始终只保存文章 slug 片段。
 		normalized = normalized.replace(/^posts\//i, "");
 	}
 
@@ -96,6 +98,7 @@ export function buildPostRoute(post: PostRouteSource): PostRoute {
 }
 
 function collisionKey(slug: string): string {
+	// 冲突检测按解码后的小写 NFC slug 进行，提前发现大小写和编码差异造成的同路由。
 	return decodeSlug(slug).normalize("NFC").toLocaleLowerCase("en-US");
 }
 
@@ -156,6 +159,7 @@ export function validatePostRoutes(posts: readonly PostRouteSource[]): void {
 			collisionKey(route?.canonicalSlug ?? ""),
 		);
 		if (defaults?.length) {
+			// alias 与另一个文件名默认 slug 冲突时，也只能生成一个页面，必须在构建前失败。
 			issues.push(
 				`alias "${route?.canonicalSlug}" from ${describeMatches(postsWithAlias)} conflicts with the default slug of ${describeMatches(defaults)}`,
 			);

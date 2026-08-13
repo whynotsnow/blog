@@ -28,6 +28,7 @@ function getContentMeta(post: RawPost): Required<ContentMeta> {
 		| ContentMeta
 		| undefined;
 
+	// words/excerpt/minutes 来自 Astro 渲染元数据，列表索引不再保留 Markdown 正文。
 	return {
 		words: frontmatter?.words ?? 0,
 		excerpt: frontmatter?.excerpt ?? "",
@@ -63,6 +64,7 @@ function buildNavigation(
 ): ReadonlyMap<string, NavigationMeta> {
 	const navigation = new Map<string, NavigationMeta>();
 
+	// posts 已按发布时间排序；这里仅注入相邻导航，不重新计算 canonical URL。
 	for (let index = 1; index < posts.length; index++) {
 		const nextPost = posts[index - 1];
 		navigation.set(posts[index].id, {
@@ -90,6 +92,7 @@ export function buildPostIndexEntries(
 		const route = routes.byId.get(post.id);
 		if (!route) throw new Error(`Missing post route for ${post.id}`);
 
+		// route 必须来自权威 PostRouteIndex，UI 层不再从文件名或 alias 推导链接。
 		const contentMeta = getContentMeta(post);
 		const category = buildCategoryItems(post.data.category);
 		return {

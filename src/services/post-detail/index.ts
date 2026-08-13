@@ -37,6 +37,7 @@ export async function getPostDetailPageData(
 	const index = store.postsById.get(postId);
 	if (!index) throw new Error(`Missing post index for ${postId}`);
 
+	// 文章正文渲染和分享图资源解析并行，但都保持在详情页服务边界内。
 	const [{ Content, headings }, { posterCoverUrl, posterAvatarUrl }] =
 		await Promise.all([
 			getRenderedPost(raw),
@@ -81,6 +82,7 @@ export async function getPostDetailPageData(
 		)
 		.filter((post): post is NonNullable<typeof post> => Boolean(post))
 		.map(toSupportPostLink);
+	// 推荐和随机列表都排除前后篇，避免详情页 support 区重复同一篇文章。
 	const recommendedPosts = buildRecommendedPostLinks({
 		current: index,
 		posts: store.posts,
