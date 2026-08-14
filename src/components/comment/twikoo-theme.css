@@ -159,6 +159,14 @@
   border-radius: var(--radius-sm);
 }
 
+[data-comment-service="twikoo"] #twikoo .tk-comments-actions:has(> .tk-icon.__comments + .tk-icon.__comments) > .tk-icon.__comments:last-child {
+  display: none !important;
+}
+
+[data-comment-service="twikoo"] #twikoo :is(.tk-admin, .tk-admin-container, .tk-admin-config, .tk-admin-comment, .tk-admin-security-alert) {
+  display: none !important;
+}
+
 [data-comment-service="twikoo"] #twikoo :is(.tk-admin-config, .tk-admin-container) {
   color: var(--text-primary);
 }

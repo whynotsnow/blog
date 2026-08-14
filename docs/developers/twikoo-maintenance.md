@@ -18,6 +18,7 @@ Twikoo 相关文件分为三层：
 - 通过 `style#twikoo-theme-overrides` 注入站点桥接样式，并确保它位于 head 中后加载的 Twikoo/Vue style 之后。
 - Swup 页面替换后重新检查 stylesheet 是否仍在当前 document 中；如果 CSS link 被移除，下一次初始化必须重新插入。
 - 初始化开始时即写入 root 的 init key，避免 `content:replace` 与 `page:view` 在同一棵评论 DOM 上重复初始化。
+- Twikoo 内置后台入口和后台面板由 `src/components/comment/twikoo-theme.css` 隐藏；评论管理已迁移到 `snow-base` 管理端代理，不再从 blog 页面打开 Twikoo 原生后台。
 
 ## 为什么不直接 fork Twikoo
 
@@ -117,5 +118,6 @@ pnpm check
 - `style#twikoo-theme-overrides` 位于官方 CSS 和后续注入的 Twikoo/Vue style 之后。
 - `.tk-action-icon`、`.tk-actions button`、`.tk-nick-link:hover`、`.el-input__inner:focus`、`.el-textarea__inner:focus`、`.el-button--primary`、`.el-button--text`、`.tk-sort-item.__active`、`.tk-icon.__comments`、`.tk-tag-blue`、`.tk-pagination-pager.__current`、`.el-loading-spinner` 等代表性节点的 computed style 使用站点主题变量，不出现原版蓝色。
 - Swup 连续文章导航不会对同一个评论 root 双重初始化。
+- Twikoo mock 中的后台入口和后台面板应保持不可见，避免迁移到 `snow-base` 后又从 blog 暴露原生后台入口。
 
 如果真实 Twikoo 服务因网络或后端限制无法返回评论数据，仍应通过 Playwright 注入最小 DOM fixture 检查 computed style；最终说明中必须区分“真实服务数据未验证”和“真实页面 DOM/CSS 计算已验证”。

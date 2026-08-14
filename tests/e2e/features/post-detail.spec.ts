@@ -562,7 +562,11 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 							'    <button class="el-button el-button--text tk-preview">Preview</button>',
 							'  </div>',
 							'  <button class="tk-sort-item __active" type="button">Newest</button>',
-							'  <span class="tk-icon __comments"><svg viewBox="0 0 10 10"><path d="M0 0h10v10H0z"></path></svg></span>',
+							'  <span class="tk-comments-actions">',
+							'    <span class="tk-icon __comments" data-testid="twikoo-refresh-entry"><svg viewBox="0 0 10 10"><path d="M0 0h10v10H0z"></path></svg></span>',
+							'    <span class="tk-icon __comments" data-testid="twikoo-admin-entry"><svg viewBox="0 0 10 10"><path d="M1 1h8v8H1z"></path></svg></span>',
+							'  </span>',
+							'  <div class="tk-admin __show"><div class="tk-admin-container"><div class="tk-admin-comment">Admin</div></div></div>',
 							'  <button class="tk-action-link" type="button"><span class="tk-action-icon">Like</span></button>',
 							'  <button class="tk-action-link tk-liked" type="button"><span class="tk-action-icon">Like</span><span class="tk-action-icon-solid">Liked</span></button>',
 							'  <div class="tk-pagination-pager __current">1</div>',
@@ -666,8 +670,12 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 				".tk-sort-item.__active",
 			);
 			const commentsIcon = root.querySelector<HTMLElement>(
-				".tk-icon.__comments",
+				'[data-testid="twikoo-refresh-entry"]',
 			);
+			const adminEntry = root.querySelector<HTMLElement>(
+				'[data-testid="twikoo-admin-entry"]',
+			);
+			const adminPanel = root.querySelector<HTMLElement>(".tk-admin");
 			const actionIcon = root.querySelector<HTMLElement>(
 				".tk-action-link:not(.tk-liked) .tk-action-icon",
 			);
@@ -696,6 +704,8 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 				!textButton ||
 				!sortButton ||
 				!commentsIcon ||
+				!adminEntry ||
+				!adminPanel ||
 				!actionIcon ||
 				!pager ||
 				!loadingPath ||
@@ -711,6 +721,8 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 			const loadingMaskStyle = getComputedStyle(loadingMask);
 			const noCommentsStyle = getComputedStyle(noComments);
 			const loadingSpinnerStyle = getComputedStyle(loadingSpinner);
+			const adminEntryStyle = getComputedStyle(adminEntry);
+			const adminPanelStyle = getComputedStyle(adminPanel);
 
 			return {
 				themeStyleAfterOfficialStyle:
@@ -753,6 +765,8 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 				textButtonColor: getComputedStyle(textButton).color,
 				sortButtonColor: getComputedStyle(sortButton).color,
 				commentsIconColor: getComputedStyle(commentsIcon).color,
+				adminEntryDisplay: adminEntryStyle.display,
+				adminPanelDisplay: adminPanelStyle.display,
 				actionIconColor: getComputedStyle(actionIcon).color,
 				pagerColor: getComputedStyle(pager).color,
 				loadingPathStroke: getComputedStyle(loadingPath).stroke,
@@ -791,6 +805,8 @@ test("Twikoo theme styles are available after Swup post navigation", async ({
 	expect(themeState.textButtonColor).toBe(themeState.accentColor);
 	expect(themeState.sortButtonColor).toBe(themeState.accentColor);
 	expect(themeState.commentsIconColor).toBe(themeState.accentColor);
+	expect(themeState.adminEntryDisplay).toBe("none");
+	expect(themeState.adminPanelDisplay).toBe("none");
 	expect(themeState.actionIconColor).toBe(themeState.accentColor);
 	expect(themeState.pagerColor).toBe(themeState.textOnAccentColor);
 	expect(themeState.loadingPathStroke).toBe(themeState.accentColor);
