@@ -126,6 +126,16 @@
 			"playbook": "docs/agents/runtime-playbook.md#generated-font-dev-drift"
 		},
 		{
+			"id": "astro-content-cache-asset-drift",
+			"cluster": "build-pipeline",
+			"symptoms": [
+				"production HTML references /_astro/ec.<hash>.css but dist/_astro contains a different ec.<hash>.css",
+				"stylesheet requests for Expressive Code CSS return text/html",
+				"browser reports strict MIME checking refused an Expressive Code stylesheet"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#astro-content-cache-asset-drift"
+		},
+		{
 			"id": "md051-emoji-heading-fragments",
 			"cluster": "markdown",
 			"symptoms": ["MD051/link-fragments reports emoji heading anchors"],

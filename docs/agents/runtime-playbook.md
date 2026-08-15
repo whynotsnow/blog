@@ -102,6 +102,23 @@ When pnpm itself is blocked, use the local binary only if dependencies are alrea
 ASTRO_TELEMETRY_DISABLED=1 ./node_modules/.bin/astro check
 ```
 
+### astro-content-cache-asset-drift
+
+Pattern:
+
+- `astro-expressive-code` injects `/_astro/ec.<hash>.css` links into rendered Markdown HTML.
+- Astro's content cache under `node_modules/.astro` can retain rendered HTML with an older Expressive Code asset hash.
+- A later Vite client build emits the current `dist/_astro/ec.<hash>.css`, while cached content still references the old hash.
+- Static hosts can serve a clean URL HTML fallback for the missing CSS path, causing `Refused to apply style ... MIME type ('text/html')` in production.
+
+Use:
+
+- Clear `node_modules/.astro` before production builds when generated Markdown HTML contains asset URLs.
+- Keep `pnpm build` and `pnpm build:astro` routed through `node scripts/build-assets.mjs clear-astro-cache`.
+- After Astro build, run `node scripts/build-assets.mjs verify-astro-assets` so HTML references to missing `/_astro/*` files fail the build instead of shipping.
+- When diagnosing a production MIME error, compare `rg -o "ec\\.[A-Za-z0-9_-]+\\.css" dist --glob "*.html"` against `find dist/_astro -name "ec.*.css"`.
+- Treat Vercel or CDN HTML responses for missing CSS as the symptom, not the root cause, when the requested asset is absent from `dist/_astro`.
+
 ## pnpm
 
 ### pnpm-version-config-drift

@@ -17,6 +17,8 @@ pnpm build
 代码质量检查建议运行 `pnpm lint`；如需自动修复可修复问题，运行 `pnpm lint:fix` 后再复查 diff。`pnpm type-check`、`pnpm type-check:svelte` 与 `pnpm check` 都属于提交门禁：`type-check` 检查纯 TypeScript，`type-check:svelte` 负责 `.svelte` 组件脚本、模板和 Props 诊断，`check` 负责 Astro 与内容诊断。完整 `pnpm build` 仍应作为 CI 的合并门禁，避免被本地 `--no-verify` 绕过。
 文档结构调整或 Markdown 格式修复建议运行 `pnpm lint:md`。
 
+生产构建会先清理 `node_modules/.astro` 中的 Astro 内容缓存，再校验 HTML 引用的 `/_astro/*` 资源是否真实存在。这个步骤用于避免 Markdown/Expressive Code 的旧 rendered HTML 保留过期 `ec.<hash>.css` 引用，导致线上 CSS 请求回退成 HTML 并触发 MIME type 报错。不要绕过 `pnpm build` 或 `pnpm build:astro` 直接运行裸 `astro build` 发布。
+
 ## Agent Workspace Spec 公开边界
 
 `AGENTS.md` 与 `docs/agents/` 属于可公开、可版本管理的 Agent Workspace Spec 知识。个人身份、本机绝对路径、完整命令输出、未经审核的 runtime memory 和私有基础设施信息必须保存到以下 Git 忽略目录：

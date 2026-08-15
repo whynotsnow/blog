@@ -44,6 +44,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: Dev requests configured WOFF2 URLs with 404 responses while source TTF files exist, or production silently falls back because the font generator found no configuration.
 - Playbook: [generated-font-dev-drift](./runtime-playbook.md#generated-font-dev-drift)
 
+### astro-content-cache-asset-drift
+
+- Symptom: production HTML references an Expressive Code asset such as `/_astro/ec.<hash>.css`, but `dist/_astro` contains a different hash and the missing asset request returns HTML with a stylesheet MIME error.
+- Playbook: [astro-content-cache-asset-drift](./runtime-playbook.md#astro-content-cache-asset-drift)
+
 ## Framework
 
 ### astro-telemetry-side-effects
