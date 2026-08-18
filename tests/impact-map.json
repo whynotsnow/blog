@@ -404,9 +404,7 @@
 		},
 		{
 			"patterns": [
-				"public/assets/js/twikoo.all.min.js",
 				"public/assets/js/twikoo.nocss.js",
-				"public/assets/js/twikoo.nocss.js.LICENSE.txt",
 				"public/assets/css/twikoo.css",
 				"src/components/comment/**",
 				"src/components/post-detail/**",

@@ -99,9 +99,7 @@ function isUnder(file, directory) {
 
 function isVendorStaticAsset(file) {
 	return [
-		"public/assets/js/twikoo.all.min.js",
 		"public/assets/js/twikoo.nocss.js",
-		"public/assets/js/twikoo.nocss.js.LICENSE.txt",
 		"public/assets/css/twikoo.css",
 		"public/live2d-companion/l2d-widget.min.js",
 	].includes(file);
