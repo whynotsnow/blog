@@ -59,6 +59,7 @@
 		"design:check": "node scripts/check-design-system.mjs",
 		"typography:inventory": "node scripts/typography-inventory.mjs",
 		"prepare": "node scripts/install-git-hooks.mjs",
+		"dev:plan": "node scripts/open-dev-plan.mjs",
 		"precommit": "node scripts/check-env.mjs && node scripts/pre-commit-check.mjs",
 		"plan:status": "node scripts/sidecar-status.mjs",
 		"preinstall": "node scripts/check-env.mjs",
