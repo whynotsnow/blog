@@ -60,6 +60,7 @@
 		"typography:inventory": "node scripts/typography-inventory.mjs",
 		"prepare": "node scripts/install-git-hooks.mjs",
 		"precommit": "node scripts/check-env.mjs && node scripts/pre-commit-check.mjs",
+		"plan:status": "node scripts/sidecar-status.mjs",
 		"preinstall": "node scripts/check-env.mjs",
 		"clean": "rimraf node_modules pnpm-lock.yaml",
 		"clean:force": "rimraf node_modules pnpm-lock.yaml && pnpm store prune"

@@ -63,6 +63,7 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm format`: format the repository according to the local Prettier config.
 - `pnpm precommit`: run the same pre-commit gate as the Git hook.
 - `pnpm test:plan`: print the local-mode validation selected for current changes without executing it; full-regression needs are reported as risks, not executed.
+- `pnpm plan:status`: print the adjacent sidecar planning board status from `../blog.plan`.
 - `pnpm test:affected`: execute the local-mode validation selected by `tests/impact-map.json`.
 - `pnpm test:plan:ci`: print the CI-mode validation plan where high-risk or unclassified paths can select `verify:full`.
 - `pnpm test:affected:ci`: execute the CI-mode validation plan.
@@ -86,6 +87,16 @@ Use `.agent-workspace/manifest.json` as the command contract and resolve Agent W
 4. If the manifest declares tooling that is missing or does not support a requested command, report a workspace capability gap. Do not silently substitute Skill-bundled validation or another implementation.
 
 Do not record a machine-specific Skill installation path in tracked files. Resolve installed Skill locations from the active agent runtime when Skill assistance is needed.
+
+## Planning Sidecar
+
+- The adjacent planning sidecar is `../blog.plan`.
+- Use `pnpm --silent plan:status --json` from this repository to discover sidecar items before selecting plan-backed work.
+- Do not implement sidecar items unless their status is `ready` or `running`.
+- Keep planning, decisions, executable plans, sanitized run records, and handoffs in the sidecar; keep product source, deployable files, runtime configuration, and product documentation in this repository.
+- Do not copy credentials, tokens, cookies, private keys, raw logs, local absolute paths, private URLs, hostnames, Agent Workspace local profile IDs, or personal identity data into tracked sidecar files.
+- If a blog commit directly executes a sidecar item, include `Plan-Item: <id>` in the commit message. Use `Related-Plan: <id>` only when the relationship is useful but the commit does not execute the item.
+- Do not make standalone sidecar commits for routine planning churn unless the maintainer explicitly asks to checkpoint planning state.
 
 ## Tool Policy
 

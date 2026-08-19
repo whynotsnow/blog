@@ -19,6 +19,7 @@ This repository is now prepared for AI-assisted maintenance. The intent is not t
 | `docs/agents/execution-log.md` | Reusable task-level learning log. |
 | `docs/developers/content-guide.md` | Chinese content schema, authoring rules, and sync behavior. |
 | `docs/developers/configuration.md` | Chinese configuration ownership and common edits. |
+| `../blog.plan` | Adjacent sidecar repository for planning, decisions, execution records, validation notes, and handoffs. |
 
 ## Spec-Aware Mode
 
@@ -34,6 +35,20 @@ For non-trivial tasks, use the Agent Workspace Spec-aware workflow:
 8. Update `memory.json` and `failure-index.md` if a new recurring failure class is discovered and passes disclosure review.
 
 Agent Workspace Spec does not require reading every document. It requires checking the relevant memory and playbook before repeating known mistakes.
+
+## Planning Sidecar
+
+Use the adjacent `../blog.plan` repository for plan-managed work. It stores planning items, decisions, executable plans, sanitized run records, and handoffs. Product source, deployable files, runtime configuration, and public project documentation remain in this repository.
+
+Before selecting plan-backed work, run:
+
+```bash
+pnpm --silent plan:status --json
+```
+
+Only implement sidecar items with `status: ready` or `status: running`. Read the sidecar `AGENTS.md`, `plan.config.json`, target item, and linked plan before changing this repository. After implementation, record sanitized validation evidence in the sidecar `runs/` directory.
+
+Do not copy credentials, tokens, cookies, private keys, raw logs, local absolute paths, private URLs, hostnames, Agent Workspace local profile IDs, or personal identity data into tracked sidecar files. Main-repo commits that directly execute sidecar items should include `Plan-Item: <id>`; related non-execution commits may use `Related-Plan: <id>`.
 
 ## Skill Operator Boundary
 
