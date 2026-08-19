@@ -2,7 +2,7 @@
 title: 相册与日记页面
 published: 2026-08-18
 updated: 2026-08-19
-description: 说明当前博客已启用的相册和日记页面，以及本地图片、外链相册和静态日记数据的维护方式。
+description: 说明当前博客已启用的相册和日记页面，以及本地图片、显式图片清单和静态日记数据的维护方式。
 image: ''
 author: whynotsnow
 lang: zh_CN
@@ -25,7 +25,7 @@ comment: true
 public/images/albums/{albumId}/
 ```
 
-每个相册目录需要 `info.json` 描述标题、日期、地点、标签和布局。封面优先使用 `cover.webp`，没有时回退到 `cover.jpg`。
+每个相册目录需要 `info.json` 描述标题、日期、地点、标签和布局。本地图片模式的封面优先使用 `cover.webp`，没有时回退到 `cover.jpg`；显式图片清单模式则使用 `cover` 字段引用远程 URL 或站内 `/images/...` 路径。
 
 ## 本地图片
 
@@ -37,11 +37,21 @@ public/images/albums/{albumId}/
 snow_mountain_night.webp
 ```
 
-## 外链相册
+## 项目相册
 
-外链相册在 `info.json` 中设置 `mode: "external"`，并提供 `cover` 和 `photos` 数组。每张照片至少需要 `src`，可选 `thumbnail`、`alt`、`title`、`description`、`tags`、`date` 和 `location`。
+当前项目已按资源主题整理出三个项目相册：
 
-外链相册适合复用已有图床或对象存储，但要注意外链稳定性和访问速度。
+- `ProjectDevices`：收录设备页面使用的路由器和移动设备图片，默认隐藏。
+- `ProjectDiary`：收录日记页面使用的生活记录图片，默认隐藏。
+- `ProjectMarkdownGallery`：收录 Markdown 图片网格文章中的代表性演示图片，公开展示。
+
+这些相册使用显式图片清单引用站内公开资源，不复制或移动原始业务路径，因此设备页、日记页和文章中的图片引用保持稳定。后续新增图片时，如果主题明确，应优先补充到对应主题相册；只有无法归类的公共资源才需要新建综合相册。
+
+## 显式图片清单
+
+显式图片清单在 `info.json` 中设置 `mode: "external"`，并提供 `cover` 和 `photos` 数组。每张照片至少需要 `src`，可选 `thumbnail`、`alt`、`title`、`description`、`tags`、`date` 和 `location`。
+
+这种模式既可以复用已有图床或对象存储，也可以引用站内 `/images/...` 路径。项目资源相册优先使用站内路径，避免相同图片在仓库中重复存储。
 
 ## 日记页面
 

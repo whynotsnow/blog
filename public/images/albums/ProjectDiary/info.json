@@ -1,0 +1,32 @@
+{
+	"mode": "external",
+	"title": "项目日记图集",
+	"description": "整理当前项目日记页面使用的公开图片，保留日常记录与生活化内容的视觉样本。",
+	"date": "2026-08-19",
+	"location": "项目资源库",
+	"tags": ["项目资源", "日记", "生活记录"],
+	"layout": "masonry",
+	"columns": 3,
+	"hidden": true,
+	"cover": "/images/diary/sakura.jpg",
+	"photos": [
+		{
+			"id": "sakura",
+			"src": "/images/diary/sakura.jpg",
+			"alt": "日记页面樱花图片",
+			"title": "樱花记录",
+			"tags": ["日记", "生活记录"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "moment-1",
+			"src": "/images/diary/1.jpg",
+			"alt": "日记页面生活记录图片",
+			"title": "生活记录",
+			"tags": ["日记", "生活记录"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		}
+	]
+}

@@ -5,7 +5,11 @@ test("albums page renders filter tabs and album cards", async ({ page }) => {
 	const response = await gotoPage(page, "/albums/");
 
 	expect(response?.ok()).toBe(true);
-	await expect(page.locator("#albums-grid .album-card")).toHaveCount(1);
+	await expect(page.locator("#albums-grid .album-card")).toHaveCount(2);
+	await expect(page.locator("#albums-grid .album-card")).toContainText([
+		"Some lovely pictures",
+		"Markdown 图片网格图集",
+	]);
 	await expect
 		.poll(() =>
 			page
@@ -21,7 +25,26 @@ test("albums page renders filter tabs and album cards", async ({ page }) => {
 	await expect(filter).toHaveClass(/is-active/);
 	await expect(
 		page.locator("#albums-grid .album-card.filtered-out"),
-	).toHaveCount(0);
+	).toHaveCount(1);
+});
+
+test("public project album exposes internal image references", async ({
+	page,
+}) => {
+	await gotoPage(page, "/albums/ProjectMarkdownGallery/");
+	await expect(
+		page.getByRole("heading", { name: "Markdown 图片网格图集" }),
+	).toBeVisible();
+	await expect(page.locator(".gallery-masonry img")).toHaveCount(11);
+	await expect
+		.poll(() =>
+			page
+				.locator(".album-hero__image")
+				.evaluate((image) =>
+					image instanceof HTMLImageElement ? image.naturalWidth : 0,
+				),
+		)
+		.toBeGreaterThan(0);
 });
 
 test("album detail opens photos with Fancybox", async ({ page }) => {

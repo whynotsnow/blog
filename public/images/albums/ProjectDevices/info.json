@@ -1,0 +1,32 @@
+{
+	"mode": "external",
+	"title": "项目设备图集",
+	"description": "整理当前项目设备页面使用的公开图片，集中展示路由器和移动设备等硬件资源。",
+	"date": "2026-08-19",
+	"location": "项目资源库",
+	"tags": ["项目资源", "设备", "硬件"],
+	"layout": "grid",
+	"columns": 3,
+	"hidden": true,
+	"cover": "/images/device/oneplus13t.png",
+	"photos": [
+		{
+			"id": "oneplus13t",
+			"src": "/images/device/oneplus13t.png",
+			"alt": "OnePlus 13T 设备图片",
+			"title": "OnePlus 13T",
+			"tags": ["设备", "手机"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "mt3000",
+			"src": "/images/device/mt3000.png",
+			"alt": "GL.iNet MT3000 路由器图片",
+			"title": "GL.iNet MT3000",
+			"tags": ["设备", "路由器"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		}
+	]
+}

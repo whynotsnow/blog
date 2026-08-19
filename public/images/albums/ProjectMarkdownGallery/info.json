@@ -1,0 +1,113 @@
+{
+	"mode": "external",
+	"title": "Markdown 图片网格图集",
+	"description": "整理图片网格文章使用的代表性演示图，覆盖横图、方图、竖图、极端比例和透明背景。",
+	"date": "2026-08-19",
+	"location": "项目资源库",
+	"tags": ["项目资源", "Markdown", "图片网格", "演示图"],
+	"layout": "masonry",
+	"columns": 3,
+	"hidden": false,
+	"cover": "/images/demos/image-grid-demo/feature-landscape-1.webp",
+	"photos": [
+		{
+			"id": "landscape-1",
+			"src": "/images/demos/image-grid-demo/landscape-1.webp",
+			"alt": "Markdown 图片网格横图示例一",
+			"title": "横图示例一",
+			"tags": ["Markdown", "横图"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "landscape-2",
+			"src": "/images/demos/image-grid-demo/landscape-2.webp",
+			"alt": "Markdown 图片网格横图示例二",
+			"title": "横图示例二",
+			"tags": ["Markdown", "横图"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "landscape-3",
+			"src": "/images/demos/image-grid-demo/landscape-3.webp",
+			"alt": "Markdown 图片网格横图示例三",
+			"title": "横图示例三",
+			"tags": ["Markdown", "横图"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "square-1",
+			"src": "/images/demos/image-grid-demo/square-1.webp",
+			"alt": "Markdown 图片网格方图示例一",
+			"title": "方图示例一",
+			"tags": ["Markdown", "方图"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "square-2",
+			"src": "/images/demos/image-grid-demo/square-2.webp",
+			"alt": "Markdown 图片网格方图示例二",
+			"title": "方图示例二",
+			"tags": ["Markdown", "方图"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "portrait-1",
+			"src": "/images/demos/image-grid-demo/portrait-1.webp",
+			"alt": "Markdown 图片网格竖图示例一",
+			"title": "竖图示例一",
+			"tags": ["Markdown", "竖图"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "portrait-2",
+			"src": "/images/demos/image-grid-demo/portrait-2.webp",
+			"alt": "Markdown 图片网格竖图示例二",
+			"title": "竖图示例二",
+			"tags": ["Markdown", "竖图"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "default-portrait-1",
+			"src": "/images/demos/image-grid-demo/default-portrait-1.webp",
+			"alt": "Markdown 图片网格默认裁剪示例",
+			"title": "默认裁剪示例",
+			"tags": ["Markdown", "裁剪"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "extreme-1",
+			"src": "/images/demos/image-grid-demo/extreme-1.webp",
+			"alt": "Markdown 图片网格极端比例示例",
+			"title": "极端比例示例",
+			"tags": ["Markdown", "比例"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "transparent-1",
+			"src": "/images/demos/image-grid-demo/transparent-1.webp",
+			"alt": "Markdown 图片网格透明背景示例",
+			"title": "透明背景示例",
+			"tags": ["Markdown", "透明背景"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		},
+		{
+			"id": "critical-1",
+			"src": "/images/demos/image-grid-demo/critical-1.webp",
+			"alt": "Markdown 图片网格临界尺寸示例",
+			"title": "临界尺寸示例",
+			"tags": ["Markdown", "尺寸"],
+			"date": "2026-08-19",
+			"location": "项目资源库"
+		}
+	]
+}

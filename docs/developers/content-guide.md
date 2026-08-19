@@ -152,7 +152,7 @@ pnpm new-post -- my-post-title
 
 ## 相册资源
 
-相册页面读取 `public/images/albums/{albumId}/info.json` 和同目录图片。`info.json` 的常用字段包括：
+相册页面以 `public/images/albums/{albumId}/info.json` 为入口。本地图片模式会读取同目录图片；显式图片清单模式会读取 `photos[].src` 指向的远程 URL 或站内 `/images/...` 路径。`info.json` 的常用字段包括：
 
 - `title`、`description`、`date`、`location`、`tags`：用于相册列表、详情页和筛选。
 - `hidden`：为 `true` 时构建时跳过该相册。
@@ -163,7 +163,7 @@ pnpm new-post -- my-post-title
 
 本地相册优先使用 `cover.webp` 作为封面，缺失时回退到 `cover.jpg`；两个封面文件都不会进入照片列表。普通图片支持 `jpg`、`jpeg`、`png`、`gif`、`webp`、`svg`、`avif`、`bmp`、`tiff`、`tif`。当同目录同时存在同名 `jpg`/`jpeg`/`png` 与 `webp` 时，扫描器会优先把照片 URL 指向 WebP。文件名可用下划线携带标签，例如 `name_tag.webp` 或 `name_tag1_tag2.webp`。
 
-外链相册在 `info.json` 中设置 `mode: "external"`，并提供 `cover` 和 `photos` 数组。`photos` 中每项至少需要 `src`，可选 `thumbnail`、`alt`、`title`、`description`、`tags`、`date`、`location`、`width`、`height`。外链相册同样支持 `password` 和 `passwordHint`。
+显式图片清单相册在 `info.json` 中设置 `mode: "external"`，并提供 `cover` 和 `photos` 数组。`cover` 与 `photos[].src` 既可以是远程 URL，也可以是站内 public 路径。`photos` 中每项至少需要 `src`，可选 `thumbnail`、`alt`、`title`、`description`、`tags`、`date`、`location`、`width`、`height`。显式图片清单相册同样支持 `password` 和 `passwordHint`。项目资源相册优先使用站内路径引用已有图片，避免复制同一份资源。
 
 ## 网站通知
 
