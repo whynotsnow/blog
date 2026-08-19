@@ -4,6 +4,8 @@ This log records completed AI-assisted work only when it teaches the project som
 
 Keep entries short. Link to `memory.json`, `failure-index.md`, or `runtime-playbook.md` when a task discovers or reuses a pattern.
 
+After the adjacent planning sidecar was enabled, plan/RM-bound execution records belong in `../blog.plan/runs/`. Update this file only for reusable project learning, recurring failure patterns, or lasting maintenance rules. Do not use it as a routine task history or validation transcript.
+
 ## 2026-07-04
 
 ### Added Agent Workspace Spec documentation layer
