@@ -41,7 +41,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
 	await page.setViewportSize({ width: 1024, height: 900 });
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, "/category/tutorials/");
 
 	const banner = page.locator("#banner-wrapper");
 	const mainContent = page.locator(".main-content-layer");
@@ -59,7 +59,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 	await expect(navbar).toHaveClass(/scrolled/);
 	await expect(page.locator("#top-row")).toHaveCSS("position", "fixed");
 
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, "/posts/markdown-writing/");
 	await waitForMainEntryAlignment(page);
 	expect((await readMainEntryGeometry(page)).targetScrollTop).toBeGreaterThan(
 		0,
@@ -69,7 +69,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 	await expect(navbar).toHaveClass(/scrolled/);
 
 	await useStoredPreference(page, "wallpaperMode", "full-wall");
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, "/category/tutorials/");
 	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 	await expect(banner).toBeHidden();
 });
@@ -79,7 +79,7 @@ test("fullscreen category and post pages align the main region", async ({
 }) => {
 	await useStoredPreference(page, "wallpaperMode", "full-banner");
 	await page.setViewportSize({ width: 1440, height: 900 });
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, "/category/tutorials/");
 
 	const readMainOffset = () =>
 		page
@@ -103,9 +103,9 @@ test("fullscreen category and post pages align the main region", async ({
 		.toBe(true);
 
 	await page.evaluate(() => {
-		window.swup.navigate("/posts/markdown-tutorial/");
+		window.swup.navigate("/posts/markdown-writing/");
 	});
-	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	await expect(page).toHaveURL(/\/posts\/markdown-writing\/$/);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -144,7 +144,7 @@ test("direct post URLs animate to the page entry on first load", async ({
 		}) as typeof window.scrollTo;
 	});
 
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, "/posts/markdown-writing/");
 
 	const pageMain = page.locator(".page-main-content");
 	await expect
@@ -255,7 +255,7 @@ test("Swup shows navigation progress independently from page entry scrolling", a
 
 test("category links use one smooth page-entry scroll", async ({ page }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, "/category/tutorials/");
 	await expect
 		.poll(() => page.evaluate(() => Boolean(window.swup)))
 		.toBe(true);
@@ -342,15 +342,15 @@ test("browser history realigns the category and post main regions", async ({
 	page,
 }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, "/category/tutorials/");
 	await expect
 		.poll(() => page.evaluate(() => Boolean(window.swup)))
 		.toBe(true);
 
 	await page.evaluate(() => {
-		window.swup.navigate("/posts/markdown-tutorial/");
+		window.swup.navigate("/posts/markdown-writing/");
 	});
-	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	await expect(page).toHaveURL(/\/posts\/markdown-writing\/$/);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -395,7 +395,7 @@ test("browser history realigns the category and post main regions", async ({
 		}) as typeof window.scrollTo;
 		window.history.back();
 	});
-	await expect(page).toHaveURL(/\/category\/tech\/$/);
+	await expect(page).toHaveURL(/\/category\/tutorials\/$/);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -446,7 +446,7 @@ test("browser history realigns the category and post main regions", async ({
 				window.history.forward();
 			}),
 	);
-	await expect(page).toHaveURL(/\/posts\/markdown-tutorial\/$/);
+	await expect(page).toHaveURL(/\/posts\/markdown-writing\/$/);
 	expect(sawForwardProgress).toBe(true);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",

@@ -148,12 +148,13 @@ let Fancybox: FancyboxApi | undefined;
 let fancyboxClickFallbackBound = false;
 
 const albumImagesSelector =
-	".custom-md img, #post-cover img, .moment-images img";
+	".custom-md img:not(.image-grid img), #post-cover img, .moment-images img";
 const groupedFancyboxSelector = [
 	".moment-images [data-fancybox]",
 	".diary-images [data-fancybox]",
 	".photo-gallery [data-fancybox]",
 	".gallery-masonry [data-fancybox]",
+	".image-grid [data-fancybox]",
 ].join(", ");
 const singleFancyboxSelector = [
 	"[data-fancybox]",
@@ -161,6 +162,7 @@ const singleFancyboxSelector = [
 	":not(.diary-images [data-fancybox])",
 	":not(.photo-gallery [data-fancybox])",
 	":not(.gallery-masonry [data-fancybox])",
+	":not(.image-grid [data-fancybox])",
 ].join("");
 
 // 数学公式按需加载
@@ -244,7 +246,7 @@ async function initFancybox() {
 
 	const commonConfig = getFancyboxConfig();
 
-	// 绑定相册/文章图片
+	// 绑定普通文章图片
 	Fancybox?.bind(albumImagesSelector, {
 		...commonConfig,
 		groupAll: true,

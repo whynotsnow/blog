@@ -19,6 +19,7 @@ import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-cop
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.ts";
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.ts";
+import { ImageGridComponent } from "./src/plugins/rehype-component-image-grid.ts";
 import { rehypeMermaid } from "./src/plugins/rehype-mermaid.ts";
 import { rehypeWrapTable } from "./src/plugins/rehype-wrap-table.ts";
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.ts";
@@ -164,6 +165,7 @@ export default defineConfig({
 				{
 					components: {
 						github: GithubCardComponent,
+						grid: ImageGridComponent,
 						note: (x, y) => AdmonitionComponent(x, y, "note"),
 						tip: (x, y) => AdmonitionComponent(x, y, "tip"),
 						important: (x, y) =>

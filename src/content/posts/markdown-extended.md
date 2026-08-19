@@ -53,6 +53,20 @@ comment: true
 涉及密码、私有地址或账号凭证的内容不应写入公开文章。
 :::
 
+## 图片网格
+
+多张相关图片可以使用 `:::grid` 组织成响应式画廊：
+
+````markdown
+:::grid{columns="3" aspect="16/9" fit="cover"}
+![第一张图](/images/demos/image-grid-demo/landscape-1.webp)
+
+![第二张图](/images/demos/image-grid-demo/landscape-2.webp)
+:::
+````
+
+网格支持 `columns`、`aspect` 和 `fit` 参数，并会为同一组图片建立独立的 Fancybox 灯箱分组。完整用法见 [Markdown 图片网格画廊](/posts/image-grid-gallery/)。
+
 ## GitHub 风格提示
 
 项目也支持常见的 GitHub 风格引用提示：
