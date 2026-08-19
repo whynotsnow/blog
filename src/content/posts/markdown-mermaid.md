@@ -1,192 +1,81 @@
 ---
-title: Markdown Mermaid
-published: 2023-10-01
-pinned: false
-description: A simple example of a Markdown blog post with Mermaid.
-tags: [Markdown, Blogging, Mermaid]
-category: Examples
+title: Mermaid 图表写作
+published: 2026-08-13
+updated: 2026-08-19
+description: 说明如何在文章中使用 Mermaid 绘制流程图、时序图、状态图和占比图。
+image: ''
+author: whynotsnow
+lang: zh_CN
+tags: [Markdown, Mermaid, 图表]
+category: 教程
 draft: false
+pinned: false
+priority: 70
+recommendScore: 60
+comment: true
 ---
-# Complete Guide to Markdown with Mermaid Diagrams
 
-This article demonstrates how to create various complex diagrams using Mermaid in Markdown documents, including flowcharts, sequence diagrams, Gantt charts, class diagrams, and state diagrams.
+Mermaid 适合在文章里表达流程、交互关系、状态变化和简单数据占比。它的优势是图表源文本和文章一起维护，不需要额外提交截图。
 
-## Flowchart Example
-
-Flowcharts are excellent for representing processes or algorithm steps.
-
-
-
+## 流程图
 
 ```mermaid
 graph TD
-    A[Start] --> B{Condition Check}
-    B -->|Yes| C[Process Step 1]
-    B -->|No| D[Process Step 2]
-    C --> E[Subprocess]
-    D --> E
-    subgraph E [Subprocess Details]
-        E1[Substep 1] --> E2[Substep 2]
-        E2 --> E3[Substep 3]
-    end
-    E --> F{Another Decision}
-    F -->|Option 1| G[Result 1]
-    F -->|Option 2| H[Result 2]
-    F -->|Option 3| I[Result 3]
-    G --> J[End]
-    H --> J
-    I --> J
+    A[编写 Markdown] --> B{Frontmatter 是否完整}
+    B -->|是| C[进入内容集合]
+    B -->|否| D[构建期报错或摘要缺失]
+    C --> E[生成文章页]
+    C --> F[生成分类与标签索引]
 ```
 
-## Sequence Diagram Example
+流程图适合解释构建管线、发布流程和故障排查步骤。
 
-Sequence diagrams show interactions between objects over time.
+## 时序图
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant WebApp
-    participant Server
-    participant Database
+    participant Reader as 访问者
+    participant Page as 文章页
+    participant Service as 内容服务
+    participant Store as 内容集合
 
-    User->>WebApp: Submit Login Request
-    WebApp->>Server: Send Auth Request
-    Server->>Database: Query User Credentials
-    Database-->>Server: Return User Data
-    Server-->>WebApp: Return Auth Result
-    
-    alt Auth Successful
-        WebApp->>User: Show Welcome Page
-        WebApp->>Server: Request User Data
-        Server->>Database: Get User Preferences
-        Database-->>Server: Return Preferences
-        Server-->>WebApp: Return User Data
-        WebApp->>User: Load Personalized Interface
-    else Auth Failed
-        WebApp->>User: Show Error Message
-        WebApp->>User: Prompt Re-entry
-    end
+    Reader->>Page: 打开文章
+    Page->>Service: 请求文章详情视图模型
+    Service->>Store: 读取已校验内容
+    Store-->>Service: 返回文章元数据和正文
+    Service-->>Page: 返回 URL、目录和渲染数据
 ```
 
-## Gantt Chart Example
+时序图适合说明多个模块之间的调用顺序。
 
-Gantt charts are perfect for displaying project schedules and timelines.
-
-```mermaid
-gantt
-    title Website Development Project Timeline
-    dateFormat  YYYY-MM-DD
-    axisFormat  %m/%d
-    
-    section Design Phase
-    Requirements Analysis      :a1, 2023-10-01, 7d
-    UI Design                 :a2, after a1, 10d
-    Prototype Creation        :a3, after a2, 5d
-    
-    section Development Phase
-    Frontend Development      :b1, 2023-10-20, 15d
-    Backend Development       :b2, after a2, 18d
-    Database Design           :b3, after a1, 12d
-    
-    section Testing Phase
-    Unit Testing              :c1, after b1, 8d
-    Integration Testing       :c2, after b2, 10d
-    User Acceptance Testing   :c3, after c2, 7d
-    
-    section Deployment
-    Production Deployment     :d1, after c3, 3d
-    Launch                    :milestone, after d1, 0d
-```
-
-## Class Diagram Example
-
-Class diagrams show the static structure of a system, including classes, attributes, methods, and their relationships.
-
-```mermaid
-classDiagram
-    class User {
-        +String username
-        +String password
-        +String email
-        +Boolean active
-        +login()
-        +logout()
-        +updateProfile()
-    }
-    
-    class Article {
-        +String title
-        +String content
-        +Date publishDate
-        +Boolean published
-        +publish()
-        +edit()
-        +delete()
-    }
-    
-    class Comment {
-        +String content
-        +Date commentDate
-        +addComment()
-        +deleteComment()
-    }
-    
-    class Category {
-        +String name
-        +String description
-        +addArticle()
-        +removeArticle()
-    }
-    
-    User "1" -- "*" Article : writes
-    User "1" -- "*" Comment : posts
-    Article "1" -- "*" Comment : has
-    Article "1" -- "*" Category : belongs to
-```
-
-## State Diagram Example
-
-State diagrams show the sequence of states an object goes through during its life cycle.
+## 状态图
 
 ```mermaid
 stateDiagram-v2
     [*] --> Draft
-    
-    Draft --> UnderReview : submit
-    UnderReview --> Draft : reject
-    UnderReview --> Approved : approve
-    Approved --> Published : publish
-    Published --> Archived : archive
-    Published --> Draft : retract
-    
-    state Published {
-        [*] --> Active
-        Active --> Hidden : temporarily hide
-        Hidden --> Active : restore
-        Active --> [*]
-        Hidden --> [*]
-    }
-    
+    Draft --> Published: draft=false
+    Published --> Updated: 更新正文或元数据
+    Updated --> Published: 构建发布
+    Published --> Archived: 删除或下线
     Archived --> [*]
 ```
 
-## Pie Chart Example
+状态图适合描述文章生命周期、交互开关和用户界面状态。
 
-Pie charts are ideal for displaying proportions and percentage data.
+## 饼图
 
 ```mermaid
-pie title Website Traffic Sources Analysis
-    "Search Engines" : 45.6
-    "Direct Access" : 30.1
-    "Social Media" : 15.3
-    "Referral Links" : 6.4
-    "Other Sources" : 2.6
+pie title 当前功能说明文章覆盖范围
+    "内容写作" : 35
+    "交互功能" : 25
+    "媒体能力" : 20
+    "发布输出" : 20
 ```
 
-## Conclusion
+饼图适合表达简单比例。复杂数据仍建议使用更明确的表格或专门的可视化组件。
 
-Mermaid is a powerful tool for creating various types of diagrams in Markdown documents. This article demonstrated how to use flowcharts, sequence diagrams, Gantt charts, class diagrams, state diagrams, and pie charts. These diagrams can help you express complex concepts, processes, and data structures more clearly.
+## 写作建议
 
-To use Mermaid, simply specify the mermaid language in a code block and describe the diagram using concise text syntax. Mermaid will automatically convert these descriptions into beautiful visual diagrams.
+Mermaid 图表应保持简短。图表节点过多时，移动端阅读会变差，也更容易让维护者误读关系。
 
-Try using Mermaid diagrams in your next technical blog post or project documentation - they will make your content more professional and easier to understand!
+如果图表表达的是项目真实行为，更新代码或配置后也要同步更新图表。过期图表比没有图表更容易误导读者。

@@ -1,93 +1,106 @@
 ---
-title: Markdown Extended Features
-published: 2024-05-01
-updated: 2024-11-29
-description: 'Read more about Markdown features in Mizuki'
+title: Markdown 扩展语法
+published: 2026-08-12
+updated: 2026-08-19
+description: 说明当前博客支持的提示块、GitHub 仓库卡片、剧透文本、代码高亮和数学公式等扩展写法。
 image: ''
-tags: [Demo, Example, Markdown, Mizuki]
-category: 'Examples'
-draft: false 
+author: whynotsnow
+lang: zh_CN
+tags: [Markdown, 扩展语法, Expressive Code]
+category: 教程
+draft: false
+pinned: false
+priority: 80
+recommendScore: 65
+comment: true
 ---
 
-## GitHub Repository Cards
-You can add dynamic cards that link to GitHub repositories, on page load, the repository information is pulled from the GitHub API. 
+当前博客在标准 Markdown 之外，支持一些适合技术文章和说明文档的增强语法。使用这些能力时，正文仍然保持 Markdown 文件形态，构建期会把扩展语法转换成页面组件或增强 HTML。
 
-::github{repo="matsuzaka-yuki/Mizuki"}
+## GitHub 仓库卡片
 
-Create a GitHub repository card with the code `::github{repo="matsuzaka-yuki/Mizuki"}`.
+仓库卡片可以用来引用项目源码：
 
 ```markdown
-::github{repo="matsuzaka-yuki/Mizuki"}
+::github{repo="whynotsnow/blog"}
 ```
 
-## Admonitions
+渲染效果如下：
 
-Following types of admonitions are supported: `note` `tip` `important` `warning` `caution`
+::github{repo="whynotsnow/blog"}
 
+建议只在确实需要指向项目仓库时使用，避免一篇文章里堆叠过多外部卡片。
+
+## 提示块
+
+提示块适合放注意事项、维护边界或风险说明：
+
+```markdown
 :::note
-Highlights information that users should take into account, even when skimming.
-:::
-
-:::tip
-Optional information to help a user be more successful.
-:::
-
-:::important
-Crucial information necessary for users to succeed.
+这是一条普通说明。
 :::
 
 :::warning
-Critical content demanding immediate user attention due to potential risks.
+这是一条需要谨慎处理的提醒。
 :::
+```
 
-:::caution
-Negative potential consequences of an action.
-:::
-
-### Basic Syntax
-
-```markdown
 :::note
-Highlights information that users should take into account, even when skimming.
+提示块应服务于正文，不要把每个段落都包成提示块。
 :::
 
-:::tip
-Optional information to help a user be more successful.
+:::warning
+涉及密码、私有地址或账号凭证的内容不应写入公开文章。
 :::
-```
 
-### Custom Titles
+## GitHub 风格提示
 
-The title of the admonition can be customized.
-
-:::note[MY CUSTOM TITLE]
-This is a note with a custom title.
-:::
+项目也支持常见的 GitHub 风格引用提示：
 
 ```markdown
-:::note[MY CUSTOM TITLE]
-This is a note with a custom title.
-:::
+> [!TIP]
+> 这是一条建议。
 ```
-
-### GitHub Syntax
 
 > [!TIP]
-> [The GitHub syntax](https://github.com/orgs/community/discussions/16925) is also supported.
+> 这种写法适合从 GitHub 文档迁移过来的内容。
 
-```
-> [!NOTE]
-> The GitHub syntax is also supported.
+## 剧透文本
 
-> [!TIP]
-> The GitHub syntax is also supported.
-```
-
-### Spoiler
-
-You can add spoilers to your text. The text also supports **Markdown** syntax.
-
-The content :spoiler[is hidden **ayyy**]!
+剧透语法适合隐藏不想立即展示的补充信息：
 
 ```markdown
-The content :spoiler[is hidden **ayyy**]!
+这段内容包含 :spoiler[需要点击或悬停查看的说明]。
+```
+
+实际效果：这段内容包含 :spoiler[需要点击或悬停查看的说明]。
+
+## 代码块
+
+代码块由 Expressive Code 渲染，支持语言高亮和复制按钮：
+
+```ts
+type PostMeta = {
+  title: string;
+  published: Date;
+  tags: string[];
+};
+```
+
+写作时务必标注语言，尤其是 `ts`、`astro`、`svelte`、`css`、`bash` 和 `yaml`。
+
+## 数学公式
+
+文章可以书写行内公式 `$E = mc^2$`，也可以使用块级公式：
+
+```markdown
+$$
+a^2 + b^2 = c^2
+$$
+```
+
+$$
+a^2 + b^2 = c^2
+$$
+
+技术文章使用公式时，应在公式前后补充文字解释，避免让公式独立承担全部语义。
