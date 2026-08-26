@@ -1,0 +1,93 @@
+name: Production Deploy
+
+on:
+    workflow_dispatch:
+
+concurrency:
+    group: production-deploy
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+env:
+    ENABLE_CONTENT_SYNC: "false"
+
+jobs:
+    deploy:
+        name: Deploy production
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Verify origin main commit
+              run: |
+                  git fetch origin main --depth=1
+                  MAIN_SHA="$(git rev-parse origin/main)"
+                  if [ "$GITHUB_SHA" != "$MAIN_SHA" ]; then
+                    echo "Production deploy must run from origin/main."
+                    echo "Current commit: $GITHUB_SHA"
+                    echo "origin/main: $MAIN_SHA"
+                    exit 1
+                  fi
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+
+            - name: Enable pnpm
+              run: |
+                  corepack enable
+                  corepack prepare pnpm@10.22.0 --activate
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Lint Markdown
+              run: pnpm lint:md
+
+            - name: Run Astro Check
+              run: pnpm check
+
+            - name: Run TypeScript Check
+              run: pnpm type-check
+
+            - name: Build site
+              run: pnpm build
+
+            - name: Pull Vercel production settings
+              env:
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+            - name: Build Vercel output
+              env:
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
+
+            - name: Verify deployment approval
+              env:
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_PROJECT: blog
+                  DEPLOY_APPROVAL_TARGET: site
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ github.sha }}
+                  DEPLOY_APPROVAL_REQUEST_SOURCE: github-actions
+                  DEPLOY_APPROVAL_REQUEST_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  DEPLOY_APPROVAL_WAIT_SECONDS: "900"
+              run: node scripts/verify-deployment-approval.mjs
+
+            - name: Deploy Vercel production
+              env:
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"

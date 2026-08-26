@@ -23,7 +23,7 @@
 
 ## 代码仓库消费事件
 
-部署 workflow 需要显式监听事件，并把 payload 写入内容准备环境：
+部署 workflow 需要显式监听事件，并把 payload 写入内容准备环境。生产发布仍必须走受控 `Production Deploy` workflow，并在真正部署前通过 `snow-base` Admin 审批；不要让内容仓库直接调用平台 Deploy Hook 或依赖 Vercel Git 自动部署发布生产。
 
 ```yaml
 on:
@@ -50,6 +50,22 @@ jobs:
 ```
 
 当前项目 CI 明确设置 `ENABLE_CONTENT_SYNC=false`。正式启用 dispatch 前，需要把目标 build job 改为上述 external 配置；不要同时保留 workflow 级别的 `false` 覆盖。
+
+如果该 dispatch 目标是生产部署，workflow 还必须保留部署审批步骤：
+
+```yaml
+- name: Verify deployment approval
+  env:
+    DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+    DEPLOY_APPROVAL_PROJECT: blog
+    DEPLOY_APPROVAL_TARGET: site
+    DEPLOY_APPROVAL_COMMIT_SHA: ${{ github.sha }}
+  run: node scripts/verify-deployment-approval.mjs
+```
+
+审批通过后才允许执行平台 production deploy。dispatch payload 中的 content SHA 只决定内容版本，不替代代码仓库 commit 的部署审批。
+
+仓库内 `vercel.json` 已配置 `ignoreCommand`，当 Vercel Git 自动构建来自 `main` 分支时跳过构建。受控发布 workflow 不使用自定义非 secret 变量放行，而是在本仓库完成构建、通过 `snow-base` 审批后，用 Vercel CLI prebuilt deploy 发布。
 
 ## 验证
 

@@ -3,6 +3,7 @@
 	"outputDirectory": "dist",
 	"installCommand": "pnpm install",
 	"framework": "astro",
+	"ignoreCommand": "node scripts/vercel-ignore-build.mjs",
 	"headers": [
 		{
 			"source": "/(.*)",

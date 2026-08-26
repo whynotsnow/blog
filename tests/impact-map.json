@@ -501,7 +501,8 @@
 				"scripts/check-env.mjs",
 				"tsconfig.scripts.json",
 				".nvmrc",
-				".github/workflows/**"
+				".github/workflows/**",
+				"vercel.json"
 			],
 			"groups": [
 				"lint",

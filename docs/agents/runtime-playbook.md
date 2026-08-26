@@ -277,6 +277,24 @@ Use:
 - Do not remove frame protection entirely just to fix the internal iframe.
 - For the Live2D companion, verify `/live2d-companion/live2d-host.html` response headers and the `#l2d-iframe` load path together.
 
+### vercel-git-autodeploy-approval-bypass
+
+Pattern:
+
+- A Vercel project connected through Git Integration may automatically create deployments for pushed branches.
+- If the Vercel Production Branch is `main`, a push or merge to `main` can publish production before the GitHub Actions `Production Deploy` workflow reaches `snow-base` Admin approval.
+- A repository `ignoreCommand` that uses a custom non-secret environment variable as an allow marker creates a weak authorization path. The variable is not an approval channel and can be accidentally or incorrectly set in unrelated build contexts.
+- `vercel.json` `ignoreCommand` overrides the Project Settings ignored build step, so code changes can unintentionally weaken a Dashboard-level deployment block.
+
+Use:
+
+- Treat deployment approval as an authorization boundary, not an optimization switch.
+- Do not use custom non-secret environment variables to allow production deployment.
+- Block Vercel Git auto-deploy for `main` with Vercel Dashboard settings and keep a repository-side `ignoreCommand` defense that checks Vercel-provided Git context such as `VERCEL_GIT_COMMIT_REF=main`.
+- Keep the normal production path in GitHub Actions: build a prebuilt Vercel output, request and consume `snow-base` approval for `projectSlug + target + commitSha`, then run `vercel deploy --prebuilt --prod`.
+- Document both sides of the boundary: Dashboard/platform configuration is owner-operated, while workflow, scripts, and `vercel.json` are repository-controlled.
+- Validate the guard locally with `VERCEL_GIT_COMMIT_REF=main node scripts/vercel-ignore-build.mjs` returning exit 0, and a non-main or unset value returning exit 1.
+
 ### playwright-spec-split-concurrency-drift
 
 Pattern:

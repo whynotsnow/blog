@@ -193,6 +193,16 @@
 			"playbook": "docs/agents/runtime-playbook.md#same-origin-iframe-frame-policy"
 		},
 		{
+			"id": "vercel-git-autodeploy-approval-bypass",
+			"cluster": "deployment-security",
+			"symptoms": [
+				"Vercel Git Integration can deploy the production branch after a main push without waiting for the snow-base approval workflow",
+				"vercel.json ignoreCommand uses a custom non-secret environment variable as an approval bypass or allow marker",
+				"Production deployment has both an approved GitHub Actions path and an uncontrolled Vercel Git auto-deploy path"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#vercel-git-autodeploy-approval-bypass"
+		},
+		{
 			"id": "playwright-chromium-mac-sandbox",
 			"cluster": "runtime-environment",
 			"severity": "medium",
