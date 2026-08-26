@@ -82,6 +82,8 @@ GitHub repository 的 `production` environment 需要配置：
 - `VERCEL_ORG_ID`：Vercel org 或 team 标识。
 - `VERCEL_PROJECT_ID`：Vercel project 标识。
 
+`Production Deploy` workflow 会在安装依赖后预检这些 secret 名称。缺少任一项时，workflow 会在构建、审批和生产发布前失败，并只输出缺失的 secret 名称，不输出任何 secret 值。
+
 不要把 token 明文、Access cookie/JWT、Authorization header、Vercel token、审批 token、完整带凭证 URL 或生产原始日志写入 Git、sidecar、issue、截图或聊天记录。若平台 token 无法做到严格项目级最小权限，必须通过 GitHub environment、禁用平台自动部署、短 TTL/轮换和审计记录降低风险。
 
 ## 平台权限收窄

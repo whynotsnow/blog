@@ -48,6 +48,24 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            - name: Validate deployment secrets
+              env:
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: |
+                  missing=0
+                  for name in DEPLOY_APPROVAL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_TOKEN; do
+                    if [ -z "${!name}" ]; then
+                      echo "Missing required production environment secret: $name"
+                      missing=1
+                    fi
+                  done
+                  if [ "$missing" -ne 0 ]; then
+                    exit 1
+                  fi
+
             - name: Lint Markdown
               run: pnpm lint:md
 
