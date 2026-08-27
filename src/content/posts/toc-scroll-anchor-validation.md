@@ -6,8 +6,8 @@ description: 说明当前博客文章目录的生成方式、桌面和移动端�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [TOC, Markdown, 导航]
-category: 教程
+tags: [功能说明, 导航, TOC, Markdown]
+category: 博客技术
 draft: false
 pinned: false
 priority: 75

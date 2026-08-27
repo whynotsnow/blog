@@ -6,8 +6,8 @@ description: 说明当前博客已启用的相册和日记页面，以及本地�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [相册, 日记, 媒体]
-category: 教程
+tags: [功能说明, 维护说明, 相册, 日记]
+category: 博客技术
 draft: false
 pinned: false
 priority: 66

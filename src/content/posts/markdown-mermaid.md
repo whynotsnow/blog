@@ -6,8 +6,8 @@ description: 说明如何在文章中使用 Mermaid 绘制流程图、时序图�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [Markdown, Mermaid, 图表]
-category: 教程
+tags: [写作规范, Markdown, Mermaid, 图表]
+category: 博客技术
 draft: false
 pinned: false
 priority: 70

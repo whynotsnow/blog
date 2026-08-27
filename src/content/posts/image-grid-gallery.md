@@ -6,8 +6,8 @@ description: 说明当前博客如何使用 :::grid 指令组织文章图片，�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [Markdown, 图片网格, Fancybox]
-category: 教程
+tags: [写作规范, Markdown, 图片网格, Fancybox]
+category: 博客技术
 draft: false
 pinned: false
 priority: 76

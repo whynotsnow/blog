@@ -6,8 +6,8 @@ description: 从内容、导航、个性化、媒体和发布输出几个方面�
 image: ./cover.webp
 author: whynotsnow
 lang: zh_CN
-tags: [项目说明, Astro, Svelte, 博客系统]
-category: 教程
+tags: [功能说明, 站点配置, Astro, Svelte]
+category: 博客技术
 draft: false
 pinned: true
 priority: 100

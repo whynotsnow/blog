@@ -6,8 +6,8 @@ description: 说明当前博客如何生成 RSS、Atom、站点地图、摘要�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [RSS, SEO, Open Graph]
-category: 教程
+tags: [发布输出, SEO, RSS, Open Graph]
+category: 博客技术
 draft: false
 pinned: false
 priority: 62

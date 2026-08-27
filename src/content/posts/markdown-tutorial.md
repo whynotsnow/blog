@@ -6,8 +6,8 @@ description: 说明当前博客文章的 Markdown 写法、Frontmatter 字段、
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [Markdown, Frontmatter, 写作规范]
-category: 教程
+tags: [写作规范, 内容维护, Markdown, Frontmatter]
+category: 博客技术
 draft: false
 pinned: false
 priority: 90
@@ -30,7 +30,7 @@ image: /images/posts/example.webp
 author: whynotsnow
 lang: zh_CN
 tags: [Astro, Markdown]
-category: 教程
+category: 博客技术
 draft: false
 pinned: false
 priority: 10
@@ -44,7 +44,7 @@ alias: example-post
 
 ## 分类和标签
 
-每篇文章只设置一个 `category`。当前项目已有的规范分类包括 `技术`、`前端`、`随笔`、`生活`、`学习`、`工作`、`教程` 和 `Guides`。新文章优先使用中文分类。
+每篇文章只设置一个 `category`。当前项目已有的规范分类包括 `博客技术`、`技术`、`前端`、`随笔`、`生活`、`学习`、`工作`、`教程` 和 `Guides`。新文章优先使用中文分类。
 
 `tags` 可以有多个，但应避免同义词重复。例如同一批文章里不要同时使用 `Markdown`、`markdown` 和 `MD` 指向同一个主题。
 

@@ -6,8 +6,8 @@ description: 说明如何在 Markdown 文章中嵌入 YouTube、Bilibili 等外�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [Markdown, 视频, 媒体]
-category: 教程
+tags: [写作规范, Markdown, 视频, 媒体]
+category: 博客技术
 draft: false
 pinned: false
 priority: 60

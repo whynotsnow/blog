@@ -6,8 +6,8 @@ description: 说明当前博客支持的提示块、GitHub 仓库卡片、剧透
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [Markdown, 扩展语法, Expressive Code]
-category: 教程
+tags: [写作规范, Markdown, Expressive Code]
+category: 博客技术
 draft: false
 pinned: false
 priority: 80

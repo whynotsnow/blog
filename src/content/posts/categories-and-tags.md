@@ -6,8 +6,8 @@ description: 说明当前博客的分类、标签、分类页分页和 Tag 筛�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [分类, 标签, 内容组织]
-category: 教程
+tags: [内容管理, 维护说明, 分类标签]
+category: 博客技术
 draft: false
 pinned: false
 priority: 72
@@ -23,6 +23,7 @@ comment: true
 
 | 分类 | 用途 |
 | --- | --- |
+| 博客技术 | 当前博客系统的功能说明、写作规范、内容维护和发布输出 |
 | 技术 | 工程、框架、架构和实现细节 |
 | 前端 | UI、交互、样式和浏览器相关内容 |
 | 随笔 | 非教程型思考和记录 |
@@ -50,7 +51,7 @@ comment: true
 文章标签链接会进入所属分类下的查询模式，例如：
 
 ```text
-/category/tutorials/?tag=markdown
+/category/blog-tech/?tag=markdown
 ```
 
 浏览器会在需要时加载对应分类的 Tag 索引，然后在同一页面内完成筛选。这样普通分类页不需要一次性携带全部文章数据。

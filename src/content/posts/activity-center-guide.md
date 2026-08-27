@@ -6,8 +6,8 @@ description: 说明当前博客如何通过通知集合和 Activity Center 展�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [Activity Center, 通知, 站点公告]
-category: 教程
+tags: [功能说明, 通知, Activity Center]
+category: 博客技术
 draft: false
 pinned: false
 priority: 68

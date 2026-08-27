@@ -6,8 +6,8 @@ description: 说明当前博客的导航、横幅、壁纸、明暗主题、音�
 image: ''
 author: whynotsnow
 lang: zh_CN
-tags: [外观设置, 导航, 交互]
-category: 教程
+tags: [功能说明, 站点配置, 外观设置, 导航]
+category: 博客技术
 draft: false
 pinned: false
 priority: 64

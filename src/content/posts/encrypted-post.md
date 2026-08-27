@@ -8,8 +8,8 @@ author: whynotsnow
 lang: zh_CN
 encrypted: true
 password: "123456"
-tags: [加密文章, 内容保护, Markdown]
-category: 教程
+tags: [功能说明, 内容保护, 加密文章, Markdown]
+category: 博客技术
 draft: false
 pinned: false
 priority: 85
