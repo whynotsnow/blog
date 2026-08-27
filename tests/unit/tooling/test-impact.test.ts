@@ -109,6 +109,43 @@ describe("impact-based validation selection", () => {
 		]);
 	});
 
+	it("treats E2E content fixtures as broad browser test data", () => {
+		const plan = planFor("tests/content/posts/fixture-markdown-source.md");
+
+		expect(plan.groups).toEqual([
+			"test-type",
+			"unit",
+			"home",
+			"page-support",
+			"post-list",
+			"post-detail",
+			"activity-center",
+			"floating-tools",
+			"shell",
+			"design-contract",
+			"smoke",
+		]);
+		expect(plan.unmatched).toEqual([]);
+	});
+
+	it("treats content fixture route constants as broad browser support", () => {
+		const plan = planFor("tests/support/content-fixtures.ts");
+
+		expect(plan.groups).toEqual([
+			"test-type",
+			"home",
+			"page-support",
+			"post-list",
+			"post-detail",
+			"activity-center",
+			"floating-tools",
+			"shell",
+			"design-contract",
+			"smoke",
+		]);
+		expect(plan.unmatched).toEqual([]);
+	});
+
 	it("keeps CI toolchain changes on full validation", () => {
 		expect(planFor("playwright.config.ts", ["--mode=ci"]).groups).toEqual([
 			"full",

@@ -39,7 +39,7 @@ Pull Request 与普通 `main` Push 使用 CI 模式的影响映射；定时任�
 
 ## 测试代码组织
 
-Playwright 测试按行为所有者拆分为 `smoke`、`shell`、`features` 和 `contracts`。共享 route、viewport 和 fixture 数据放在 `tests/fixtures`，无 Feature 断言的浏览器 helper 放在 `tests/support`。同一行为不应同时在 smoke 和 Feature 套件中重复做详细断言。
+Playwright 测试按行为所有者拆分为 `smoke`、`shell`、`features` 和 `contracts`。共享 route、viewport 和测试内容数据放在 `tests/content`，无 Feature 断言的浏览器 helper 放在 `tests/support`。同一行为不应同时在 smoke 和 Feature 套件中重复做详细断言。
 
 ## 常用命令
 

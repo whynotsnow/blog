@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { E2E_POSTS } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 
 test("new shell icons resolve from repository assets without Iconify", async ({
@@ -193,7 +194,7 @@ test("activity center reports live article reading status", async ({
 			"true",
 		);
 	});
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 
 	const toggle = page.locator("#activity-center-switch");
 	const initialProgress = Number(
@@ -221,7 +222,7 @@ test("activity center reports live article reading status", async ({
 	await expect(reading).toBeVisible();
 	await expect(
 		reading.locator(".activity-center__reading-title"),
-	).toContainText("Markdown");
+	).toContainText("文章写作与 Frontmatter");
 	await expect(
 		reading.locator(".activity-center__reading-meta"),
 	).toContainText(/进度 [1-9][0-9]?%/);

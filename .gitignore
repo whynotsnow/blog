@@ -1,6 +1,7 @@
 # build output
 dist/
 .font-build/
+src/.content-dev/
 
 # generated types
 .astro/

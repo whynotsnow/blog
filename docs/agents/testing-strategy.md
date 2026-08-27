@@ -61,7 +61,7 @@ Tests should be organized by behavior owner:
 
 ```text
 tests/
-  fixtures/           stable routes, content, and viewport data
+  content/            stable test content used by tests and development overlay
   support/            shared Playwright helpers without feature assertions
   unit/               pure module behavior
   integration/        service and pipeline boundaries
@@ -73,6 +73,18 @@ tests/
 ```
 
 Do not place unrelated behavior in a convenient existing spec. Avoid duplicating the same contract across smoke and feature suites; smoke should assert availability while the owning feature suite asserts detail.
+
+## Content Fixtures
+
+Content-facing E2E must not depend on the mutable production posts in `src/content/posts`. Stable test posts live under `tests/content/posts`, and the Playwright web server starts Astro with `BLOG_CONTENT_MODE=test` so local and CI runs load the same test content.
+
+Default production commands must continue to read production posts. `BLOG_CONTENT_MODE` accepts `production`, `test`, and `development`; unsupported values should fail instead of falling back silently. `test` reads only `tests/content/posts`. `development` reads `src/.content-dev/posts`, which is generated from the prepared production entry plus `tests/content/posts`. Tests that need stable category, tag, post, TOC, reading-status, or comment-path data should import route constants from `tests/support/content-fixtures.ts` instead of scattering production slugs and category names through specs.
+
+Test content changes are broad browser-impact data changes: update the constants, run the owning E2E groups, and use the impact map entry for `tests/content/**` to select the broader test surface. Production leakage should be checked by verifying the default content-source resolver still points at `src/content/posts` and by running the relevant production build layer when content-source behavior changes.
+
+`pnpm generate-posts` is test-content-first tooling: generated test posts should land in `tests/content/posts` by default, and production content writes must be explicit. Historical demo posts may be selectively restored as test content when they cover a stable testing need, but do not restore the full pre-cleanup demo corpus into production posts.
+
+Development overlay is a conflict discovery mechanism, not a conflict repair mechanism. `pnpm dev-content:prepare` must fail before dev/build when two inputs would produce the same overlay file path or public post URL. Failure messages must include the conflict type, source entries, and a practical suggestion. Do not auto-rename, silently overwrite, or source-prioritize conflicting content.
 
 ## Command Contract
 

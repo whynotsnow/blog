@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { E2E_CATEGORY, E2E_POSTS } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 
 test("page support modules follow page-specific intent", async ({ page }) => {
@@ -30,7 +31,7 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	).toContainText("全部分类");
 	await expect(
 		page.locator('.home-support [data-discovery-card="category"]'),
-	).toContainText("技术");
+	).toContainText(E2E_CATEGORY.name);
 	await expect(
 		page.locator(".home-support__heading", { hasText: "站点概览" }),
 	).toBeVisible();
@@ -50,7 +51,7 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 		page.locator(".page-support-region .profile-card"),
 	).toBeVisible();
 	await expect(page.locator(".profile-card")).toHaveCount(1);
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await expect(page.locator("#main-grid")).toHaveAttribute(
 		"data-has-support",
 		"true",
@@ -80,7 +81,7 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 		page.locator(".category-support__heading", { hasText: "分类导航" }),
 	).toHaveCount(0);
 
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await expect(page.locator(".category-support")).toBeVisible();
 	await expect(
 		page.locator(".category-support__heading", { hasText: "最近更新" }),
@@ -129,12 +130,12 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	await expect(page.locator(".profile-card")).toHaveCount(0);
 
 	await page.setViewportSize({ width: 375, height: 812 });
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await expect(page.locator(".post-support")).toBeHidden();
 	await expect(page.locator(".profile-card")).toHaveCount(0);
 
 	await page.setViewportSize({ width: 1280, height: 900 });
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await expect(page.locator(".post-support")).toBeVisible();
 	await expect(page.locator(".post-support__toc")).toBeVisible();
 	await expect(
@@ -148,7 +149,7 @@ test("page support modules follow page-specific intent", async ({ page }) => {
 	).toContainText("全部分类");
 	await expect(
 		page.locator('.post-support [data-discovery-card="category"]'),
-	).toContainText("技术");
+	).toContainText(E2E_CATEGORY.name);
 	await expect(
 		page.locator('.post-support [data-discovery-card="recent"]'),
 	).toContainText("最近更新");
@@ -193,7 +194,7 @@ test("ordinary content pages do not render comment modules", async ({
 	await expect(page.locator("[data-comment-service]")).toHaveCount(0);
 	await expect(page.locator("#tcomment")).toHaveCount(0);
 
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await expect(
 		page.locator(
 			".post-detail__comment-card[data-comment-service='twikoo']",

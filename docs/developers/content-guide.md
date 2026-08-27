@@ -92,7 +92,7 @@ pnpm new-post -- my-post-title
 规则：
 
 - 每篇文章只设置一个分类。
-- 分类规范定义位于 `src/config/category-slugs.ts`。已知分类会统一为规范 `name` 与 `slug`；例如“技术”和兼容输入 `Technology` 都归入“技术/tech”。
+- 分类规范定义位于 `src/config/category-slugs.ts`。已知分类会统一为规范 `name` 与 `slug`；例如“技术”和兼容输入 `Technology` 都归入“技术/tech”；当前博客项目说明类文章归入“博客技术/blog-tech”。
 - 新文章应直接使用规范分类名。alias 只用于兼容输入，不会生成第二个分类 URL。
 - 标签可以多个，但应避免同义词和大小写差异造成导航碎片。
 - 空分类会回落到 `uncategorized`。
@@ -111,6 +111,35 @@ pnpm new-post -- my-post-title
 | --- | --- |
 | 开发环境 | 包含草稿文章。 |
 | 生产环境 | 排除 `draft: true` 的文章。 |
+
+## 测试内容与开发 Overlay
+
+E2E 测试不应依赖当前生产文章的分类、标题、slug 或 tag 数量。测试/开发专用文章放在 `tests/content/posts`，用于测试模式和开发 overlay。
+
+规则：
+
+- 默认未设置 `BLOG_CONTENT_MODE` 时，站点读取 `src/content/posts`。
+- `BLOG_CONTENT_MODE=test` 时，站点只读取 `tests/content/posts`，用于 Playwright 和其他稳定测试。
+- `BLOG_CONTENT_MODE=development` 时，站点读取 `src/.content-dev/posts`。该目录由 `pnpm dev-content:prepare` 生成并忽略提交，内容是生产入口和 `tests/content/posts` 的合成结果。
+- 其他 `BLOG_CONTENT_MODE` 值会直接报错，避免拼写错误静默回落。
+- Playwright 配置会在启动测试 dev server 时显式设置 `BLOG_CONTENT_MODE=test`，本地和 CI 使用同一套测试内容。
+- 测试内容不能用于正式内容运营，也不应进入生产构建、RSS、SEO、搜索索引或正式分类统计。
+- 普通 `pnpm dev` 默认先运行 `pnpm content:prepare` 和 `pnpm dev-content:prepare`，再以 `BLOG_CONTENT_MODE=development` 启动 Astro，因此开发环境会展示生产内容与测试内容的合成结果。
+- 需要只查看生产内容时，使用 `pnpm dev:prod-content`。
+- 需要验证合成内容能完整静态构建时，使用 `pnpm build:dev-content`。该命令只用于本地或显式验证，不替代生产 build。
+- `pnpm generate-posts -- batch 5` 默认写入 `tests/content/posts`；`clear` 默认也只清理测试内容目录。写入或清理生产内容目录必须显式传入 `--target=content`，生产目录清理还需要 `--confirm-content-clear`。
+- 历史测试文章只选择性恢复为 fixture 素材。不要把 `cc6c2bfeab08f0f3de8f017c6ce49157346a3330` 之前的全部测试文章恢复到生产内容目录。
+
+`tests/content/posts` 只放独立测试/开发文章，不放生产文章副本。测试文章应使用独立分类、文件名和 alias，例如 `测试内容/test-content` 与 `fixture-*` 路由前缀。分类差异不能避免文章详情路由冲突，因为文章详情页是 `/posts/{canonicalSlug}/`，不按分类嵌套。
+
+development overlay 是冲突发现机制，不是冲突修复机制。`pnpm dev-content:prepare` 发现以下情况会失败，并给出冲突类型、来源和调整建议：
+
+- 生产内容和测试内容写入同一个 overlay 相对路径。
+- 默认 slug、canonical slug、alias 或 alias 与默认 slug 互撞。
+- 大小写、percent decode、Unicode NFC 归一化后等价的文章路由。
+- 分类名称不同但 slug 相同。
+
+tag 重名、标题重名和 draft 状态差异默认允许。需要稳定验证分类页、Tag 分页、文章详情、TOC、Activity Center 或 Floating Tools 时，应更新 `tests/content/posts` 和 `tests/support/content-fixtures.ts`，而不是把测试文章混入生产内容目录。
 
 ## 加密文章目录
 

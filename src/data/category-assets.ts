@@ -26,6 +26,24 @@ export const categoryAssets: Record<string, CategoryAsset> = {
 			position: "center",
 		},
 	},
+	"blog-tech": {
+		description:
+			"记录当前博客系统的功能说明、写作规范、内容维护和发布输出。",
+		image: {
+			src: "/assets/desktop-banner/6.webp",
+			alt: "博客技术 category cover",
+			position: "center",
+		},
+	},
+	"test-content": {
+		description:
+			"用于验证博客内容管线、分类、标签、分页和文章详情的测试内容。",
+		image: {
+			src: "/assets/desktop-banner/5.webp",
+			alt: "测试内容 category cover",
+			position: "center",
+		},
+	},
 	guides: {
 		description: "整理可复用的操作步骤、配置方法和实践指南。",
 		image: {

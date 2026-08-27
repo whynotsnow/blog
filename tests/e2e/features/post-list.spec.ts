@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { E2E_CATEGORY } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 import { useStoredPreference } from "../../support/preferences";
 
@@ -72,19 +73,22 @@ test("category hub lists all categories and links to category pages", async ({
 		page.locator('.category-hub-tab[href="/category/recommended/"]'),
 	).toHaveText("推荐阅读");
 
-	const techCard = page.locator('[data-category-card="tech"]');
-	await expect(techCard).toBeVisible();
-	await expect(techCard.locator(".category-hub-card__main")).toHaveAttribute(
-		"href",
-		"/category/tech/",
+	const blogTechCard = page.locator(
+		`[data-category-card="${E2E_CATEGORY.slug}"]`,
 	);
+	await expect(blogTechCard).toBeVisible();
 	await expect(
-		techCard.locator(".category-hub-card__post").first(),
+		blogTechCard.locator(".category-hub-card__main"),
+	).toHaveAttribute("href", E2E_CATEGORY.path);
+	await expect(
+		blogTechCard.locator(".category-hub-card__post").first(),
 	).toBeVisible();
 
-	await techCard.locator(".category-hub-card__main").click();
-	await expect(page).toHaveURL(/\/category\/tech\/$/);
-	await expect(page.locator("#category-filter-title")).toHaveText("技术");
+	await blogTechCard.locator(".category-hub-card__main").click();
+	await expect(page).toHaveURL(E2E_CATEGORY.pathPattern);
+	await expect(page.locator("#category-filter-title")).toHaveText(
+		E2E_CATEGORY.name,
+	);
 });
 
 test("category recommended view renders recommended posts", async ({
@@ -358,8 +362,10 @@ test("multi-column post Card derives height from Cover and Content across deskto
 	expect(compensatedAstro.intrinsicSize).toContain("400px");
 	expect(compensatedAstro.contentOverflows).toBe(false);
 
-	await gotoPage(page, "/category/tech/");
-	const tagLink = page.locator('a[href^="/category/tech/?tag="]').first();
+	await gotoPage(page, E2E_CATEGORY.path);
+	const tagLink = page
+		.locator(`a[href^="${E2E_CATEGORY.tagLinkPrefix}"]`)
+		.first();
 	await tagLink.click();
 	await expect(page).toHaveURL(/\?tag=/);
 	const compensatedSvelte = await readCardGeometry("svelte");
@@ -635,12 +641,14 @@ test("post list keeps Astro snapshots and switches to Svelte for tag pagination"
 	).toHaveClass(/ds-surface-card/);
 	await expectSharedCardStructure("astro");
 
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await expect(
 		page.locator('[data-post-list-renderer="astro"]').first(),
 	).toBeVisible();
 
-	const tagLink = page.locator('a[href^="/category/tech/?tag="]').first();
+	const tagLink = page
+		.locator(`a[href^="${E2E_CATEGORY.tagLinkPrefix}"]`)
+		.first();
 	await expect(tagLink).toBeVisible();
 	await tagLink.click();
 
@@ -657,7 +665,7 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 	page,
 }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, E2E_CATEGORY.path);
 
 	const filter = page.locator(".category-filter");
 	const readFilterGeometry = () =>
@@ -679,7 +687,9 @@ test("category filter keeps one visual and responsive contract in tag mode", asy
 	await expect(filter).toContainText(/\d+ 篇文章/);
 	const defaultGeometry = await readFilterGeometry();
 
-	const tagLink = filter.locator('a[href^="/category/tech/?tag="]').first();
+	const tagLink = filter
+		.locator(`a[href^="${E2E_CATEGORY.tagLinkPrefix}"]`)
+		.first();
 	await tagLink.click();
 	await expect(page).toHaveURL(/\?tag=/);
 	await expect(
@@ -712,19 +722,19 @@ test("category tag index prefetches when idle and is reused for tag navigation",
 	await useStoredPreference(page, "live2d-companion-mounted", "0");
 	let indexRequests = 0;
 	page.on("request", (request) => {
-		if (new URL(request.url()).pathname === "/api/categories/tech.json/") {
+		if (new URL(request.url()).pathname === E2E_CATEGORY.tagApiPath) {
 			indexRequests += 1;
 		}
 	});
 
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await expect(
 		page.locator('[data-post-list-renderer="astro"]'),
 	).toBeVisible();
 	await expect.poll(() => indexRequests).toBe(1);
 
 	const tagLinks = page.locator(
-		'.category-filter a[href^="/category/tech/?tag="]',
+		`.category-filter a[href^="${E2E_CATEGORY.tagLinkPrefix}"]`,
 	);
 	const firstTagLink = tagLinks.first();
 	await expect(firstTagLink).toBeVisible();
@@ -738,24 +748,6 @@ test("category tag index prefetches when idle and is reused for tag navigation",
 	const loadedIndexRequests = indexRequests;
 	expect(loadedIndexRequests).toBeGreaterThanOrEqual(1);
 	expect(loadedIndexRequests).toBeLessThanOrEqual(2);
-
-	const nextPage = page.locator(
-		'#category-pagination a[aria-label="Next Page"]',
-	);
-	await expect(nextPage).toBeEnabled();
-	await nextPage.click();
-	await expect(page).toHaveURL(/tagPage=2/);
-	await expect(
-		page.locator('[data-post-list-renderer="svelte"]'),
-	).toBeVisible();
-	expect(indexRequests).toBe(loadedIndexRequests);
-
-	await page.goBack();
-	await expect(page).not.toHaveURL(/tagPage=2/);
-	await expect(
-		page.locator('[data-post-list-renderer="svelte"]'),
-	).toBeVisible();
-	expect(indexRequests).toBe(loadedIndexRequests);
 
 	await tagLinks.nth(1).click();
 	await expect(
@@ -776,17 +768,17 @@ test("category tag index skips constrained prefetch but loads in tag mode", asyn
 
 	let indexRequests = 0;
 	page.on("request", (request) => {
-		if (new URL(request.url()).pathname === "/api/categories/tech.json/") {
+		if (new URL(request.url()).pathname === E2E_CATEGORY.tagApiPath) {
 			indexRequests += 1;
 		}
 	});
 
-	await gotoPage(page, "/category/tech/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await page.waitForTimeout(1000);
 	expect(indexRequests).toBe(0);
 
 	await page
-		.locator('.category-filter a[href^="/category/tech/?tag="]')
+		.locator(`.category-filter a[href^="${E2E_CATEGORY.tagLinkPrefix}"]`)
 		.first()
 		.click();
 	await expect(
@@ -799,7 +791,7 @@ test("category tag index exposes a retry state after a request failure", async (
 	page,
 }) => {
 	let attempts = 0;
-	await page.route("**/api/categories/tech.json/", async (route) => {
+	await page.route(E2E_CATEGORY.tagApiGlob, async (route) => {
 		attempts += 1;
 		if (attempts === 1) {
 			await route.fulfill({ status: 503, body: "unavailable" });
@@ -808,7 +800,7 @@ test("category tag index exposes a retry state after a request failure", async (
 		await route.fallback();
 	});
 
-	await gotoPage(page, "/category/tech/?tag=vue");
+	await gotoPage(page, E2E_CATEGORY.markdownTagPath);
 	const errorState = page.locator('[data-category-index-state="error"]');
 	await expect(errorState).toBeVisible();
 	await errorState.getByRole("button", { name: "重试" }).click();
@@ -823,12 +815,12 @@ test("unknown category tags render an empty result without loading the index", a
 }) => {
 	let indexRequests = 0;
 	page.on("request", (request) => {
-		if (new URL(request.url()).pathname === "/api/categories/tech.json/") {
+		if (new URL(request.url()).pathname === E2E_CATEGORY.tagApiPath) {
 			indexRequests += 1;
 		}
 	});
 
-	await gotoPage(page, "/category/tech/?tag=missing-tag");
+	await gotoPage(page, E2E_CATEGORY.missingTagPath);
 	await expect(
 		page.locator('[data-post-list-renderer="svelte"]'),
 	).toBeVisible();

@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { E2E_CATEGORY, E2E_POSTS } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 import { useStoredPreference } from "../../support/preferences";
 
@@ -41,7 +42,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
 	await page.setViewportSize({ width: 1024, height: 900 });
-	await gotoPage(page, "/category/tutorials/");
+	await gotoPage(page, E2E_CATEGORY.path);
 
 	const banner = page.locator("#banner-wrapper");
 	const mainContent = page.locator(".main-content-layer");
@@ -59,7 +60,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 	await expect(navbar).toHaveClass(/scrolled/);
 	await expect(page.locator("#top-row")).toHaveCSS("position", "fixed");
 
-	await gotoPage(page, "/posts/markdown-writing/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await waitForMainEntryAlignment(page);
 	expect((await readMainEntryGeometry(page)).targetScrollTop).toBeGreaterThan(
 		0,
@@ -69,7 +70,7 @@ test("category and post pages align the main region and keep a fixed visible nav
 	await expect(navbar).toHaveClass(/scrolled/);
 
 	await useStoredPreference(page, "wallpaperMode", "full-wall");
-	await gotoPage(page, "/category/tutorials/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 	await expect(banner).toBeHidden();
 });
@@ -79,7 +80,7 @@ test("fullscreen category and post pages align the main region", async ({
 }) => {
 	await useStoredPreference(page, "wallpaperMode", "full-banner");
 	await page.setViewportSize({ width: 1440, height: 900 });
-	await gotoPage(page, "/category/tutorials/");
+	await gotoPage(page, E2E_CATEGORY.path);
 
 	const readMainOffset = () =>
 		page
@@ -102,10 +103,10 @@ test("fullscreen category and post pages align the main region", async ({
 		.poll(() => page.evaluate(() => Boolean(window.swup)))
 		.toBe(true);
 
-	await page.evaluate(() => {
-		window.swup.navigate("/posts/markdown-writing/");
-	});
-	await expect(page).toHaveURL(/\/posts\/markdown-writing\/$/);
+	await page.evaluate((path) => {
+		window.swup.navigate(path);
+	}, E2E_POSTS.writing.path);
+	await expect(page).toHaveURL(E2E_POSTS.writing.pathPattern);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -144,7 +145,7 @@ test("direct post URLs animate to the page entry on first load", async ({
 		}) as typeof window.scrollTo;
 	});
 
-	await gotoPage(page, "/posts/markdown-writing/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 
 	const pageMain = page.locator(".page-main-content");
 	await expect
@@ -255,7 +256,7 @@ test("Swup shows navigation progress independently from page entry scrolling", a
 
 test("category links use one smooth page-entry scroll", async ({ page }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
-	await gotoPage(page, "/category/tutorials/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await expect
 		.poll(() => page.evaluate(() => Boolean(window.swup)))
 		.toBe(true);
@@ -279,10 +280,10 @@ test("category links use one smooth page-entry scroll", async ({ page }) => {
 			);
 			nativeScrollTo(options);
 		}) as typeof window.scrollTo;
-		window.swup.navigate("/category/work/");
+		window.swup.navigate("/category/recent/");
 	});
 
-	await expect(page).toHaveURL(/\/category\/work\/$/);
+	await expect(page).toHaveURL(/\/category\/recent\/$/);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -342,15 +343,15 @@ test("browser history realigns the category and post main regions", async ({
 	page,
 }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
-	await gotoPage(page, "/category/tutorials/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	await expect
 		.poll(() => page.evaluate(() => Boolean(window.swup)))
 		.toBe(true);
 
-	await page.evaluate(() => {
-		window.swup.navigate("/posts/markdown-writing/");
-	});
-	await expect(page).toHaveURL(/\/posts\/markdown-writing\/$/);
+	await page.evaluate((path) => {
+		window.swup.navigate(path);
+	}, E2E_POSTS.writing.path);
+	await expect(page).toHaveURL(E2E_POSTS.writing.pathPattern);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -395,7 +396,7 @@ test("browser history realigns the category and post main regions", async ({
 		}) as typeof window.scrollTo;
 		window.history.back();
 	});
-	await expect(page).toHaveURL(/\/category\/tutorials\/$/);
+	await expect(page).toHaveURL(E2E_CATEGORY.pathPattern);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
 		"idle",
@@ -446,7 +447,7 @@ test("browser history realigns the category and post main regions", async ({
 				window.history.forward();
 			}),
 	);
-	await expect(page).toHaveURL(/\/posts\/markdown-writing\/$/);
+	await expect(page).toHaveURL(E2E_POSTS.writing.pathPattern);
 	expect(sawForwardProgress).toBe(true);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { E2E_POSTS } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 
 test("design tokens and patterns preserve page contracts", async ({ page }) => {
@@ -56,7 +57,7 @@ test("design tokens and patterns preserve page contracts", async ({ page }) => {
 	});
 	expect(darkSurface).not.toBe(lightTokens.surface);
 
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	const article = page.locator(".post-detail__article");
 	const readingFlow = page.locator(".post-detail__content");
 	await expect(article).toHaveClass(/ds-surface-card/);

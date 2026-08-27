@@ -4,14 +4,22 @@ import { profileConfig } from "@/config";
 import type { RawPost } from "./types";
 
 const imageMap: Record<string, ImageMetadata> = import.meta.glob(
-	"/src/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+	[
+		"/src/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+		"/tests/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+		"/src/.content-dev/posts/**/*.{png,jpg,jpeg,webp,avif}",
+	],
 	{
 		eager: true,
 		import: "default",
 	},
 );
 const imageModules = import.meta.glob<ImageMetadata>(
-	"/src/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+	[
+		"/src/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+		"/tests/content/posts/**/*.{png,jpg,jpeg,webp,avif}",
+		"/src/.content-dev/posts/**/*.{png,jpg,jpeg,webp,avif}",
+	],
 	{ import: "default" },
 );
 

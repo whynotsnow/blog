@@ -99,6 +99,10 @@
 	"coverage": ["src/components/modules/**", "tests/e2e/**"],
 	"rules": [
 		{
+			"patterns": [".gitignore"],
+			"groups": ["lint", "script-type"]
+		},
+		{
 			"patterns": [
 				"AGENTS.md",
 				"docs/agents/**",
@@ -124,6 +128,7 @@
 			"patterns": [
 				"src/services/core/**",
 				"src/content.config.ts",
+				"src/content-source.ts",
 				"src/utils/url-utils.ts"
 			],
 			"groups": [
@@ -362,6 +367,8 @@
 		},
 		{
 			"patterns": [
+				"src/config/category-slugs.ts",
+				"src/data/category-assets.ts",
 				"src/pages/category/**",
 				"src/pages/api/categories/**",
 				"src/components/category/**",
@@ -439,12 +446,43 @@
 			"groups": ["test-type", "unit"]
 		},
 		{
+			"patterns": ["tests/content/**"],
+			"groups": [
+				"test-type",
+				"unit",
+				"home",
+				"page-support",
+				"post-list",
+				"post-detail",
+				"activity-center",
+				"floating-tools",
+				"shell",
+				"design-contract",
+				"smoke"
+			]
+		},
+		{
 			"patterns": ["tests/integration/**"],
 			"groups": ["test-type", "integration"]
 		},
 		{
 			"patterns": ["tests/e2e/smoke/**"],
 			"groups": ["test-type", "smoke"]
+		},
+		{
+			"patterns": ["tests/support/content-fixtures.ts"],
+			"groups": [
+				"test-type",
+				"home",
+				"page-support",
+				"post-list",
+				"post-detail",
+				"activity-center",
+				"floating-tools",
+				"shell",
+				"design-contract",
+				"smoke"
+			]
 		},
 		{
 			"patterns": ["tests/e2e/shell/**"],
@@ -520,6 +558,7 @@
 			"patterns": [
 				"scripts/content-sync/**",
 				"scripts/prepare-content.mjs",
+				"scripts/prepare-dev-content.mjs",
 				"scripts/init-content-repo.js",
 				"scripts/fonts/**"
 			],

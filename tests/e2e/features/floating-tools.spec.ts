@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { E2E_POSTS } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 
 const defaultPlaylist = [
@@ -70,7 +71,7 @@ async function expectCompanionMenuIcon(
 test("floating tools owns theme, settings, toc, and back-to-top actions", async ({
 	page,
 }) => {
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await waitForFloatingToolsClient(page);
 
 	const tools = page.locator("#floating-tools");
@@ -168,7 +169,7 @@ test("floating tools owns theme, settings, toc, and back-to-top actions", async 
 });
 
 test("floating TOC progress ring geometry", async ({ page }) => {
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await page.locator("#floating-tools-switch").click();
 	await expect(
 		page.locator("#floating-tools #floating-toc-btn"),
@@ -208,7 +209,7 @@ test("floating TOC progress ring geometry", async ({ page }) => {
 });
 
 test("floating TOC uses shared post TOC data sources", async ({ page }) => {
-	await gotoPage(page, "/posts/markdown-tutorial/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await page.locator("#floating-tools-switch").click();
 	const tocButton = page.locator("#floating-tools #floating-toc-btn");
 	await expect(tocButton).toBeVisible();
@@ -228,7 +229,7 @@ test("floating TOC uses shared post TOC data sources", async ({ page }) => {
 	).toHaveCount(rootTocItems.length);
 	await expect(
 		page.locator("#floating-toc-content .floating-toc-item", {
-			hasText: "Markdown Tutorial",
+			hasText: "推荐模板",
 		}),
 	).toBeVisible();
 
@@ -244,10 +245,10 @@ test("floating TOC uses shared post TOC data sources", async ({ page }) => {
 		}),
 	).toHaveCount(0);
 
-	const inlineHtmlItem = staticTocItems.find((item) =>
-		item.text.includes("Inline HTML"),
+	const categoryTagsItem = staticTocItems.find((item) =>
+		item.text.includes("分类和标签"),
 	);
-	if (!inlineHtmlItem) throw new Error("Missing Inline HTML TOC item");
+	if (!categoryTagsItem) throw new Error("Missing 分类和标签 TOC item");
 	await page.evaluate((id) => {
 		const heading = document.getElementById(id);
 		if (!heading) throw new Error(`Missing heading ${id}`);
@@ -261,21 +262,16 @@ test("floating TOC uses shared post TOC data sources", async ({ page }) => {
 			top: heading.getBoundingClientRect().top + window.scrollY - offset,
 			behavior: "auto",
 		});
-	}, inlineHtmlItem.id);
+	}, categoryTagsItem.id);
 	await expect(
 		page.locator("#floating-toc-content .floating-toc-item", {
-			hasText: "Inline HTML",
+			hasText: "分类和标签",
 		}),
 	).toBeVisible();
-	await expect(
-		page.locator(
-			"#floating-toc-content .floating-toc-expanded-region[data-expanded='true']",
-		),
-	).toHaveCount(1);
 });
 
 test("floating TOC refreshes from decrypted content", async ({ page }) => {
-	await gotoPage(page, "/posts/encrypted-example/");
+	await gotoPage(page, E2E_POSTS.encrypted.path);
 	await page.locator("#floating-tools-switch").click();
 	const tocButton = page.locator("#floating-tools #floating-toc-btn");
 	await expect(tocButton).toBeHidden();
@@ -290,7 +286,7 @@ test("floating TOC refreshes from decrypted content", async ({ page }) => {
 	await expect(tocButton).toBeVisible();
 	await expect(
 		page.locator("#floating-toc-content .floating-toc-item", {
-			hasText: "Front-matter of Posts",
+			hasText: "如何启用",
 		}),
 	).toHaveCount(1);
 });

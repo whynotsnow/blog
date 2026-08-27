@@ -170,10 +170,32 @@ pnpm precommit
 pnpm new-post -- my-new-post
 ```
 
-生成本地测试文章：
+生成测试内容文章：
 
 ```bash
-pnpm generate-posts
+pnpm generate-posts -- batch 5
+```
+
+`pnpm generate-posts` 默认写入 `tests/content/posts`，用于测试和开发 overlay。不要把测试文章默认写入 `src/content/posts`。如确实需要生成真实生产文章，应优先使用 `pnpm new-post -- <filename>`；只有明确调试生成器时才使用 `pnpm generate-posts -- <command> --target=content`。
+
+启动开发环境：
+
+```bash
+pnpm dev
+```
+
+默认开发环境会先准备生产内容，再生成 `src/.content-dev/posts` overlay，并展示生产内容与 `tests/content/posts` 的合成结果。overlay 生成失败时会报告冲突类型、涉及来源和调整建议；不要通过自动改名或覆盖绕过冲突。
+
+只查看生产内容：
+
+```bash
+pnpm dev:prod-content
+```
+
+验证开发 overlay 可以完整静态构建：
+
+```bash
+pnpm build:dev-content
 ```
 
 准备配置中锁定的外部内容版本：

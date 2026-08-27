@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { E2E_CATEGORY } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 
 test("home sections expose configured guide destinations", async ({ page }) => {
@@ -42,10 +43,10 @@ test("home sections expose configured guide destinations", async ({ page }) => {
 		expect(Number.parseFloat(heights[0])).toBeGreaterThan(350);
 	}
 	await expect(sections.nth(2).locator("[data-category-card]")).toHaveCount(
-		5,
+		1,
 	);
 	await expect(
-		sections.nth(2).locator('[data-category-card="tech"]'),
+		sections.nth(2).locator(`[data-category-card="${E2E_CATEGORY.slug}"]`),
 	).toBeVisible();
 	await expect(
 		sections.nth(2).locator(".category-hub-card__posts"),

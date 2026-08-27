@@ -32,7 +32,7 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: `pnpm content:prepare && pnpm font:prepare && astro dev --host 127.0.0.1 --port ${port}`,
+		command: `BLOG_CONTENT_MODE=test pnpm content:prepare && BLOG_CONTENT_MODE=test pnpm font:prepare && BLOG_CONTENT_MODE=test astro dev --host 127.0.0.1 --port ${port}`,
 		url: baseURL,
 		reuseExistingServer,
 		timeout: 60_000,

@@ -120,7 +120,7 @@ Legacy variables are one-way aliases from the Compatibility layer to Design toke
 
 Content preparation and content transformation are separate boundaries. `scripts/content-sync/` owns Git, staging, release validation, managed links, and source activation. It must invoke Git with argument arrays and `shell: false`; no URL or credential-bearing command may be logged. `src/services/core` begins only after the selected filesystem content is stable.
 
-1. `src/content.config.ts` defines the `posts` and `spec` content collections.
+1. `src/content.config.ts` defines the `posts` and `spec` content collections. The posts collection uses `src/content-source.ts` to choose its base directory: production/default commands read `src/content/posts`, `BLOG_CONTENT_MODE=test` reads `tests/content/posts`, and `BLOG_CONTENT_MODE=development` reads `src/.content-dev/posts` generated from production content plus test content.
 2. `getAllPostsRaw()` in `src/services/core/source.ts` reads posts from Astro content.
 3. Draft filtering happens in `getAllPostsRaw()`:
    - Production: drafts are excluded.

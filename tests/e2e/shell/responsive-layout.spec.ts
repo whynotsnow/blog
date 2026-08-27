@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { E2E_CATEGORY, E2E_POSTS } from "../../support/content-fixtures";
 import { gotoPage } from "../../support/navigation";
 import { useStoredPreference } from "../../support/preferences";
 
@@ -170,10 +171,7 @@ test("container-content pages keep supported widths and post detail rail budgets
 	expect(home.supportWidth).toBeGreaterThanOrEqual(248 - 1);
 	expect(home.supportWidth).toBeLessThanOrEqual(272 + 1);
 
-	for (const pathname of [
-		"/category/tutorials/",
-		"/posts/markdown-writing/",
-	]) {
+	for (const pathname of [E2E_CATEGORY.path, E2E_POSTS.writing.path]) {
 		await gotoPage(page, pathname);
 		const geometry = await readGeometry();
 		expect(geometry.supportWidth).toBeGreaterThanOrEqual(248 - 1);
@@ -182,7 +180,7 @@ test("container-content pages keep supported widths and post detail rail budgets
 		expect(geometry.navbarWidth).toBeCloseTo(home.navbarWidth, 0);
 	}
 
-	await gotoPage(page, "/posts/markdown-writing/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	const postDetailRailWidth = await readCssLengthPx(
 		page,
 		"--width-reading-wide",
@@ -391,10 +389,7 @@ test("container-content compensates shared Shell type without resizing its conta
 	expect(compensated.mainContentOffset).toBeCloseTo(79.2, 1);
 	expect(compensated.pageEntryClearance).toBeCloseTo(93.6, 1);
 
-	for (const pathname of [
-		"/category/tutorials/",
-		"/posts/markdown-writing/",
-	]) {
+	for (const pathname of [E2E_CATEGORY.path, E2E_POSTS.writing.path]) {
 		await gotoPage(page, pathname);
 		const contentPage = await readSharedShell();
 		expect(contentPage.bannerStrategy).toBe("container-content");
@@ -463,7 +458,7 @@ test("category filter and post TOC follow their owning width budgets", async ({
 	page,
 }) => {
 	await page.setViewportSize({ width: 375, height: 812 });
-	await gotoPage(page, "/category/tutorials/");
+	await gotoPage(page, E2E_CATEGORY.path);
 	const mobileFilter = page.locator(".category-filter__mobile");
 	const filterOptions = page.locator(".category-filter__options");
 	await expect(mobileFilter).toBeVisible();
@@ -486,7 +481,7 @@ test("category filter and post TOC follow their owning width budgets", async ({
 			"true",
 		);
 	});
-	await gotoPage(page, "/posts/markdown-writing/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await expect(page.locator(".sidebar-toc-region--container")).toHaveCount(0);
 	await expect(page.locator(".post-support__toc")).toBeVisible();
 	await expect(
@@ -883,7 +878,7 @@ test("banner sizing follows the mode and responsive contract", async ({
 		fullscreenGeometry!.bannerHeight - 1,
 	);
 
-	await gotoPage(page, "/posts/markdown-writing/");
+	await gotoPage(page, E2E_POSTS.writing.path);
 	await expect(fullscreenBanner).toHaveClass(/mobile-hide-banner/);
 	await expect(page.locator(".main-content-layer")).toHaveClass(
 		/mobile-main-no-banner/,
