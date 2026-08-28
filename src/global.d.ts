@@ -72,7 +72,7 @@ declare global {
 			highlightElement: (element: Element) => void;
 		};
 		mobileTOCInit?: (runtimeRoot?: Element) => void;
-		renderMermaidDiagrams?: () => void;
+		renderMermaidDiagrams?: () => void | Promise<void>;
 		themeOptimizer?: {
 			hideCodeBlocksDuringTransition: boolean;
 		};

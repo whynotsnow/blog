@@ -6,6 +6,7 @@
 
 ```bash
 pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
 pnpm build
 ```
 
@@ -19,7 +20,7 @@ pnpm build
 ENABLE_CONTENT_SYNC=false
 ```
 
-不需要内容仓库权限。`pnpm build` 会先输出 `[content] mode=local`，再执行 Anime 数据准备、Astro build、Pagefind 和字体处理。
+不需要内容仓库权限。`pnpm build` 会先输出 `[content] mode=local`，再执行 Anime 数据准备、Astro build、Mermaid 构建期 SVG 预渲染、Pagefind 和字体处理。Mermaid 预渲染使用 Playwright Chromium，CI 与生产部署 workflow 会在构建前安装浏览器；本机全新环境首次构建前也需要执行一次 `pnpm exec playwright install chromium`。
 
 ## Pinned 外部内容部署
 

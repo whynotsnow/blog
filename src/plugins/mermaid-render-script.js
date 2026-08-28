@@ -402,6 +402,35 @@
 		return `${baseId}-svg-${attempt}`;
 	}
 
+	function applySvgTheme(svgElement, theme) {
+		if (theme === "dark") {
+			svgElement.style.filter = "brightness(0.9) contrast(1.1)";
+		} else {
+			svgElement.style.filter = "none";
+		}
+	}
+
+	function enhanceExistingMermaidElement(element, theme, options) {
+		const shouldDeferToRerender =
+			options.rerenderRendered === true &&
+			element.dataset.mermaidTheme !== theme;
+		if (shouldDeferToRerender) {
+			return false;
+		}
+
+		const svgElement = element.querySelector("svg");
+		if (!svgElement) {
+			return false;
+		}
+
+		applyNaturalSvgSize(element, svgElement);
+		applySvgTheme(svgElement, theme);
+		attachZoomControls(element, svgElement);
+		element.dataset.mermaidState = "rendered";
+		element.dataset.mermaidTheme = theme;
+		return true;
+	}
+
 	async function renderMermaidDiagrams(options = {}) {
 		// 防止并发渲染
 		if (isRendering) {
@@ -435,6 +464,11 @@
 
 			const theme = getCurrentTheme();
 			const isDark = theme === "dark";
+			Array.from(mermaidElements).forEach((element) => {
+				if (element.dataset.mermaidState === "rendered") {
+					enhanceExistingMermaidElement(element, theme, options);
+				}
+			});
 			const elementsToRender = Array.from(mermaidElements).filter(
 				(element) =>
 					shouldRenderMermaidElement(element, theme, options),
@@ -493,10 +527,9 @@
 
 								// 强制应用样式
 								if (isDark) {
-									svgElement.style.filter =
-										"brightness(0.9) contrast(1.1)";
+									applySvgTheme(svgElement, "dark");
 								} else {
-									svgElement.style.filter = "none";
+									applySvgTheme(svgElement, "default");
 								}
 								attachZoomControls(element, insertedSvg);
 							}

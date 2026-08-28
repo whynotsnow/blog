@@ -145,7 +145,9 @@ tag 重名、标题重名和 draft 状态差异默认允许。需要稳定验证
 
 Mermaid 图表用于表达文章中的静态流程、状态、时序和简单比例关系。站点默认使用 `mermaid@11.17.2`，运行时文件固定发布为 `public/assets/js/mermaid-11.17.2.min.js`，并以 `securityLevel: "strict"` 渲染图表；不要依赖 Mermaid 的 HTML label、click 回调或外链交互能力。需要可点击操作或复杂交互时，应使用专门的页面组件，而不是把 Mermaid 当作交互容器。
 
-升级 Mermaid 时必须同步更新 `package.json`、`pnpm-lock.yaml`、`public/assets/js/mermaid-*.min.js`、`src/plugins/rehype-mermaid.ts` 和 Mermaid E2E 断言。不要恢复 CDN fallback，也不要引用 `/node_modules/` 路径作为生产运行时。
+生产构建会用 Playwright renderer 在 Markdown 渲染阶段生成初始 SVG，并把结果缓存到本地构建缓存目录。HTML 中会保留 `data-mermaid-code` 作为主题重渲染和失败 fallback 输入，但首屏可见内容应直接是 SVG；开发环境默认仍走客户端渲染 fallback，避免 HMR 时频繁启动浏览器渲染器。需要在本地开发时强制验证构建期 SVG，可设置 `BLOG_MERMAID_PRERENDER=1`；需要临时关闭生产预渲染时可设置 `BLOG_MERMAID_PRERENDER=false`，但正式发布不应关闭。
+
+升级 Mermaid 时必须同步更新 `package.json`、`pnpm-lock.yaml`、`public/assets/js/mermaid-*.min.js`、`src/plugins/rehype-mermaid.ts`、`src/plugins/mermaid-prerender.ts` 和 Mermaid E2E 断言。不要恢复 CDN fallback，也不要引用 `/node_modules/` 路径作为生产运行时。
 
 ## 加密文章目录
 

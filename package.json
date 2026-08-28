@@ -95,6 +95,7 @@
 		"axios": "^1.13.6",
 		"crypto-js": "^4.2.0",
 		"dayjs": "^1.11.19",
+		"hast-util-from-html": "^2.0.3",
 		"hastscript": "^9.0.1",
 		"katex": "^0.16.33",
 		"marked": "^16.4.2",

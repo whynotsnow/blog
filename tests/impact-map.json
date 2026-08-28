@@ -204,10 +204,19 @@
 		{
 			"patterns": [
 				"src/plugins/rehype-mermaid.ts",
+				"src/plugins/mermaid-prerender.ts",
 				"src/plugins/mermaid-render-script.js",
 				"src/styles/markdown-extend.styl"
 			],
-			"groups": ["lint", "type", "astro", "astro-build", "post-detail"]
+			"groups": [
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"astro-build",
+				"integration",
+				"post-detail"
+			]
 		},
 		{
 			"patterns": ["src/assets/icons/**"],

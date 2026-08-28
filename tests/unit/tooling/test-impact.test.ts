@@ -88,6 +88,28 @@ describe("impact-based validation selection", () => {
 		}
 	});
 
+	it("keeps Mermaid rendering changes on build and post-detail checks", () => {
+		const plans = [
+			planFor("src/plugins/rehype-mermaid.ts"),
+			planFor("src/plugins/mermaid-prerender.ts"),
+			planFor("src/plugins/mermaid-render-script.js"),
+			planFor("src/styles/markdown-extend.styl"),
+		];
+
+		for (const plan of plans) {
+			expect(plan.groups).toEqual([
+				"lint",
+				"type",
+				"declaration-type",
+				"astro",
+				"astro-build",
+				"integration",
+				"post-detail",
+			]);
+			expect(plan.unmatched).toEqual([]);
+		}
+	});
+
 	it("keeps local toolchain changes on fast checks with a CI full risk", () => {
 		const plan = planFor("playwright.config.ts");
 

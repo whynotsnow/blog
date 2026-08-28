@@ -211,6 +211,7 @@ jobs:
                   corepack enable
                   corepack prepare pnpm@10.22.0 --activate
             - run: pnpm install --frozen-lockfile
+            - run: pnpm exec playwright install --with-deps chromium
             - name: Run complete production build
               if: contains(needs.plan.outputs.groups, '"full"')
               run: pnpm build
