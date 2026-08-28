@@ -264,6 +264,9 @@ a.card-github.fetch-error
   text-align: center
 
 .mermaid
+  --mermaid-natural-width: 100%
+  --mermaid-natural-height: auto
+  --mermaid-aspect-ratio: auto
   display: flex
   justify-content: center
   align-items: center
@@ -273,8 +276,12 @@ a.card-github.fetch-error
   overflow: hidden;
 
   svg
+    display: block
+    width: 100%
     max-width: 100%
     height: auto
+    margin-inline: auto
+    aspect-ratio: var(--mermaid-aspect-ratio)
     border-radius: 0.5rem
     user-select: none;
     pointer-events: all;
@@ -343,10 +350,13 @@ a.card-github.fetch-error
   transform-origin: 0 0;
   transition: transform 120ms ease-out;
   will-change: transform;
-  cursor: grab;
+  cursor: default;
   background: transparent;
+  margin-inline: auto;
+  width: 100%;
+  max-width: 100%;
 
-.mermaid-zoom-wrapper:active
+.mermaid-zoom-wrapper.is-panning
   cursor: grabbing;
 
 .mermaid-zoom-controls

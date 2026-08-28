@@ -120,6 +120,97 @@ test("post content shares markdown styles and copy behavior", async ({
 	await expect(copyButton).toHaveClass(/success/);
 });
 
+test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", async ({
+	page,
+}) => {
+	const mermaidPostPath = "/posts/fixture-markdown-mermaid/";
+
+	await page.route("**/mermaid@11/dist/mermaid.min.js", async (route) => {
+		await route.fulfill({
+			contentType: "application/javascript",
+			body: `
+				window.mermaid = {
+					initialize() {},
+					async render(id) {
+						return {
+							svg: '<svg id="' + id + '" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="120" rx="8" fill="#f8fafc" stroke="#334155"/><text x="120" y="66" text-anchor="middle" font-size="18">Mermaid fixture</text></svg>'
+						};
+					}
+				};
+			`,
+		});
+	});
+
+	await gotoPage(page, mermaidPostPath);
+	const diagram = page.locator(".mermaid").first();
+	const wrapper = diagram.locator(".mermaid-zoom-wrapper");
+	const svg = wrapper.locator("svg");
+	await expect(svg).toBeVisible();
+	await expect(svg).not.toHaveCSS("min-height", "300px");
+
+	const sizing = await diagram.evaluate((element) => {
+		const styles = getComputedStyle(element);
+		return {
+			naturalWidth: styles
+				.getPropertyValue("--mermaid-natural-width")
+				.trim(),
+			aspectRatio: styles
+				.getPropertyValue("--mermaid-aspect-ratio")
+				.trim(),
+		};
+	});
+	expect(sizing.naturalWidth).toBe("240px");
+	expect(sizing.aspectRatio).toBe("240 / 120");
+	const renderedSvgBox = await svg.boundingBox();
+	if (!renderedSvgBox) throw new Error("Missing rendered Mermaid SVG bounds");
+	expect(renderedSvgBox.width).toBeGreaterThan(320);
+
+	const beforePlainWheel = await page.evaluate(() => ({
+		transform: (
+			document.querySelector(".mermaid-zoom-wrapper") as HTMLElement
+		).style.transform,
+	}));
+	const plainWheelAllowed = await diagram.evaluate((element) =>
+		element.dispatchEvent(
+			new WheelEvent("wheel", {
+				bubbles: true,
+				cancelable: true,
+				deltaY: 260,
+			}),
+		),
+	);
+	const afterPlainWheel = await page.evaluate(() => ({
+		transform: (
+			document.querySelector(".mermaid-zoom-wrapper") as HTMLElement
+		).style.transform,
+	}));
+	expect(plainWheelAllowed).toBe(true);
+	expect(afterPlainWheel.transform).toBe(beforePlainWheel.transform);
+
+	const altWheelAllowed = await diagram.evaluate((element) =>
+		element.dispatchEvent(
+			new WheelEvent("wheel", {
+				altKey: true,
+				bubbles: true,
+				cancelable: true,
+				clientX: 120,
+				clientY: 60,
+				deltaY: -160,
+			}),
+		),
+	);
+	const afterAltWheel = await page.evaluate(() => ({
+		transform: (
+			document.querySelector(".mermaid-zoom-wrapper") as HTMLElement
+		).style.transform,
+	}));
+	expect(altWheelAllowed).toBe(false);
+	expect(afterAltWheel.transform).not.toBe(afterPlainWheel.transform);
+
+	await diagram.locator('[data-action="reset"]').click();
+	await expect(wrapper).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
+});
+
 test("post detail flow keeps article blocks on one content rail", async ({
 	page,
 }) => {

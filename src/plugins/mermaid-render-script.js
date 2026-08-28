@@ -88,6 +88,62 @@
 		});
 	}
 
+	function readSvgLength(value) {
+		if (!value) return null;
+		const parsed = Number.parseFloat(String(value));
+		return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+	}
+
+	function readSvgViewBox(svgElement) {
+		const viewBox = svgElement.getAttribute("viewBox");
+		if (!viewBox) return null;
+		const parts = viewBox
+			.trim()
+			.split(/[\s,]+/)
+			.map((part) => Number.parseFloat(part));
+		if (
+			parts.length !== 4 ||
+			parts.some((part) => !Number.isFinite(part))
+		) {
+			return null;
+		}
+		const [, , width, height] = parts;
+		return width > 0 && height > 0 ? { width, height } : null;
+	}
+
+	function applyNaturalSvgSize(element, svgElement) {
+		const viewBoxSize = readSvgViewBox(svgElement);
+		const width =
+			viewBoxSize?.width ??
+			readSvgLength(svgElement.getAttribute("width"));
+		const height =
+			viewBoxSize?.height ??
+			readSvgLength(svgElement.getAttribute("height"));
+
+		svgElement.removeAttribute("width");
+		svgElement.removeAttribute("height");
+		svgElement.style.width = "";
+		svgElement.style.height = "";
+		svgElement.style.maxWidth = "";
+		svgElement.style.minHeight = "";
+
+		if (width && height) {
+			element.style.setProperty("--mermaid-natural-width", `${width}px`);
+			element.style.setProperty(
+				"--mermaid-natural-height",
+				`${height}px`,
+			);
+			element.style.setProperty(
+				"--mermaid-aspect-ratio",
+				`${width} / ${height}`,
+			);
+		} else {
+			element.style.removeProperty("--mermaid-natural-width");
+			element.style.removeProperty("--mermaid-natural-height");
+			element.style.removeProperty("--mermaid-aspect-ratio");
+		}
+	}
+
 	// 缩放平移
 	function attachZoomControls(element, svgElement) {
 		if (element.__zoomAttached) return;
@@ -109,6 +165,14 @@
 		function applyTransform() {
 			wrapper.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
 		}
+
+		function resetView() {
+			scale = 1;
+			tx = 0;
+			ty = 0;
+			applyTransform();
+		}
+
 		const controls = document.createElement("div");
 		controls.className = "mermaid-zoom-controls";
 		controls.innerHTML = `
@@ -133,10 +197,7 @@
 					applyTransform();
 					break;
 				case "reset":
-					scale = 1;
-					tx = 0;
-					ty = 0;
-					applyTransform();
+					resetView();
 					break;
 			}
 		});
@@ -147,11 +208,14 @@
 		let startTx = 0;
 		let startTy = 0;
 
-		wrapper.style.touchAction = "none";
+		wrapper.style.touchAction = "auto";
 
 		wrapper.addEventListener("pointerdown", (ev) => {
 			if (ev.button !== 0) return; // 仅左键
+			if (!ev.altKey) return;
 			isPanning = true;
+			wrapper.classList.add("is-panning");
+			wrapper.style.touchAction = "none";
 			wrapper.setPointerCapture(ev.pointerId);
 			startX = ev.clientX;
 			startY = ev.clientY;
@@ -170,6 +234,8 @@
 
 		wrapper.addEventListener("pointerup", (ev) => {
 			isPanning = false;
+			wrapper.classList.remove("is-panning");
+			wrapper.style.touchAction = "auto";
 			try {
 				wrapper.releasePointerCapture(ev.pointerId);
 			} catch {
@@ -179,12 +245,15 @@
 
 		wrapper.addEventListener("pointercancel", () => {
 			isPanning = false;
+			wrapper.classList.remove("is-panning");
+			wrapper.style.touchAction = "auto";
 		});
 
-		// 鼠标滚轮缩放
+		// 只有 Option/Alt + 滚轮才缩放，普通滚轮继续交给页面滚动。
 		element.addEventListener(
 			"wheel",
 			(ev) => {
+				if (!ev.altKey) return;
 				ev.preventDefault();
 				const delta = -ev.deltaY;
 				const zoomFactor = delta > 0 ? 1.12 : 1 / 1.12;
@@ -211,10 +280,7 @@
 
 		// 双击重置
 		wrapper.addEventListener("dblclick", () => {
-			scale = 1;
-			tx = 0;
-			ty = 0;
-			applyTransform();
+			resetView();
 		});
 		applyTransform();
 		let resizeTimer = null;
@@ -366,12 +432,7 @@
 							// 添加响应式支持
 							const insertedSvg = element.querySelector("svg");
 							if (insertedSvg) {
-								insertedSvg.setAttribute("width", "100%");
-								insertedSvg.removeAttribute("height");
-								insertedSvg.style.maxWidth = "100%";
-								insertedSvg.style.height = "auto";
-								//Todo 需要根据实际情况
-								insertedSvg.style.minHeight = "300px";
+								applyNaturalSvgSize(element, insertedSvg);
 
 								// 强制应用样式
 								if (isDark) {
