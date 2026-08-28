@@ -3,6 +3,8 @@ import type { Element, Root } from "hast";
 import { visit } from "unist-util-visit";
 import mermaidRenderScript from "./mermaid-render-script.js?raw";
 
+const mermaidRuntimeUrl = "/assets/js/mermaid-11.17.2.min.js";
+
 export function rehypeMermaid(): (tree: Root) => void {
 	return function transform(tree: Root): void {
 		visit(tree, "element", (node) => {
@@ -47,7 +49,7 @@ export function rehypeMermaid(): (tree: Root) => void {
 					{
 						type: "text/javascript",
 					},
-					mermaidRenderScript,
+					`window.__mermaidRuntimeUrl = ${JSON.stringify(mermaidRuntimeUrl)};\n${mermaidRenderScript}`,
 				);
 
 				// 替换原始节点

@@ -16,6 +16,7 @@
 	let retryCount = 0;
 	const MAX_RETRIES = 3;
 	const RETRY_DELAY = 1000; // 1秒
+	const MERMAID_SECURITY_LEVEL = "strict";
 
 	// 检查主题是否真的发生了变化
 	function hasThemeChanged() {
@@ -142,6 +143,18 @@
 			element.style.removeProperty("--mermaid-natural-height");
 			element.style.removeProperty("--mermaid-aspect-ratio");
 		}
+	}
+
+	function showMermaidRuntimeError(message) {
+		document
+			.querySelectorAll(".mermaid[data-mermaid-code]")
+			.forEach((element) => {
+				element.innerHTML = `
+					<div class="mermaid-error">
+						<p>${message}</p>
+					</div>
+				`;
+			});
 	}
 
 	// 缩放平移
@@ -324,7 +337,7 @@
 					fontFamily: "inherit",
 					fontSize: "16px",
 				},
-				securityLevel: "loose",
+				securityLevel: MERMAID_SECURITY_LEVEL,
 				// 添加错误处理配置
 				errorLevel: "warn",
 				logLevel: "error",
@@ -388,7 +401,7 @@
 					secondaryColor: isDark ? "#333333" : "#f0f0f0",
 					tertiaryColor: isDark ? "#555555" : "#e0e0e0",
 				},
-				securityLevel: "loose",
+				securityLevel: MERMAID_SECURITY_LEVEL,
 				errorLevel: "warn",
 				logLevel: "error",
 			});
@@ -505,44 +518,32 @@
 	// 加载 Mermaid 库
 	async function loadMermaid() {
 		if (typeof window.mermaid !== "undefined") {
-			return Promise.resolve();
+			return;
 		}
 
-		return new Promise((resolve, reject) => {
+		const runtimeUrl = window.__mermaidRuntimeUrl;
+		if (!runtimeUrl) {
+			throw new Error("Mermaid runtime URL is not configured");
+		}
+
+		await new Promise((resolve, reject) => {
 			const script = document.createElement("script");
-			script.src =
-				"https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
-
-			script.onload = () => {
-				console.log("Mermaid library loaded successfully");
-				resolve();
-			};
-
-			script.onerror = (error) => {
-				console.error("Failed to load Mermaid library:", error);
-				// 尝试备用 CDN
-				const fallbackScript = document.createElement("script");
-				fallbackScript.src =
-					"https://unpkg.com/mermaid@11/dist/mermaid.min.js";
-
-				fallbackScript.onload = () => {
-					console.log("Mermaid library loaded from fallback CDN");
-					resolve();
-				};
-
-				fallbackScript.onerror = () => {
-					reject(
-						new Error(
-							"Failed to load Mermaid from both primary and fallback CDNs",
-						),
-					);
-				};
-
-				document.head.appendChild(fallbackScript);
-			};
-
+			script.src = runtimeUrl;
+			script.async = true;
+			script.onload = () => resolve();
+			script.onerror = () =>
+				reject(new Error("Failed to load local Mermaid runtime"));
 			document.head.appendChild(script);
 		});
+
+		if (
+			!window.mermaid ||
+			typeof window.mermaid.initialize !== "function"
+		) {
+			throw new Error(
+				"Local Mermaid runtime did not expose initialize()",
+			);
+		}
 	}
 
 	// 主初始化函数
@@ -563,6 +564,7 @@
 			window.renderMermaidDiagrams = renderMermaidDiagrams;
 		} catch (error) {
 			console.error("Failed to initialize Mermaid system:", error);
+			showMermaidRuntimeError("Mermaid runtime failed to load.");
 		}
 	}
 

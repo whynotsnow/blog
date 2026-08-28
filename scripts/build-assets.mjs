@@ -5,22 +5,37 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(scriptDir, "..");
-const astroCacheDir = path.join(rootDir, "node_modules", ".astro");
+const astroCacheDirs = [
+	path.join(rootDir, ".astro"),
+	path.join(rootDir, "node_modules", ".astro"),
+];
 const distDir = path.join(rootDir, "dist");
 const astroAssetPattern =
 	/(?:href|src)=["']\/(_astro\/[^"'?#]+)(?:[?#][^"']*)?["']/g;
 
 export function clearAstroCache({
-	cacheDir = astroCacheDir,
+	cacheDirs = astroCacheDirs,
+	displayRoot = rootDir,
 	logger = console,
 } = {}) {
-	if (!fs.existsSync(cacheDir)) {
+	const removedDirs = cacheDirs.filter((cacheDir) => {
+		if (!fs.existsSync(cacheDir)) {
+			return false;
+		}
+		fs.rmSync(cacheDir, { recursive: true, force: true });
+		return true;
+	});
+
+	if (removedDirs.length === 0) {
 		logger.log("[build-assets] Astro cache already clean");
 		return false;
 	}
 
-	fs.rmSync(cacheDir, { recursive: true, force: true });
-	logger.log("[build-assets] Removed stale Astro content cache");
+	logger.log(
+		`[build-assets] Removed stale Astro content cache: ${removedDirs
+			.map((cacheDir) => path.relative(displayRoot, cacheDir))
+			.join(", ")}`,
+	);
 	return true;
 }
 

@@ -25,16 +25,26 @@ afterEach(() => {
 describe("Astro build asset verification", () => {
 	it("removes stale Astro content cache before production builds", () => {
 		const rootDir = createTempDirectory();
-		const cacheDir = path.join(rootDir, "node_modules", ".astro");
-		fs.mkdirSync(cacheDir, { recursive: true });
-		fs.writeFileSync(path.join(cacheDir, "data-store.json"), "{}");
+		const rootCacheDir = path.join(rootDir, ".astro");
+		const legacyCacheDir = path.join(rootDir, "node_modules", ".astro");
+		fs.mkdirSync(rootCacheDir, { recursive: true });
+		fs.mkdirSync(legacyCacheDir, { recursive: true });
+		fs.writeFileSync(path.join(rootCacheDir, "data-store.json"), "{}");
+		fs.writeFileSync(path.join(legacyCacheDir, "data-store.json"), "{}");
 		const logger = { log: vi.fn() };
 
-		expect(clearAstroCache({ cacheDir, logger })).toBe(true);
+		expect(
+			clearAstroCache({
+				cacheDirs: [rootCacheDir, legacyCacheDir],
+				displayRoot: rootDir,
+				logger,
+			}),
+		).toBe(true);
 
-		expect(fs.existsSync(cacheDir)).toBe(false);
+		expect(fs.existsSync(rootCacheDir)).toBe(false);
+		expect(fs.existsSync(legacyCacheDir)).toBe(false);
 		expect(logger.log).toHaveBeenCalledWith(
-			"[build-assets] Removed stale Astro content cache",
+			"[build-assets] Removed stale Astro content cache: .astro, node_modules/.astro",
 		);
 	});
 

@@ -1,7 +1,7 @@
 ---
 title: Mermaid 图表写作
 published: 2026-08-13
-updated: 2026-08-19
+updated: 2026-08-29
 description: 说明如何在文章中使用 Mermaid 绘制流程图、时序图、状态图和占比图。
 image: ''
 author: whynotsnow
@@ -77,5 +77,7 @@ pie title 当前功能说明文章覆盖范围
 ## 写作建议
 
 Mermaid 图表应保持简短。图表节点过多时，移动端阅读会变差，也更容易让维护者误读关系。
+
+站点使用本地打包的固定版本 `mermaid@11.17.2`，运行时文件发布为 `/assets/js/mermaid-11.17.2.min.js`，并以 `securityLevel: "strict"` 渲染图表。文章中的 Mermaid 应作为静态说明图使用，不要依赖 HTML label、click 回调或外链交互；如果内容需要点击、筛选、展开等操作，应改用专门的页面组件。
 
 如果图表表达的是项目真实行为，更新代码或配置后也要同步更新图表。过期图表比没有图表更容易误导读者。

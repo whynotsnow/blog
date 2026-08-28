@@ -100,6 +100,7 @@ function isUnder(file, directory) {
 function isVendorStaticAsset(file) {
 	return [
 		"public/assets/js/twikoo.nocss.js",
+		"public/assets/js/mermaid-11.17.2.min.js",
 		"public/assets/css/twikoo.css",
 		"public/live2d-companion/l2d-widget.min.js",
 	].includes(file);
@@ -153,8 +154,13 @@ if (prettierTargets.length > 0) {
 	run("git", ["add", "--", ...prettierTargets]);
 }
 
-console.log("[pre-commit] Checking staged whitespace...");
-run("git", ["diff", "--cached", "--check"]);
+const whitespaceTargets = stagedFiles.filter(
+	(file) => isExistingFile(file) && !isVendorStaticAsset(file),
+);
+if (whitespaceTargets.length > 0) {
+	console.log("[pre-commit] Checking staged whitespace...");
+	run("git", ["diff", "--cached", "--check", "--", ...whitespaceTargets]);
+}
 
 const markdownTargets = stagedFiles.filter(
 	(file) => extname(file) === ".md" && isExistingFile(file),

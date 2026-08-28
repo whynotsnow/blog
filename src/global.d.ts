@@ -67,6 +67,7 @@ declare global {
 		};
 		__initFilterTabs?: () => void;
 		__refreshFancybox?: () => void | Promise<void>;
+		__mermaidRuntimeUrl?: string;
 		hljs?: {
 			highlightElement: (element: Element) => void;
 		};

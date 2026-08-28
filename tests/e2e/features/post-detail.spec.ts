@@ -124,21 +124,13 @@ test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", a
 	page,
 }) => {
 	const mermaidPostPath = "/posts/fixture-markdown-mermaid/";
+	const mermaidRuntimeRequests: string[] = [];
 
-	await page.route("**/mermaid@11/dist/mermaid.min.js", async (route) => {
-		await route.fulfill({
-			contentType: "application/javascript",
-			body: `
-				window.mermaid = {
-					initialize() {},
-					async render(id) {
-						return {
-							svg: '<svg id="' + id + '" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="120" rx="8" fill="#f8fafc" stroke="#334155"/><text x="120" y="66" text-anchor="middle" font-size="18">Mermaid fixture</text></svg>'
-						};
-					}
-				};
-			`,
-		});
+	page.on("request", (request) => {
+		const url = request.url();
+		if (/mermaid|jsdelivr|unpkg/.test(url)) {
+			mermaidRuntimeRequests.push(url);
+		}
 	});
 
 	await gotoPage(page, mermaidPostPath);
@@ -159,11 +151,36 @@ test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", a
 				.trim(),
 		};
 	});
-	expect(sizing.naturalWidth).toBe("240px");
-	expect(sizing.aspectRatio).toBe("240 / 120");
+	expect(sizing.naturalWidth).toMatch(/^\d+(\.\d+)?px$/);
+	expect(sizing.aspectRatio).toMatch(/^\d+(\.\d+)? \/ \d+(\.\d+)?$/);
 	const renderedSvgBox = await svg.boundingBox();
 	if (!renderedSvgBox) throw new Error("Missing rendered Mermaid SVG bounds");
 	expect(renderedSvgBox.width).toBeGreaterThan(320);
+	expect(mermaidRuntimeRequests).toEqual(
+		expect.arrayContaining([
+			expect.stringMatching(
+				/^http:\/\/127\.0\.0\.1:\d+\/assets\/js\/mermaid-11\.17\.2\.min\.js$/,
+			),
+		]),
+	);
+	expect(mermaidRuntimeRequests).not.toEqual(
+		expect.arrayContaining([
+			expect.stringContaining("cdn.jsdelivr.net"),
+			expect.stringContaining("unpkg.com"),
+		]),
+	);
+
+	const mermaidSecurityLevel = await page.evaluate(() => {
+		const runtimeWindow = window as typeof window & {
+			mermaid?: {
+				mermaidAPI?: {
+					getConfig?: () => { securityLevel?: string };
+				};
+			};
+		};
+		return runtimeWindow.mermaid?.mermaidAPI?.getConfig?.().securityLevel;
+	});
+	expect(mermaidSecurityLevel).toBe("strict");
 
 	const beforePlainWheel = await page.evaluate(() => ({
 		transform: (

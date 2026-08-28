@@ -198,6 +198,10 @@
 			"groups": ["astro", "floating-tools"]
 		},
 		{
+			"patterns": ["public/assets/js/mermaid-*.min.js"],
+			"groups": ["astro", "astro-build", "post-detail"]
+		},
+		{
 			"patterns": ["src/assets/icons/**"],
 			"groups": [
 				"lint",

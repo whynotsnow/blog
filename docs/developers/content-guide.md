@@ -141,6 +141,12 @@ development overlay 是冲突发现机制，不是冲突修复机制。`pnpm dev
 
 tag 重名、标题重名和 draft 状态差异默认允许。需要稳定验证分类页、Tag 分页、文章详情、TOC、Activity Center 或 Floating Tools 时，应更新 `tests/content/posts` 和 `tests/support/content-fixtures.ts`，而不是把测试文章混入生产内容目录。
 
+## Mermaid 图表
+
+Mermaid 图表用于表达文章中的静态流程、状态、时序和简单比例关系。站点默认使用 `mermaid@11.17.2`，运行时文件固定发布为 `public/assets/js/mermaid-11.17.2.min.js`，并以 `securityLevel: "strict"` 渲染图表；不要依赖 Mermaid 的 HTML label、click 回调或外链交互能力。需要可点击操作或复杂交互时，应使用专门的页面组件，而不是把 Mermaid 当作交互容器。
+
+升级 Mermaid 时必须同步更新 `package.json`、`pnpm-lock.yaml`、`public/assets/js/mermaid-*.min.js`、`src/plugins/rehype-mermaid.ts` 和 Mermaid E2E 断言。不要恢复 CDN fallback，也不要引用 `/node_modules/` 路径作为生产运行时。
+
 ## 加密文章目录
 
 普通文章的目录（TOC）来自 Astro 在构建期提供的 `headings`，桌面目录、移动端目录和 Floating TOC 共享同一份静态 TOC 数据。
