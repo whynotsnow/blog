@@ -13,15 +13,20 @@
 	// 记录当前主题状态，避免不必要的重新渲染
 	let currentTheme = null;
 	let isRendering = false; // 防止并发渲染
+	let pendingRenderOptions = null;
 	let retryCount = 0;
 	const MAX_RETRIES = 3;
 	const RETRY_DELAY = 1000; // 1秒
 	const MERMAID_SECURITY_LEVEL = "strict";
 
+	function getCurrentTheme() {
+		const isDark = document.documentElement.classList.contains("dark");
+		return isDark ? "dark" : "default";
+	}
+
 	// 检查主题是否真的发生了变化
 	function hasThemeChanged() {
-		const isDark = document.documentElement.classList.contains("dark");
-		const newTheme = isDark ? "dark" : "default";
+		const newTheme = getCurrentTheme();
 
 		if (currentTheme !== newTheme) {
 			currentTheme = newTheme;
@@ -74,7 +79,13 @@
 					if (wasDark !== isDark) {
 						if (hasThemeChanged()) {
 							// 延迟渲染，避免主题切换时的闪烁
-							setTimeout(() => renderMermaidDiagrams(), 150);
+							setTimeout(
+								() =>
+									renderMermaidDiagrams({
+										rerenderRendered: true,
+									}),
+								150,
+							);
 						}
 					}
 				}
@@ -296,13 +307,6 @@
 			resetView();
 		});
 		applyTransform();
-		let resizeTimer = null;
-		window.addEventListener("resize", () => {
-			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(() => {
-				applyTransform();
-			}, 200);
-		});
 	}
 
 	// 设置其他事件监听器
@@ -310,14 +314,12 @@
 		// 监听页面切换
 		document.addEventListener("astro:page-load", () => {
 			// 重新初始化主题状态
-			currentTheme = null;
 			retryCount = 0; // 重置重试计数
-			if (hasThemeChanged()) {
-				setTimeout(() => renderMermaidDiagrams(), 100);
-			}
+			currentTheme = getCurrentTheme();
+			setTimeout(() => renderMermaidDiagrams(), 100);
 		});
 
-		// 监听页面可见性变化，页面重新可见时重新渲染
+		// 监听页面可见性变化，仅补渲染尚未成功的图表。
 		document.addEventListener("visibilitychange", () => {
 			if (!document.hidden) {
 				setTimeout(() => renderMermaidDiagrams(), 200);
@@ -355,9 +357,61 @@
 		}
 	}
 
-	async function renderMermaidDiagrams() {
+	function configureMermaidTheme(theme) {
+		const isDark = theme === "dark";
+
+		// 更新 Mermaid 主题（只需要更新一次）
+		window.mermaid.initialize({
+			startOnLoad: false,
+			theme: theme,
+			themeVariables: {
+				fontFamily: "inherit",
+				fontSize: "16px",
+				// 强制应用主题变量
+				primaryColor: isDark ? "#ffffff" : "#000000",
+				primaryTextColor: isDark ? "#ffffff" : "#000000",
+				primaryBorderColor: isDark ? "#ffffff" : "#000000",
+				lineColor: isDark ? "#ffffff" : "#000000",
+				secondaryColor: isDark ? "#333333" : "#f0f0f0",
+				tertiaryColor: isDark ? "#555555" : "#e0e0e0",
+			},
+			securityLevel: MERMAID_SECURITY_LEVEL,
+			errorLevel: "warn",
+			logLevel: "error",
+		});
+	}
+
+	function shouldRenderMermaidElement(element, theme, options) {
+		const state = element.dataset.mermaidState;
+		if (!state || state === "pending" || state === "error") {
+			return true;
+		}
+		if (state === "rendering") {
+			return false;
+		}
+		return (
+			options.rerenderRendered === true &&
+			state === "rendered" &&
+			element.dataset.mermaidTheme !== theme
+		);
+	}
+
+	function getRenderId(element, fallbackIndex, attempt) {
+		const wrapper = element.closest(".mermaid-wrapper");
+		const baseId = wrapper?.id || `mermaid-diagram-${fallbackIndex}`;
+		return `${baseId}-svg-${attempt}`;
+	}
+
+	async function renderMermaidDiagrams(options = {}) {
 		// 防止并发渲染
 		if (isRendering) {
+			pendingRenderOptions = {
+				...pendingRenderOptions,
+				...options,
+				rerenderRendered:
+					pendingRenderOptions?.rerenderRendered ||
+					options.rerenderRendered,
+			};
 			return;
 		}
 
@@ -379,35 +433,24 @@
 				return;
 			}
 
+			const theme = getCurrentTheme();
+			const isDark = theme === "dark";
+			const elementsToRender = Array.from(mermaidElements).filter(
+				(element) =>
+					shouldRenderMermaidElement(element, theme, options),
+			);
+
+			if (elementsToRender.length === 0) {
+				isRendering = false;
+				return;
+			}
+
 			// 延迟检测主题，确保 DOM 已经更新
 			await new Promise((resolve) => setTimeout(resolve, 100));
-
-			const htmlElement = document.documentElement;
-			const isDark = htmlElement.classList.contains("dark");
-			const theme = isDark ? "dark" : "default";
-
-			// 更新 Mermaid 主题（只需要更新一次）
-			window.mermaid.initialize({
-				startOnLoad: false,
-				theme: theme,
-				themeVariables: {
-					fontFamily: "inherit",
-					fontSize: "16px",
-					// 强制应用主题变量
-					primaryColor: isDark ? "#ffffff" : "#000000",
-					primaryTextColor: isDark ? "#ffffff" : "#000000",
-					primaryBorderColor: isDark ? "#ffffff" : "#000000",
-					lineColor: isDark ? "#ffffff" : "#000000",
-					secondaryColor: isDark ? "#333333" : "#f0f0f0",
-					tertiaryColor: isDark ? "#555555" : "#e0e0e0",
-				},
-				securityLevel: MERMAID_SECURITY_LEVEL,
-				errorLevel: "warn",
-				logLevel: "error",
-			});
+			configureMermaidTheme(theme);
 
 			// 批量渲染所有图表，添加重试机制
-			const renderPromises = Array.from(mermaidElements).map(
+			const renderPromises = elementsToRender.map(
 				async (element, index) => {
 					let attempts = 0;
 					const maxAttempts = 3;
@@ -422,12 +465,13 @@
 							}
 
 							// 显示加载状态
+							element.dataset.mermaidState = "rendering";
 							element.innerHTML =
 								'<div class="mermaid-loading">Rendering diagram...</div>';
 
 							// 渲染图表
 							const { svg } = await window.mermaid.render(
-								`mermaid-${Date.now()}-${index}-${attempts}`,
+								getRenderId(element, index, attempts),
 								code,
 							);
 
@@ -457,6 +501,9 @@
 								attachZoomControls(element, insertedSvg);
 							}
 
+							element.dataset.mermaidState = "rendered";
+							element.dataset.mermaidTheme = theme;
+
 							// 渲染成功，跳出重试循环
 							break;
 						} catch (error) {
@@ -471,6 +518,8 @@
 									`Failed to render Mermaid diagram after ${maxAttempts} attempts:`,
 									error,
 								);
+								element.dataset.mermaidState = "error";
+								element.dataset.mermaidTheme = theme;
 								element.innerHTML = `
 									<div class="mermaid-error">
 										<p>Failed to render diagram after ${maxAttempts} attempts.</p>
@@ -506,13 +555,17 @@
 			}
 		} finally {
 			isRendering = false;
+			if (pendingRenderOptions) {
+				const nextOptions = pendingRenderOptions;
+				pendingRenderOptions = null;
+				setTimeout(() => renderMermaidDiagrams(nextOptions), 0);
+			}
 		}
 	}
 
 	// 初始化主题状态
 	function initializeThemeState() {
-		const isDark = document.documentElement.classList.contains("dark");
-		currentTheme = isDark ? "dark" : "default";
+		currentTheme = getCurrentTheme();
 	}
 
 	// 加载 Mermaid 库

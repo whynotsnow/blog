@@ -139,6 +139,31 @@ test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", a
 	const svg = wrapper.locator("svg");
 	await expect(svg).toBeVisible();
 	await expect(svg).not.toHaveCSS("min-height", "300px");
+	await expect(diagram).toHaveAttribute("data-mermaid-state", "rendered");
+	await expect(diagram).toHaveAttribute(
+		"data-mermaid-theme",
+		/^(default|dark)$/,
+	);
+
+	const wrapperIds = await page
+		.locator(".mermaid-wrapper")
+		.evaluateAll((elements) => elements.map((element) => element.id));
+	expect(wrapperIds).toEqual([
+		"mermaid-diagram-0",
+		"mermaid-diagram-1",
+		"mermaid-diagram-2",
+		"mermaid-diagram-3",
+	]);
+
+	const injectedRenderScriptCount = await page
+		.locator("script")
+		.evaluateAll(
+			(scripts) =>
+				scripts.filter((script) =>
+					script.textContent?.includes("window.__mermaidRuntimeUrl"),
+				).length,
+		);
+	expect(injectedRenderScriptCount).toBe(1);
 
 	const sizing = await diagram.evaluate((element) => {
 		const styles = getComputedStyle(element);
@@ -181,6 +206,41 @@ test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", a
 		return runtimeWindow.mermaid?.mermaidAPI?.getConfig?.().securityLevel;
 	});
 	expect(mermaidSecurityLevel).toBe("strict");
+
+	const beforeManualRender = await page.evaluate(() => {
+		const element = document.querySelector(
+			".mermaid[data-mermaid-code]",
+		) as HTMLElement | null;
+		const svgElement = element?.querySelector("svg");
+
+		return {
+			state: element?.dataset.mermaidState,
+			svgId: svgElement?.id,
+			controlCount:
+				element?.querySelectorAll(".mermaid-zoom-controls").length ?? 0,
+		};
+	});
+	await page.evaluate(async () => {
+		const runtimeWindow = window as typeof window & {
+			renderMermaidDiagrams?: () => Promise<void>;
+		};
+		await runtimeWindow.renderMermaidDiagrams?.();
+	});
+	await page.waitForTimeout(300);
+	const afterManualRender = await page.evaluate(() => {
+		const element = document.querySelector(
+			".mermaid[data-mermaid-code]",
+		) as HTMLElement | null;
+		const svgElement = element?.querySelector("svg");
+
+		return {
+			state: element?.dataset.mermaidState,
+			svgId: svgElement?.id,
+			controlCount:
+				element?.querySelectorAll(".mermaid-zoom-controls").length ?? 0,
+		};
+	});
+	expect(afterManualRender).toEqual(beforeManualRender);
 
 	const beforePlainWheel = await page.evaluate(() => ({
 		transform: (
