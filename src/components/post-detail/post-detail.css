@@ -91,7 +91,15 @@
   font-family: var(--font-heading);
   font-size: var(--text-title);
   line-height: 1.25;
-  text-wrap: balance;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  word-break: normal;
+}
+
+@supports (word-break: auto-phrase) {
+  .post-detail__title {
+    word-break: auto-phrase;
+  }
 }
 
 .post-detail__share-row {

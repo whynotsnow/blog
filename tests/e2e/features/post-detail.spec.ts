@@ -120,6 +120,45 @@ test("post content shares markdown styles and copy behavior", async ({
 	await expect(copyButton).toHaveClass(/success/);
 });
 
+test("post detail headings avoid balanced wrapping for Chinese titles", async ({
+	page,
+}) => {
+	await gotoPage(page, E2E_POSTS.writing.path);
+
+	const wrapping = await page.evaluate(() => {
+		const title = document.querySelector<HTMLElement>(
+			".post-detail__title",
+		);
+		const markdownHeading = document.querySelector<HTMLElement>(
+			".markdown-content h2",
+		);
+
+		if (!title || !markdownHeading) {
+			throw new Error("Missing post detail headings");
+		}
+
+		const titleStyle = getComputedStyle(title);
+		const markdownHeadingStyle = getComputedStyle(markdownHeading);
+
+		return {
+			titleTextWrap: titleStyle.getPropertyValue("text-wrap"),
+			titleOverflowWrap: titleStyle.overflowWrap,
+			titleWordBreak: titleStyle.wordBreak,
+			markdownTextWrap:
+				markdownHeadingStyle.getPropertyValue("text-wrap"),
+			markdownOverflowWrap: markdownHeadingStyle.overflowWrap,
+			markdownWordBreak: markdownHeadingStyle.wordBreak,
+		};
+	});
+
+	expect(wrapping.titleTextWrap).not.toBe("balance");
+	expect(wrapping.markdownTextWrap).not.toBe("balance");
+	expect(wrapping.titleOverflowWrap).toBe("break-word");
+	expect(wrapping.markdownOverflowWrap).toBe("break-word");
+	expect(["normal", "auto-phrase"]).toContain(wrapping.titleWordBreak);
+	expect(["normal", "auto-phrase"]).toContain(wrapping.markdownWordBreak);
+});
+
 test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", async ({
 	page,
 }) => {

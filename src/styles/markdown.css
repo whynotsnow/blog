@@ -17,7 +17,15 @@
     color: var(--text-primary);
     font-family: var(--font-heading);
     line-height: 1.4;
-    text-wrap: balance;
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+    word-break: normal;
+  }
+
+  @supports (word-break: auto-phrase) {
+    :is(h1, h2, h3, h4, h5, h6) {
+      word-break: auto-phrase;
+    }
   }
 
   h1 {
