@@ -1,7 +1,7 @@
 ---
 title: Mermaid 图表写作
 published: 2026-08-13
-updated: 2026-08-19
+updated: 2026-08-29
 description: 说明如何在文章中使用 Mermaid 绘制流程图、时序图、状态图和占比图。
 image: ''
 author: whynotsnow
@@ -21,6 +21,8 @@ Mermaid 适合在文章里表达流程、交互关系、状态变化和简单数
 
 ```mermaid
 graph TD
+    accTitle: Markdown 文章构建流程
+    accDescr: 展示 Markdown 文章从编写、Frontmatter 校验到生成文章页、分类页和标签页的流程。
     A[编写 Markdown] --> B{Frontmatter 是否完整}
     B -->|是| C[进入内容集合]
     B -->|否| D[构建期报错或摘要缺失]

@@ -138,6 +138,10 @@ test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", a
 	const wrapper = diagram.locator(".mermaid-zoom-wrapper");
 	const svg = wrapper.locator("svg");
 	await expect(svg).toBeVisible();
+	await expect(svg.locator("title")).toHaveText("Markdown 文章构建流程");
+	await expect(svg.locator("desc")).toHaveText(
+		"展示 Markdown 文章从编写、Frontmatter 校验到生成文章页、分类页和标签页的流程。",
+	);
 	await expect(svg).not.toHaveCSS("min-height", "300px");
 	await expect(diagram).toHaveAttribute("data-mermaid-state", "rendered");
 	await expect(diagram).toHaveAttribute(
@@ -286,6 +290,92 @@ test("Mermaid diagrams keep page wheel scrolling separate from explicit zoom", a
 
 	await diagram.locator('[data-action="reset"]').click();
 	await expect(wrapper).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
+});
+
+test("Mermaid render failures show Chinese fallback and copyable source", async ({
+	page,
+}) => {
+	await gotoPage(page, "/posts/fixture-markdown-mermaid/");
+	await expect(page.locator(".mermaid").first()).toHaveAttribute(
+		"data-mermaid-state",
+		"rendered",
+	);
+	await page.waitForFunction(
+		() =>
+			typeof (
+				window as typeof window & {
+					renderMermaidDiagrams?: unknown;
+				}
+			).renderMermaidDiagrams === "function",
+	);
+
+	const invalidMermaidSource = "graph TD\n    A -->";
+	await page.evaluate((source) => {
+		const wrapper = document.createElement("div");
+		wrapper.className = "mermaid-wrapper";
+		wrapper.id = "mermaid-diagram-invalid";
+
+		const diagram = document.createElement("div");
+		diagram.className = "mermaid";
+		diagram.dataset.mermaidCode = source;
+		diagram.dataset.mermaidState = "pending";
+		wrapper.appendChild(diagram);
+
+		document.querySelector(".custom-md")?.appendChild(wrapper);
+	}, invalidMermaidSource);
+
+	await page.evaluate(() => {
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: {
+				writeText: async (text: string) => {
+					(
+						window as typeof window & {
+							__mermaidCopiedText?: string;
+						}
+					).__mermaidCopiedText = text;
+				},
+			},
+		});
+	});
+
+	await page.evaluate(async () => {
+		const runtimeWindow = window as typeof window & {
+			renderMermaidDiagrams?: () => Promise<void>;
+		};
+		await runtimeWindow.renderMermaidDiagrams?.();
+	});
+
+	const invalidDiagram = page.locator("#mermaid-diagram-invalid .mermaid");
+	await expect(invalidDiagram).toHaveAttribute("data-mermaid-state", "error");
+	const fallback = invalidDiagram.locator(".mermaid-error");
+	await expect(fallback).toBeVisible();
+	await expect(fallback.locator(".mermaid-error__title")).toHaveText(
+		"Mermaid 图表渲染失败",
+	);
+	await expect(fallback).toContainText("请检查图表语法");
+	await expect(fallback.locator(".mermaid-error__source code")).toHaveText(
+		invalidMermaidSource,
+	);
+
+	expect(await fallback.locator("[onclick]").count()).toBe(0);
+	const copyButton = fallback.locator("[data-copy-state]");
+	await expect(copyButton).toHaveText("复制 Mermaid 源码");
+	await copyButton.click();
+	await expect(copyButton).toHaveAttribute("data-copy-state", "success");
+	await expect(copyButton).toHaveText("已复制");
+	await expect
+		.poll(() =>
+			page.evaluate(
+				() =>
+					(
+						window as typeof window & {
+							__mermaidCopiedText?: string;
+						}
+					).__mermaidCopiedText,
+			),
+		)
+		.toBe(invalidMermaidSource);
 });
 
 test("post detail flow keeps article blocks on one content rail", async ({

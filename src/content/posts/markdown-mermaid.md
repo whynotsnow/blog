@@ -21,6 +21,8 @@ Mermaid 适合在文章里表达流程、交互关系、状态变化和简单数
 
 ```mermaid
 graph TD
+    accTitle: Markdown 文章构建流程
+    accDescr: 展示 Markdown 文章从编写、Frontmatter 校验到生成文章页、分类页和标签页的流程。
     A[编写 Markdown] --> B{Frontmatter 是否完整}
     B -->|是| C[进入内容集合]
     B -->|否| D[构建期报错或摘要缺失]
@@ -79,5 +81,7 @@ pie title 当前功能说明文章覆盖范围
 Mermaid 图表应保持简短。图表节点过多时，移动端阅读会变差，也更容易让维护者误读关系。
 
 站点使用本地打包的固定版本 `mermaid@11.17.2`，运行时文件发布为 `/assets/js/mermaid-11.17.2.min.js`，并以 `securityLevel: "strict"` 渲染图表。文章中的 Mermaid 应作为静态说明图使用，不要依赖 HTML label、click 回调或外链交互；如果内容需要点击、筛选、展开等操作，应改用专门的页面组件。
+
+复杂图表应在源码中提供 `accTitle` 和 `accDescr`。`accTitle` 用一句话概括图表主题，`accDescr` 说明图表表达的关键关系；如果图表信息量过大，还应在正文中提供等价文字说明。
 
 如果图表表达的是项目真实行为，更新代码或配置后也要同步更新图表。过期图表比没有图表更容易误导读者。

@@ -311,24 +311,88 @@ a.card-github.fetch-error
     transform: rotate(360deg)
 
 .mermaid-error
-  color: var(--admonitions-color-warning)
+  display: flex
+  flex-direction: column
+  align-items: stretch
+  gap: 0.75rem
+  width: 100%
+  color: var(--text-primary)
   background: rgba(239, 68, 68, 0.1)
   border: 1px solid var(--admonitions-color-warning)
   border-radius: 0.5rem
   padding: 1rem
   margin: 1rem 0
-  text-align: center
-  font-weight: 500
+  text-align: left
   
   p
-    margin: 0 0 0.5rem 0
-    
-  button
-    transition: all 0.2s ease
-    
+    margin: 0
+
+.mermaid-error__title
+  color: var(--admonitions-color-warning)
+  font-weight: 700
+
+.mermaid-error__description
+  color: var(--text-color-secondary)
+  font-size: 0.925rem
+  line-height: 1.7
+
+.mermaid-error__actions
+  display: flex
+  flex-wrap: wrap
+  gap: 0.5rem
+
+.mermaid-error__button
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  min-height: 2.25rem
+  border: 1px solid var(--admonitions-color-warning)
+  border-radius: 0.5rem
+  padding: 0.375rem 0.75rem
+  color: var(--text-primary)
+  background: var(--card-bg)
+  cursor: pointer
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease
+
+  &[data-copy-state="success"]
+    border-color: var(--primary)
+    color: var(--primary)
+
+  &[data-copy-state="error"]
+    border-color: var(--admonitions-color-caution)
+    color: var(--admonitions-color-caution)
+
+  &:hover
+    background: var(--btn-regular-bg-hover)
+    transform: translateY(-1px)
+
+.mermaid-error__source
+  min-width: 0
+
+  summary
+    color: var(--text-color-secondary)
+    cursor: pointer
+    font-size: 0.875rem
+
     &:hover
-      background: var(--primary-hover) !important
-      transform: translateY(-1px)
+      color: var(--primary)
+
+  pre
+    max-height: 16rem
+    overflow: auto
+    margin: 0.5rem 0 0
+    padding: 0.75rem
+    border-radius: 0.5rem
+    background: var(--codeblock-bg)
+    color: var(--text-primary)
+    text-align: left
+    white-space: pre-wrap
+    overflow-wrap: anywhere
+
+  code
+    font-family: var(--font-mono)
+    font-size: 0.8125rem
+    line-height: 1.6
 
 // 深色模式下的 Mermaid 样式
 .dark .mermaid-diagram-container

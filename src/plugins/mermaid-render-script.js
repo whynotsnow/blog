@@ -156,15 +156,108 @@
 		}
 	}
 
+	async function copyTextToClipboard(text) {
+		if (navigator.clipboard?.writeText) {
+			await navigator.clipboard.writeText(text);
+			return;
+		}
+
+		const textArea = document.createElement("textarea");
+		textArea.value = text;
+		textArea.setAttribute("readonly", "");
+		textArea.style.position = "fixed";
+		textArea.style.left = "-999999px";
+		textArea.style.top = "-999999px";
+		document.body.appendChild(textArea);
+		textArea.select();
+
+		try {
+			const copied = document.execCommand("copy");
+			if (!copied) {
+				throw new Error("copy command failed");
+			}
+		} finally {
+			textArea.remove();
+		}
+	}
+
+	function createMermaidErrorElement(message, code) {
+		const container = document.createElement("div");
+		container.className = "mermaid-error";
+		container.setAttribute("role", "alert");
+
+		const title = document.createElement("p");
+		title.className = "mermaid-error__title";
+		title.textContent = "Mermaid 图表渲染失败";
+		container.appendChild(title);
+
+		const description = document.createElement("p");
+		description.className = "mermaid-error__description";
+		description.textContent = message;
+		container.appendChild(description);
+
+		const actions = document.createElement("div");
+		actions.className = "mermaid-error__actions";
+
+		const retryButton = document.createElement("button");
+		retryButton.type = "button";
+		retryButton.className = "mermaid-error__button";
+		retryButton.textContent = "重新加载页面";
+		retryButton.addEventListener("click", () => {
+			window.location.reload();
+		});
+		actions.appendChild(retryButton);
+
+		if (code) {
+			const copyButton = document.createElement("button");
+			copyButton.type = "button";
+			copyButton.className = "mermaid-error__button";
+			copyButton.dataset.copyState = "idle";
+			copyButton.textContent = "复制 Mermaid 源码";
+			copyButton.addEventListener("click", async () => {
+				try {
+					await copyTextToClipboard(code);
+					copyButton.dataset.copyState = "success";
+					copyButton.textContent = "已复制";
+				} catch (error) {
+					console.warn("Failed to copy Mermaid source:", error);
+					copyButton.dataset.copyState = "error";
+					copyButton.textContent = "复制失败";
+				}
+			});
+			actions.appendChild(copyButton);
+		}
+
+		container.appendChild(actions);
+
+		if (code) {
+			const details = document.createElement("details");
+			details.className = "mermaid-error__source";
+
+			const summary = document.createElement("summary");
+			summary.textContent = "查看 Mermaid 源码";
+			details.appendChild(summary);
+
+			const pre = document.createElement("pre");
+			const sourceCode = document.createElement("code");
+			sourceCode.textContent = code;
+			pre.appendChild(sourceCode);
+			details.appendChild(pre);
+
+			container.appendChild(details);
+		}
+
+		return container;
+	}
+
 	function showMermaidRuntimeError(message) {
 		document
 			.querySelectorAll(".mermaid[data-mermaid-code]")
 			.forEach((element) => {
-				element.innerHTML = `
-					<div class="mermaid-error">
-						<p>${message}</p>
-					</div>
-				`;
+				const code = element.getAttribute("data-mermaid-code") || "";
+				element.dataset.mermaidState = "error";
+				element.innerHTML = "";
+				element.appendChild(createMermaidErrorElement(message, code));
 			});
 	}
 
@@ -488,12 +581,10 @@
 				async (element, index) => {
 					let attempts = 0;
 					const maxAttempts = 3;
+					const code = element.getAttribute("data-mermaid-code");
 
 					while (attempts < maxAttempts) {
 						try {
-							const code =
-								element.getAttribute("data-mermaid-code");
-
 							if (!code) {
 								break;
 							}
@@ -501,7 +592,7 @@
 							// 显示加载状态
 							element.dataset.mermaidState = "rendering";
 							element.innerHTML =
-								'<div class="mermaid-loading">Rendering diagram...</div>';
+								'<div class="mermaid-loading">正在渲染图表...</div>';
 
 							// 渲染图表
 							const { svg } = await window.mermaid.render(
@@ -553,14 +644,13 @@
 								);
 								element.dataset.mermaidState = "error";
 								element.dataset.mermaidTheme = theme;
-								element.innerHTML = `
-									<div class="mermaid-error">
-										<p>Failed to render diagram after ${maxAttempts} attempts.</p>
-										<button onclick="location.reload()" style="margin-top: 8px; padding: 4px 8px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">
-											Retry Page
-										</button>
-									</div>
-								`;
+								element.innerHTML = "";
+								element.appendChild(
+									createMermaidErrorElement(
+										`已尝试 ${maxAttempts} 次仍无法渲染。请检查图表语法，或复制源码用于排查。`,
+										code,
+									),
+								);
 							} else {
 								// 等待一段时间后重试
 								await new Promise((resolve) =>
@@ -650,7 +740,9 @@
 			window.renderMermaidDiagrams = renderMermaidDiagrams;
 		} catch (error) {
 			console.error("Failed to initialize Mermaid system:", error);
-			showMermaidRuntimeError("Mermaid runtime failed to load.");
+			showMermaidRuntimeError(
+				"Mermaid 运行时加载失败。请重新加载页面，或复制源码用于排查。",
+			);
 		}
 	}
 

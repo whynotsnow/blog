@@ -147,6 +147,8 @@ Mermaid 图表用于表达文章中的静态流程、状态、时序和简单比
 
 生产构建会用 Playwright renderer 在 Markdown 渲染阶段生成初始 SVG，并把结果缓存到本地构建缓存目录。HTML 中会保留 `data-mermaid-code` 作为主题重渲染和失败 fallback 输入，但首屏可见内容应直接是 SVG；开发环境默认仍走客户端渲染 fallback，避免 HMR 时频繁启动浏览器渲染器。需要在本地开发时强制验证构建期 SVG，可设置 `BLOG_MERMAID_PRERENDER=1`；需要临时关闭生产预渲染时可设置 `BLOG_MERMAID_PRERENDER=false`，但正式发布不应关闭。
 
+复杂 Mermaid 图表应在源码中提供 `accTitle` 和 `accDescr`，让生成的 SVG 包含可访问标题和描述。`accTitle` 只能写成单行标题，`accDescr` 可写成单行描述，也可按 Mermaid 官方语法写成多行描述；标题和描述应说明图表表达的业务关系，不要只重复文章标题。信息量较大的图表还应在正文中提供等价文字说明，避免读屏用户只能听到节点碎片。
+
 升级 Mermaid 时必须同步更新 `package.json`、`pnpm-lock.yaml`、`public/assets/js/mermaid-*.min.js`、`src/plugins/rehype-mermaid.ts`、`src/plugins/mermaid-prerender.ts` 和 Mermaid E2E 断言。不要恢复 CDN fallback，也不要引用 `/node_modules/` 路径作为生产运行时。
 
 ## 加密文章目录
