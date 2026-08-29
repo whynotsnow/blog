@@ -195,13 +195,13 @@ Pattern:
 
 - Core UI classes such as `.card-base` lose background, radius, or other shared styles.
 - Runtime computed styles show empty CSS variables such as `--card-bg`.
-- A stylesheet error may stay hidden if `src/styles/main.css` or `src/styles/variables.styl` is no longer imported by the top-level layout.
+- A stylesheet error may stay hidden if `src/styles/main.css` or `src/styles/variables.css` is no longer imported by the top-level layout.
 
 Use:
 
-- Confirm `src/layouts/Layout.astro` imports `src/styles/main.css` and `src/styles/variables.styl`.
-- Check the dev server output after restoring global imports; missing imports can mask Stylus compile errors.
-- For CSS custom property values that contain `var()` inside Stylus color functions, emit raw CSS with `unquote("...")` instead of calling Stylus `rgba(...)`.
+- Confirm `src/layouts/Layout.astro` imports `src/styles/main.css` and `src/styles/variables.css`.
+- Check the dev server output after restoring global imports; missing imports can mask stylesheet compile errors.
+- Keep global style entries in CSS. Do not reintroduce Stylus for modern CSS functions or token definitions.
 
 ### fullscreen-banner-responsive-override
 

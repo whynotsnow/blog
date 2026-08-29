@@ -148,7 +148,7 @@
 				"global card styles disappear",
 				".card-base loses background or radius",
 				"runtime CSS variables such as --card-bg are empty",
-				"Stylus rgba(..., var(...)) errors appear after restoring global style imports"
+				"stylesheet compile errors appear after restoring global style imports"
 			],
 			"playbook": "docs/agents/runtime-playbook.md#global-style-entrypoint-drift"
 		},

@@ -9,7 +9,6 @@ const SOURCE_EXTENSIONS = new Set([
 	".css",
 	".js",
 	".mjs",
-	".styl",
 	".svelte",
 	".ts",
 ]);

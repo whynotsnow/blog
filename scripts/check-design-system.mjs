@@ -6,13 +6,7 @@ import { collectTypographyInventory } from "./typography-inventory.mjs";
 const ROOT = process.cwd();
 const DESIGN_ROOT = "src/design";
 const BASELINE_PATH = "scripts/design-system-baseline.json";
-const SOURCE_EXTENSIONS = new Set([
-	".astro",
-	".css",
-	".styl",
-	".svelte",
-	".ts",
-]);
+const SOURCE_EXTENSIONS = new Set([".astro", ".css", ".svelte", ".ts"]);
 const LEGACY_TOKENS = [
 	"--page-bg",
 	"--card-bg",

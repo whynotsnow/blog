@@ -1,6 +1,6 @@
 # Architecture
 
-This project is a customized Mizuki-based static blog built with Astro, Svelte, Tailwind CSS, and Stylus. It is organized around a service layer so pages and components do not need to know the raw content implementation.
+This project is a customized Mizuki-based static blog built with Astro, Svelte, and Tailwind CSS. It is organized around a service layer so pages and components do not need to know the raw content implementation.
 
 ## Runtime Model
 

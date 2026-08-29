@@ -560,6 +560,7 @@
 				"scripts/test-impact.mjs",
 				"scripts/check-env.mjs",
 				"tsconfig.scripts.json",
+				".npmrc",
 				".nvmrc",
 				".github/workflows/**",
 				"vercel.json"
