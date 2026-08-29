@@ -161,7 +161,7 @@
 		"--color-selection-bar": [
 			"src/components/modules/floating-tools/settings/SettingsPanel.svelte",
 			"src/components/widget/DisplaySettings.svelte",
-			"src/styles/variables.styl"
+			"src/styles/variables.css"
 		]
 	},
 	"pageViolations": {
