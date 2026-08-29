@@ -39,7 +39,7 @@ const PRIORITY_PATHS = [
 	"src/components/albums/albums.css",
 	"src/components/modules/post-list",
 	"src/styles/markdown.css",
-	"src/styles/markdown-extend.styl",
+	"src/styles/markdown-extend.css",
 ];
 const TEXT_CLASS_RE = /(?:^|[^\w-])text-(xs|sm|base|lg|xl|[2-9]xl)(?![\w-])/g;
 const FONT_SIZE_RE = /font-size\s*:\s*([^;\n]+);?/g;

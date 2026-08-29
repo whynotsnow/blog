@@ -206,7 +206,8 @@
 				"src/plugins/rehype-mermaid.ts",
 				"src/plugins/mermaid-prerender.ts",
 				"src/plugins/mermaid-render-script.js",
-				"src/styles/markdown-extend.styl"
+				"src/styles/markdown-extend.css",
+				"src/components/misc/Markdown.astro"
 			],
 			"groups": [
 				"lint",

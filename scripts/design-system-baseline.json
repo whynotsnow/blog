@@ -25,7 +25,7 @@
 			"src/pages/rss.astro",
 			"src/styles/layout/sidebar-toc.css",
 			"src/styles/main.css",
-			"src/styles/markdown-extend.styl",
+			"src/styles/markdown-extend.css",
 			"src/styles/markdown.css"
 		],
 		"--card-bg-transparent": [
@@ -93,7 +93,7 @@
 			"src/components/anime/anime.css",
 			"src/styles/expressive-code.css",
 			"src/styles/main.css",
-			"src/styles/markdown-extend.styl",
+			"src/styles/markdown-extend.css",
 			"src/styles/markdown.css"
 		],
 		"--title-active": [
@@ -116,7 +116,7 @@
 			"src/pages/friends.astro",
 			"src/pages/rss.astro",
 			"src/components/anime/anime.css",
-			"src/styles/markdown-extend.styl",
+			"src/styles/markdown-extend.css",
 			"src/styles/markdown.css"
 		],
 		"--line-color": [
@@ -151,7 +151,7 @@
 			"src/components/anime/anime.css",
 			"src/styles/layout/sidebar-toc.css",
 			"src/styles/main.css",
-			"src/styles/markdown-extend.styl",
+			"src/styles/markdown-extend.css",
 			"src/styles/markdown.css",
 			"src/styles/transition.css"
 		]

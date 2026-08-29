@@ -93,7 +93,7 @@ describe("impact-based validation selection", () => {
 			planFor("src/plugins/rehype-mermaid.ts"),
 			planFor("src/plugins/mermaid-prerender.ts"),
 			planFor("src/plugins/mermaid-render-script.js"),
-			planFor("src/styles/markdown-extend.styl"),
+			planFor("src/styles/markdown-extend.css"),
 		];
 
 		for (const plan of plans) {
