@@ -114,7 +114,7 @@ Use sound cues sparingly and only for attention-worthy events. Prefer concise Ch
 - `pnpm cue:attention`: before stopping for required user input or external action.
 - `pnpm cue:validation-start`: before starting a full or long-running validation flow such as `pnpm check`, `pnpm build`, or release validation.
 - `pnpm cue:deploy-start`: before triggering a production deployment workflow.
-- `pnpm cue:deploy-approval`: while locally monitoring a remote GitHub Actions `Production Deploy` run that is waiting in `Verify deployment approval`; play about every 15 seconds until the step exits.
+- `pnpm cue:deploy-approval`: while locally monitoring a remote GitHub Actions `snow build CI` production run that is waiting in `Verify deployment approval`; play about every 15 seconds until the step exits.
 - `pnpm cue:deploy-pass`: after production deployment completes successfully.
 - `pnpm cue:deploy-fail`: after production deployment fails and needs maintainer attention.
 - `pnpm cue:tests-pass`: only after a full or otherwise meaningful validation pass.

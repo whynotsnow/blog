@@ -50,7 +50,7 @@ Prefer concise Chinese TTS text for events that require action or report validat
 
 Deployment approval cues are local agent behavior. GitHub Actions and CI workflows must only create, poll, and consume approval state; they must not play local audio and must not decide whether the local machine rings.
 
-When an agent triggers the GitHub Actions `Production Deploy` workflow from a local Codex session, it must monitor the run locally. If the remote job is waiting in the `Verify deployment approval` step, run:
+When an agent triggers the GitHub Actions `snow build CI` production run from a local Codex session, it must monitor the run locally. If the remote job is waiting in the `Verify deployment approval` step, run:
 
 ```bash
 pnpm cue:deploy-approval
