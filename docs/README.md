@@ -17,6 +17,7 @@
 | [Design System](./developers/design-system.md) | 视觉 token、Theme、Pattern、兼容层和治理规则。 |
 | [开发工作流](./developers/development.md) | 环境、命令、构建、检查和常用任务。 |
 | [测试策略](./developers/testing.md) | 按改动影响面选择测试、测试分层和全量回归升级条件。 |
+| [Codex 提示音](./developers/codex-sound-cues.md) | 本机 Codex 提示音预览、配置和事件说明。 |
 | [内容编写指南](./developers/content-guide.md) | 文章 schema、frontmatter、分类标签、草稿和资源规则。 |
 | [分类管理](./developers/category-management.md) | 分类新增、展示资产、Tag 治理、路由验证和数据库迁移边界。 |
 | [配置说明](./developers/configuration.md) | 站点配置、环境变量、特色页面和 URL 工具。 |
@@ -40,6 +41,7 @@
 | [Project Map](./agents/project-map.md) | English architecture map optimized for AI agents. |
 | [Runtime Playbook](./agents/runtime-playbook.md) | English playbook for known runtime and tooling pitfalls. |
 | [Runtime Requirements](./agents/runtime-requirements.md) | English execution capability contract and local profile resolution order. |
+| [Sound Cues](./agents/sound-cues.md) | English local cue events, allowed usage, forbidden cases, and deployment approval behavior. |
 | [Disclosure Policy](./agents/disclosure-policy.md) | English policy for public Agent Workspace Spec knowledge and ignored runtime state. |
 | [Failure Index](./agents/failure-index.md) | English index of clustered failure patterns. |
 | [Execution Log](./agents/execution-log.md) | English log for reusable AI-assisted task learning. |
@@ -81,6 +83,7 @@ docs/
 │   ├── README.md
 │   ├── architecture.md
 │   ├── development.md
+│   ├── codex-sound-cues.md
 │   ├── content-guide.md
 │   ├── configuration.md
 │   ├── maintenance.md
@@ -96,6 +99,7 @@ docs/
 │   ├── project-map.md
 │   ├── runtime-playbook.md
 │   ├── runtime-requirements.md
+│   ├── sound-cues.md
 │   ├── disclosure-policy.md
 │   ├── failure-index.md
 │   ├── execution-log.md

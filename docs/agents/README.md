@@ -12,6 +12,7 @@ This directory is for AI coding agents. All documents in this directory must be 
 | [Project Map](./project-map.md) | Repository shape, data flow, route map, service boundaries, and extension points. |
 | [Runtime Playbook](./runtime-playbook.md) | Known command, framework, Markdown, and package-manager pitfalls with reusable responses. |
 | [Runtime Requirements](./runtime-requirements.md) | Public execution capability contract and local profile resolution order. |
+| [Sound Cues](./sound-cues.md) | Local cue events, allowed usage, forbidden cases, and deployment approval behavior. |
 | [Disclosure Policy](./disclosure-policy.md) | Public, local, raw, quarantine, and secret storage boundaries. |
 | [Failure Index](./failure-index.md) | Clustered index of known failure patterns. |
 | [Execution Log](./execution-log.md) | Short record of AI-assisted work that teaches reusable project knowledge. |

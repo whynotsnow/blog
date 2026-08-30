@@ -59,6 +59,15 @@ All AI-assisted development in this project should be memory-driven, pattern-awa
 - `pnpm type-check:svelte`: run Svelte component diagnostics with `svelte-check`.
 - `pnpm build`: production build, Pagefind indexing, and font compression.
 - `pnpm build:astro`: prepare Content and font subsets, then run only the Astro production build stage without Pagefind.
+- `pnpm cue:attention`: play the project attention cue before stopping for required user input.
+- `pnpm cue:validation-start`: play before a full or long-running validation flow.
+- `pnpm cue:deploy-start`: play before starting a production deployment flow.
+- `pnpm cue:deploy-approval`: play the project deployment-approval cue when local deployment waits for Admin approval.
+- `pnpm cue:deploy-pass`: play after a production deployment completes successfully.
+- `pnpm cue:deploy-fail`: play after a production deployment fails and needs attention.
+- `pnpm cue:tests-pass`: play the project validation-success cue after a meaningful validation pass.
+- `pnpm cue:tests-fail`: play the project validation-failure cue after a validation failure that needs user attention.
+- `pnpm cue:preview`: preview available project cue presets; see `docs/developers/codex-sound-cues.md`.
 - `pnpm format:check`: check formatting.
 - `pnpm format`: format the repository according to the local Prettier config.
 - `pnpm precommit`: run the same pre-commit gate as the Git hook.
@@ -97,6 +106,21 @@ Do not record a machine-specific Skill installation path in tracked files. Resol
 - Do not copy credentials, tokens, cookies, private keys, raw logs, local absolute paths, private URLs, hostnames, Agent Workspace local profile IDs, or personal identity data into tracked sidecar files.
 - If a blog commit directly executes a sidecar item, include `Plan-Item: <id>` in the commit message. Use `Related-Plan: <id>` only when the relationship is useful but the commit does not execute the item.
 - Do not make standalone sidecar commits for routine planning churn unless the maintainer explicitly asks to checkpoint planning state.
+
+## Sound Cues
+
+Use sound cues sparingly and only for attention-worthy events. Prefer concise Chinese TTS text for events that require action or report validation results. Do not play cues for ordinary reading, searching, editing, formatting, or intermediate progress. Read `docs/agents/sound-cues.md` before using or modifying cue behavior.
+
+- `pnpm cue:attention`: before stopping for required user input or external action.
+- `pnpm cue:validation-start`: before starting a full or long-running validation flow such as `pnpm check`, `pnpm build`, or release validation.
+- `pnpm cue:deploy-start`: before triggering a production deployment workflow.
+- `pnpm cue:deploy-approval`: while locally monitoring a remote GitHub Actions `Production Deploy` run that is waiting in `Verify deployment approval`; play about every 15 seconds until the step exits.
+- `pnpm cue:deploy-pass`: after production deployment completes successfully.
+- `pnpm cue:deploy-fail`: after production deployment fails and needs maintainer attention.
+- `pnpm cue:tests-pass`: only after a full or otherwise meaningful validation pass.
+- `pnpm cue:tests-fail`: after a validation failure that needs user attention.
+
+Never play local sound cues from CI or GitHub Actions. The global Codex `Stop` hook already plays the `done` cue at turn completion, so do not manually play `done` for routine responses.
 
 ## Tool Policy
 

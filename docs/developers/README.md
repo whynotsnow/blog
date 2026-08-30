@@ -10,6 +10,7 @@
 | [Design System](./design-system.md) | Design token、Theme、Pattern、Legacy 迁移和验证规则。 |
 | [开发工作流](./development.md) | 本地环境、命令、构建、检查和常用任务。 |
 | [测试策略](./testing.md) | 按改动影响面选择测试、测试分层、升级条件和 CI 分工。 |
+| [Codex 提示音](./codex-sound-cues.md) | 本机 Codex 提示音预览、配置和事件说明。 |
 | [维护指南](./maintenance.md) | 定期检查、依赖更新、生成文件和高风险区域。 |
 | [Live2D Companion 维护指南](./live2d-companion-maintenance.md) | 看板娘组件架构、配置、iframe、拖拽、模型和验证规则。 |
 | [Twikoo 评论组件维护方案](./twikoo-maintenance.md) | Twikoo vendored CSS、主题变量桥接、升级和验证流程。 |
