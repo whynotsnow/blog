@@ -125,6 +125,9 @@ jobs:
                   corepack enable
                   corepack prepare pnpm@10.22.0 --activate
             - run: pnpm install --frozen-lockfile
+            - name: Install Playwright Chromium
+              if: contains(needs.plan.outputs.groups, '"full"') || contains(needs.plan.outputs.groups, '"integration"')
+              run: pnpm exec playwright install --with-deps chromium
             - name: Run all fast tests
               if: contains(needs.plan.outputs.groups, '"full"')
               run: pnpm test:fast

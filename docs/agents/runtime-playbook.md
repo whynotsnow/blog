@@ -310,6 +310,21 @@ Use:
 - Re-run failing owner specs independently to distinguish a behavior regression from concurrency pressure.
 - Do not add retries merely to hide an implicit worker-count change.
 
+### mermaid-prerender-ci-browser-lifecycle
+
+Pattern:
+
+- Build-time Mermaid prerendering uses Playwright Chromium from integration tests and production builds.
+- CI jobs that run `pnpm test:integration`, `pnpm test:fast`, `pnpm build`, or `pnpm build:astro` can fail before rendering if the job did not install the matching Playwright browser.
+- Astro can transform several Markdown files concurrently. If Mermaid prerendering shares one browser and schedules a delayed close after each page, one finished render can close the browser while another render is still using its page or context.
+
+Use:
+
+- Install Playwright Chromium in every CI job that can execute Mermaid prerendering, not only in browser E2E jobs.
+- Keep Mermaid prerender browser reuse guarded by an active render counter. Only schedule shared browser shutdown after the active count reaches zero.
+- Treat `page.close: Protocol error ... Failed to find context` and `page.evaluate: Target page, context or browser has been closed` during Markdown Mermaid build as browser lifecycle bugs before changing Mermaid content.
+- Do not solve this by disabling production prerendering for CI; production build should keep strict prerender semantics.
+
 ### playwright-stale-dev-server-reuse
 
 Pattern:

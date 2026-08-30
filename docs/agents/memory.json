@@ -203,6 +203,16 @@
 			"playbook": "docs/agents/runtime-playbook.md#vercel-git-autodeploy-approval-bypass"
 		},
 		{
+			"id": "mermaid-prerender-ci-browser-lifecycle",
+			"cluster": "build-pipeline",
+			"symptoms": [
+				"CI fast tests fail Mermaid prerendering because Playwright Chromium was not installed in the fast-tests job",
+				"Astro build fails while prerendering multiple Mermaid diagrams with page.close or page.evaluate reporting that the target page, context, or browser has been closed",
+				"local full validation passes but remote GitHub Actions full validation fails during Mermaid prerendering"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#mermaid-prerender-ci-browser-lifecycle"
+		},
+		{
 			"id": "playwright-chromium-mac-sandbox",
 			"cluster": "runtime-environment",
 			"severity": "medium",

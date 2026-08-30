@@ -90,6 +90,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: Vercel Git Integration can deploy `main` directly, or `ignoreCommand` relies on a custom non-secret environment variable to allow production builds.
 - Playbook: [vercel-git-autodeploy-approval-bypass](./runtime-playbook.md#vercel-git-autodeploy-approval-bypass)
 
+### mermaid-prerender-ci-browser-lifecycle
+
+- Symptom: CI Mermaid prerender tests fail because Chromium was not installed in the job, or production build fails with `page.close` / `page.evaluate` reporting that the browser context was already closed.
+- Playbook: [mermaid-prerender-ci-browser-lifecycle](./runtime-playbook.md#mermaid-prerender-ci-browser-lifecycle)
+
 ### playwright-spec-split-concurrency-drift
 
 - Symptom: splitting a large spec into multiple files unexpectedly increases worker concurrency, dev-server load, timeouts, or readiness flakes even though assertions did not change.

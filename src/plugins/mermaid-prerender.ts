@@ -57,6 +57,7 @@ export type PrerenderedMermaidSvg = {
 
 let browserPromise: Promise<Browser> | undefined;
 let closeBrowserTimer: NodeJS.Timeout | undefined;
+let activeRenderCount = 0;
 
 function getPrerenderMode(): "disabled" | "strict" | "fallback" {
 	const override = process.env.BLOG_MERMAID_PRERENDER?.trim().toLowerCase();
@@ -112,10 +113,16 @@ async function getBrowser(): Promise<Browser> {
 }
 
 function scheduleBrowserClose(): void {
+	if (activeRenderCount > 0) {
+		return;
+	}
 	if (closeBrowserTimer) {
 		clearTimeout(closeBrowserTimer);
 	}
 	closeBrowserTimer = setTimeout(() => {
+		if (activeRenderCount > 0) {
+			return;
+		}
 		const browserToClose = browserPromise;
 		browserPromise = undefined;
 		closeBrowserTimer = undefined;
@@ -159,6 +166,7 @@ async function renderMermaidSvgWithPlaywright(
 	cacheKey: string,
 ): Promise<string> {
 	await fs.access(mermaidRuntimePath);
+	activeRenderCount += 1;
 	const browser = await getBrowser();
 	const page = await browser.newPage({
 		viewport: { width: 1600, height: 1200 },
@@ -209,7 +217,8 @@ async function renderMermaidSvgWithPlaywright(
 			},
 		);
 	} finally {
-		await page.close();
+		activeRenderCount = Math.max(0, activeRenderCount - 1);
+		await page.close().catch(() => undefined);
 		scheduleBrowserClose();
 	}
 }
