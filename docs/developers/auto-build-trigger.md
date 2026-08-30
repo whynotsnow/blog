@@ -54,16 +54,29 @@ jobs:
 如果该 dispatch 目标是生产部署，workflow 还必须保留完整 CI 与部署审批步骤：
 
 ```yaml
+- name: Compute Vercel artifact digest
+  run: |
+    if [ ! -d .vercel/output ]; then
+      echo "Missing Vercel prebuilt output: .vercel/output"
+      exit 1
+    fi
+    digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+    echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=sha256:${digest}" >> "$GITHUB_ENV"
+
 - name: Verify deployment approval
   env:
     DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
     DEPLOY_APPROVAL_PROJECT: blog
     DEPLOY_APPROVAL_TARGET: site
     DEPLOY_APPROVAL_COMMIT_SHA: ${{ github.sha }}
+    DEPLOY_APPROVAL_ARTIFACT_TYPE: vercel-prebuilt
+    DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ env.DEPLOY_APPROVAL_ARTIFACT_DIGEST }}
+    DEPLOY_APPROVAL_ARTIFACT_STORAGE_PROVIDER: github-actions
+    DEPLOY_APPROVAL_ARTIFACT_STORAGE_KEY: .vercel/output
   run: node scripts/verify-deployment-approval.mjs
 ```
 
-审批通过后才允许执行平台 production deploy。dispatch payload 中的 content SHA 只决定内容版本，不替代代码仓库 commit 的部署审批。
+审批通过后才允许执行平台 production deploy。dispatch payload 中的 content SHA 只决定内容版本，不替代代码仓库 commit 和 Vercel prebuilt artifact digest 的部署审批。
 
 仓库内 `vercel.json` 已配置 `ignoreCommand`，当 Vercel Git 自动构建来自 `main` 分支时跳过构建。受控发布 workflow 不使用自定义非 secret 变量放行，而是在本仓库完成 full validation、通过 `snow-base` 审批后，用 Vercel CLI prebuilt deploy 发布。
 

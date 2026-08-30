@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+
 const apiBaseUrl = (
 	process.env.DEPLOY_APPROVAL_API_BASE_URL ??
 	process.env.SNOW_BASE_API_BASE_URL ??
@@ -19,6 +21,21 @@ const requestSource =
 const requestUrl =
 	process.env.DEPLOY_APPROVAL_REQUEST_URL ??
 	process.env.SNOW_BASE_DEPLOY_REQUEST_URL;
+const artifactType =
+	process.env.DEPLOY_APPROVAL_ARTIFACT_TYPE ??
+	process.env.SNOW_BASE_DEPLOY_ARTIFACT_TYPE;
+const artifactDigest =
+	process.env.DEPLOY_APPROVAL_ARTIFACT_DIGEST ??
+	process.env.SNOW_BASE_DEPLOY_ARTIFACT_DIGEST;
+const artifactStorageProvider =
+	process.env.DEPLOY_APPROVAL_ARTIFACT_STORAGE_PROVIDER ?? "github-actions";
+const artifactStorageKey = process.env.DEPLOY_APPROVAL_ARTIFACT_STORAGE_KEY;
+const changeSummary =
+	process.env.DEPLOY_APPROVAL_CHANGE_SUMMARY ??
+	process.env.SNOW_BASE_DEPLOY_CHANGE_SUMMARY;
+const validationSummary =
+	process.env.DEPLOY_APPROVAL_VALIDATION_SUMMARY ??
+	process.env.SNOW_BASE_DEPLOY_VALIDATION_SUMMARY;
 const runId = process.env.GITHUB_RUN_ID;
 const runAttempt = process.env.GITHUB_RUN_ATTEMPT;
 const waitSeconds = Number.parseInt(
@@ -34,6 +51,8 @@ const pollSeconds = Number.parseInt(
 	10,
 );
 
+let deploymentArtifact;
+
 /**
  * @param {string} message
  * @returns {never}
@@ -44,18 +63,30 @@ function fail(message) {
 }
 
 function approvalCreateUrl() {
-	const params = new URLSearchParams();
-	params.set("projectSlug", projectSlug);
-	params.set("target", target ?? "");
-	params.set("commitSha", commitSha ?? "");
+	const params = new URLSearchParams({
+		projectSlug,
+		target: target ?? "",
+		commitSha: commitSha ?? "",
+	});
 	if (requestUrl) params.set("requestUrl", requestUrl);
+	if (deploymentArtifact?.id) params.set("artifactId", deploymentArtifact.id);
+	if (deploymentArtifact?.digest) {
+		params.set("artifactDigest", deploymentArtifact.digest);
+	}
 	return `https://admin.whynotsnow.com/deployments?${params.toString()}`;
 }
 
+/**
+ * @param {Response} response
+ */
 async function readJsonResponse(response) {
 	return await response.json().catch(() => null);
 }
 
+/**
+ * @param {string} path
+ * @param {Record<string, unknown>} body
+ */
 async function postJson(path, body) {
 	const response = await fetch(`${apiBaseUrl}${path}`, {
 		method: "POST",
@@ -70,6 +101,9 @@ async function postJson(path, body) {
 	return { response, body: await readJsonResponse(response) };
 }
 
+/**
+ * @param {string} path
+ */
 async function getJson(path) {
 	const response = await fetch(`${apiBaseUrl}${path}`, {
 		headers: {
@@ -81,12 +115,92 @@ async function getJson(path) {
 	return { response, body: await readJsonResponse(response) };
 }
 
+/**
+ * @param {Response} response
+ * @param {unknown} body
+ */
 function apiErrorCode(response, body) {
-	return body?.ok === false ? body.error.code : `http_${response.status}`;
+	if (
+		body &&
+		typeof body === "object" &&
+		"ok" in body &&
+		body.ok === false &&
+		"error" in body &&
+		body.error &&
+		typeof body.error === "object" &&
+		"code" in body.error
+	) {
+		return String(body.error.code);
+	}
+	return `http_${response.status}`;
 }
 
+/**
+ * @param {number} ms
+ */
 function delay(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function approvalNote() {
+	const base = `生产部署 workflow 请求发布 ${projectSlug}/${target}，目标提交 ${commitSha}。`;
+	if (!artifactType && !artifactDigest) return base;
+	return `${base} 构建产物：${artifactType ?? "unknown"} ${artifactDigest ?? "digest-unset"}。`;
+}
+
+/**
+ * @param {string} value
+ * @param {number} [maxLength]
+ */
+function truncateText(value, maxLength = 500) {
+	const trimmed = value.trim();
+	return trimmed.length > maxLength
+		? `${trimmed.slice(0, maxLength - 3)}...`
+		: trimmed;
+}
+
+/**
+ * @param {string} value
+ */
+function stripGitTrailers(value) {
+	return value
+		.split("\n")
+		.filter(
+			(line) =>
+				!/^(Plan-Item|Related-Plan|Source-Commit|Co-authored-by):\s+/u.test(
+					line,
+				),
+		)
+		.join("\n")
+		.replace(/\n{3,}/gu, "\n\n")
+		.trim();
+}
+
+function commitChangeSummary() {
+	if (changeSummary?.trim()) return truncateText(changeSummary);
+	if (!commitSha) return approvalNote();
+
+	try {
+		const message = execFileSync(
+			"git",
+			["log", "-1", "--pretty=format:%s%n%n%b", commitSha],
+			{
+				encoding: "utf8",
+				stdio: ["ignore", "pipe", "ignore"],
+			},
+		);
+		const normalized = stripGitTrailers(message);
+		if (normalized) return truncateText(normalized);
+	} catch {
+		// 非 git 或浅克隆环境仍应能发起兼容审批。
+	}
+
+	return approvalNote();
+}
+
+function approvalValidationSummary() {
+	if (validationSummary?.trim()) return truncateText(validationSummary);
+	return "CI validation completed before deployment approval.";
 }
 
 if (!approvalToken) {
@@ -123,12 +237,77 @@ if (!Number.isFinite(pollSeconds) || pollSeconds < 5 || pollSeconds > 60) {
 	);
 }
 
+if (artifactType && !/^[a-z][a-z0-9-]{0,63}$/u.test(artifactType)) {
+	fail(
+		"DEPLOY_APPROVAL_ARTIFACT_TYPE 必须是小写 artifact type slug，例如 vercel-prebuilt。",
+	);
+}
+
+if (artifactDigest && !/^sha256:[0-9a-f]{64}$/u.test(artifactDigest)) {
+	fail(
+		"DEPLOY_APPROVAL_ARTIFACT_DIGEST 必须是 sha256:<64 位小写十六进制摘要>。",
+	);
+}
+
+if (
+	artifactStorageProvider &&
+	!/^[a-z][a-z0-9-]{0,63}$/u.test(artifactStorageProvider)
+) {
+	fail(
+		"DEPLOY_APPROVAL_ARTIFACT_STORAGE_PROVIDER 必须是小写 storage provider slug。",
+	);
+}
+
+if (artifactType && artifactDigest) {
+	const artifactResult = await postJson("/api/v1/deployments/artifacts", {
+		commitSha,
+		projectSlug,
+		target,
+		artifactType,
+		digest: artifactDigest,
+		storageProvider: artifactStorageProvider,
+		storageKey: artifactStorageKey,
+		requestSource,
+		requestUrl,
+		buildStatus: "succeeded",
+		validationStatus: "succeeded",
+		expiresAt: new Date(Date.now() + waitSeconds * 1000).toISOString(),
+		metadata:
+			runId && runAttempt
+				? {
+						githubRunId: runId,
+						githubRunAttempt: runAttempt,
+					}
+				: undefined,
+	});
+
+	if (artifactResult.response.status === 404) {
+		console.log("部署产物登记接口暂不可用，将保留 v1.1 兼容审批流程。");
+	} else if (
+		!artifactResult.response.ok ||
+		artifactResult.body?.ok !== true
+	) {
+		const code = apiErrorCode(artifactResult.response, artifactResult.body);
+		fail(`登记部署产物失败：${code}`);
+	} else {
+		deploymentArtifact = artifactResult.body.data.artifact;
+		const action = artifactResult.body.data.reused ? "复用已有" : "已登记";
+		console.log(
+			`${action}部署产物：${deploymentArtifact.id} ${deploymentArtifact.digest}`,
+		);
+	}
+}
+
 const requestBody = {
 	commitSha,
 	projectSlug,
 	target,
 	expiresAt: new Date(Date.now() + waitSeconds * 1000).toISOString(),
-	note: `生产部署 workflow 请求发布 ${projectSlug}/${target}，目标提交 ${commitSha}。`,
+	changeSummary: commitChangeSummary(),
+	validationSummary: approvalValidationSummary(),
+	note: approvalNote(),
+	artifactId: deploymentArtifact?.id,
+	artifactDigest: deploymentArtifact?.digest,
 	requestSource,
 	requestUrl,
 	idempotencyKey:
@@ -211,6 +390,8 @@ const verifyResult = await postJson("/api/v1/deployments/verify", {
 	commitSha,
 	projectSlug,
 	target,
+	artifactId: deploymentArtifact?.id,
+	artifactDigest: deploymentArtifact?.digest,
 });
 
 if (!verifyResult.response.ok || verifyResult.body?.ok !== true) {

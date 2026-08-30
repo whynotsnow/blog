@@ -1,6 +1,6 @@
 # 部署指南
 
-项目输出 Astro 静态站点。常规生产部署必须走 GitHub Actions `snow build CI` workflow 的手动生产发布路径，并在完整 CI 校验成功、真正发布前通过 `snow-base` Admin 部署审批。不要从本机、Vercel Dashboard 或平台 Git 自动部署入口直接发布生产。
+项目输出 Astro 静态站点。常规生产部署必须走 GitHub Actions `snow build CI` workflow 的手动生产发布路径，并在完整 CI 校验成功、Vercel prebuilt 产物构建并计算 digest 后，通过 `snow-base` Admin 部署审批。不要从本机、Vercel Dashboard 或平台 Git 自动部署入口直接发布生产。
 
 本地和 CI 使用相同构建命令验证静态产物：
 
@@ -67,11 +67,12 @@ GitHub Actions 当前在 `snow build CI` workflow 级别设置 `ENABLE_CONTENT_S
 3. workflow 强制选择 full validation，执行 Agent Workspace、Markdown、ESLint、Design、Astro、TypeScript、Unit、Integration、完整 Playwright E2E 和完整生产构建。
 4. `CI Summary` job 汇总所有验证 job；任何失败、取消或未知结果都会阻止生产发布。
 5. `Production Deploy` job 校验当前 commit 等于 `origin/main`，并预检 production environment secrets。
-6. workflow 拉取 Vercel production 项目设置，并用 Vercel CLI 生成 prebuilt 输出。
-7. workflow 调用 `scripts/verify-deployment-approval.mjs`，向 `snow-base` API 创建或复用审批请求。
-8. owner 打开 `snow-base` Admin -> `部署` -> `审批列表`，核对 `projectSlug=blog`、`target=site`、commit SHA 和 GitHub run 来源后批准或拒绝。
-9. 审批通过后，workflow 消费该审批并执行 Vercel production prebuilt deploy。
-10. 部署完成后访问生产站点，记录脱敏验证结论。
+6. workflow 拉取 Vercel production 项目设置，并用 Vercel CLI 生成 `.vercel/output` prebuilt 输出。
+7. workflow 对 `.vercel/output` 计算 `sha256:` digest，作为本次待部署 Vercel prebuilt artifact 的不可变摘要。
+8. workflow 调用 `scripts/verify-deployment-approval.mjs`，向 `snow-base` API 登记 deployment artifact，并创建或复用绑定该 artifact 的审批请求。
+9. owner 打开 `snow-base` Admin -> `部署` -> `审批列表`，核对 `projectSlug=blog`、`target=site`、commit SHA、Vercel prebuilt artifact digest 和 GitHub run 来源后批准或拒绝。
+10. 审批通过后，workflow 消费该审批并执行 Vercel production prebuilt deploy。
+11. 部署完成后访问生产站点，记录脱敏验证结论。
 
 审批绑定：
 
@@ -79,9 +80,13 @@ GitHub Actions 当前在 `snow build CI` workflow 级别设置 `ENABLE_CONTENT_S
 projectSlug=blog
 target=site
 commitSha=<40 位 Git commit SHA>
+artifactType=vercel-prebuilt
+artifactDigest=sha256:<.vercel/output digest>
 ```
 
-CI 失败、取消、超时或无法确认成功时，生产部署 job 不得进入 Vercel production deploy。审批被拒绝、过期、超时、已消费或字段不匹配时，workflow 必须在生产发布前失败。审批已消费后如果后续部署失败，下一次发布必须重新发起 workflow 和审批。
+当前 `blog/site` 目标按 `snow-base` 部署审批接入规范使用 `v2` artifact-bound approval：审批和消费同时绑定 `projectSlug`、`target`、`commitSha` 和 Vercel prebuilt artifact digest。如果生产 API 暂时不支持 `/api/v1/deployments/artifacts`，脚本会回退到 `v1.1` 兼容路径：仍在审批前完成验证、构建和 digest 计算，并提交结构化变更摘要与验证摘要，但审批消费只能按 legacy commit-bound 规则完成。
+
+CI 失败、取消、超时或无法确认成功时，生产部署 job 不得进入 Vercel production deploy。审批被拒绝、过期、超时、已消费、artifact digest 不一致或字段不匹配时，workflow 必须在生产发布前失败。审批已消费后如果后续部署失败，下一次发布必须重新发起 workflow 和审批。
 
 ## GitHub Environment Secrets
 
@@ -170,11 +175,12 @@ Vercel、Netlify 和 Cloudflare Pages 均使用：
 ```bash
 pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
 pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
+tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum
 node scripts/verify-deployment-approval.mjs
 pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
 ```
 
-`vercel deploy --prebuilt` 发布的是前一步 `vercel build` 生成的 `.vercel/output`，审批步骤必须位于 full validation 和 `vercel build` 之后、`vercel deploy --prebuilt --prod` 之前。受控 workflow 不依赖 `ignoreCommand` 的自定义放行变量；它通过 Vercel CLI 的 prebuilt deploy 通道发布已构建产物。
+`vercel deploy --prebuilt` 发布的是前一步 `vercel build` 生成的 `.vercel/output`，审批步骤必须位于 full validation、`vercel build` 和 digest 计算之后、`vercel deploy --prebuilt --prod` 之前。digest 只是审批对象的一部分，不替代 owner approval。受控 workflow 不依赖 `ignoreCommand` 的自定义放行变量；它通过 Vercel CLI 的 prebuilt deploy 通道发布已构建产物。
 
 ## 故障排查
 

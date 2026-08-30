@@ -324,6 +324,16 @@ jobs:
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
 
+            - name: Compute Vercel artifact digest
+              run: |
+                  if [ ! -d .vercel/output ]; then
+                    echo "Missing Vercel prebuilt output: .vercel/output"
+                    exit 1
+                  fi
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=sha256:${digest}" >> "$GITHUB_ENV"
+                  echo "Vercel prebuilt artifact digest: sha256:${digest}"
+
             - name: Verify deployment approval
               env:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
@@ -332,6 +342,11 @@ jobs:
                   DEPLOY_APPROVAL_COMMIT_SHA: ${{ github.sha }}
                   DEPLOY_APPROVAL_REQUEST_SOURCE: github-actions
                   DEPLOY_APPROVAL_REQUEST_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  DEPLOY_APPROVAL_ARTIFACT_TYPE: vercel-prebuilt
+                  DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ env.DEPLOY_APPROVAL_ARTIFACT_DIGEST }}
+                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_PROVIDER: github-actions
+                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_KEY: .vercel/output
+                  DEPLOY_APPROVAL_VALIDATION_SUMMARY: snow build CI full validation and Vercel prebuilt build completed before approval.
                   DEPLOY_APPROVAL_WAIT_SECONDS: "900"
               run: node scripts/verify-deployment-approval.mjs
 
