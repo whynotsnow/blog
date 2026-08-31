@@ -259,9 +259,114 @@ jobs:
                     exit 1
                   fi
 
+    build-vercel-artifact:
+        name: Build Vercel Artifact
+        needs: ci-summary
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        environment: production
+        outputs:
+            artifact-digest: ${{ steps.digest.outputs.artifact-digest }}
+            artifact-name: ${{ steps.artifact-meta.outputs.artifact-name }}
+            artifact-id: ${{ steps.upload.outputs.artifact-id }}
+            artifact-url: ${{ steps.upload.outputs.artifact-url }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Verify origin main commit
+              run: |
+                  git fetch origin main --depth=1
+                  MAIN_SHA="$(git rev-parse origin/main)"
+                  if [ "$GITHUB_SHA" != "$MAIN_SHA" ]; then
+                    echo "Production artifact build must run from origin/main."
+                    echo "Current commit: $GITHUB_SHA"
+                    echo "origin/main: $MAIN_SHA"
+                    exit 1
+                  fi
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+
+            - name: Enable pnpm
+              run: |
+                  corepack enable
+                  corepack prepare pnpm@10.22.0 --activate
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Validate build secrets
+              env:
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: |
+                  missing=0
+                  for name in VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_TOKEN; do
+                    if [ -z "${!name}" ]; then
+                      echo "Missing required production environment secret: $name"
+                      missing=1
+                    fi
+                  done
+                  if [ "$missing" -ne 0 ]; then
+                    exit 1
+                  fi
+
+            - name: Pull Vercel production settings
+              env:
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+            - name: Install Playwright Chromium
+              run: pnpm exec playwright install --with-deps chromium
+
+            - name: Build Vercel output
+              env:
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
+
+            - name: Compute Vercel artifact digest
+              id: digest
+              run: |
+                  if [ ! -f .vercel/output/config.json ]; then
+                    echo "Missing Vercel prebuilt output: .vercel/output/config.json"
+                    exit 1
+                  fi
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  echo "artifact-digest=sha256:${digest}" >> "$GITHUB_OUTPUT"
+                  echo "Vercel prebuilt artifact digest: sha256:${digest}"
+
+            - name: Prepare artifact metadata
+              id: artifact-meta
+              run: |
+                  artifact_name="vercel-output-${GITHUB_SHA}-${GITHUB_RUN_ATTEMPT}"
+                  echo "artifact-name=${artifact_name}" >> "$GITHUB_OUTPUT"
+                  echo "GitHub artifact name: ${artifact_name}"
+
+            - name: Upload Vercel artifact
+              id: upload
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ steps.artifact-meta.outputs.artifact-name }}
+                  path: .vercel/output/**
+                  if-no-files-found: error
+                  include-hidden-files: true
+                  retention-days: 7
+
     deploy-production:
         name: Production Deploy
-        needs: ci-summary
+        needs:
+            - ci-summary
+            - build-vercel-artifact
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         runs-on: ubuntu-latest
         environment: production
@@ -292,9 +397,6 @@ jobs:
                   corepack enable
                   corepack prepare pnpm@10.22.0 --activate
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
             - name: Validate deployment secrets
               env:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
@@ -313,32 +415,30 @@ jobs:
                     exit 1
                   fi
 
-            - name: Pull Vercel production settings
+            - name: Download Vercel artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ needs.build-vercel-artifact.outputs.artifact-name }}
+                  path: .vercel/output
+
+            - name: Verify Vercel artifact digest
               env:
-                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-              run: pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
-
-            - name: Install Playwright Chromium
-              run: pnpm exec playwright install --with-deps chromium
-
-            - name: Build Vercel output
-              env:
-                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-              run: pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
-
-            - name: Compute Vercel artifact digest
+                  EXPECTED_ARTIFACT_DIGEST: ${{ needs.build-vercel-artifact.outputs.artifact-digest }}
               run: |
-                  if [ ! -d .vercel/output ]; then
-                    echo "Missing Vercel prebuilt output: .vercel/output"
+                  if [ ! -f .vercel/output/config.json ]; then
+                    echo "Downloaded artifact is not a Vercel prebuilt output: missing .vercel/output/config.json"
                     exit 1
                   fi
                   digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
-                  echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=sha256:${digest}" >> "$GITHUB_ENV"
-                  echo "Vercel prebuilt artifact digest: sha256:${digest}"
+                  actual="sha256:${digest}"
+                  echo "Downloaded Vercel prebuilt artifact digest: ${actual}"
+                  if [ "$actual" != "$EXPECTED_ARTIFACT_DIGEST" ]; then
+                    echo "Downloaded artifact digest mismatch."
+                    echo "Expected: $EXPECTED_ARTIFACT_DIGEST"
+                    echo "Actual: $actual"
+                    exit 1
+                  fi
+                  echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${actual}" >> "$GITHUB_ENV"
 
             - name: Verify deployment approval
               env:
@@ -351,8 +451,8 @@ jobs:
                   DEPLOY_APPROVAL_ARTIFACT_TYPE: vercel-prebuilt
                   DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ env.DEPLOY_APPROVAL_ARTIFACT_DIGEST }}
                   DEPLOY_APPROVAL_ARTIFACT_STORAGE_PROVIDER: github-actions
-                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_KEY: .vercel/output
-                  DEPLOY_APPROVAL_VALIDATION_SUMMARY: snow build CI full validation and Vercel prebuilt build completed before approval.
+                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_KEY: ${{ needs.build-vercel-artifact.outputs.artifact-id }}
+                  DEPLOY_APPROVAL_VALIDATION_SUMMARY: snow build CI full validation completed; deployment uses downloaded GitHub Actions Vercel prebuilt artifact with verified digest.
                   DEPLOY_APPROVAL_WAIT_SECONDS: "900"
               run: node scripts/verify-deployment-approval.mjs
 
