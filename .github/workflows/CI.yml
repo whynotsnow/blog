@@ -320,6 +320,9 @@ jobs:
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKEN"
 
+            - name: Install Playwright Chromium
+              run: pnpm exec playwright install --with-deps chromium
+
             - name: Build Vercel output
               env:
                   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
