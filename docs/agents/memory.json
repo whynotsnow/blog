@@ -203,6 +203,16 @@
 			"playbook": "docs/agents/runtime-playbook.md#vercel-git-autodeploy-approval-bypass"
 		},
 		{
+			"id": "vercel-artifact-pre-roundtrip-digest",
+			"cluster": "deployment-security",
+			"symptoms": [
+				"candidate digest computed before actions/upload-artifact@v4 differs from the digest after actions/download-artifact@v4",
+				"artifact download succeeds but the selected-artifact digest guard fails",
+				"deterministic tar fixes names, timestamps, and ownership but not all normalized representation details"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#vercel-artifact-pre-roundtrip-digest"
+		},
+		{
 			"id": "mermaid-prerender-ci-browser-lifecycle",
 			"cluster": "build-pipeline",
 			"symptoms": [

@@ -90,6 +90,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: Vercel Git Integration can deploy `main` directly, or `ignoreCommand` relies on a custom non-secret environment variable to allow production builds.
 - Playbook: [vercel-git-autodeploy-approval-bypass](./runtime-playbook.md#vercel-git-autodeploy-approval-bypass)
 
+### vercel-artifact-pre-roundtrip-digest
+
+- Symptom: a candidate digest computed before `actions/upload-artifact@v4` does not match the digest computed after `actions/download-artifact@v4`, although the artifact bytes download successfully.
+- Playbook: [vercel-artifact-pre-roundtrip-digest](./runtime-playbook.md#vercel-artifact-pre-roundtrip-digest)
+
 ### mermaid-prerender-ci-browser-lifecycle
 
 - Symptom: CI Mermaid prerender tests fail because Chromium was not installed in the job, or production build fails with `page.close` / `page.evaluate` reporting that the browser context was already closed.

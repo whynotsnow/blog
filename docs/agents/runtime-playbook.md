@@ -295,6 +295,21 @@ Use:
 - Document both sides of the boundary: Dashboard/platform configuration is owner-operated, while workflow, scripts, and `vercel.json` are repository-controlled.
 - Validate the guard locally with `VERCEL_GIT_COMMIT_REF=main node scripts/vercel-ignore-build.mjs` returning exit 0, and a non-main or unset value returning exit 1.
 
+### vercel-artifact-pre-roundtrip-digest
+
+Pattern:
+
+- `actions/upload-artifact@v4` and `actions/download-artifact@v4` can normalize file metadata such as permissions during the artifact round-trip.
+- A deterministic tar command that fixes names, timestamps, and ownership still includes representation details that may differ before and after that round-trip.
+- Computing the candidate digest before upload therefore creates an identity that can fail against the exact downloaded directory used by the deployment job.
+
+Use:
+
+- Upload the generated `.vercel/output`, download it back in the build job, and compute the candidate digest from that post-round-trip `.vercel/output` representation.
+- Use the same tar command and `.vercel/output` path shape in legacy production, candidate registration, and selected-artifact verification.
+- Keep the digest guard fail closed; a mismatch must stop before approval consumption and Vercel production deployment.
+- Retain a workflow contract test that checks upload/download ordering and a Linux-level normalized-directory digest check. Do not replace the guard with a weaker byte-only or pre-upload digest.
+
 ### playwright-spec-split-concurrency-drift
 
 Pattern:
