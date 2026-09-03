@@ -37,6 +37,14 @@ const waitForMainEntryAlignment = async (page: Page): Promise<void> => {
 		.toBeLessThanOrEqual(entryAlignmentTolerance);
 };
 
+const waitForSwup = async (page: Page): Promise<void> => {
+	await expect
+		.poll(() => page.evaluate(() => Boolean(window.swup)), {
+			timeout: 15_000,
+		})
+		.toBe(true);
+};
+
 test("category and post pages align the main region and keep a fixed visible navbar", async ({
 	page,
 }) => {
@@ -99,9 +107,7 @@ test("fullscreen category and post pages align the main region", async ({
 	await expect
 		.poll(() => page.evaluate(() => window.scrollY))
 		.toBeGreaterThan(0);
-	await expect
-		.poll(() => page.evaluate(() => Boolean(window.swup)))
-		.toBe(true);
+	await waitForSwup(page);
 
 	await page.evaluate((path) => {
 		window.swup.navigate(path);
@@ -257,9 +263,7 @@ test("Swup shows navigation progress independently from page entry scrolling", a
 test("category links use one smooth page-entry scroll", async ({ page }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
 	await gotoPage(page, E2E_CATEGORY.path);
-	await expect
-		.poll(() => page.evaluate(() => Boolean(window.swup)))
-		.toBe(true);
+	await waitForSwup(page);
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
 	const initialScrollHeight = await page.evaluate(
 		() => document.documentElement.scrollHeight,
@@ -344,9 +348,7 @@ test("browser history realigns the category and post main regions", async ({
 }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
 	await gotoPage(page, E2E_CATEGORY.path);
-	await expect
-		.poll(() => page.evaluate(() => Boolean(window.swup)))
-		.toBe(true);
+	await waitForSwup(page);
 
 	await page.evaluate((path) => {
 		window.swup.navigate(path);
@@ -372,30 +374,46 @@ test("browser history realigns the category and post main regions", async ({
 	const normalEntry = await readEntryGeometry();
 	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
 
-	await page.evaluate(() => {
-		const state = window as typeof window & {
-			__historyEntryScrollCalls?: number[];
-		};
-		const nativeScrollTo = window.scrollTo.bind(window);
-		state.__historyEntryScrollCalls = [];
-		window.scrollTo = ((
-			optionsOrX?: ScrollToOptions | number,
-			y?: number,
-		) => {
-			const top = typeof optionsOrX === "object" ? optionsOrX.top : y;
-			if (typeof top === "number") {
-				state.__historyEntryScrollCalls?.push(top);
-			}
+	await page.evaluate(
+		() =>
+			new Promise<void>((resolve, reject) => {
+				const state = window as typeof window & {
+					__historyEntryScrollCalls?: number[];
+				};
+				const nativeScrollTo = window.scrollTo.bind(window);
+				state.__historyEntryScrollCalls = [];
+				window.scrollTo = ((
+					optionsOrX?: ScrollToOptions | number,
+					y?: number,
+				) => {
+					const top =
+						typeof optionsOrX === "object" ? optionsOrX.top : y;
+					if (typeof top === "number") {
+						state.__historyEntryScrollCalls?.push(top);
+					}
 
-			if (typeof optionsOrX === "object") {
-				nativeScrollTo(optionsOrX);
-				return;
-			}
+					if (typeof optionsOrX === "object") {
+						nativeScrollTo(optionsOrX);
+						return;
+					}
 
-			nativeScrollTo(optionsOrX ?? 0, y ?? 0);
-		}) as typeof window.scrollTo;
-		window.history.back();
-	});
+					nativeScrollTo(optionsOrX ?? 0, y ?? 0);
+				}) as typeof window.scrollTo;
+
+				const timeoutId = window.setTimeout(() => {
+					dispose?.();
+					reject(
+						new Error("Timed out waiting for history visit-start"),
+					);
+				}, 5_000);
+				const dispose = window.onPageLifecycle?.("visit-start", () => {
+					dispose?.();
+					window.clearTimeout(timeoutId);
+					resolve();
+				});
+				window.history.back();
+			}),
+	);
 	await expect(page).toHaveURL(E2E_CATEGORY.pathPattern);
 	await expect(page.locator("#navigation-progress")).toHaveAttribute(
 		"data-state",
