@@ -54,14 +54,10 @@ jobs:
 如果该 dispatch 目标是生产部署，workflow 还必须保留完整 CI 与部署审批步骤：
 
 ```yaml
-- name: Compute Vercel artifact digest
+- name: Compute canonical Vercel artifact digest
   run: |
-    if [ ! -d .vercel/output ]; then
-      echo "Missing Vercel prebuilt output: .vercel/output"
-      exit 1
-    fi
-    digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
-    echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=sha256:${digest}" >> "$GITHUB_ENV"
+    digest="sha256:$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+    echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${digest}" >> "$GITHUB_ENV"
 
 - name: Verify deployment approval
   env:

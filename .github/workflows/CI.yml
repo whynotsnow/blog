@@ -398,17 +398,6 @@ jobs:
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
 
-            - name: Compute Vercel artifact digest
-              id: digest
-              run: |
-                  if [ ! -f .vercel/output/config.json ]; then
-                    echo "Missing Vercel prebuilt output: .vercel/output/config.json"
-                    exit 1
-                  fi
-                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
-                  echo "artifact-digest=sha256:${digest}" >> "$GITHUB_OUTPUT"
-                  echo "Vercel prebuilt artifact digest: sha256:${digest}"
-
             - name: Prepare artifact metadata
               id: artifact-meta
               run: |
@@ -425,6 +414,26 @@ jobs:
                   if-no-files-found: error
                   include-hidden-files: true
                   retention-days: 7
+
+            - name: Clear pre-upload output before round-trip
+              run: rm -rf .vercel/output
+
+            - name: Re-download uploaded artifact for canonical digest
+              uses: actions/download-artifact@v4
+              with:
+                  artifact-ids: ${{ steps.upload.outputs.artifact-id }}
+                  path: .vercel/output
+
+            - name: Compute post-round-trip Vercel artifact digest
+              id: digest
+              run: |
+                  if [ ! -f .vercel/output/config.json ]; then
+                    echo "Missing downloaded Vercel prebuilt output: .vercel/output/config.json"
+                    exit 1
+                  fi
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  echo "artifact-digest=sha256:${digest}" >> "$GITHUB_OUTPUT"
+                  echo "Post-round-trip Vercel prebuilt artifact digest: sha256:${digest}"
 
     deploy-production:
         name: Production Deploy
@@ -505,7 +514,7 @@ jobs:
                     echo "Downloaded artifact is not a Vercel prebuilt output: missing .vercel/output/config.json"
                     exit 1
                   fi
-                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
                   actual="sha256:${digest}"
                   echo "Downloaded Vercel prebuilt artifact digest: ${actual}"
                   if [ "$actual" != "$EXPECTED_ARTIFACT_DIGEST" ]; then
@@ -569,7 +578,7 @@ jobs:
                     echo "Downloaded artifact is not a Vercel prebuilt output."
                     exit 1
                   fi
-                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
                   actual="sha256:${digest}"
                   if [ "$actual" != "$EXPECTED_ARTIFACT_DIGEST" ]; then
                     echo "Candidate artifact digest mismatch."
@@ -667,8 +676,9 @@ jobs:
             - name: Verify selected artifact digest
               run: |
                   test -f .vercel/output/config.json
-                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
-                  test "sha256:${digest}" = "${{ inputs.artifact_digest }}"
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  actual="sha256:${digest}"
+                  test "$actual" = "${{ inputs.artifact_digest }}"
             - name: Verify deployment approval
               env:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
