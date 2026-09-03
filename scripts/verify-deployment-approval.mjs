@@ -18,12 +18,15 @@ const requestSource =
 	process.env.DEPLOY_APPROVAL_REQUEST_SOURCE ??
 	process.env.SNOW_BASE_DEPLOY_REQUEST_SOURCE ??
 	"github-actions";
+const workflowMode = process.env.DEPLOY_APPROVAL_WORKFLOW_MODE ?? "legacy";
+const requestId = process.env.DEPLOY_APPROVAL_REQUEST_ID;
 const requestUrl =
 	process.env.DEPLOY_APPROVAL_REQUEST_URL ??
 	process.env.SNOW_BASE_DEPLOY_REQUEST_URL;
 const artifactType =
 	process.env.DEPLOY_APPROVAL_ARTIFACT_TYPE ??
 	process.env.SNOW_BASE_DEPLOY_ARTIFACT_TYPE;
+const providedArtifactId = process.env.DEPLOY_APPROVAL_ARTIFACT_ID;
 const artifactDigest =
 	process.env.DEPLOY_APPROVAL_ARTIFACT_DIGEST ??
 	process.env.SNOW_BASE_DEPLOY_ARTIFACT_DIGEST;
@@ -51,7 +54,10 @@ const pollSeconds = Number.parseInt(
 	10,
 );
 
-let deploymentArtifact;
+let deploymentArtifact =
+	providedArtifactId && artifactDigest
+		? { id: providedArtifactId, digest: artifactDigest }
+		: undefined;
 
 /**
  * @param {string} message
@@ -237,6 +243,24 @@ if (!Number.isFinite(pollSeconds) || pollSeconds < 5 || pollSeconds > 60) {
 	);
 }
 
+if (!/^(?:legacy|selected-artifact)$/u.test(workflowMode)) {
+	fail("DEPLOY_APPROVAL_WORKFLOW_MODE 只能是 legacy 或 selected-artifact。");
+}
+
+const isSelectedArtifactMode = workflowMode === "selected-artifact";
+
+if (isSelectedArtifactMode && (!providedArtifactId || !artifactDigest)) {
+	fail(
+		"selected-artifact 必须提供 snow-base v2 artifact id 和 artifact digest，不能退回旧版审批流程。",
+	);
+}
+
+if (isSelectedArtifactMode && !requestId?.trim()) {
+	fail(
+		"selected-artifact 必须提供 snow-base request id，用于审批幂等和 workflow 对账。",
+	);
+}
+
 if (artifactType && !/^[a-z][a-z0-9-]{0,63}$/u.test(artifactType)) {
 	fail(
 		"DEPLOY_APPROVAL_ARTIFACT_TYPE 必须是小写 artifact type slug，例如 vercel-prebuilt。",
@@ -258,7 +282,7 @@ if (
 	);
 }
 
-if (artifactType && artifactDigest) {
+if (artifactType && artifactDigest && !deploymentArtifact) {
 	const artifactResult = await postJson("/api/v1/deployments/artifacts", {
 		commitSha,
 		projectSlug,
@@ -281,7 +305,11 @@ if (artifactType && artifactDigest) {
 				: undefined,
 	});
 
-	if (artifactResult.response.status === 404) {
+	if (artifactResult.response.status === 404 && isSelectedArtifactMode) {
+		fail(
+			"部署产物登记接口不可用，selected-artifact 必须使用 snow-base v2 artifact contract。",
+		);
+	} else if (artifactResult.response.status === 404) {
 		console.log("部署产物登记接口暂不可用，将保留 v1.1 兼容审批流程。");
 	} else if (
 		!artifactResult.response.ok ||
@@ -290,10 +318,11 @@ if (artifactType && artifactDigest) {
 		const code = apiErrorCode(artifactResult.response, artifactResult.body);
 		fail(`登记部署产物失败：${code}`);
 	} else {
-		deploymentArtifact = artifactResult.body.data.artifact;
+		const registeredArtifact = artifactResult.body.data.artifact;
+		deploymentArtifact = registeredArtifact;
 		const action = artifactResult.body.data.reused ? "复用已有" : "已登记";
 		console.log(
-			`${action}部署产物：${deploymentArtifact.id} ${deploymentArtifact.digest}`,
+			`${action}部署产物：${registeredArtifact.id} ${registeredArtifact.digest}`,
 		);
 	}
 }
@@ -311,9 +340,10 @@ const requestBody = {
 	requestSource,
 	requestUrl,
 	idempotencyKey:
-		runId && runAttempt
+		requestId ??
+		(runId && runAttempt
 			? `production-deploy:${runId}:${runAttempt}:${projectSlug}:${target}`
-			: undefined,
+			: undefined),
 };
 
 const requestResult = await postJson(
@@ -322,7 +352,11 @@ const requestResult = await postJson(
 );
 let approvalId;
 
-if (requestResult.response.status === 404) {
+if (requestResult.response.status === 404 && isSelectedArtifactMode) {
+	fail(
+		"部署审批请求接口不可用，selected-artifact 必须使用 snow-base v2 artifact-bound contract。",
+	);
+} else if (requestResult.response.status === 404) {
 	console.log(
 		"部署审批自动请求接口暂不可用，将回退到旧版 verify-only 校验流程。",
 	);

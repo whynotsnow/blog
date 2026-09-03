@@ -1,4 +1,5 @@
 name: snow build CI
+run-name: snow build CI · mode=${{ inputs.mode || 'validation' }} · request=${{ inputs.request_id || github.run_id }}
 
 on:
     push:
@@ -8,6 +9,66 @@ on:
     schedule:
         - cron: "0 18 * * 0"
     workflow_dispatch:
+        inputs:
+            mode:
+                description: Admin path is candidate or selected-artifact; production is legacy break-glass
+                required: false
+                default: production
+                type: choice
+                options:
+                    - production
+                    - candidate
+                    - selected-artifact
+            project_slug:
+                description: Deployment project slug
+                required: false
+                default: blog
+                type: string
+            target:
+                description: Deployment target
+                required: false
+                default: site
+                type: string
+            commit_sha:
+                description: Exact source commit for a selected artifact
+                required: false
+                type: string
+            artifact_id:
+                description: snow-base artifact id for selected-artifact deployment
+                required: false
+                type: string
+            artifact_digest:
+                description: Expected sha256 digest for selected-artifact deployment
+                required: false
+                type: string
+            artifact_run_id:
+                description: GitHub Actions run id containing the artifact
+                required: false
+                type: string
+            artifact_github_id:
+                description: GitHub Actions artifact id
+                required: false
+                type: string
+            artifact_name:
+                description: GitHub Actions artifact name
+                required: false
+                type: string
+            request_id:
+                description: snow-base deployment request id
+                required: false
+                type: string
+            change_summary:
+                description: Frozen deployment change summary supplied by snow-base Admin
+                required: false
+                type: string
+            validation_summary:
+                description: Validation summary supplied by snow-base Admin
+                required: false
+                type: string
+            break_glass_reason:
+                description: Required justification for legacy production mode
+                required: false
+                type: string
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && 'production' || 'validation' }}
@@ -15,6 +76,7 @@ concurrency:
 
 permissions:
     contents: read
+    actions: read
 
 env:
     ENABLE_CONTENT_SYNC: "false"
@@ -262,7 +324,9 @@ jobs:
     build-vercel-artifact:
         name: Build Vercel Artifact
         needs: ci-summary
-        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        if: >-
+            github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+            inputs.mode != 'selected-artifact'
         runs-on: ubuntu-latest
         environment: production
         outputs:
@@ -367,7 +431,9 @@ jobs:
         needs:
             - ci-summary
             - build-vercel-artifact
-        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        if: >-
+            github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+            (inputs.mode == 'production' || inputs.mode == '')
         runs-on: ubuntu-latest
         environment: production
         steps:
@@ -375,6 +441,16 @@ jobs:
               uses: actions/checkout@v6
               with:
                   fetch-depth: 0
+
+            - name: Require legacy break-glass justification
+              env:
+                  BREAK_GLASS_REASON: ${{ inputs.break_glass_reason }}
+              run: |
+                  if [ -z "${BREAK_GLASS_REASON//[[:space:]]/}" ]; then
+                    echo "Legacy production mode requires break_glass_reason."
+                    exit 1
+                  fi
+                  echo "Legacy break-glass deployment requested with a maintainer-supplied justification."
 
             - name: Verify origin main commit
               run: |
@@ -456,6 +532,160 @@ jobs:
                   DEPLOY_APPROVAL_WAIT_SECONDS: "900"
               run: node scripts/verify-deployment-approval.mjs
 
+            - name: Deploy Vercel production
+              env:
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
+
+    register-site-candidate:
+        name: Register blog/site Candidate
+        needs:
+            - ci-summary
+            - build-vercel-artifact
+        if: >-
+            github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+            inputs.mode == 'candidate'
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+            - name: Download Vercel artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ needs.build-vercel-artifact.outputs.artifact-name }}
+                  path: .vercel/output
+            - name: Verify Vercel artifact digest
+              env:
+                  EXPECTED_ARTIFACT_DIGEST: ${{ needs.build-vercel-artifact.outputs.artifact-digest }}
+              run: |
+                  if [ ! -f .vercel/output/config.json ]; then
+                    echo "Downloaded artifact is not a Vercel prebuilt output."
+                    exit 1
+                  fi
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  actual="sha256:${digest}"
+                  if [ "$actual" != "$EXPECTED_ARTIFACT_DIGEST" ]; then
+                    echo "Candidate artifact digest mismatch."
+                    exit 1
+                  fi
+                  echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${actual}" >> "$GITHUB_ENV"
+            - name: Register site candidate artifact
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_PROJECT: blog
+                  DEPLOY_APPROVAL_TARGET: site
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ github.sha }}
+                  DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ env.DEPLOY_APPROVAL_ARTIFACT_DIGEST }}
+                  DEPLOY_APPROVAL_ARTIFACT_ID: ${{ needs.build-vercel-artifact.outputs.artifact-id }}
+                  DEPLOY_APPROVAL_ARTIFACT_NAME: ${{ needs.build-vercel-artifact.outputs.artifact-name }}
+                  DEPLOY_APPROVAL_ARTIFACT_RUN_ID: ${{ github.run_id }}
+              run: node scripts/register-deployment-artifact.mjs
+
+    deploy-selected-artifact:
+        name: Deploy selected blog/site artifact
+        needs: ci-summary
+        if: >-
+            github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+            inputs.mode == 'selected-artifact'
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+                  ref: ${{ inputs.commit_sha }}
+            - name: Validate selected artifact inputs
+              env:
+                  PROJECT_SLUG: ${{ inputs.project_slug }}
+                  TARGET: ${{ inputs.target }}
+                  COMMIT_SHA: ${{ inputs.commit_sha }}
+                  REQUEST_ID: ${{ inputs.request_id }}
+                  ARTIFACT_ID: ${{ inputs.artifact_id }}
+                  ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
+                  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+                  ARTIFACT_GITHUB_ID: ${{ inputs.artifact_github_id }}
+                  ARTIFACT_NAME: ${{ inputs.artifact_name }}
+              run: |
+                  test "$PROJECT_SLUG" = "blog"
+                  test "$TARGET" = "site"
+                  printf '%s' "$COMMIT_SHA" | grep -Eq '^[0-9a-f]{40}$'
+                  test "$(git rev-parse HEAD)" = "$COMMIT_SHA"
+                  test -n "$REQUEST_ID"
+                  test -n "$ARTIFACT_ID"
+                  printf '%s' "$ARTIFACT_DIGEST" | grep -Eq '^sha256:[0-9a-f]{64}$'
+                  printf '%s' "$ARTIFACT_RUN_ID" | grep -Eq '^[0-9]+$'
+                  printf '%s' "$ARTIFACT_GITHUB_ID" | grep -Eq '^[0-9]+$'
+                  test -n "$ARTIFACT_NAME"
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+            - name: Enable pnpm
+              run: |
+                  corepack enable
+                  corepack prepare pnpm@10.22.0 --activate
+            - name: Validate deployment secrets
+              env:
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: |
+                  if [ -z "$DEPLOY_APPROVAL_TOKEN" ]; then
+                    echo "Missing required production environment secret: DEPLOY_APPROVAL_TOKEN"
+                    exit 1
+                  fi
+                  if [ -z "$VERCEL_ORG_ID" ]; then
+                    echo "Missing required production environment secret: VERCEL_ORG_ID"
+                    exit 1
+                  fi
+                  if [ -z "$VERCEL_PROJECT_ID" ]; then
+                    echo "Missing required production environment secret: VERCEL_PROJECT_ID"
+                    exit 1
+                  fi
+                  if [ -z "$VERCEL_TOKEN" ]; then
+                    echo "Missing required production environment secret: VERCEL_TOKEN"
+                    exit 1
+                  fi
+            - name: Download selected GitHub artifact
+              uses: actions/download-artifact@v4
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  repository: ${{ github.repository }}
+                  run-id: ${{ inputs.artifact_run_id }}
+                  artifact-ids: ${{ inputs.artifact_github_id }}
+                  path: .vercel/output
+            - name: Verify selected artifact digest
+              run: |
+                  test -f .vercel/output/config.json
+                  digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -cf - -C .vercel output | sha256sum | awk '{print $1}')"
+                  test "sha256:${digest}" = "${{ inputs.artifact_digest }}"
+            - name: Verify deployment approval
+              env:
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_PROJECT: blog
+                  DEPLOY_APPROVAL_TARGET: site
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha }}
+                  DEPLOY_APPROVAL_ARTIFACT_ID: ${{ inputs.artifact_id }}
+                  DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
+                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
+                  DEPLOY_APPROVAL_REQUEST_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_PROVIDER: github-actions
+                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_KEY: ${{ inputs.artifact_github_id }}
+                  DEPLOY_APPROVAL_REQUEST_SOURCE: snow-base-admin
+                  DEPLOY_APPROVAL_WORKFLOW_MODE: selected-artifact
+                  DEPLOY_APPROVAL_CHANGE_SUMMARY: ${{ inputs.change_summary }}
+                  DEPLOY_APPROVAL_VALIDATION_SUMMARY: ${{ inputs.validation_summary || 'selected blog/site artifact was downloaded and digest-verified before approval consumption.' }}
+              run: node scripts/verify-deployment-approval.mjs
             - name: Deploy Vercel production
               env:
                   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
