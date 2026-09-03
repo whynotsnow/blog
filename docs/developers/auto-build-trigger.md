@@ -56,6 +56,7 @@ jobs:
 ```yaml
 - name: Compute canonical Vercel artifact digest
   run: |
+    node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output
     digest="sha256:$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
     echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${digest}" >> "$GITHUB_ENV"
 

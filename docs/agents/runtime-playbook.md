@@ -305,7 +305,7 @@ Pattern:
 
 Use:
 
-- Upload the generated `.vercel/output`, download it back in the build job, and compute the candidate digest from that post-round-trip `.vercel/output` representation.
+- Upload the generated `.vercel/output`, download it into a temporary directory, normalize the discovered artifact root with `scripts/normalize-vercel-artifact.mjs`, and compute the candidate digest from the post-round-trip `.vercel/output` representation.
 - Use the same tar command and `.vercel/output` path shape in legacy production, candidate registration, and selected-artifact verification.
 - Keep the digest guard fail closed; a mismatch must stop before approval consumption and Vercel production deployment.
 - Retain a workflow contract test that checks upload/download ordering and a Linux-level normalized-directory digest check. Do not replace the guard with a weaker byte-only or pre-upload digest.

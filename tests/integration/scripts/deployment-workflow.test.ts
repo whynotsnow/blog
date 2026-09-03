@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -59,6 +60,12 @@ describe("Vercel artifact workflow contract", () => {
 		expect(buildJob).toContain(
 			"artifact-ids: ${{ steps.upload.outputs.artifact-id }}",
 		);
+		expect(buildJob).toContain(
+			"node scripts/normalize-vercel-artifact.mjs .artifact-roundtrip .vercel/output",
+		);
+		expect(
+			workflow.match(/node scripts\/normalize-vercel-artifact\.mjs/g),
+		).toHaveLength(4);
 	});
 
 	it("keeps candidate and selected deployment verification fail-closed", () => {
@@ -76,6 +83,51 @@ describe("Vercel artifact workflow contract", () => {
 		expect(selectedJob).toContain(
 			'test "$actual" = "${{ inputs.artifact_digest }}"',
 		);
+		expect(selectedJob).toContain(
+			"node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output",
+		);
+	});
+
+	it("normalizes direct and nested artifact roots into .vercel/output", () => {
+		const root = fs.mkdtempSync(
+			path.join(process.cwd(), ".tmp-vercel-artifact-test-"),
+		);
+		try {
+			for (const layout of ["direct", "output", ".vercel/output"]) {
+				const source = path.join(root, layout);
+				const sourceRoot = path.join(root, layout.split("/")[0]);
+				const destination = path.join(
+					root,
+					`${layout.replaceAll("/", "-")}-normalized`,
+				);
+				fs.mkdirSync(path.join(source, "assets"), { recursive: true });
+				fs.writeFileSync(
+					path.join(source, "config.json"),
+					`{"layout":"${layout}"}\n`,
+				);
+				fs.writeFileSync(
+					path.join(source, "assets/index.html"),
+					"<!doctype html>\n",
+				);
+				execFileSync(
+					process.execPath,
+					[
+						"scripts/normalize-vercel-artifact.mjs",
+						sourceRoot,
+						destination,
+					],
+					{ cwd: process.cwd(), stdio: "ignore" },
+				);
+				expect(
+					fs.existsSync(path.join(destination, "config.json")),
+				).toBe(true);
+				expect(
+					fs.existsSync(path.join(destination, "assets/index.html")),
+				).toBe(true);
+			}
+		} finally {
+			fs.rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
 

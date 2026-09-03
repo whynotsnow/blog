@@ -422,7 +422,10 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                   artifact-ids: ${{ steps.upload.outputs.artifact-id }}
-                  path: .vercel/output
+                  path: .artifact-roundtrip
+
+            - name: Normalize downloaded Vercel artifact
+              run: node scripts/normalize-vercel-artifact.mjs .artifact-roundtrip .vercel/output
 
             - name: Compute post-round-trip Vercel artifact digest
               id: digest
@@ -504,7 +507,10 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                   name: ${{ needs.build-vercel-artifact.outputs.artifact-name }}
-                  path: .vercel/output
+                  path: .artifact-download
+
+            - name: Normalize downloaded Vercel artifact
+              run: node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output
 
             - name: Verify Vercel artifact digest
               env:
@@ -569,7 +575,10 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                   name: ${{ needs.build-vercel-artifact.outputs.artifact-name }}
-                  path: .vercel/output
+                  path: .artifact-download
+
+            - name: Normalize downloaded Vercel artifact
+              run: node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output
             - name: Verify Vercel artifact digest
               env:
                   EXPECTED_ARTIFACT_DIGEST: ${{ needs.build-vercel-artifact.outputs.artifact-digest }}
@@ -672,7 +681,9 @@ jobs:
                   repository: ${{ github.repository }}
                   run-id: ${{ inputs.artifact_run_id }}
                   artifact-ids: ${{ inputs.artifact_github_id }}
-                  path: .vercel/output
+                  path: .artifact-download
+            - name: Normalize downloaded Vercel artifact
+              run: node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output
             - name: Verify selected artifact digest
               run: |
                   test -f .vercel/output/config.json
