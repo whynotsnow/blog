@@ -438,6 +438,44 @@ jobs:
                   echo "artifact-digest=sha256:${digest}" >> "$GITHUB_OUTPUT"
                   echo "Post-round-trip Vercel prebuilt artifact digest: sha256:${digest}"
 
+    report-site-candidate-start:
+        name: Report blog/site Candidate start
+        needs: ci-summary
+        if: >-
+            always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+            inputs.mode == 'candidate' && needs.ci-summary.result == 'success'
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+            - name: Validate candidate identity
+              env:
+                  PROJECT_SLUG: ${{ inputs.project_slug }}
+                  TARGET: ${{ inputs.target }}
+                  REQUESTED_COMMIT_SHA: ${{ inputs.commit_sha }}
+                  GITHUB_COMMIT_SHA: ${{ github.sha }}
+              run: |
+                  test "$PROJECT_SLUG" = "blog"
+                  test "$TARGET" = "site"
+                  test -n "$REQUESTED_COMMIT_SHA"
+                  test "$REQUESTED_COMMIT_SHA" = "$GITHUB_COMMIT_SHA"
+            - name: Report Candidate in progress
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
+                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
+                  DEPLOYMENT_CALLBACK_STATUS: in_progress
+                  DEPLOYMENT_CALLBACK_PHASE: validation_completed
+              run: node scripts/report-deployment-candidate.mjs
+
     deploy-production:
         name: Production Deploy
         needs:
@@ -536,7 +574,7 @@ jobs:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
                   DEPLOY_APPROVAL_PROJECT: blog
                   DEPLOY_APPROVAL_TARGET: site
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ github.sha }}
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
                   DEPLOY_APPROVAL_REQUEST_SOURCE: github-actions
                   DEPLOY_APPROVAL_REQUEST_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
                   DEPLOY_APPROVAL_ARTIFACT_TYPE: vercel-prebuilt
@@ -562,6 +600,9 @@ jobs:
         if: >-
             github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
             inputs.mode == 'candidate'
+        outputs:
+            artifact-id: ${{ steps.register.outputs.artifact-id }}
+            artifact-digest: ${{ steps.register.outputs.artifact-digest }}
         runs-on: ubuntu-latest
         environment: production
         steps:
@@ -595,17 +636,53 @@ jobs:
                   fi
                   echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${actual}" >> "$GITHUB_ENV"
             - name: Register site candidate artifact
+              id: register
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
                   DEPLOY_APPROVAL_PROJECT: blog
                   DEPLOY_APPROVAL_TARGET: site
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ github.sha }}
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
                   DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ env.DEPLOY_APPROVAL_ARTIFACT_DIGEST }}
                   DEPLOY_APPROVAL_ARTIFACT_ID: ${{ needs.build-vercel-artifact.outputs.artifact-id }}
                   DEPLOY_APPROVAL_ARTIFACT_NAME: ${{ needs.build-vercel-artifact.outputs.artifact-name }}
                   DEPLOY_APPROVAL_ARTIFACT_RUN_ID: ${{ github.run_id }}
               run: node scripts/register-deployment-artifact.mjs
+
+    report-site-candidate-completion:
+        name: Report blog/site Candidate completion
+        needs:
+            - ci-summary
+            - report-site-candidate-start
+            - build-vercel-artifact
+            - register-site-candidate
+        if: >-
+            always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+            inputs.mode == 'candidate'
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+            - name: Report Candidate completion
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
+                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
+                  DEPLOYMENT_CALLBACK_STATUS: completed
+                  DEPLOYMENT_CALLBACK_CONCLUSION: ${{ (needs.ci-summary.result == 'success' && needs.report-site-candidate-start.result == 'success' && needs.build-vercel-artifact.result == 'success' && needs.register-site-candidate.result == 'success') && 'success' || 'failure' }}
+                  DEPLOYMENT_CALLBACK_PHASE: candidate_completed
+                  DEPLOYMENT_CALLBACK_ERROR_CODE: ${{ (needs.ci-summary.result == 'success' && needs.report-site-candidate-start.result == 'success' && needs.build-vercel-artifact.result == 'success' && needs.register-site-candidate.result == 'success') && '' || 'candidate_workflow_failed' }}
+                  DEPLOYMENT_ARTIFACT_ID: ${{ needs.register-site-candidate.outputs.artifact-id }}
+                  DEPLOYMENT_ARTIFACT_DIGEST: ${{ needs.register-site-candidate.outputs.artifact-digest }}
+              run: node scripts/report-deployment-candidate.mjs
 
     deploy-selected-artifact:
         name: Deploy selected blog/site artifact
@@ -707,9 +784,56 @@ jobs:
                   DEPLOY_APPROVAL_CHANGE_SUMMARY: ${{ inputs.change_summary }}
                   DEPLOY_APPROVAL_VALIDATION_SUMMARY: ${{ inputs.validation_summary || 'selected blog/site artifact was downloaded and digest-verified before approval consumption.' }}
               run: node scripts/verify-deployment-approval.mjs
+            - name: Report deployment run in progress
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
+                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha }}
+                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
+                  DEPLOYMENT_ARTIFACT_ID: ${{ inputs.artifact_id }}
+                  DEPLOYMENT_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
+                  DEPLOYMENT_CALLBACK_STATUS: in_progress
+                  DEPLOYMENT_CALLBACK_PHASE: deployment_started
+              run: node scripts/report-deployment-run.mjs
             - name: Deploy Vercel production
+              id: deploy-vercel
               env:
                   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
                   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
+
+    report-selected-deployment-run-completion:
+        name: Report selected blog/site deployment completion
+        needs:
+            - ci-summary
+            - deploy-selected-artifact
+        if: >-
+            always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+            inputs.mode == 'selected-artifact'
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+            - name: Report deployment run completion
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
+                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha }}
+                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
+                  DEPLOYMENT_ARTIFACT_ID: ${{ inputs.artifact_id }}
+                  DEPLOYMENT_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
+                  DEPLOYMENT_CALLBACK_STATUS: completed
+                  DEPLOYMENT_CALLBACK_CONCLUSION: ${{ (needs.ci-summary.result == 'success' && needs.deploy-selected-artifact.result == 'success') && 'success' || 'failure' }}
+                  DEPLOYMENT_CALLBACK_PHASE: deployment_completed
+                  DEPLOYMENT_CALLBACK_ERROR_CODE: ${{ (needs.ci-summary.result == 'success' && needs.deploy-selected-artifact.result == 'success') && '' || 'deployment_workflow_failed' }}
+              run: node scripts/report-deployment-run.mjs

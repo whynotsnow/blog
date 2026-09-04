@@ -64,11 +64,13 @@ GitHub Actions 当前在 `snow build CI` workflow 级别设置 `ENABLE_CONTENT_S
 
 workflow dispatch 的 `mode` 有三种：
 
-- `candidate`：在 exact `main` commit 上完成 CI 和 Vercel prebuilt build，上传并重新下载到临时目录，通过 `scripts/normalize-vercel-artifact.mjs` 恢复为 `.vercel/output`，计算 post-round-trip digest，并通过 `scripts/register-deployment-artifact.mjs` 登记 `project=blog`、`target=site`、`artifactType=vercel-prebuilt` 的 v2 candidate。该模式不部署生产。
+- `candidate`：由 snow-base deployment intent 内部 dispatch，在 exact `main` commit 上完成 CI 和 Vercel prebuilt build，上传并重新下载到临时目录，通过 `scripts/normalize-vercel-artifact.mjs` 恢复为 `.vercel/output`，计算 post-round-trip digest，并通过 `scripts/register-deployment-artifact.mjs` 登记 `project=blog`、`target=site`、`artifactType=vercel-prebuilt` 的 v2 candidate；随后通过 `scripts/report-deployment-candidate.mjs` 回写 Candidate Run。该模式不部署生产。
 - `selected-artifact`：由 snow-base Admin 传入已选 artifact 的 id、digest、GitHub run/name 和 request id。workflow 只下载并复算该 artifact，等待/消费对应审批，然后执行 Vercel prebuilt deploy；审批后不重新 build。
 - `production`：保留的 legacy/break-glass 手动发布路径，仍要求 full validation、构建产物 handoff、digest 校验和 owner approval，并且必须提供 `break_glass_reason`。
 
-`candidate` 和 `selected-artifact` 必须使用 `main`，并 fail closed 校验 `blog/site` 的 project/target、exact commit、GitHub artifact identity 和 digest。selected-artifact 会 checkout Admin 指定的 `commit_sha`，而不是当前 workflow 事件的默认 branch HEAD；blog workflow 不接受 API、D1、R2 或 Worker Version 输入，也不 dispatch `snow-base/api` workflow。
+`candidate` 和 `selected-artifact` 是由控制面调用的内部 workflow mode，不是用户必须按顺序手工执行的两个发布步骤。一次 Admin deployment intent 会在控制面内部复用或创建 candidate、绑定 artifact、等待 owner approval，再 dispatch selected-artifact。两种 mode 都 fail closed 校验 `blog/site` 的 project/target、exact commit、GitHub artifact identity 和 digest；selected-artifact 会 checkout Admin 指定的 `commit_sha`，而不是当前 workflow 事件的默认 branch HEAD。blog workflow 不接受 API、D1、R2 或 Worker Version 输入，也不 dispatch `snow-base/api` workflow。
+
+candidate workflow 会在验证阶段回报 `in_progress`，在 artifact 登记后回报 `completed`；部署 workflow 会在 Vercel deploy 前回报 deployment run `in_progress`，在 workflow 结束后回报 `completed`。回报脚本分别调用 `/api/v1/deployments/candidate-runs` 和 `/api/v1/deployments/runs/update`，每次都传递 request id、project、target、commit、GitHub run URL，以及 candidate/deployment artifact 的精确 id 和 digest。失败路径也通过 `always()` 汇报 failure；回调失败不能把实际部署失败伪装成成功。
 
 若一次业务需求同时修改 blog 与 `snow-base/api`，两者仍由 snow-base Admin 分别发起、审批、dispatch、验证和记录。可以在需求或审计记录中引用同一个业务编号，但 blog workflow 不实现联合 manifest、联合 approval、组件消费或 partial-success 状态，也不因此获得 API 部署权限。
 
@@ -111,7 +113,7 @@ CI 失败、取消、超时或无法确认成功时，生产部署 job 不得进
 
 GitHub repository 的 `production` environment 需要配置：
 
-- `DEPLOY_APPROVAL_TOKEN`：来自 `snow-base` Admin 的 deployment approval service token。blog standalone 路径只使用 `deployments:request`、`deployments:verify`；该 token 不包含 `deployments:run-update`，也不包含 Cloudflare、Worker、D1、R2 或 snow-base API 部署权限。
+- `DEPLOY_APPROVAL_TOKEN`：来自 `snow-base` Admin 的 deployment service token。blog/site 使用 `deployments:request`、`deployments:verify` 和 `deployments:run-update`；该 token 不包含 Cloudflare、Worker、D1、R2 或 snow-base API 部署权限。`deployments:run-update` 仅用于回写 blog 自己的 Candidate Run 和 deployment run，不授予审批、API dispatch 或其他项目管理权限。
 - `VERCEL_TOKEN`：用于从 GitHub Actions 发布当前 Vercel 项目。
 - `VERCEL_ORG_ID`：Vercel org 或 team 标识。
 - `VERCEL_PROJECT_ID`：Vercel project 标识。

@@ -1,3 +1,5 @@
+import { appendFileSync } from "node:fs";
+
 const apiBaseUrl = (
 	process.env.DEPLOY_APPROVAL_API_BASE_URL ??
 	process.env.SNOW_BASE_API_BASE_URL ??
@@ -71,6 +73,12 @@ if (!response.ok || body?.ok !== true) {
 }
 
 const artifact = body.data.artifact;
+if (process.env.GITHUB_OUTPUT) {
+	appendFileSync(
+		process.env.GITHUB_OUTPUT,
+		`artifact-id=${artifact.id}\nartifact-digest=${artifact.digest}\n`,
+	);
+}
 console.log(`site candidate artifact ready: ${artifact.id} ${artifact.digest}`);
 console.log(
 	`snow-base Admin 可选择 project=${artifact.projectSlug} target=${artifact.target}`,

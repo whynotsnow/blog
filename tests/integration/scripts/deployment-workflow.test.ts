@@ -7,6 +7,20 @@ const workflow = fs.readFileSync(
 	path.resolve(import.meta.dirname, "../../../.github/workflows/CI.yml"),
 	"utf8",
 );
+const candidateCallback = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../scripts/report-deployment-candidate.mjs",
+	),
+	"utf8",
+);
+const deploymentCallback = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../scripts/report-deployment-run.mjs",
+	),
+	"utf8",
+);
 
 const canonicalDigestCommand =
 	"tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}'";
@@ -86,6 +100,47 @@ describe("Vercel artifact workflow contract", () => {
 		expect(selectedJob).toContain(
 			"node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output",
 		);
+	});
+
+	it("uses the target-neutral snow-base callback contract", () => {
+		expect(workflow).toContain("scripts/report-deployment-candidate.mjs");
+		expect(workflow).toContain("scripts/report-deployment-run.mjs");
+		expect(candidateCallback).toContain(
+			"/api/v1/deployments/candidate-runs",
+		);
+		expect(deploymentCallback).toContain("/api/v1/deployments/runs/update");
+		expect(candidateCallback).toContain("artifactId, artifactDigest");
+		expect(deploymentCallback).toContain("requestId");
+		expect(deploymentCallback).toContain("githubRunUrl");
+		expect(workflow).toContain("DEPLOYMENT_CALLBACK_STATUS: in_progress");
+		expect(workflow).toContain("DEPLOYMENT_CALLBACK_STATUS: completed");
+		expect(workflow).toContain("always() && github.event_name");
+	});
+
+	it("reports candidate completion after registration and deployment completion after Vercel", () => {
+		const candidateJob = jobSection(
+			"report-site-candidate-completion",
+			"deploy-selected-artifact",
+		);
+		const selectedJob = selectedJobSection();
+
+		expect(
+			candidateJob.indexOf(
+				"needs.register-site-candidate.outputs.artifact-id",
+			),
+		).toBeGreaterThan(-1);
+		expect(
+			candidateJob.indexOf("Report Candidate completion"),
+		).toBeGreaterThan(-1);
+		expect(
+			selectedJob.indexOf("Report deployment run in progress"),
+		).toBeGreaterThan(selectedJob.indexOf("Verify deployment approval"));
+		expect(
+			selectedJob.indexOf("Report deployment run in progress"),
+		).toBeLessThan(selectedJob.indexOf("Deploy Vercel production"));
+		expect(
+			workflow.indexOf("report-selected-deployment-run-completion:"),
+		).toBeGreaterThan(workflow.indexOf("Deploy Vercel production"));
 	});
 
 	it("normalizes direct and nested artifact roots into .vercel/output", () => {
