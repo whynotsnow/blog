@@ -1,13 +1,43 @@
 import { spawn, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { constants } from "node:fs";
 import { access } from "node:fs/promises";
 import { createServer } from "node:net";
-import { dirname, resolve } from "node:path";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const planRoot = resolve(repoRoot, "..", "blog.plan");
+function locatePlanRoot() {
+	const candidates = [];
+	const explicitPath = process.env.BLOG_SIDECAR_PATH?.trim();
+	if (explicitPath)
+		candidates.push(
+			isAbsolute(explicitPath)
+				? explicitPath
+				: resolve(repoRoot, explicitPath),
+		);
+	candidates.push(resolve(repoRoot, "..", "blog.plan"));
+	const result = spawnSync("git", ["rev-parse", "--git-common-dir"], {
+		cwd: repoRoot,
+		encoding: "utf8",
+	});
+	if (result.status === 0 && result.stdout.trim()) {
+		const commonDirValue = result.stdout.trim();
+		const commonDir = isAbsolute(commonDirValue)
+			? commonDirValue
+			: resolve(repoRoot, commonDirValue);
+		candidates.push(resolve(dirname(commonDir), "..", "blog.plan"));
+	}
+	return candidates
+		.filter((candidate, index) => candidates.indexOf(candidate) === index)
+		.find((candidate) =>
+			existsSync(resolve(candidate, "plan.config.json")),
+		);
+}
+
+const planRoot = locatePlanRoot() ?? resolve(repoRoot, "..", "blog.plan");
+const planRootDisplay = relative(repoRoot, planRoot) || ".";
 const planPackage = resolve(planRoot, "package.json");
 const planServer = resolve(planRoot, "server.mjs");
 const requestedPort = Number.parseInt(process.env.PORT || "4177", 10);
@@ -28,7 +58,7 @@ async function assertFile(filePath, message) {
 await assertFile(
 	planPackage,
 	[
-		"Missing sidecar planning repository at ../blog.plan.",
+		`Missing sidecar planning repository at ${planRootDisplay}.`,
 		"Restore or create the sidecar before running `pnpm dev:plan`.",
 	].join("\n"),
 );
@@ -36,7 +66,7 @@ await assertFile(
 await assertFile(
 	planServer,
 	[
-		"Found ../blog.plan, but it does not contain server.mjs.",
+		`Found ${planRootDisplay}, but it does not contain server.mjs.`,
 		"Check that the sidecar planning board has been initialized.",
 	].join("\n"),
 );
