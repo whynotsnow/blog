@@ -1,21 +1,59 @@
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
 const projectRoot = process.cwd();
-const sidecarRoot = path.resolve(projectRoot, "..", "blog.plan");
 const sidecarPath = "../blog.plan";
-const configPath = path.join(sidecarRoot, "plan.config.json");
-const indexPath = path.join(sidecarRoot, "index.json");
 const statusByPhase = {
 	demand: ["discussing", "needs-decision", "decided", "deferred"],
 	execution: ["ready", "running", "blocked", "done"],
 	archive: ["archived"],
 };
 
-function relativePath(filePath) {
-	return path.relative(projectRoot, filePath) || path.basename(filePath);
+function gitMainRepoRoot() {
+	const result = spawnSync("git", ["rev-parse", "--git-common-dir"], {
+		cwd: projectRoot,
+		encoding: "utf8",
+	});
+	if (result.status !== 0) return null;
+	const commonDir = result.stdout.trim();
+	if (!commonDir) return null;
+	return path.dirname(path.resolve(projectRoot, commonDir));
 }
+
+function resolveSidecar() {
+	const explicitPath = process.env.BLOG_SIDECAR_PATH?.trim();
+	if (explicitPath) {
+		return {
+			root: path.resolve(projectRoot, explicitPath),
+			detailPath: "$BLOG_SIDECAR_PATH",
+		};
+	}
+
+	const candidates = [
+		{
+			root: path.resolve(projectRoot, "..", "blog.plan"),
+			detailPath: "../blog.plan",
+		},
+	];
+	const mainRepoRoot = gitMainRepoRoot();
+	if (mainRepoRoot) {
+		candidates.push({
+			root: path.resolve(mainRepoRoot, "..", "blog.plan"),
+			detailPath: "../blog.plan",
+		});
+	}
+	return (
+		candidates.find((candidate) => fs.existsSync(candidate.root)) ??
+		candidates[0]
+	);
+}
+
+const resolvedSidecar = resolveSidecar();
+const sidecarRoot = resolvedSidecar.root;
+const configPath = path.join(sidecarRoot, "plan.config.json");
+const indexPath = path.join(sidecarRoot, "index.json");
 
 function fail(code, message, details = []) {
 	process.stdout.write(
@@ -37,7 +75,10 @@ function fail(code, message, details = []) {
 function readJson(filePath, code) {
 	if (!fs.existsSync(filePath)) {
 		fail(code, "Required sidecar data is unavailable.", [
-			{ path: relativePath(filePath), reason: "missing" },
+			{
+				path: `${resolvedSidecar.detailPath}/${path.basename(filePath)}`,
+				reason: "missing",
+			},
 		]);
 		return null;
 	}
@@ -46,7 +87,10 @@ function readJson(filePath, code) {
 		return JSON.parse(fs.readFileSync(filePath, "utf8"));
 	} catch {
 		fail("invalid_json", "Sidecar JSON could not be parsed.", [
-			{ path: relativePath(filePath), reason: "invalid-json" },
+			{
+				path: `${resolvedSidecar.detailPath}/${path.basename(filePath)}`,
+				reason: "invalid-json",
+			},
 		]);
 		return null;
 	}

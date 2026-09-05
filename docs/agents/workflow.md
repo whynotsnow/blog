@@ -48,7 +48,7 @@ pnpm --silent plan:status --json
 
 Only implement sidecar items with `status: ready` or `status: running`. Read the sidecar `AGENTS.md`, `plan.config.json`, target item, and linked plan before changing this repository. After implementation, record sanitized validation evidence in the sidecar `runs/` directory.
 
-The status command emits the Sidecar Contract v2 snapshot: `ok`, `schemaVersion`, project metadata, `source`, `generatedAt`, phase-grouped `counts`, complete item summaries, and ID-only `executable`, `blocked`, and `needsDecision` views. It must return `ok: false` with a stable `error.code`, safe message, and relative-path details when the sidecar is missing, malformed, or not v2-valid.
+The status command emits the Sidecar Contract v2 snapshot: `ok`, `schemaVersion`, project metadata, `source`, `generatedAt`, phase-grouped `counts`, complete item summaries, and ID-only `executable`, `blocked`, and `needsDecision` views. It must return `ok: false` with a stable `error.code`, safe message, and relative-path details when the sidecar is missing, malformed, or not v2-valid. Sidecar resolution checks `BLOG_SIDECAR_PATH`, the normal `../blog.plan` sibling, then the main checkout sibling discovered from Git's common directory; resolved machine paths are never emitted.
 
 Do not copy credentials, tokens, cookies, private keys, raw logs, local absolute paths, private URLs, hostnames, Agent Workspace local profile IDs, or personal identity data into tracked sidecar files. Main-repo commits that directly execute sidecar items should include `Plan-Item: <id>`; related non-execution commits may use `Related-Plan: <id>`.
 
