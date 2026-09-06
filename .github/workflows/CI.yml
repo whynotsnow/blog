@@ -464,17 +464,28 @@ jobs:
                   test "$TARGET" = "site"
                   test -n "$REQUESTED_COMMIT_SHA"
                   test "$REQUESTED_COMMIT_SHA" = "$GITHUB_COMMIT_SHA"
+            - name: Preflight deployment approval contract
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: contract
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: ${{ inputs.project_slug }}
+                  target: ${{ inputs.target }}
             - name: Report Candidate in progress
-              env:
-                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
-                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
-                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
-                  DEPLOYMENT_CALLBACK_STATUS: in_progress
-                  DEPLOYMENT_CALLBACK_PHASE: validation_completed
-              run: node scripts/report-deployment-candidate.mjs
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: candidate-callback
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: ${{ inputs.project_slug }}
+                  target: ${{ inputs.target }}
+                  commit-sha: ${{ inputs.commit_sha || github.sha }}
+                  request-id: ${{ inputs.request_id }}
+                  github-run-id: ${{ github.run_id }}
+                  github-run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  callback-status: in_progress
+                  phase: validation_completed
 
     deploy-production:
         name: Production Deploy
@@ -635,19 +646,31 @@ jobs:
                     exit 1
                   fi
                   echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${actual}" >> "$GITHUB_ENV"
+            - name: Prepare candidate artifact metadata
+              id: candidate-artifact-meta
+              run: echo "expires-at=$(date -u -d '+7 days' '+%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
             - name: Register site candidate artifact
               id: register
-              env:
-                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  DEPLOY_APPROVAL_PROJECT: blog
-                  DEPLOY_APPROVAL_TARGET: site
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
-                  DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ env.DEPLOY_APPROVAL_ARTIFACT_DIGEST }}
-                  DEPLOY_APPROVAL_ARTIFACT_ID: ${{ needs.build-vercel-artifact.outputs.artifact-id }}
-                  DEPLOY_APPROVAL_ARTIFACT_NAME: ${{ needs.build-vercel-artifact.outputs.artifact-name }}
-                  DEPLOY_APPROVAL_ARTIFACT_RUN_ID: ${{ github.run_id }}
-              run: node scripts/register-deployment-artifact.mjs
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: register-artifact
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: blog
+                  target: site
+                  commit-sha: ${{ inputs.commit_sha || github.sha }}
+                  artifact-type: vercel-prebuilt
+                  artifact-digest: ${{ env.DEPLOY_APPROVAL_ARTIFACT_DIGEST }}
+                  storage-provider: github-actions
+                  storage-key: ${{ needs.build-vercel-artifact.outputs.artifact-id }}
+                  artifact-role: candidate
+                  request-source: github-actions
+                  request-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  expires-at: ${{ steps.candidate-artifact-meta.outputs.expires-at }}
+                  build-status: succeeded
+                  validation-status: succeeded
+                  metadata-json: >-
+                      {"githubArtifactId":"${{ needs.build-vercel-artifact.outputs.artifact-id }}","githubArtifactRunId":"${{ github.run_id }}","githubArtifactName":"${{ needs.build-vercel-artifact.outputs.artifact-name }}","workflowMode":"candidate","protocolVersion":"v2"}
 
     report-site-candidate-completion:
         name: Report blog/site Candidate completion
@@ -669,20 +692,23 @@ jobs:
               with:
                   node-version: lts/*
             - name: Report Candidate completion
-              env:
-                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
-                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
-                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
-                  DEPLOYMENT_CALLBACK_STATUS: completed
-                  DEPLOYMENT_CALLBACK_CONCLUSION: ${{ (needs.ci-summary.result == 'success' && needs.report-site-candidate-start.result == 'success' && needs.build-vercel-artifact.result == 'success' && needs.register-site-candidate.result == 'success') && 'success' || 'failure' }}
-                  DEPLOYMENT_CALLBACK_PHASE: candidate_completed
-                  DEPLOYMENT_CALLBACK_ERROR_CODE: ${{ (needs.ci-summary.result == 'success' && needs.report-site-candidate-start.result == 'success' && needs.build-vercel-artifact.result == 'success' && needs.register-site-candidate.result == 'success') && '' || 'candidate_workflow_failed' }}
-                  DEPLOYMENT_ARTIFACT_ID: ${{ needs.register-site-candidate.outputs.artifact-id }}
-                  DEPLOYMENT_ARTIFACT_DIGEST: ${{ needs.register-site-candidate.outputs.artifact-digest }}
-              run: node scripts/report-deployment-candidate.mjs
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: candidate-callback
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: ${{ inputs.project_slug }}
+                  target: ${{ inputs.target }}
+                  commit-sha: ${{ inputs.commit_sha || github.sha }}
+                  request-id: ${{ inputs.request_id }}
+                  github-run-id: ${{ github.run_id }}
+                  github-run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  callback-status: completed
+                  conclusion: ${{ (needs.ci-summary.result == 'success' && needs.report-site-candidate-start.result == 'success' && needs.build-vercel-artifact.result == 'success' && needs.register-site-candidate.result == 'success') && 'success' || 'failure' }}
+                  phase: candidate_completed
+                  error-code: ${{ (needs.ci-summary.result == 'success' && needs.report-site-candidate-start.result == 'success' && needs.build-vercel-artifact.result == 'success' && needs.register-site-candidate.result == 'success') && '' || 'candidate_workflow_failed' }}
+                  artifact-id: ${{ needs.register-site-candidate.outputs.artifact-id }}
+                  artifact-digest: ${{ needs.register-site-candidate.outputs.artifact-digest }}
 
     deploy-selected-artifact:
         name: Deploy selected blog/site artifact
@@ -720,6 +746,14 @@ jobs:
                   printf '%s' "$ARTIFACT_RUN_ID" | grep -Eq '^[0-9]+$'
                   printf '%s' "$ARTIFACT_GITHUB_ID" | grep -Eq '^[0-9]+$'
                   test -n "$ARTIFACT_NAME"
+            - name: Preflight deployment approval contract
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: contract
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: ${{ inputs.project_slug }}
+                  target: ${{ inputs.target }}
             - name: Setup Node
               uses: actions/setup-node@v6
               with:
@@ -767,36 +801,65 @@ jobs:
                   digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
                   actual="sha256:${digest}"
                   test "$actual" = "${{ inputs.artifact_digest }}"
-            - name: Verify deployment approval
-              env:
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  DEPLOY_APPROVAL_PROJECT: blog
-                  DEPLOY_APPROVAL_TARGET: site
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha }}
-                  DEPLOY_APPROVAL_ARTIFACT_ID: ${{ inputs.artifact_id }}
-                  DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
-                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
-                  DEPLOY_APPROVAL_REQUEST_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_PROVIDER: github-actions
-                  DEPLOY_APPROVAL_ARTIFACT_STORAGE_KEY: ${{ inputs.artifact_github_id }}
-                  DEPLOY_APPROVAL_REQUEST_SOURCE: snow-base-admin
-                  DEPLOY_APPROVAL_WORKFLOW_MODE: selected-artifact
-                  DEPLOY_APPROVAL_CHANGE_SUMMARY: ${{ inputs.change_summary }}
-                  DEPLOY_APPROVAL_VALIDATION_SUMMARY: ${{ inputs.validation_summary || 'selected blog/site artifact was downloaded and digest-verified before approval consumption.' }}
-              run: node scripts/verify-deployment-approval.mjs
+            - name: Request or reuse selected artifact approval
+              id: request-approval
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: request-approval
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: blog
+                  target: site
+                  commit-sha: ${{ inputs.commit_sha }}
+                  request-source: snow-base-admin
+                  request-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  idempotency-key: ${{ inputs.request_id }}
+                  artifact-id: ${{ inputs.artifact_id }}
+                  artifact-digest: ${{ inputs.artifact_digest }}
+                  change-summary: ${{ inputs.change_summary }}
+                  validation-summary: ${{ inputs.validation_summary || 'selected blog/site artifact was downloaded and digest-verified before approval consumption.' }}
+            - name: Wait for selected artifact approval
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: wait-approval
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: blog
+                  target: site
+                  commit-sha: ${{ inputs.commit_sha }}
+                  request-id: ${{ steps.request-approval.outputs.approval-id }}
+                  artifact-id: ${{ inputs.artifact_id }}
+                  artifact-digest: ${{ inputs.artifact_digest }}
+                  wait-seconds: "900"
+                  poll-seconds: "15"
+            - name: Consume selected artifact approval
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: consume-approval
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: blog
+                  target: site
+                  commit-sha: ${{ inputs.commit_sha }}
+                  approval-id: ${{ steps.request-approval.outputs.approval-id }}
+                  artifact-id: ${{ inputs.artifact_id }}
+                  artifact-digest: ${{ inputs.artifact_digest }}
             - name: Report deployment run in progress
-              env:
-                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
-                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha }}
-                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
-                  DEPLOYMENT_ARTIFACT_ID: ${{ inputs.artifact_id }}
-                  DEPLOYMENT_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
-                  DEPLOYMENT_CALLBACK_STATUS: in_progress
-                  DEPLOYMENT_CALLBACK_PHASE: deployment_started
-              run: node scripts/report-deployment-run.mjs
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: deployment-callback
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: ${{ inputs.project_slug }}
+                  target: ${{ inputs.target }}
+                  commit-sha: ${{ inputs.commit_sha }}
+                  request-id: ${{ inputs.request_id }}
+                  artifact-id: ${{ inputs.artifact_id }}
+                  artifact-digest: ${{ inputs.artifact_digest }}
+                  github-run-id: ${{ github.run_id }}
+                  github-run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  callback-status: in_progress
+                  phase: deployment_started
             - name: Deploy Vercel production
               id: deploy-vercel
               env:
@@ -823,17 +886,20 @@ jobs:
               with:
                   node-version: lts/*
             - name: Report deployment run completion
-              env:
-                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  DEPLOY_APPROVAL_PROJECT: ${{ inputs.project_slug }}
-                  DEPLOY_APPROVAL_TARGET: ${{ inputs.target }}
-                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha }}
-                  DEPLOY_APPROVAL_REQUEST_ID: ${{ inputs.request_id }}
-                  DEPLOYMENT_ARTIFACT_ID: ${{ inputs.artifact_id }}
-                  DEPLOYMENT_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
-                  DEPLOYMENT_CALLBACK_STATUS: completed
-                  DEPLOYMENT_CALLBACK_CONCLUSION: ${{ (needs.ci-summary.result == 'success' && needs.deploy-selected-artifact.result == 'success') && 'success' || 'failure' }}
-                  DEPLOYMENT_CALLBACK_PHASE: deployment_completed
-                  DEPLOYMENT_CALLBACK_ERROR_CODE: ${{ (needs.ci-summary.result == 'success' && needs.deploy-selected-artifact.result == 'success') && '' || 'deployment_workflow_failed' }}
-              run: node scripts/report-deployment-run.mjs
+              uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+              with:
+                  operation: deployment-callback
+                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  project-slug: ${{ inputs.project_slug }}
+                  target: ${{ inputs.target }}
+                  commit-sha: ${{ inputs.commit_sha }}
+                  request-id: ${{ inputs.request_id }}
+                  artifact-id: ${{ inputs.artifact_id }}
+                  artifact-digest: ${{ inputs.artifact_digest }}
+                  github-run-id: ${{ github.run_id }}
+                  github-run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  callback-status: completed
+                  conclusion: ${{ (needs.ci-summary.result == 'success' && needs.deploy-selected-artifact.result == 'success') && 'success' || 'failure' }}
+                  phase: deployment_completed
+                  error-code: ${{ (needs.ci-summary.result == 'success' && needs.deploy-selected-artifact.result == 'success') && '' || 'deployment_workflow_failed' }}

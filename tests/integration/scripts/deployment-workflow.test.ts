@@ -7,23 +7,10 @@ const workflow = fs.readFileSync(
 	path.resolve(import.meta.dirname, "../../../.github/workflows/CI.yml"),
 	"utf8",
 );
-const candidateCallback = fs.readFileSync(
-	path.resolve(
-		import.meta.dirname,
-		"../../../scripts/report-deployment-candidate.mjs",
-	),
-	"utf8",
-);
-const deploymentCallback = fs.readFileSync(
-	path.resolve(
-		import.meta.dirname,
-		"../../../scripts/report-deployment-run.mjs",
-	),
-	"utf8",
-);
-
 const canonicalDigestCommand =
 	"tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}'";
+const deploymentApprovalAction =
+	"whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1";
 
 function jobSection(jobName: string, nextJobName: string) {
 	const start = workflow.indexOf(`    ${jobName}:`);
@@ -103,17 +90,27 @@ describe("Vercel artifact workflow contract", () => {
 	});
 
 	it("uses the target-neutral snow-base callback contract", () => {
-		expect(workflow).toContain("scripts/report-deployment-candidate.mjs");
-		expect(workflow).toContain("scripts/report-deployment-run.mjs");
-		expect(candidateCallback).toContain(
-			"/api/v1/deployments/candidate-runs",
+		expect(workflow).not.toContain(
+			"scripts/report-deployment-candidate.mjs",
 		);
-		expect(deploymentCallback).toContain("/api/v1/deployments/runs/update");
-		expect(candidateCallback).toContain("artifactId, artifactDigest");
-		expect(deploymentCallback).toContain("requestId");
-		expect(deploymentCallback).toContain("githubRunUrl");
-		expect(workflow).toContain("DEPLOYMENT_CALLBACK_STATUS: in_progress");
-		expect(workflow).toContain("DEPLOYMENT_CALLBACK_STATUS: completed");
+		expect(workflow).not.toContain("scripts/report-deployment-run.mjs");
+		expect(workflow).not.toContain(
+			"scripts/register-deployment-artifact.mjs",
+		);
+		expect(
+			workflow.match(new RegExp(deploymentApprovalAction, "gu")),
+		).toHaveLength(10);
+		expect(workflow).toContain("operation: contract");
+		expect(workflow).toContain("operation: register-artifact");
+		expect(workflow).toContain("operation: candidate-callback");
+		expect(workflow).toContain("operation: request-approval");
+		expect(workflow).toContain("operation: wait-approval");
+		expect(workflow).toContain("operation: consume-approval");
+		expect(workflow).toContain("operation: deployment-callback");
+		expect(workflow).toContain("idempotency-key: ${{ inputs.request_id }}");
+		expect(workflow).toContain(
+			"approval-id: ${{ steps.request-approval.outputs.approval-id }}",
+		);
 		expect(workflow).toContain("always() && github.event_name");
 	});
 
@@ -130,14 +127,16 @@ describe("Vercel artifact workflow contract", () => {
 			),
 		).toBeGreaterThan(-1);
 		expect(
-			candidateJob.indexOf("Report Candidate completion"),
+			candidateJob.indexOf("operation: candidate-callback"),
 		).toBeGreaterThan(-1);
 		expect(
-			selectedJob.indexOf("Report deployment run in progress"),
-		).toBeGreaterThan(selectedJob.indexOf("Verify deployment approval"));
-		expect(
-			selectedJob.indexOf("Report deployment run in progress"),
-		).toBeLessThan(selectedJob.indexOf("Deploy Vercel production"));
+			selectedJob.indexOf("phase: deployment_started"),
+		).toBeGreaterThan(
+			selectedJob.indexOf("Consume selected artifact approval"),
+		);
+		expect(selectedJob.indexOf("phase: deployment_started")).toBeLessThan(
+			selectedJob.indexOf("Deploy Vercel production"),
+		);
 		expect(
 			workflow.indexOf("report-selected-deployment-run-completion:"),
 		).toBeGreaterThan(workflow.indexOf("Deploy Vercel production"));

@@ -64,13 +64,13 @@ GitHub Actions 当前在 `snow build CI` workflow 级别设置 `ENABLE_CONTENT_S
 
 workflow dispatch 的 `mode` 有三种：
 
-- `candidate`：由 snow-base deployment intent 内部 dispatch，在 exact `main` commit 上完成 CI 和 Vercel prebuilt build，上传并重新下载到临时目录，通过 `scripts/normalize-vercel-artifact.mjs` 恢复为 `.vercel/output`，计算 post-round-trip digest，并通过 `scripts/register-deployment-artifact.mjs` 登记 `project=blog`、`target=site`、`artifactType=vercel-prebuilt` 的 v2 candidate；随后通过 `scripts/report-deployment-candidate.mjs` 回写 Candidate Run。该模式不部署生产。
+- `candidate`：由 snow-base deployment intent 内部 dispatch，在 exact `main` commit 上完成 CI 和 Vercel prebuilt build，上传并重新下载到临时目录，通过 `scripts/normalize-vercel-artifact.mjs` 恢复为 `.vercel/output`，计算 post-round-trip digest，并通过固定 SHA 的公开 deployment approval Action 登记 `project=blog`、`target=site`、`artifactType=vercel-prebuilt` 的 v2 candidate，再回写 Candidate Run。该模式不部署生产。
 - `selected-artifact`：由 snow-base Admin 传入已选 artifact 的 id、digest、GitHub run/name 和 request id。workflow 只下载并复算该 artifact，等待/消费对应审批，然后执行 Vercel prebuilt deploy；审批后不重新 build。
 - `production`：保留的 legacy/break-glass 手动发布路径，仍要求 full validation、构建产物 handoff、digest 校验和 owner approval，并且必须提供 `break_glass_reason`。
 
 `candidate` 和 `selected-artifact` 是由控制面调用的内部 workflow mode，不是用户必须按顺序手工执行的两个发布步骤。一次 Admin deployment intent 会在控制面内部复用或创建 candidate、绑定 artifact、等待 owner approval，再 dispatch selected-artifact。两种 mode 都 fail closed 校验 `blog/site` 的 project/target、exact commit、GitHub artifact identity 和 digest；selected-artifact 会 checkout Admin 指定的 `commit_sha`，而不是当前 workflow 事件的默认 branch HEAD。blog workflow 不接受 API、D1、R2 或 Worker Version 输入，也不 dispatch `snow-base/api` workflow。
 
-candidate workflow 会在验证阶段回报 `in_progress`，在 artifact 登记后回报 `completed`；部署 workflow 会在 Vercel deploy 前回报 deployment run `in_progress`，在 workflow 结束后回报 `completed`。回报脚本分别调用 `/api/v1/deployments/candidate-runs` 和 `/api/v1/deployments/runs/update`，每次都传递 request id、project、target、commit、GitHub run URL，以及 candidate/deployment artifact 的精确 id 和 digest。失败路径也通过 `always()` 汇报 failure；回调失败不能把实际部署失败伪装成成功。
+candidate workflow 会在验证阶段回报 `in_progress`，在 artifact 登记后回报 `completed`；部署 workflow 会在 Vercel deploy 前回报 deployment run `in_progress`，在 workflow 结束后回报 `completed`。这些 contract preflight、artifact registration、Candidate/Deployment callback 和 selected-artifact approval request/wait/consume 都由固定 SHA 的公开 deployment approval Action 承接，每次都传递 request id、project、target、commit、GitHub run URL，以及 candidate/deployment artifact 的精确 id 和 digest。失败路径也通过 `always()` 汇报 failure；回调失败不能把实际部署失败伪装成成功。
 
 若一次业务需求同时修改 blog 与 `snow-base/api`，两者仍由 snow-base Admin 分别发起、审批、dispatch、验证和记录。可以在需求或审计记录中引用同一个业务编号，但 blog workflow 不实现联合 manifest、联合 approval、组件消费或 partial-success 状态，也不因此获得 API 部署权限。
 
@@ -101,7 +101,7 @@ artifactType=vercel-prebuilt
 artifactDigest=sha256:<.vercel/output digest>
 ```
 
-当前 `blog/site` 目标按 `snow-base` 部署审批接入规范使用 `v2` artifact-bound approval：审批和消费同时绑定 `projectSlug`、`target`、`commitSha` 和 Vercel prebuilt artifact digest。candidate 通过 `scripts/register-deployment-artifact.mjs` 登记，selected-artifact 复用该 immutable identity。selected-artifact 对 v2 artifact 登记和审批接口 fail closed，不能回退到 v1.1；仅保留的 legacy/break-glass `production` 模式允许兼容旧接口行为。
+当前 `blog/site` 目标按 `snow-base` 部署审批接入规范使用 `v2` artifact-bound approval：审批和消费同时绑定 `projectSlug`、`target`、`commitSha` 和 Vercel prebuilt artifact digest。candidate 和 selected-artifact 的 contract 调用统一使用 `whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1`；selected-artifact 先按同一 artifact identity 复用/请求 approval，再等待并消费该 approval，不重新创建第二份产物或审批。selected-artifact 对 v2 artifact 登记和审批接口 fail closed，不能回退到 v1.1；仅保留的 legacy/break-glass `production` 模式允许兼容旧接口行为。
 
 当前 workflow 使用 GitHub Actions artifact handoff 解耦构建验证和部署：`Build Vercel Artifact` job 是唯一会执行 `vercel build --prod` 的生产产物 job，并以 artifact 上传/下载往返后、经 `scripts/normalize-vercel-artifact.mjs` 归一化的目录表示产出 digest；`Production Deploy` job 不运行构建、不运行测试，只下载已上传的 artifact、归一化为 `.vercel/output`、使用同一 canonical tar command 复算、等待 snow-base Admin 审批，并执行 `vercel deploy --prebuilt --prod`。上传前目录的 digest 不属于 candidate identity，因为 GitHub artifact 往返可能规范化文件元数据或目录层级。
 
@@ -199,11 +199,11 @@ pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKE
 pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
 actions/upload-artifact -> actions/download-artifact -> scripts/normalize-vercel-artifact.mjs -> .vercel/output
 tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}'
-node scripts/verify-deployment-approval.mjs
+whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1 (contract / register-artifact / request-approval / wait-approval / consume-approval / callbacks)
 pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
 ```
 
-`vercel deploy --prebuilt` 发布的是 `Build Vercel Artifact` job 生成、上传并重新下载后登记 digest，再由 `Production Deploy` job 下载且使用同一 canonical tar command 复算 digest 一致的 `.vercel/output`。审批步骤必须位于 full validation、`vercel build`、artifact upload/download 和 digest 校验之后、`vercel deploy --prebuilt --prod` 之前。digest 只是审批对象的一部分，不替代 owner approval。受控 workflow 不依赖 `ignoreCommand` 的自定义放行变量；它通过 Vercel CLI 的 prebuilt deploy 通道发布已构建产物。
+`vercel deploy --prebuilt` 发布的是 `Build Vercel Artifact` job 生成、上传并重新下载后登记 digest，再由 `Production Deploy` job 下载且使用同一 canonical tar command 复算 digest 一致的 `.vercel/output`。常规 selected-artifact workflow 通过上面固定 SHA 的 Action 完成 contract preflight、approval request/wait/consume 和 callback；保留的 legacy/break-glass `production` job 才使用 `node scripts/verify-deployment-approval.mjs` 兼容旧接口。审批步骤必须位于 full validation、`vercel build`、artifact upload/download 和 digest 校验之后、`vercel deploy --prebuilt --prod` 之前。digest 只是审批对象的一部分，不替代 owner approval。受控 workflow 不依赖 `ignoreCommand` 的自定义放行变量；它通过 Vercel CLI 的 prebuilt deploy 通道发布已构建产物。
 
 ## 故障排查
 
