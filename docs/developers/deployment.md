@@ -101,7 +101,7 @@ artifactType=vercel-prebuilt
 artifactDigest=sha256:<.vercel/output digest>
 ```
 
-当前 `blog/site` 目标按 `snow-base` 部署审批接入规范使用 `v2` artifact-bound approval：审批和消费同时绑定 `projectSlug`、`target`、`commitSha` 和 Vercel prebuilt artifact digest。candidate 和 selected-artifact 的 contract 调用统一使用 `whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1`；selected-artifact 先按同一 artifact identity 复用/请求 approval，再等待并消费该 approval，不重新创建第二份产物或审批。selected-artifact 对 v2 artifact 登记和审批接口 fail closed，不能回退到 v1.1；仅保留的 legacy/break-glass `production` 模式允许兼容旧接口行为。
+当前 `blog/site` 目标按 `snow-base` 部署审批接入规范使用 `v2` artifact-bound approval：审批和消费同时绑定 `projectSlug`、`target`、`commitSha` 和 Vercel prebuilt artifact digest。candidate 和 selected-artifact 的 contract 调用统一使用 `whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac`；selected-artifact 先按同一 artifact identity 复用/请求 approval，再等待并消费该 approval，不重新创建第二份产物或审批。selected-artifact 对 v2 artifact 登记和审批接口 fail closed，不能回退到 v1.1；仅保留的 legacy/break-glass `production` 模式允许兼容旧接口行为。
 
 当前 workflow 使用 GitHub Actions artifact handoff 解耦构建验证和部署：`Build Vercel Artifact` job 是唯一会执行 `vercel build --prod` 的生产产物 job，并以 artifact 上传/下载往返后、经 `scripts/normalize-vercel-artifact.mjs` 归一化的目录表示产出 digest；`Production Deploy` job 不运行构建、不运行测试，只下载已上传的 artifact、归一化为 `.vercel/output`、使用同一 canonical tar command 复算、等待 snow-base Admin 审批，并执行 `vercel deploy --prebuilt --prod`。上传前目录的 digest 不属于 candidate identity，因为 GitHub artifact 往返可能规范化文件元数据或目录层级。
 
@@ -199,7 +199,7 @@ pnpm dlx vercel@latest pull --yes --environment=production --token "$VERCEL_TOKE
 pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
 actions/upload-artifact -> actions/download-artifact -> scripts/normalize-vercel-artifact.mjs -> .vercel/output
 tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}'
-whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1 (contract / register-artifact / request-approval / wait-approval / consume-approval / callbacks)
+whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac (contract / register-artifact / request-approval / wait-approval / consume-approval / callbacks)
 pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
 ```
 

@@ -10,7 +10,7 @@ const workflow = fs.readFileSync(
 const canonicalDigestCommand =
 	"tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}'";
 const deploymentApprovalAction =
-	"whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1";
+	"whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac";
 
 function jobSection(jobName: string, nextJobName: string) {
 	const start = workflow.indexOf(`    ${jobName}:`);

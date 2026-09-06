@@ -61,7 +61,7 @@ jobs:
     echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${digest}" >> "$GITHUB_ENV"
 
 - name: Preflight deployment approval contract
-  uses: whynotsnow/snow-base-deployment-approval-action@c87a2dc06f9c5b20b6d29e48ebd6294cecb704d1
+  uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
   with:
     operation: contract
     token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
