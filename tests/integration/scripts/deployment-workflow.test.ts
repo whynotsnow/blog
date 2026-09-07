@@ -11,6 +11,24 @@ const canonicalDigestCommand =
 	"tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}'";
 const deploymentApprovalAction =
 	"whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac";
+const deploymentRunReporter = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../scripts/report-deployment-run.mjs",
+	),
+	"utf8",
+);
+const productionSmoke = fs.readFileSync(
+	path.resolve(import.meta.dirname, "../../../scripts/production-smoke.mjs"),
+	"utf8",
+);
+const smokeEvidenceReporter = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../scripts/report-deployment-smoke.mjs",
+	),
+	"utf8",
+);
 
 function jobSection(jobName: string, nextJobName: string) {
 	const start = workflow.indexOf(`    ${jobName}:`);
@@ -90,16 +108,15 @@ describe("Vercel artifact workflow contract", () => {
 	});
 
 	it("uses the target-neutral snow-base callback contract", () => {
-		expect(workflow).not.toContain(
-			"scripts/report-deployment-candidate.mjs",
-		);
-		expect(workflow).not.toContain("scripts/report-deployment-run.mjs");
+		expect(workflow).toContain("scripts/report-deployment-run.mjs");
+		expect(workflow).toContain("scripts/production-smoke.mjs");
+		expect(workflow).toContain("scripts/report-deployment-smoke.mjs");
 		expect(workflow).not.toContain(
 			"scripts/register-deployment-artifact.mjs",
 		);
 		expect(
 			workflow.match(new RegExp(deploymentApprovalAction, "gu")),
-		).toHaveLength(10);
+		).toHaveLength(9);
 		expect(workflow).toContain("operation: contract");
 		expect(workflow).toContain("operation: register-artifact");
 		expect(workflow).toContain("operation: candidate-callback");
@@ -112,6 +129,25 @@ describe("Vercel artifact workflow contract", () => {
 			"approval-id: ${{ steps.request-approval.outputs.approval-id }}",
 		);
 		expect(workflow).toContain("always() && github.event_name");
+		expect(deploymentRunReporter).toContain(
+			"/api/v1/deployments/runs/update",
+		);
+		expect(deploymentRunReporter).toContain(
+			"deployment-run-id=${deploymentRunId}",
+		);
+		expect(productionSmoke).toContain("/robots.txt");
+		expect(productionSmoke).toContain("smoke-outcome=");
+		expect(productionSmoke).toContain("smoke-failure-code=");
+		expect(smokeEvidenceReporter).toContain(
+			"/api/v1/deployments/integration-evidence/smoke",
+		);
+		expect(smokeEvidenceReporter).toContain("deploymentRunId");
+		expect(smokeEvidenceReporter).toContain(
+			'outcome !== "succeeded" && outcome !== "failed"',
+		);
+		expect(smokeEvidenceReporter).toContain(
+			'outcome === "failed" && !failureCode?.trim()',
+		);
 	});
 
 	it("reports candidate completion after registration and deployment completion after Vercel", () => {
@@ -120,6 +156,9 @@ describe("Vercel artifact workflow contract", () => {
 			"deploy-selected-artifact",
 		);
 		const selectedJob = selectedJobSection();
+		const completionJob = selectedJob.slice(
+			selectedJob.indexOf("report-selected-deployment-run-completion:"),
+		);
 
 		expect(
 			candidateJob.indexOf(
@@ -140,6 +179,23 @@ describe("Vercel artifact workflow contract", () => {
 		expect(
 			workflow.indexOf("report-selected-deployment-run-completion:"),
 		).toBeGreaterThan(workflow.indexOf("Deploy Vercel production"));
+		expect(completionJob).toContain("id: report-deployment-run");
+		expect(completionJob).toContain(
+			"node scripts/report-deployment-run.mjs",
+		);
+		expect(completionJob).toContain(
+			"steps.report-deployment-run.outputs.deployment-run-id",
+		);
+		expect(
+			completionJob.indexOf("node scripts/report-deployment-run.mjs"),
+		).toBeLessThan(
+			completionJob.indexOf("node scripts/production-smoke.mjs"),
+		);
+		expect(
+			completionJob.indexOf("node scripts/production-smoke.mjs"),
+		).toBeLessThan(
+			completionJob.indexOf("node scripts/report-deployment-smoke.mjs"),
+		);
 	});
 
 	it("normalizes direct and nested artifact roots into .vercel/output", () => {
