@@ -908,6 +908,32 @@ jobs:
               env:
                   DEPLOYMENT_SMOKE_BASE_URL: https://blog.whynotsnow.com
               run: node scripts/production-smoke.mjs
+            - name: Classify smoke evidence outcome
+              id: classify-smoke
+              if: always()
+              env:
+                  PUBLIC_SMOKE_OUTCOME: ${{ steps.public-smoke.outcome }}
+                  PUBLIC_SMOKE_FAILURE_CODE: ${{ steps.public-smoke.outputs.smoke-failure-code }}
+                  DEPLOYMENT_RUN_REPORT_OUTCOME: ${{ steps.report-deployment-run.outcome }}
+                  CI_SUMMARY_OUTCOME: ${{ needs.ci-summary.result }}
+                  DEPLOYMENT_JOB_OUTCOME: ${{ needs.deploy-selected-artifact.result }}
+              run: |
+                  if [[ "$CI_SUMMARY_OUTCOME" != "success" || "$DEPLOYMENT_JOB_OUTCOME" != "success" || "$DEPLOYMENT_RUN_REPORT_OUTCOME" != "success" ]]; then
+                    echo "outcome=failed" >> "$GITHUB_OUTPUT"
+                    echo "failure-code=deployment_workflow_failed" >> "$GITHUB_OUTPUT"
+                  elif [[ "$PUBLIC_SMOKE_OUTCOME" == "success" ]]; then
+                    echo "outcome=succeeded" >> "$GITHUB_OUTPUT"
+                    echo "failure-code=" >> "$GITHUB_OUTPUT"
+                  elif [[ "$PUBLIC_SMOKE_OUTCOME" == "failure" ]]; then
+                    echo "outcome=failed" >> "$GITHUB_OUTPUT"
+                    echo "failure-code=${PUBLIC_SMOKE_FAILURE_CODE:-public_smoke_failed}" >> "$GITHUB_OUTPUT"
+                  elif [[ "$PUBLIC_SMOKE_OUTCOME" == "skipped" ]]; then
+                    echo "outcome=failed" >> "$GITHUB_OUTPUT"
+                    echo "failure-code=smoke_skipped" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "outcome=failed" >> "$GITHUB_OUTPUT"
+                    echo "failure-code=smoke_outcome_unknown" >> "$GITHUB_OUTPUT"
+                  fi
             - name: Record run-bound smoke evidence
               if: always()
               env:
@@ -916,9 +942,9 @@ jobs:
                   DEPLOY_APPROVAL_PROJECT: blog
                   DEPLOY_APPROVAL_TARGET: site
                   DEPLOYMENT_RUN_ID: ${{ steps.report-deployment-run.outputs.deployment-run-id }}
-                  DEPLOYMENT_SMOKE_OUTCOME: ${{ steps.public-smoke.outcome == 'success' && 'succeeded' || 'failed' }}
-                  DEPLOYMENT_SMOKE_FAILURE_CODE: ${{ steps.public-smoke.outputs.smoke-failure-code || 'deployment_workflow_failed' }}
+                  DEPLOYMENT_SMOKE_OUTCOME: ${{ steps.classify-smoke.outputs.outcome }}
+                  DEPLOYMENT_SMOKE_FAILURE_CODE: ${{ steps.classify-smoke.outputs.failure-code }}
               run: node scripts/report-deployment-smoke.mjs
             - name: Fail when public smoke failed
-              if: ${{ steps.public-smoke.outcome != 'success' }}
+              if: ${{ steps.classify-smoke.outputs.outcome != 'succeeded' }}
               run: exit 1

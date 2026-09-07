@@ -93,7 +93,9 @@ candidate workflow 会在验证阶段回报 `in_progress`，在 artifact 登记�
     `data.id` 作为 `deploymentRunId`；没有该 ID 时不得继续后续 smoke。
 13. 仅在 Vercel 部署成功后访问生产站点首页和 `/robots.txt`，再将成功或带脱敏
     `failureCode` 的失败结果写入 `/api/v1/deployments/integration-evidence/smoke`。smoke 或 evidence
-    回写失败时 workflow 失败，不报告成功。
+    回写失败时 workflow 失败，不报告成功。成功 evidence 不携带 `failureCode`；真实 smoke 失败使用
+    `public_smoke_http_status`、`public_smoke_marker_missing` 或 `public_smoke_request_failed`，跳过使用
+    `smoke_skipped`，deployment workflow 或 deployment run 回写失败使用 `deployment_workflow_failed`。
 
 审批绑定：
 

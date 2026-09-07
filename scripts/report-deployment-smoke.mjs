@@ -11,6 +11,7 @@ const target = process.env.DEPLOY_APPROVAL_TARGET ?? "site";
 const deploymentRunId = process.env.DEPLOYMENT_RUN_ID;
 const outcome = process.env.DEPLOYMENT_SMOKE_OUTCOME;
 const failureCode = process.env.DEPLOYMENT_SMOKE_FAILURE_CODE;
+const normalizedFailureCode = failureCode?.trim();
 
 function fail(message) {
 	console.error(message);
@@ -25,7 +26,9 @@ if (!deploymentRunId?.trim())
 	fail("缺少精确 deploymentRunId，拒绝写入 smoke evidence。");
 if (outcome !== "succeeded" && outcome !== "failed")
 	fail("smoke outcome 必须是 succeeded 或 failed。");
-if (outcome === "failed" && !failureCode?.trim())
+if (outcome === "succeeded" && normalizedFailureCode)
+	fail("succeeded smoke evidence 不得携带 failureCode。");
+if (outcome === "failed" && !normalizedFailureCode)
 	fail("failed smoke evidence 必须提供 failureCode。");
 
 const response = await fetch(
@@ -42,7 +45,9 @@ const response = await fetch(
 			target,
 			deploymentRunId,
 			outcome,
-			...(failureCode ? { failureCode } : {}),
+			...(outcome === "failed"
+				? { failureCode: normalizedFailureCode }
+				: {}),
 		}),
 	},
 );

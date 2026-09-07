@@ -111,6 +111,13 @@ describe("Vercel artifact workflow contract", () => {
 		expect(workflow).toContain("scripts/report-deployment-run.mjs");
 		expect(workflow).toContain("scripts/production-smoke.mjs");
 		expect(workflow).toContain("scripts/report-deployment-smoke.mjs");
+		expect(workflow).toContain("id: classify-smoke");
+		expect(workflow).toContain("failure-code=deployment_workflow_failed");
+		expect(workflow).toContain("failure-code=smoke_skipped");
+		expect(workflow).toContain("failure-code=smoke_outcome_unknown");
+		expect(workflow).not.toContain(
+			"steps.public-smoke.outputs.smoke-failure-code || 'deployment_workflow_failed'",
+		);
 		expect(workflow).not.toContain(
 			"scripts/register-deployment-artifact.mjs",
 		);
@@ -138,6 +145,9 @@ describe("Vercel artifact workflow contract", () => {
 		expect(productionSmoke).toContain("/robots.txt");
 		expect(productionSmoke).toContain("smoke-outcome=");
 		expect(productionSmoke).toContain("smoke-failure-code=");
+		expect(productionSmoke).toContain("public_smoke_http_status");
+		expect(productionSmoke).toContain("public_smoke_marker_missing");
+		expect(productionSmoke).toContain("public_smoke_request_failed");
 		expect(smokeEvidenceReporter).toContain(
 			"/api/v1/deployments/integration-evidence/smoke",
 		);
@@ -146,7 +156,10 @@ describe("Vercel artifact workflow contract", () => {
 			'outcome !== "succeeded" && outcome !== "failed"',
 		);
 		expect(smokeEvidenceReporter).toContain(
-			'outcome === "failed" && !failureCode?.trim()',
+			'outcome === "failed" && !normalizedFailureCode',
+		);
+		expect(smokeEvidenceReporter).toContain(
+			"succeeded smoke evidence 不得携带 failureCode",
 		);
 	});
 
@@ -185,6 +198,9 @@ describe("Vercel artifact workflow contract", () => {
 		);
 		expect(completionJob).toContain(
 			"steps.report-deployment-run.outputs.deployment-run-id",
+		);
+		expect(completionJob).toContain(
+			"steps.classify-smoke.outputs.failure-code",
 		);
 		expect(
 			completionJob.indexOf("node scripts/report-deployment-run.mjs"),
