@@ -74,6 +74,7 @@ jobs:
     backfill:
         name: Backfill ${{ matrix.artifactId }}
         needs: prepare
+        environment: production
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
