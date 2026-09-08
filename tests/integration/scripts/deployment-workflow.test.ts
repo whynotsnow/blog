@@ -2,13 +2,18 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { CANONICAL_GNU_TAR_OPTIONS } from "../../../scripts/vercel-archive.mjs";
 
 const workflow = fs.readFileSync(
 	path.resolve(import.meta.dirname, "../../../.github/workflows/CI.yml"),
 	"utf8",
 );
-const canonicalDigestCommand =
-	"tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}'";
+const canonicalWorkflowTarOptions = CANONICAL_GNU_TAR_OPTIONS.map((option) =>
+	option.includes(" ")
+		? `${option.slice(0, option.indexOf("=") + 1)}'${option.slice(option.indexOf("=") + 1)}'`
+		: option,
+).join(" ");
+const canonicalDigestCommand = `tar ${canonicalWorkflowTarOptions} -cf - -C .vercel output | sha256sum | awk '{print $1}'`;
 const deploymentApprovalAction =
 	"whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac";
 const deploymentRunReporter = fs.readFileSync(
@@ -40,16 +45,42 @@ function jobSection(jobName: string, nextJobName: string) {
 
 describe("Vercel artifact workflow contract", () => {
 	it("uses one metadata-normalizing digest command everywhere", () => {
-		const commandMatches = workflow.match(
-			/tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C \.vercel output \| sha256sum \| awk '\{print \$1\}'/g,
-		);
+		expect(CANONICAL_GNU_TAR_OPTIONS).toEqual([
+			"--sort=name",
+			"--mtime=UTC 1970-01-01",
+			"--owner=0",
+			"--group=0",
+			"--numeric-owner",
+			"--mode=0644",
+			"--format=gnu",
+		]);
+		expect(CANONICAL_GNU_TAR_OPTIONS).not.toContain("--no-xattrs");
+		expect(CANONICAL_GNU_TAR_OPTIONS).not.toContain("--no-acls");
+		const commandMatches = workflow
+			.split("\n")
+			.filter((line) => line.includes(canonicalDigestCommand));
 
 		expect(commandMatches).toHaveLength(4);
 		expect(
-			commandMatches?.every(
-				(command) => command === canonicalDigestCommand,
+			commandMatches.every((line) =>
+				line.includes(canonicalDigestCommand),
 			),
 		).toBe(true);
+	});
+
+	it("stores the Vercel upload without ZIP compression for central streaming", () => {
+		const buildJob = jobSection(
+			"build-vercel-artifact",
+			"deploy-production",
+		);
+		const uploadStep = buildJob.match(
+			/ {12}- name: Upload Vercel artifact\n([\s\S]*?)(?=\n {12}- name:)/,
+		)?.[1];
+		expect(uploadStep).toBeDefined();
+		expect(uploadStep).toContain("uses: actions/upload-artifact@v4");
+		expect(uploadStep?.match(/^\s+compression-level: (.+)$/gm)).toEqual([
+			"                  compression-level: 0",
+		]);
 	});
 
 	it("computes the build output digest only after upload and round-trip download", () => {
@@ -80,7 +111,15 @@ describe("Vercel artifact workflow contract", () => {
 			"artifact-ids: ${{ steps.upload.outputs.artifact-id }}",
 		);
 		expect(buildJob).toContain(
+			"node scripts/create-vercel-archive.mjs .vercel/output vercel-output.tar.gz vercel-output-metadata.json",
+		);
+		expect(buildJob).toContain("vercel-output.tar.gz");
+		expect(buildJob).toContain("vercel-output-metadata.json");
+		expect(buildJob).toContain(
 			"node scripts/normalize-vercel-artifact.mjs .artifact-roundtrip .vercel/output",
+		);
+		expect(buildJob).toContain(
+			"node scripts/verify-vercel-archive.mjs .artifact-roundtrip .vercel/output",
 		);
 		expect(
 			workflow.match(/node scripts\/normalize-vercel-artifact\.mjs/g),
@@ -104,6 +143,18 @@ describe("Vercel artifact workflow contract", () => {
 		);
 		expect(selectedJob).toContain(
 			"node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output",
+		);
+		expect(candidateJob).toContain(
+			"node scripts/verify-vercel-archive.mjs .artifact-download .vercel/output",
+		);
+		expect(selectedJob).toContain(
+			"node scripts/verify-vercel-archive.mjs .artifact-download .vercel/output",
+		);
+		expect(candidateJob).toContain(
+			'"canonicalArchiveName":"vercel-output.tar.gz"',
+		);
+		expect(candidateJob).toContain(
+			'"capability":"central-artifact-promotion"',
 		);
 	});
 
@@ -189,6 +240,27 @@ describe("Vercel artifact workflow contract", () => {
 		expect(selectedJob.indexOf("phase: deployment_started")).toBeLessThan(
 			selectedJob.indexOf("Deploy Vercel production"),
 		);
+		expect(selectedJob).toContain(
+			"node scripts/promote-deployment-artifact.mjs",
+		);
+		expect(
+			selectedJob.indexOf(
+				"Promote selected artifact to central R2 archive",
+			),
+		).toBeGreaterThan(
+			selectedJob.indexOf("Wait for selected artifact approval"),
+		);
+		expect(
+			selectedJob.indexOf(
+				"Promote selected artifact to central R2 archive",
+			),
+		).toBeLessThan(
+			selectedJob.indexOf("Consume selected artifact approval"),
+		);
+		expect(
+			selectedJob.indexOf("Consume selected artifact approval"),
+		).toBeLessThan(selectedJob.indexOf("Deploy Vercel production"));
+		expect(selectedJob).not.toContain("vercel@latest build");
 		expect(
 			workflow.indexOf("report-selected-deployment-run-completion:"),
 		).toBeGreaterThan(workflow.indexOf("Deploy Vercel production"));

@@ -209,7 +209,30 @@ whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939
 pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
 ```
 
-`vercel deploy --prebuilt` 发布的是 `Build Vercel Artifact` job 生成、上传并重新下载后登记 digest，再由 `Production Deploy` job 下载且使用同一 canonical tar command 复算 digest 一致的 `.vercel/output`。常规 selected-artifact workflow 通过上面固定 SHA 的 Action 完成 contract preflight、approval request/wait/consume 和 callback；保留的 legacy/break-glass `production` job 才使用 `node scripts/verify-deployment-approval.mjs` 兼容旧接口。审批步骤必须位于 full validation、`vercel build`、artifact upload/download 和 digest 校验之后、`vercel deploy --prebuilt --prod` 之前。digest 只是审批对象的一部分，不替代 owner approval。受控 workflow 不依赖 `ignoreCommand` 的自定义放行变量；它通过 Vercel CLI 的 prebuilt deploy 通道发布已构建产物。
+`Build Vercel Artifact` job 还会从 exact `.vercel/output` 生成固定规则的
+`vercel-output.tar.gz` 与 `vercel-output-metadata.json`，并和部署所需的 `.vercel/output` 一起上传。
+该上传步骤显式设置 `actions/upload-artifact@v4` 的 `compression-level: 0`，以 ZIP store 模式
+封装 prebuilt files 和已压缩的 canonical archive。这是 central streaming contract 的性能与内存边界：
+中央按流选取 canonical archive，避免额外 ZIP deflate/inflate 的 CPU 与缓冲开销；不改变 source
+artifact digest 或 archive digest，只改变外层 ZIP 的编码与大小。容量限制仍需覆盖完整 ZIP，不能只按
+内嵌 gzip 大小估算。
+archive 使用 GNU tar 的 name sort、epoch mtime、numeric owner/group、0644 mode 与 gzip `-n -9`；
+source artifact digest 和 archive SHA-256 都登记在 artifact metadata 中。常规 selected-artifact
+workflow 下载并复验同一个 GitHub Artifact 后，按 `wait approval -> central-promotion -> consume
+approval -> deployment callback -> vercel deploy` 顺序运行。central promotion 请求
+`POST /api/v1/deployments/artifacts/:id/central-promotion`，只发送 `{ approvalId }`，由 snow-base
+根据已登记的 GitHub artifact identity 获取 exact archive 并写入 R2；blog workflow 不持有 R2/D1
+权限，也不在 promotion 后重新构建。promotion、identity、digest 或 approval 校验失败时停止消费
+approval 和 Vercel 部署。
+
+生产 artifact/digest 只使用 GitHub Ubuntu runner 上的 GNU tar canonical path。macOS 本地缺少
+GNU tar 时，archive fixture 会使用 deterministic portable ustar writer 复验内容与 metadata；该
+fallback 不会生成生产 Candidate，也不属于生产 digest contract。
+
+保留的 legacy/break-glass `production` job 才使用
+`node scripts/verify-deployment-approval.mjs` 兼容旧接口；它不是 selected-artifact 的常规入口。
+受控 workflow 不依赖 `ignoreCommand` 的自定义放行变量；它通过 Vercel CLI 的 prebuilt deploy 通道
+发布已构建产物。
 
 ## 故障排查
 

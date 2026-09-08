@@ -80,6 +80,7 @@ permissions:
 
 env:
     ENABLE_CONTENT_SYNC: "false"
+    LC_ALL: C
 
 jobs:
     plan:
@@ -331,6 +332,8 @@ jobs:
         environment: production
         outputs:
             artifact-digest: ${{ steps.digest.outputs.artifact-digest }}
+            archive-digest: ${{ steps.archive-roundtrip.outputs.archive-digest }}
+            archive-size: ${{ steps.archive-roundtrip.outputs.archive-size }}
             artifact-name: ${{ steps.artifact-meta.outputs.artifact-name }}
             artifact-id: ${{ steps.upload.outputs.artifact-id }}
             artifact-url: ${{ steps.upload.outputs.artifact-url }}
@@ -398,6 +401,10 @@ jobs:
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: pnpm dlx vercel@latest build --prod --yes --token "$VERCEL_TOKEN"
 
+            - name: Create canonical Vercel archive
+              id: archive
+              run: node scripts/create-vercel-archive.mjs .vercel/output vercel-output.tar.gz vercel-output-metadata.json
+
             - name: Prepare artifact metadata
               id: artifact-meta
               run: |
@@ -410,9 +417,13 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: ${{ steps.artifact-meta.outputs.artifact-name }}
-                  path: .vercel/output/**
+                  path: |
+                      .vercel/output/**
+                      vercel-output.tar.gz
+                      vercel-output-metadata.json
                   if-no-files-found: error
                   include-hidden-files: true
+                  compression-level: 0
                   retention-days: 7
 
             - name: Clear pre-upload output before round-trip
@@ -437,6 +448,12 @@ jobs:
                   digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
                   echo "artifact-digest=sha256:${digest}" >> "$GITHUB_OUTPUT"
                   echo "Post-round-trip Vercel prebuilt artifact digest: sha256:${digest}"
+
+            - name: Verify round-trip canonical Vercel archive
+              id: archive-roundtrip
+              env:
+                  EXPECTED_SOURCE_DIGEST: ${{ steps.digest.outputs.artifact-digest }}
+              run: node scripts/verify-vercel-archive.mjs .artifact-roundtrip .vercel/output "$EXPECTED_SOURCE_DIGEST"
 
     report-site-candidate-start:
         name: Report blog/site Candidate start
@@ -646,6 +663,10 @@ jobs:
                     exit 1
                   fi
                   echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${actual}" >> "$GITHUB_ENV"
+            - name: Verify candidate canonical Vercel archive
+              env:
+                  EXPECTED_SOURCE_DIGEST: ${{ needs.build-vercel-artifact.outputs.artifact-digest }}
+              run: node scripts/verify-vercel-archive.mjs .artifact-download .vercel/output "$EXPECTED_SOURCE_DIGEST"
             - name: Prepare candidate artifact metadata
               id: candidate-artifact-meta
               run: echo "expires-at=$(date -u -d '+7 days' '+%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
@@ -670,7 +691,7 @@ jobs:
                   build-status: succeeded
                   validation-status: succeeded
                   metadata-json: >-
-                      {"githubArtifactId":"${{ needs.build-vercel-artifact.outputs.artifact-id }}","githubArtifactRunId":"${{ github.run_id }}","githubArtifactName":"${{ needs.build-vercel-artifact.outputs.artifact-name }}","workflowMode":"candidate","protocolVersion":"v2"}
+                      {"canonicalArchiveName":"vercel-output.tar.gz","githubArtifactId":"${{ needs.build-vercel-artifact.outputs.artifact-id }}","githubArtifactRunId":"${{ github.run_id }}","githubArtifactName":"${{ needs.build-vercel-artifact.outputs.artifact-name }}","sourceArtifactDigest":"${{ needs.build-vercel-artifact.outputs.artifact-digest }}","archiveDigest":"${{ needs.build-vercel-artifact.outputs.archive-digest }}","archiveSizeBytes":${{ needs.build-vercel-artifact.outputs.archive-size }},"capability":"central-artifact-promotion","workflowMode":"candidate","protocolVersion":"v2"}
 
     report-site-candidate-completion:
         name: Report blog/site Candidate completion
@@ -801,6 +822,10 @@ jobs:
                   digest="$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
                   actual="sha256:${digest}"
                   test "$actual" = "${{ inputs.artifact_digest }}"
+            - name: Verify selected canonical Vercel archive
+              env:
+                  EXPECTED_SOURCE_DIGEST: ${{ inputs.artifact_digest }}
+              run: node scripts/verify-vercel-archive.mjs .artifact-download .vercel/output "$EXPECTED_SOURCE_DIGEST"
             - name: Request or reuse selected artifact approval
               id: request-approval
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
@@ -832,6 +857,14 @@ jobs:
                   artifact-digest: ${{ inputs.artifact_digest }}
                   wait-seconds: "900"
                   poll-seconds: "15"
+            - name: Promote selected artifact to central R2 archive
+              id: central-promotion
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_ARTIFACT_ID: ${{ inputs.artifact_id }}
+                  DEPLOY_APPROVAL_APPROVAL_ID: ${{ steps.request-approval.outputs.approval-id }}
+              run: node scripts/promote-deployment-artifact.mjs
             - name: Consume selected artifact approval
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
