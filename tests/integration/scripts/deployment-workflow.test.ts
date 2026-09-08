@@ -126,6 +126,30 @@ describe("Vercel artifact workflow contract", () => {
 		).toHaveLength(4);
 	});
 
+	it("extracts exact-ID downloads directly into the canonical artifact root", () => {
+		const downloadSteps = [
+			...workflow.matchAll(
+				/ {12}- name: [^\n]+\n {14}uses: actions\/download-artifact@v4\n([\s\S]*?)(?=\n {12}- name:)/g,
+			),
+		]
+			.map((match) => match[1])
+			.filter((step) => step.includes("artifact-ids:"));
+		expect(downloadSteps).toHaveLength(2);
+		for (const step of downloadSteps) {
+			expect(step.match(/^\s+merge-multiple: (.+)$/gm)).toEqual([
+				"                  merge-multiple: true",
+			]);
+		}
+		expect(downloadSteps[0]).toContain(
+			"artifact-ids: ${{ steps.upload.outputs.artifact-id }}",
+		);
+		expect(downloadSteps[0]).toContain("path: .artifact-roundtrip");
+		expect(downloadSteps[1]).toContain(
+			"artifact-ids: ${{ inputs.artifact_github_id }}",
+		);
+		expect(downloadSteps[1]).toContain("path: .artifact-download");
+	});
+
 	it("keeps candidate and selected deployment verification fail-closed", () => {
 		const candidateJob = jobSection(
 			"register-site-candidate",

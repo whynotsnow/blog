@@ -433,6 +433,7 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                   artifact-ids: ${{ steps.upload.outputs.artifact-id }}
+                  merge-multiple: true
                   path: .artifact-roundtrip
 
             - name: Normalize downloaded Vercel artifact
@@ -813,6 +814,7 @@ jobs:
                   repository: ${{ github.repository }}
                   run-id: ${{ inputs.artifact_run_id }}
                   artifact-ids: ${{ inputs.artifact_github_id }}
+                  merge-multiple: true
                   path: .artifact-download
             - name: Normalize downloaded Vercel artifact
               run: node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output

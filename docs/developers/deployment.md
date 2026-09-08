@@ -216,6 +216,10 @@ pnpm dlx vercel@latest deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
 中央按流选取 canonical archive，避免额外 ZIP deflate/inflate 的 CPU 与缓冲开销；不改变 source
 artifact digest 或 archive digest，只改变外层 ZIP 的编码与大小。容量限制仍需覆盖完整 ZIP，不能只按
 内嵌 gzip 大小估算。
+按 exact artifact ID 下载时必须设置 `merge-multiple: true`，让 gzip、metadata 与 `.vercel/output`
+直接位于指定下载根目录。否则 `download-artifact@v4` 会增加 artifact-name 子目录，即使只有一个 ID；
+output normalization 的递归查找会成功，但严格根目录 archive 复验会 fail closed。该设置只统一解包
+路径，不放宽 artifact ID 选择或 digest/metadata 校验。
 archive 使用 GNU tar 的 name sort、epoch mtime、numeric owner/group、0644 mode 与 gzip `-n -9`；
 source artifact digest 和 archive SHA-256 都登记在 artifact metadata 中。常规 selected-artifact
 workflow 下载并复验同一个 GitHub Artifact 后，按 `wait approval -> central-promotion -> consume
