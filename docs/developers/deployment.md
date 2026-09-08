@@ -222,12 +222,27 @@ output normalization 的递归查找会成功，但严格根目录 archive 复�
 路径，不放宽 artifact ID 选择或 digest/metadata 校验。
 archive 使用 GNU tar 的 name sort、epoch mtime、numeric owner/group、0644 mode 与 gzip `-n -9`；
 source artifact digest 和 archive SHA-256 都登记在 artifact metadata 中。常规 selected-artifact
-workflow 下载并复验同一个 GitHub Artifact 后，按 `wait approval -> central-promotion -> consume
-approval -> deployment callback -> vercel deploy` 顺序运行。central promotion 请求
-`POST /api/v1/deployments/artifacts/:id/central-promotion`，只发送 `{ approvalId }`，由 snow-base
-根据已登记的 GitHub artifact identity 获取 exact archive 并写入 R2；blog workflow 不持有 R2/D1
-权限，也不在 promotion 后重新构建。promotion、identity、digest 或 approval 校验失败时停止消费
-approval 和 Vercel 部署。
+workflow 下载并复验同一个 GitHub Artifact 后，按 `wait approval -> multipart promotion -> consume
+approval -> deployment callback -> vercel deploy` 顺序运行。blog runner 使用
+`scripts/promote-deployment-artifact.mjs` 将已复验的同一 `vercel-output.tar.gz` 分片上传：先以 artifact
+ID、source/archive digest、archive size、`selected-production` purpose 和 approval ID 初始化，再按服务端
+返回的 part size 上传各 part，最后以相同 identity 和 part count 完成归档。当前契约每片上限为 8 MiB、
+最多 64 片；客户端仍以 init 响应为准并在超限时 fail closed。只有 complete 返回
+`archiveStatus=promoted`，或 init 返回 identity-exact 的 promoted reuse，workflow 才能消费 approval。
+blog 不持有 R2/D1 权限，也不在 promotion 后重新构建。任何 identity、digest、size、part、approval 或
+complete 校验失败都会停止消费 approval 和 Vercel 部署。
+
+`.github/workflows/backfill-vercel-artifacts.yml` 是独立的历史补档入口，只能通过
+`workflow_dispatch` 在 `main` 上显式运行。一次必须提供一个完整 slot，可选第二个；每个 slot 包含中央
+artifact ID、已登记 source digest、exact GitHub run ID 和 exact GitHub artifact ID。workflow 逐个下载
+legacy artifact、normalize `.vercel/output`、重建并复验 deterministic canonical archive，再以
+`historical-backfill` purpose 执行同一 multipart promotion。它不会扫描历史记录，也不 request、wait、
+consume approval 或执行 deploy；snow-base 只允许已有成功 deployment run 和 used approval 的同一
+artifact identity 进入该 purpose。
+
+大 ZIP 的 normalize、tar/gzip 和 SHA-256 工作必须留在 GitHub runner。不要恢复由 Cloudflare Free-plan
+Worker 下载 raw ZIP、转换 archive 或整包缓冲大 gzip 的路径，也不要依赖 Paid plan 的 `limits.cpu_ms`
+扩容来掩盖该边界。
 
 生产 artifact/digest 只使用 GitHub Ubuntu runner 上的 GNU tar canonical path。macOS 本地缺少
 GNU tar 时，archive fixture 会使用 deterministic portable ustar writer 复验内容与 metadata；该

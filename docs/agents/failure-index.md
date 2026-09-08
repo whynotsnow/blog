@@ -95,6 +95,11 @@ This index clusters known failure patterns so agents can recognize them quickly 
 - Symptom: a candidate digest computed before `actions/upload-artifact@v4` does not match the digest computed after `actions/download-artifact@v4`, although the artifact bytes download successfully.
 - Playbook: [vercel-artifact-pre-roundtrip-digest](./runtime-playbook.md#vercel-artifact-pre-roundtrip-digest)
 
+### cloudflare-free-plan-archive-promotion
+
+- Symptom: central archive repair or promotion returns 503 after a Worker downloads, converts, hashes, or buffers a large Vercel artifact.
+- Playbook: [cloudflare-free-plan-archive-promotion](./runtime-playbook.md#cloudflare-free-plan-archive-promotion)
+
 ### mermaid-prerender-ci-browser-lifecycle
 
 - Symptom: CI Mermaid prerender tests fail because Chromium was not installed in the job, or production build fails with `page.close` / `page.evaluate` reporting that the browser context was already closed.

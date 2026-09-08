@@ -825,6 +825,7 @@ jobs:
                   actual="sha256:${digest}"
                   test "$actual" = "${{ inputs.artifact_digest }}"
             - name: Verify selected canonical Vercel archive
+              id: verify-selected-archive
               env:
                   EXPECTED_SOURCE_DIGEST: ${{ inputs.artifact_digest }}
               run: node scripts/verify-vercel-archive.mjs .artifact-download .vercel/output "$EXPECTED_SOURCE_DIGEST"
@@ -859,13 +860,18 @@ jobs:
                   artifact-digest: ${{ inputs.artifact_digest }}
                   wait-seconds: "900"
                   poll-seconds: "15"
-            - name: Promote selected artifact to central R2 archive
-              id: central-promotion
+            - name: Upload selected artifact to central R2 archive
+              id: multipart-promotion
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
                   DEPLOY_APPROVAL_ARTIFACT_ID: ${{ inputs.artifact_id }}
+                  DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
                   DEPLOY_APPROVAL_APPROVAL_ID: ${{ steps.request-approval.outputs.approval-id }}
+                  DEPLOY_APPROVAL_ARCHIVE_PATH: .artifact-download/vercel-output.tar.gz
+                  DEPLOY_APPROVAL_ARCHIVE_DIGEST: ${{ steps.verify-selected-archive.outputs.archive-digest }}
+                  DEPLOY_APPROVAL_ARCHIVE_SIZE_BYTES: ${{ steps.verify-selected-archive.outputs.archive-size }}
+                  DEPLOY_APPROVAL_PROMOTION_PURPOSE: selected-production
               run: node scripts/promote-deployment-artifact.mjs
             - name: Consume selected artifact approval
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac

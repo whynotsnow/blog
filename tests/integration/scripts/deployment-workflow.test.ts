@@ -269,17 +269,23 @@ describe("Vercel artifact workflow contract", () => {
 		);
 		expect(
 			selectedJob.indexOf(
-				"Promote selected artifact to central R2 archive",
+				"Upload selected artifact to central R2 archive",
 			),
 		).toBeGreaterThan(
 			selectedJob.indexOf("Wait for selected artifact approval"),
 		);
 		expect(
 			selectedJob.indexOf(
-				"Promote selected artifact to central R2 archive",
+				"Upload selected artifact to central R2 archive",
 			),
 		).toBeLessThan(
 			selectedJob.indexOf("Consume selected artifact approval"),
+		);
+		expect(selectedJob).toContain(
+			"DEPLOY_APPROVAL_PROMOTION_PURPOSE: selected-production",
+		);
+		expect(selectedJob).toContain(
+			"DEPLOY_APPROVAL_ARCHIVE_PATH: .artifact-download/vercel-output.tar.gz",
 		);
 		expect(
 			selectedJob.indexOf("Consume selected artifact approval"),

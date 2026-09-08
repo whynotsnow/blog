@@ -310,6 +310,21 @@ Use:
 - Keep the digest guard fail closed; a mismatch must stop before approval consumption and Vercel production deployment.
 - Retain a workflow contract test that checks upload/download ordering and a Linux-level normalized-directory digest check. Do not replace the guard with a weaker byte-only or pre-upload digest.
 
+### cloudflare-free-plan-archive-promotion
+
+Pattern:
+
+- A central Worker that downloads a large legacy Vercel ZIP, normalizes it, creates a deterministic archive, or buffers the full gzip can exceed Cloudflare Free-plan CPU limits and return 503.
+- Raising `limits.cpu_ms` is not a valid Free-plan repair, and moving the same whole-body work behind another Worker route preserves the failure mode.
+
+Use:
+
+- Keep legacy ZIP normalization, deterministic tar/gzip creation, size checks, and SHA-256 work on the GitHub runner.
+- Upload the verified canonical gzip through the source-backed multipart promotion API. Bind init, every part, and completion to the existing central artifact ID and source digest; never create a replacement deployment identity.
+- Keep each request within the server-declared part size and part count. Treat part conflicts, identity drift, and incomplete completion as fail-closed errors.
+- In selected production, finish promotion before consuming approval. For historical backfill, require explicit exact run/artifact IDs and use `historical-backfill` without requesting, approving, consuming, or deploying.
+- Do not restore Worker-side ZIP conversion, full-archive buffering, or a Paid-plan-only CPU dependency.
+
 ### playwright-spec-split-concurrency-drift
 
 Pattern:

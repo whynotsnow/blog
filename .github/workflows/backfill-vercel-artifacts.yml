@@ -1,0 +1,124 @@
+name: Backfill Vercel Artifact Archives
+
+on:
+    workflow_dispatch:
+        inputs:
+            slot_1_artifact_id:
+                description: Central artifact id for slot 1
+                required: true
+                type: string
+            slot_1_artifact_digest:
+                description: Registered source sha256 digest for slot 1
+                required: true
+                type: string
+            slot_1_run_id:
+                description: Exact GitHub Actions run id for slot 1
+                required: true
+                type: string
+            slot_1_github_artifact_id:
+                description: Exact GitHub artifact id for slot 1
+                required: true
+                type: string
+            slot_2_artifact_id:
+                description: Central artifact id for optional slot 2
+                required: false
+                type: string
+            slot_2_artifact_digest:
+                description: Registered source sha256 digest for optional slot 2
+                required: false
+                type: string
+            slot_2_run_id:
+                description: Exact GitHub Actions run id for optional slot 2
+                required: false
+                type: string
+            slot_2_github_artifact_id:
+                description: Exact GitHub artifact id for optional slot 2
+                required: false
+                type: string
+
+permissions:
+    contents: read
+    actions: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.run_id }}
+    cancel-in-progress: false
+
+jobs:
+    prepare:
+        name: Validate Explicit Backfill Slots
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        outputs:
+            matrix: ${{ steps.slots.outputs.matrix }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+            - name: Set up Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+            - name: Validate one or two complete artifact slots
+              id: slots
+              env:
+                  BACKFILL_1_ARTIFACT_ID: ${{ inputs.slot_1_artifact_id }}
+                  BACKFILL_1_ARTIFACT_DIGEST: ${{ inputs.slot_1_artifact_digest }}
+                  BACKFILL_1_RUN_ID: ${{ inputs.slot_1_run_id }}
+                  BACKFILL_1_GITHUB_ARTIFACT_ID: ${{ inputs.slot_1_github_artifact_id }}
+                  BACKFILL_2_ARTIFACT_ID: ${{ inputs.slot_2_artifact_id }}
+                  BACKFILL_2_ARTIFACT_DIGEST: ${{ inputs.slot_2_artifact_digest }}
+                  BACKFILL_2_RUN_ID: ${{ inputs.slot_2_run_id }}
+                  BACKFILL_2_GITHUB_ARTIFACT_ID: ${{ inputs.slot_2_github_artifact_id }}
+              run: node scripts/prepare-artifact-backfill.mjs
+
+    backfill:
+        name: Backfill ${{ matrix.artifactId }}
+        needs: prepare
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            max-parallel: 1
+            matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+            - name: Set up Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+            - name: Validate promotion credential
+              env:
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+              run: test -n "$DEPLOY_APPROVAL_TOKEN"
+            - name: Download exact legacy GitHub artifact
+              uses: actions/download-artifact@v4
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  repository: ${{ github.repository }}
+                  run-id: ${{ matrix.runId }}
+                  artifact-ids: ${{ matrix.githubArtifactId }}
+                  merge-multiple: true
+                  path: .artifact-download
+            - name: Normalize legacy Vercel artifact
+              run: node scripts/normalize-vercel-artifact.mjs .artifact-download .vercel/output
+            - name: Create canonical archive from normalized output
+              id: archive
+              run: |
+                  mkdir -p .canonical
+                  node scripts/create-vercel-archive.mjs .vercel/output .canonical/vercel-output.tar.gz .canonical/vercel-output-metadata.json
+            - name: Verify registered source artifact digest
+              env:
+                  ACTUAL_SOURCE_DIGEST: ${{ steps.archive.outputs.source-digest }}
+                  EXPECTED_SOURCE_DIGEST: ${{ matrix.artifactDigest }}
+              run: test "$ACTUAL_SOURCE_DIGEST" = "$EXPECTED_SOURCE_DIGEST"
+            - name: Upload historical artifact to central R2 archive
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_ARTIFACT_ID: ${{ matrix.artifactId }}
+                  DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ matrix.artifactDigest }}
+                  DEPLOY_APPROVAL_ARCHIVE_PATH: .canonical/vercel-output.tar.gz
+                  DEPLOY_APPROVAL_ARCHIVE_DIGEST: ${{ steps.archive.outputs.archive-digest }}
+                  DEPLOY_APPROVAL_ARCHIVE_SIZE_BYTES: ${{ steps.archive.outputs.archive-size }}
+                  DEPLOY_APPROVAL_PROMOTION_PURPOSE: historical-backfill
+              run: node scripts/promote-deployment-artifact.mjs

@@ -213,6 +213,16 @@
 			"playbook": "docs/agents/runtime-playbook.md#vercel-artifact-pre-roundtrip-digest"
 		},
 		{
+			"id": "cloudflare-free-plan-archive-promotion",
+			"cluster": "deployment-archive",
+			"symptoms": [
+				"central archive promotion or repair returns 503 while processing a large Vercel artifact",
+				"a Cloudflare Worker downloads, converts, hashes, or buffers the complete legacy ZIP or canonical gzip",
+				"the proposed repair depends on Paid-plan Worker CPU limits"
+			],
+			"playbook": "docs/agents/runtime-playbook.md#cloudflare-free-plan-archive-promotion"
+		},
+		{
 			"id": "mermaid-prerender-ci-browser-lifecycle",
 			"cluster": "build-pipeline",
 			"symptoms": [
