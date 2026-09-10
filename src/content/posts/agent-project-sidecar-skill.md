@@ -119,14 +119,14 @@ flowchart LR
 在当前 blog 项目中，最重要的第一步是检查 sidecar 状态：
 
 ```bash
-pnpm --silent plan:status --json
+pnpm --silent sidecar:status --json
 ```
 
 默认只有 `ready` 或 `running` 状态的 task 可以直接执行。RM 的 `discussing`、`needs-decision`、`decided` 和 task 的 `blocked` 不能被自动当成实现授权。
 
 一次 sidecar-backed work 通常这样走：
 
-1. 在主仓库运行 `pnpm --silent plan:status --json`。
+1. 在主仓库运行 `pnpm --silent sidecar:status --json`。
 2. 找到可执行 task，并查看它所属的 RM（如果有）。
 3. 读取 sidecar 中的 RM、task、task plan 和 relevant decisions。
 4. 回到主仓库实现代码、内容或文档变更。
@@ -171,7 +171,7 @@ Sidecar 不只是“多放几个 Markdown 文件”。它让计划项、执行�
 当前 blog 项目已经把 `../blog.sidecar` 作为正式 planning sidecar。典型用途包括：
 
 - 在做结构性重构前先形成 plan。
-- 用 `pnpm --silent plan:status --json` 判断是否有可执行 item。
+- 用 `pnpm --silent sidecar:status --json` 判断是否有可执行 item。
 - 把 routine run records 和 validation notes 放在 sidecar。
 - 主仓库 commit 通过 `Plan-Item` 或 `Related-Plan` 关联计划。
 - 避免把过程性记录塞进 README 或 `docs/agents/execution-log.md`。

@@ -100,8 +100,8 @@ pnpm test:affected
 pnpm test:plan:ci
 pnpm test:affected:ci
 pnpm test:impact:check
-pnpm dev:plan
-pnpm plan:status
+pnpm sidecar
+pnpm sidecar:status
 pnpm format:check
 pnpm lint
 pnpm lint:md
@@ -109,7 +109,7 @@ pnpm lint:md
 
 先运行 `pnpm test:plan` 查看本地快速模式的改动影响范围；需要自动执行选择结果时运行 `pnpm test:affected`。本地模式不会自动执行 `verify:full`，无法分类或建议完整回归的路径会以风险提示输出。CI 或远程 Push 场景使用 `pnpm test:plan:ci` 与 `pnpm test:affected:ci`，此时高风险路径会升级到完整回归。`pnpm test:impact:check` 会确认 `src/components/modules/**` 与 `tests/e2e/**` 均已录入 Impact Map，避免新增模块在 CI 中静默回退到全量验证。`pnpm type-check` 检查纯 TypeScript 项目，`pnpm type-check:scripts` 使用 `tsconfig.scripts.json` 对 Node 脚本执行 `checkJs` 检查，`pnpm type-check:declarations` 使用 `--isolatedDeclarations` 检查导出声明边界，已接入 CI Quality Checks，但不会在本地 precommit 中阻塞提交。`pnpm type-check:svelte` 使用 `svelte-check` 检查 `.svelte` 组件脚本、模板和 Props 诊断，`pnpm type-check:tests` 检查 Unit、Integration、Playwright 和测试配置。`pnpm test:fast` 运行 Vitest 快速层。
 
-`pnpm dev:plan` 会启动相邻 `../blog.sidecar` sidecar 的本地预览面板，并打开 RM/task 首页；也可以通过 `pnpm dev:plan -- BLOG-RM-0001` 或 `pnpm dev:plan -- BLOG-TASK-0001` 直接打开指定对象页面。自动化或仅检查 URL 时使用 `pnpm dev:plan -- --print`，只启动不打开浏览器时使用 `pnpm dev:plan -- --no-open`。`pnpm plan:status` 读取 v3 sidecar，分别输出 RM、task 和可执行 task 状态。Sidecar 用于保存需求、任务、Agent plan、决策、执行记录、验证摘要和 handoff；产品源码、部署文件、运行配置和正式项目文档仍属于当前仓库。
+`pnpm sidecar` 会启动相邻 `../blog.sidecar` sidecar 的本地预览面板，并打开 RM/task 首页；也可以通过 `pnpm sidecar -- BLOG-RM-0001` 或 `pnpm sidecar -- BLOG-TASK-0001` 直接打开指定对象页面。自动化或仅检查 URL 时使用 `pnpm sidecar -- --print`，只启动不打开浏览器时使用 `pnpm sidecar -- --no-open`。`pnpm sidecar:status` 读取 v3 sidecar，分别输出 RM、task 和可执行 task 状态。Sidecar 用于保存需求、任务、Agent plan、决策、执行记录、验证摘要和 handoff；产品源码、部署文件、运行配置和正式项目文档仍属于当前仓库。
 
 需要浏览器冒烟测试时，先运行 `pnpm test:smoke:install` 安装 Chromium，再运行 `pnpm test:smoke`。该命令只运行关键路由；完整浏览器回归使用 `pnpm test:e2e:full`。Playwright 会自动启动 Astro dev server，不需要手动运行 `pnpm dev`。为避免复用旧的 Vite/Astro 状态，Playwright 默认不会复用已有本地服务；只有确认当前服务是刚启动且状态可信时，才使用 `PLAYWRIGHT_REUSE_SERVER=1 pnpm test:e2e:full`。
 

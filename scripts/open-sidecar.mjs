@@ -8,7 +8,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-function locatePlanRoot() {
+function locateSidecarRoot() {
 	const candidates = [];
 	const explicitPath = process.env.BLOG_SIDECAR_PATH?.trim();
 	if (explicitPath)
@@ -36,10 +36,11 @@ function locatePlanRoot() {
 		);
 }
 
-const planRoot = locatePlanRoot() ?? resolve(repoRoot, "..", "blog.sidecar");
-const planRootDisplay = relative(repoRoot, planRoot) || ".";
-const planPackage = resolve(planRoot, "package.json");
-const planServer = resolve(planRoot, "server.mjs");
+const sidecarRoot =
+	locateSidecarRoot() ?? resolve(repoRoot, "..", "blog.sidecar");
+const sidecarRootDisplay = relative(repoRoot, sidecarRoot) || ".";
+const sidecarPackage = resolve(sidecarRoot, "package.json");
+const sidecarServer = resolve(sidecarRoot, "server.mjs");
 const requestedPort = Number.parseInt(process.env.PORT || "4177", 10);
 const args = process.argv.slice(2);
 const shouldPrintOnly = args.includes("--print");
@@ -56,18 +57,18 @@ async function assertFile(filePath, message) {
 }
 
 await assertFile(
-	planPackage,
+	sidecarPackage,
 	[
-		`Missing sidecar planning repository at ${planRootDisplay}.`,
-		"Restore or create the sidecar before running `pnpm dev:plan`.",
+		`Missing sidecar repository at ${sidecarRootDisplay}.`,
+		"Restore or create the sidecar before running `pnpm sidecar`.",
 	].join("\n"),
 );
 
 await assertFile(
-	planServer,
+	sidecarServer,
 	[
-		`Found ${planRootDisplay}, but it does not contain server.mjs.`,
-		"Check that the sidecar planning board has been initialized.",
+		`Found ${sidecarRootDisplay}, but it does not contain server.mjs.`,
+		"Check that the sidecar preview board has been initialized.",
 	].join("\n"),
 );
 
@@ -96,7 +97,7 @@ async function findAvailablePort(startPort) {
 	}
 
 	console.error(
-		`No available dev plan port found from ${startPort} to ${endPort}.`,
+		`No available sidecar preview port found from ${startPort} to ${endPort}.`,
 	);
 	process.exit(1);
 }
@@ -120,17 +121,17 @@ if (shouldPrintOnly) {
 	process.exit(0);
 }
 
-console.log(`Starting blog plan board on ${previewUrl}`);
-console.log("Use PORT=<port> pnpm dev:plan to choose another port.");
+console.log(`Starting blog sidecar preview on ${previewUrl}`);
+console.log("Use PORT=<port> pnpm sidecar to choose another port.");
 
-const child = spawn(process.execPath, [planServer], {
-	cwd: planRoot,
+const child = spawn(process.execPath, [sidecarServer], {
+	cwd: sidecarRoot,
 	env: { ...process.env, PORT: String(port) },
 	stdio: "inherit",
 });
 
 child.on("error", (error) => {
-	console.error(`Failed to start plan board: ${error.message}`);
+	console.error(`Failed to start sidecar preview: ${error.message}`);
 	process.exit(1);
 });
 

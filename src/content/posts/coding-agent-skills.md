@@ -61,7 +61,7 @@ comment: true
 
 1. 从 `AGENTS.md` 进入，确认仓库强制规则。
 2. 按任务范围读取 `docs/agents/workflow.md`、`project-map.md`、`runtime-playbook.md` 或对应 `docs/developers/` 文档。
-3. 如果任务来自 sidecar，运行 `pnpm --silent plan:status --json`，只执行 `ready` 或 `running` 的 item。
+3. 如果任务来自 sidecar，运行 `pnpm --silent sidecar:status --json`，只执行 `ready` 或 `running` 的 item。
 4. 实现时遵守 `service layer`、`Design layer`、`runtime module` 和 `content pipeline` 的 ownership boundary。
 5. 运行 `pnpm test:plan` 获取 impact-based validation plan。
 6. 按计划运行最小充分验证，例如 `pnpm lint:md`、`pnpm check`、`pnpm test:integration`、`pnpm build:astro` 或 Playwright smoke。

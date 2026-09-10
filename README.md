@@ -139,7 +139,7 @@ pnpm dev:prod-content
 | `pnpm new-post -- <filename>` | 创建文章模板。 |
 | `pnpm content:prepare` | 准备配置锁定的外部内容版本。 |
 | `pnpm font:prepare` | 根据内容和 UI 文本生成字体子集。 |
-| `pnpm plan:status` | 查看相邻 `../blog.sidecar` sidecar 状态。 |
+| `pnpm sidecar:status` | 查看相邻 `../blog.sidecar` sidecar 的 RM/task 状态。 |
 
 更多命令和失败处理见 [开发工作流](./docs/developers/development.md)。
 

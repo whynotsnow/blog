@@ -43,7 +43,7 @@ Use the adjacent `../blog.sidecar` repository for plan-managed work. It stores p
 Before selecting plan-backed work, run:
 
 ```bash
-pnpm --silent plan:status --json
+pnpm --silent sidecar:status --json
 ```
 
 Only implement sidecar items with `status: ready` or `status: running`. Read the sidecar `AGENTS.md`, `sidecar.config.json`, target item, and linked plan before changing this repository. After implementation, record sanitized validation evidence in the sidecar `runs/` directory.
