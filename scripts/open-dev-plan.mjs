@@ -17,7 +17,7 @@ function locatePlanRoot() {
 				? explicitPath
 				: resolve(repoRoot, explicitPath),
 		);
-	candidates.push(resolve(repoRoot, "..", "blog.plan"));
+	candidates.push(resolve(repoRoot, "..", "blog.sidecar"));
 	const result = spawnSync("git", ["rev-parse", "--git-common-dir"], {
 		cwd: repoRoot,
 		encoding: "utf8",
@@ -27,16 +27,16 @@ function locatePlanRoot() {
 		const commonDir = isAbsolute(commonDirValue)
 			? commonDirValue
 			: resolve(repoRoot, commonDirValue);
-		candidates.push(resolve(dirname(commonDir), "..", "blog.plan"));
+		candidates.push(resolve(dirname(commonDir), "..", "blog.sidecar"));
 	}
 	return candidates
 		.filter((candidate, index) => candidates.indexOf(candidate) === index)
 		.find((candidate) =>
-			existsSync(resolve(candidate, "plan.config.json")),
+			existsSync(resolve(candidate, "sidecar.config.json")),
 		);
 }
 
-const planRoot = locatePlanRoot() ?? resolve(repoRoot, "..", "blog.plan");
+const planRoot = locatePlanRoot() ?? resolve(repoRoot, "..", "blog.sidecar");
 const planRootDisplay = relative(repoRoot, planRoot) || ".";
 const planPackage = resolve(planRoot, "package.json");
 const planServer = resolve(planRoot, "server.mjs");

@@ -35,7 +35,7 @@ comment: true
 | --- | --- |
 | [agent-docs：让项目文档有稳定 owner](/posts/agent-docs-skill/) | README、AGENTS、`docs/developers/` 和 `docs/agents/` 的职责边界。 |
 | [agent-workspace：让 Agent 操作有本地契约](/posts/agent-workspace-skill/) | `.agent-workspace/manifest.json`、project-local tooling、public knowledge 和 local state。 |
-| [agent-project-sidecar：让计划与执行可追踪](/posts/agent-project-sidecar-skill/) | `../blog.plan`、plan items、decisions、runs、validation notes 和 handoffs。 |
+| [agent-project-sidecar：让计划与执行可追踪](/posts/agent-project-sidecar-skill/) | `../blog.sidecar`、plan items、decisions、runs、validation notes 和 handoffs。 |
 
 三篇专题不是孤立教程。它们共同回答一个问题：当一个项目越来越复杂时，Coding Agent 应该如何知道“该读什么、能改什么、如何验证、哪里记录”。
 
@@ -74,7 +74,7 @@ comment: true
 
 三者最重要的配合点是 ownership boundary。
 
-README 是项目入口，不是变更流水账。`docs/developers/` 是人类维护者的中文文档，不承担 Agent 私有运行细节。`docs/agents/` 是 Agent 可复用知识，不存储未脱敏日志。`.agent-workspace/local/` 可以帮助当前 Agent 理解本地环境，但不能被复制到公开文件。`../blog.plan` 记录计划和执行证据，但不拥有产品源码。
+README 是项目入口，不是变更流水账。`docs/developers/` 是人类维护者的中文文档，不承担 Agent 私有运行细节。`docs/agents/` 是 Agent 可复用知识，不存储未脱敏日志。`.agent-workspace/local/` 可以帮助当前 Agent 理解本地环境，但不能被复制到公开文件。`../blog.sidecar` 记录计划和执行证据，但不拥有产品源码。
 
 当这些边界清晰后，Agent 就不会把所有信息都混进一个地方。它会知道：
 

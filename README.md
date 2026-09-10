@@ -139,7 +139,7 @@ pnpm dev:prod-content
 | `pnpm new-post -- <filename>` | 创建文章模板。 |
 | `pnpm content:prepare` | 准备配置锁定的外部内容版本。 |
 | `pnpm font:prepare` | 根据内容和 UI 文本生成字体子集。 |
-| `pnpm plan:status` | 查看相邻 `../blog.plan` sidecar 状态。 |
+| `pnpm plan:status` | 查看相邻 `../blog.sidecar` sidecar 状态。 |
 
 更多命令和失败处理见 [开发工作流](./docs/developers/development.md)。
 
@@ -191,7 +191,7 @@ pnpm dev:prod-content
 - `docs/developers/` 保存中文开发、配置、部署、测试和维护文档。
 - `docs/agents/` 保存英文 Agent 执行规则、项目地图、运行时 playbook 和持久记忆。
 - `.agent-workspace/manifest.json` 与项目本地工具提供 Agent Workspace Spec 合规入口。
-- 相邻 `../blog.plan` sidecar 用于规划、决策、运行记录和 handoff，产品源码仍保留在本仓库。
+- 相邻 `../blog.sidecar` sidecar 用于规划、决策、运行记录和 handoff，产品源码仍保留在本仓库。
 
 ## 生产环境变量
 

@@ -1,276 +1,143 @@
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
 const projectRoot = process.cwd();
-const sidecarPath = "../blog.plan";
-const statusByPhase = {
+const sidecarPath = "../blog.sidecar";
+const jsonMode = process.argv.includes("--json");
+const schemaVersion = 3;
+const phases = {
 	demand: ["discussing", "needs-decision", "decided", "deferred"],
 	execution: ["ready", "running", "blocked", "done"],
 	archive: ["archived"],
 };
 
-function gitMainRepoRoot() {
-	const result = spawnSync("git", ["rev-parse", "--git-common-dir"], {
-		cwd: projectRoot,
-		encoding: "utf8",
-	});
-	if (result.status !== 0) return null;
-	const commonDir = result.stdout.trim();
-	if (!commonDir) return null;
-	return path.dirname(path.resolve(projectRoot, commonDir));
-}
-
-function resolveSidecar() {
-	const explicitPath = process.env.BLOG_SIDECAR_PATH?.trim();
-	if (explicitPath) {
-		return {
-			root: path.resolve(projectRoot, explicitPath),
-			detailPath: "$BLOG_SIDECAR_PATH",
-		};
-	}
-
-	const candidates = [
-		{
-			root: path.resolve(projectRoot, "..", "blog.plan"),
-			detailPath: "../blog.plan",
-		},
-	];
-	const mainRepoRoot = gitMainRepoRoot();
-	if (mainRepoRoot) {
-		candidates.push({
-			root: path.resolve(mainRepoRoot, "..", "blog.plan"),
-			detailPath: "../blog.plan",
-		});
-	}
-	return (
-		candidates.find((candidate) => fs.existsSync(candidate.root)) ??
-		candidates[0]
-	);
-}
-
-const resolvedSidecar = resolveSidecar();
-const sidecarRoot = resolvedSidecar.root;
-const configPath = path.join(sidecarRoot, "plan.config.json");
-const indexPath = path.join(sidecarRoot, "index.json");
-
 function fail(code, message, details = []) {
-	process.stdout.write(
-		`${JSON.stringify(
-			{
-				ok: false,
-				schemaVersion: 2,
-				projectName: "blog",
-				projectKey: "BLOG",
-				sidecarPath,
-				error: { code, message, details },
-			},
-			null,
-		)}\n`,
-	);
+	const payload = {
+		ok: false,
+		schemaVersion,
+		projectName: "blog",
+		projectKey: "BLOG",
+		sidecarPath,
+		error: { code, message, details },
+	};
+	process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 	process.exitCode = 1;
 }
-
-function readJson(filePath, code) {
-	if (!fs.existsSync(filePath)) {
-		fail(code, "Required sidecar data is unavailable.", [
-			{
-				path: `${resolvedSidecar.detailPath}/${path.basename(filePath)}`,
-				reason: "missing",
-			},
+function readJson(file, label) {
+	if (!fs.existsSync(file)) {
+		fail("SIDECAR_NOT_FOUND", `${label} is unavailable.`, [
+			{ path: sidecarPath, reason: "missing" },
 		]);
 		return null;
 	}
-
 	try {
-		return JSON.parse(fs.readFileSync(filePath, "utf8"));
-	} catch {
-		fail("invalid_json", "Sidecar JSON could not be parsed.", [
-			{
-				path: `${resolvedSidecar.detailPath}/${path.basename(filePath)}`,
-				reason: "invalid-json",
-			},
+		return JSON.parse(fs.readFileSync(file, "utf8"));
+	} catch (error) {
+		fail("SIDECAR_CONFIG_OR_INDEX_INVALID", `${label} is not valid JSON.`, [
+			{ path: path.basename(file), reason: error.message },
 		]);
 		return null;
 	}
 }
 
-function emptyCounts() {
-	return Object.fromEntries(
-		Object.entries(statusByPhase).map(([phase, statuses]) => [
-			phase,
-			Object.fromEntries(statuses.map((status) => [status, 0])),
-		]),
-	);
+const root = path.resolve(projectRoot, sidecarPath);
+const config = readJson(
+	path.join(root, "sidecar.config.json"),
+	"Blog sidecar config",
+);
+const index = readJson(path.join(root, "index.json"), "Blog sidecar index");
+if (!config || !index) process.exit(1);
+if (
+	config.schemaVersion !== schemaVersion ||
+	index.schemaVersion !== schemaVersion
+) {
+	fail("SIDECAR_SCHEMA_UNSUPPORTED", "Sidecar must use schemaVersion 3.");
+	process.exit(1);
 }
-
-function validateAndSummarize(config, index) {
-	const details = [];
-	if (config?.schemaVersion !== 2) {
-		details.push({
-			path: "plan.config.json",
-			field: "schemaVersion",
-			reason: "expected 2",
-		});
-	}
-	if (config?.sidecarKind !== "agent-project-sidecar") {
-		details.push({
-			path: "plan.config.json",
-			field: "sidecarKind",
-			reason: "expected agent-project-sidecar",
-		});
-	}
-	if (config?.projectKey !== "BLOG" || config?.itemPrefix !== "BLOG-RM") {
-		details.push({
-			path: "plan.config.json",
-			field: "projectKey/itemPrefix",
-			reason: "expected BLOG/BLOG-RM",
-		});
-	}
-	if (index?.schemaVersion !== 2) {
-		details.push({
-			path: "index.json",
-			field: "schemaVersion",
-			reason: "expected 2",
-		});
-	}
-	if (!Array.isArray(index?.items)) {
-		details.push({
-			path: "index.json",
-			field: "items",
-			reason: "expected array",
-		});
-	}
-	if (details.length > 0) return { details };
-
-	const counts = emptyCounts();
-	const items = [];
-	const seenIds = new Set();
-	for (const [position, source] of index.items.entries()) {
-		const item = {
-			id: source?.id,
-			title: source?.title,
-			type: source?.type,
-			priority: source?.priority,
-			phase: source?.phase,
-			status: source?.status,
-			archiveReason: source?.archiveReason ?? null,
-			itemPath: source?.itemPath,
-			...(source?.planPath ? { planPath: source.planPath } : {}),
-			updatedAt: source?.updatedAt,
-			relations: Array.isArray(source?.relations) ? source.relations : [],
-			...(Array.isArray(source?.implementationPhases)
-				? { implementationPhases: source.implementationPhases }
-				: {}),
-		};
-		if (typeof item.id !== "string" || seenIds.has(item.id)) {
-			details.push({
-				path: "index.json",
-				field: `items[${position}].id`,
-				reason: "missing or duplicated item ID",
-			});
-			continue;
-		}
-		seenIds.add(item.id);
-		if (!statusByPhase[item.phase]?.includes(item.status)) {
-			details.push({
-				path: "index.json",
-				field: `items[${position}].phase/status`,
-				reason: `${item.phase ?? "missing"}/${item.status ?? "missing"}`,
-			});
-			continue;
-		}
-		if (
-			item.archiveReason !== null &&
-			!["completed", "rejected", "superseded"].includes(
-				item.archiveReason,
-			)
-		) {
-			details.push({
-				path: "index.json",
-				field: `items[${position}].archiveReason`,
-				reason: "invalid archive reason",
-			});
-			continue;
-		}
-		if (item.phase !== "archive" && item.archiveReason !== null) {
-			details.push({
-				path: "index.json",
-				field: `items[${position}].archiveReason`,
-				reason: "non-archived item must use null",
-			});
-			continue;
-		}
-		if (item.phase === "archive" && item.archiveReason === null) {
-			details.push({
-				path: "index.json",
-				field: `items[${position}].archiveReason`,
-				reason: "archived item requires a reason",
-			});
-			continue;
-		}
-		counts[item.phase][item.status] += 1;
-		items.push(item);
-	}
-
-	if (details.length > 0) return { details };
-	items.sort(
-		(left, right) =>
-			String(right.updatedAt).localeCompare(String(left.updatedAt)) ||
-			left.id.localeCompare(right.id),
-	);
-	return { counts, items };
-}
-
-const config = readJson(configPath, "sidecar_missing");
-if (!config) process.exit(process.exitCode ?? 1);
-const index = readJson(indexPath, "sidecar_missing");
-if (!index) process.exit(process.exitCode ?? 1);
-const snapshot = validateAndSummarize(config, index);
-if (snapshot.details) {
+if (!Array.isArray(index.rms) || !Array.isArray(index.tasks)) {
 	fail(
-		"invalid_sidecar",
-		"Sidecar data failed v2 status validation.",
-		snapshot.details,
+		"SIDECAR_INDEX_INVALID",
+		"index.json must contain rms and tasks arrays.",
 	);
-} else {
-	const executable = snapshot.items
+	process.exit(1);
+}
+const counts = Object.fromEntries(
+	Object.entries(phases).map(([phase, statuses]) => [
+		phase,
+		Object.fromEntries(statuses.map((status) => [status, 0])),
+	]),
+);
+function summarize(item, type) {
+	if (
+		!item ||
+		typeof item.id !== "string" ||
+		!phases[item.phase]?.includes(item.status)
+	) {
+		fail(
+			"SIDECAR_STATUS_INVALID",
+			"index.json contains an invalid RM/task lifecycle.",
+			[{ itemId: item?.id ?? null }],
+		);
+		process.exit(1);
+	}
+	counts[item.phase][item.status] += 1;
+	return {
+		...item,
+		type,
+		itemPath:
+			item.itemPath ?? `${type === "rm" ? "rms" : "tasks"}/${item.id}.md`,
+	};
+}
+const rms = index.rms.map((item) => summarize(item, "rm"));
+const tasks = index.tasks.map((item) => summarize(item, "task"));
+const items = [...rms, ...tasks].sort(
+	(left, right) =>
+		String(right.updatedAt ?? "").localeCompare(
+			String(left.updatedAt ?? ""),
+		) || left.id.localeCompare(right.id),
+);
+const payload = {
+	ok: true,
+	schemaVersion,
+	projectName: config.projectName,
+	projectKey: config.projectKey,
+	sidecarPath,
+	source: {
+		indexPath: `${sidecarPath}/index.json`,
+		updatedAt: index.updatedAt,
+	},
+	counts,
+	rms,
+	tasks,
+	boards: { rm: { items: rms }, task: { items: tasks } },
+	items,
+	executable: tasks
 		.filter(
 			(item) =>
 				item.phase === "execution" &&
 				["ready", "running"].includes(item.status),
 		)
-		.map((item) => item.id);
-	const blocked = snapshot.items
+		.map((item) => item.id)
+		.sort(),
+	blocked: tasks
 		.filter(
 			(item) => item.phase === "execution" && item.status === "blocked",
 		)
-		.map((item) => item.id);
-	const needsDecision = snapshot.items
+		.map((item) => item.id)
+		.sort(),
+	needsDecision: rms
 		.filter(
 			(item) =>
 				item.phase === "demand" && item.status === "needs-decision",
 		)
-		.map((item) => item.id);
-	process.stdout.write(
-		`${JSON.stringify(
-			{
-				ok: true,
-				schemaVersion: 2,
-				projectName: config.projectName,
-				projectKey: config.projectKey,
-				sidecarPath,
-				source: { indexPath: "index.json", updatedAt: index.updatedAt },
-				generatedAt: new Date().toISOString(),
-				counts: snapshot.counts,
-				items: snapshot.items,
-				executable,
-				blocked,
-				needsDecision,
-			},
-			null,
-			2,
-		)}\n`,
-	);
+		.map((item) => item.id)
+		.sort(),
+};
+if (jsonMode) process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+else {
+	console.log(`${payload.projectName} sidecar v3 status`);
+	console.log(`sidecar root: ${payload.sidecarPath}`);
+	console.log(`RM: ${rms.length}; task: ${tasks.length}`);
+	console.log(`executable tasks: ${payload.executable.join(", ") || "none"}`);
 }

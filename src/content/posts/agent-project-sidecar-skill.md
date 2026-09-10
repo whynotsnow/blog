@@ -15,9 +15,9 @@ recommendScore: 57
 comment: true
 ---
 
-[agent-project-sidecar](https://github.com/whynotsnow/agent-skills/tree/main/skills/agent-project-sidecar) 处理的是计划和执行记录的归属问题。一个持续重构的项目一定会产生 plans、decisions、runs、validation notes 和 handoffs；这些信息需要可追踪，但不应该全部进入产品源码仓库。
+[agent-project-sidecar](https://github.com/whynotsnow/agent-skills/tree/main/skills/agent-project-sidecar) v3 处理的是需求、执行任务和过程记录的归属问题。一个持续重构的项目一定会产生 RM、task、Agent plan、decisions、runs、validation notes 和 handoffs；这些信息需要可追踪，但不应该全部进入产品源码仓库。
 
-当前 blog 项目使用相邻的 `../blog.plan` 作为 planning sidecar。它和主仓库并列存在，主仓库负责产品，sidecar 负责过程。
+当前 blog 项目使用相邻的 `../blog.sidecar` 作为 planning sidecar。它和主仓库并列存在，主仓库负责产品，sidecar 负责过程。
 
 ## 🧭 它是什么
 
@@ -31,17 +31,18 @@ blog/
 ├── docs/
 └── package.json
 
-blog.plan/
-├── plan.config.json
+blog.sidecar/
+├── sidecar.config.json
 ├── index.json
-├── items/
-├── plans/
+├── rms/
+├── tasks/
+├── plans/                 # plans/<taskId>.md，与 RM/task 平级
 ├── decisions/
 ├── runs/
 └── handoffs/
 ```
 
-这个结构表达了一个清晰边界：产品源码、正式文档、配置和测试属于 `blog/`；计划、决策、执行证据和交接记录属于 `blog.plan/`。
+这个结构表达了一个清晰边界：产品源码、正式文档、配置和测试属于 `blog/`；计划、决策、执行证据和交接记录属于 `blog.sidecar/`。
 
 ## 🧩 它有什么用，解决了什么问题
 
@@ -53,12 +54,14 @@ blog.plan/
 
 第三，产品仓库被过程信息污染。README、docs 或 commit message 被迫承载大量计划细节，长期看会变成维护噪音。
 
+v3 先区分三种对象：RM 面向人类，是一整块完整、复杂的需求；task 面向开发者，是可执行的工作单元；plan 面向 Agent，是某个 task 的执行细节。一个 RM 可以挂载多个 task，task 也可以独立存在；RM 不直接拥有 plan，task 才拥有唯一的 `plans/<taskId>.md`。
+
 Sidecar 的作用是把这些过程信息放到合适的位置：
 
 ```mermaid
 flowchart LR
-    A[需求或计划] --> B[items]
-    B --> C[plans]
+    A[RM] --> B[task]
+    B --> C[plans/taskId.md]
     C --> D[implementation in main repo]
     D --> E[validation]
     E --> F[runs]
@@ -119,13 +122,13 @@ flowchart LR
 pnpm --silent plan:status --json
 ```
 
-默认只有 `ready` 或 `running` 状态的 item 可以直接执行。`discussing`、`needs-decision`、`decided` 和 `blocked` 不能被自动当成实现授权。
+默认只有 `ready` 或 `running` 状态的 task 可以直接执行。RM 的 `discussing`、`needs-decision`、`decided` 和 task 的 `blocked` 不能被自动当成实现授权。
 
 一次 sidecar-backed work 通常这样走：
 
 1. 在主仓库运行 `pnpm --silent plan:status --json`。
-2. 找到可执行 item。
-3. 读取 sidecar 中的 item、linked plan 和 relevant decisions。
+2. 找到可执行 task，并查看它所属的 RM（如果有）。
+3. 读取 sidecar 中的 RM、task、task plan 和 relevant decisions。
 4. 回到主仓库实现代码、内容或文档变更。
 5. 运行 `pnpm test:plan` 并按影响面执行验证。
 6. 把 sanitized validation evidence 写入 sidecar run。
@@ -154,8 +157,9 @@ stateDiagram-v2
 
 | 文件类型 | 作用 |
 | --- | --- |
-| `items/` | 需求或工作项，包含状态、范围和关联计划。 |
-| `plans/` | 可执行方案，说明步骤、边界和验证。 |
+| `rms/` | 面向人类的完整复杂需求；不直接承载 Agent plan。 |
+| `tasks/` | 面向开发者的可执行工作单元；可挂在 RM 下，也可用 `standaloneReason` 独立存在。 |
+| `plans/<taskId>.md` | 面向 Agent 的执行细节；每个 task 至多一个当前 plan。 |
 | `decisions/` | 维护者或项目层面的决策记录。 |
 | `runs/` | 执行记录和脱敏验证摘要。 |
 | `handoffs/` | 交接说明、剩余风险和后续入口。 |
@@ -164,7 +168,7 @@ Sidecar 不只是“多放几个 Markdown 文件”。它让计划项、执行�
 
 ## 📌 在 blog 项目中如何被使用
 
-当前 blog 项目已经把 `../blog.plan` 作为正式 planning sidecar。典型用途包括：
+当前 blog 项目已经把 `../blog.sidecar` 作为正式 planning sidecar。典型用途包括：
 
 - 在做结构性重构前先形成 plan。
 - 用 `pnpm --silent plan:status --json` 判断是否有可执行 item。

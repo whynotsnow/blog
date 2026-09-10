@@ -19,7 +19,7 @@ This repository is now prepared for AI-assisted maintenance. The intent is not t
 | `docs/agents/execution-log.md` | Reusable task-level learning log. |
 | `docs/developers/content-guide.md` | Chinese content schema, authoring rules, and sync behavior. |
 | `docs/developers/configuration.md` | Chinese configuration ownership and common edits. |
-| `../blog.plan` | Adjacent sidecar repository for planning, decisions, execution records, validation notes, and handoffs. |
+| `../blog.sidecar` | Adjacent sidecar repository for planning, decisions, execution records, validation notes, and handoffs. |
 
 ## Spec-Aware Mode
 
@@ -38,7 +38,7 @@ Agent Workspace Spec does not require reading every document. It requires checki
 
 ## Planning Sidecar
 
-Use the adjacent `../blog.plan` repository for plan-managed work. It stores planning items, decisions, executable plans, sanitized run records, and handoffs. Product source, deployable files, runtime configuration, and public project documentation remain in this repository.
+Use the adjacent `../blog.sidecar` repository for plan-managed work. It stores planning items, decisions, executable plans, sanitized run records, and handoffs. Product source, deployable files, runtime configuration, and public project documentation remain in this repository.
 
 Before selecting plan-backed work, run:
 
@@ -46,9 +46,9 @@ Before selecting plan-backed work, run:
 pnpm --silent plan:status --json
 ```
 
-Only implement sidecar items with `status: ready` or `status: running`. Read the sidecar `AGENTS.md`, `plan.config.json`, target item, and linked plan before changing this repository. After implementation, record sanitized validation evidence in the sidecar `runs/` directory.
+Only implement sidecar items with `status: ready` or `status: running`. Read the sidecar `AGENTS.md`, `sidecar.config.json`, target item, and linked plan before changing this repository. After implementation, record sanitized validation evidence in the sidecar `runs/` directory.
 
-The status command emits the Sidecar Contract v2 snapshot: `ok`, `schemaVersion`, project metadata, `source`, `generatedAt`, phase-grouped `counts`, complete item summaries, and ID-only `executable`, `blocked`, and `needsDecision` views. It must return `ok: false` with a stable `error.code`, safe message, and relative-path details when the sidecar is missing, malformed, or not v2-valid. Sidecar resolution checks `BLOG_SIDECAR_PATH`, the normal `../blog.plan` sibling, then the main checkout sibling discovered from Git's common directory; resolved machine paths are never emitted.
+The status command emits the Sidecar Contract v3 snapshot with separate `rms`, `tasks`, and `boards` views. Only execution-phase tasks appear in `executable`, `blocked`; demand-phase RMs appear in `needsDecision`. It must return `ok: false` with a stable `error.code`, safe message, and relative-path details when the sidecar is missing, malformed, or not v3-valid. Sidecar resolution checks `BLOG_SIDECAR_PATH`, the normal `../blog.sidecar` sibling, then the main checkout sibling discovered from Git's common directory; resolved machine paths are never emitted.
 
 Do not copy credentials, tokens, cookies, private keys, raw logs, local absolute paths, private URLs, hostnames, Agent Workspace local profile IDs, or personal identity data into tracked sidecar files. Main-repo commits that directly execute sidecar items should include `Plan-Item: <id>`; related non-execution commits may use `Related-Plan: <id>`.
 

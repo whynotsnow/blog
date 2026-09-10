@@ -209,7 +209,7 @@ docs/
 | Coding Agent 必须遵守的规则 | `AGENTS.md` |
 | 架构、配置、部署、内容写作 | `docs/developers/` |
 | Agent workflow、project map、failure memory | `docs/agents/` |
-| 计划项、决策、run、handoff | `../blog.plan` |
+| 计划项、决策、run、handoff | `../blog.sidecar` |
 
 也就是说，`agent-docs` 在这个项目中承担的是文档治理角色。它让 Coding Agent 在修改文档时先问“这条信息属于哪里”，而不是默认把内容追加到 README。
 
