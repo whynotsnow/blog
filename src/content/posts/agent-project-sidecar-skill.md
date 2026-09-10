@@ -122,7 +122,7 @@ flowchart LR
 pnpm --silent sidecar:status --json
 ```
 
-默认只有 `ready` 或 `running` 状态的 task 可以直接执行。RM 的 `discussing`、`needs-decision`、`decided` 和 task 的 `blocked` 不能被自动当成实现授权。
+默认只有 `ready` 或 `running` 状态的 task 可以直接执行。RM 的 `discussing`、`decided` 和 task 的 `blocked` 不能被自动当成实现授权；讨论期间的决策记录保存在 sidecar 内部文档中。
 
 一次 sidecar-backed work 通常这样走：
 

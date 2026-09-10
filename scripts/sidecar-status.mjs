@@ -7,7 +7,7 @@ const sidecarPath = "../blog.sidecar";
 const jsonMode = process.argv.includes("--json");
 const schemaVersion = 3;
 const phases = {
-	demand: ["discussing", "needs-decision", "decided", "deferred"],
+	demand: ["discussing", "decided", "deferred"],
 	execution: ["ready", "running", "blocked", "done"],
 	archive: ["archived"],
 };
@@ -123,13 +123,6 @@ const payload = {
 	blocked: tasks
 		.filter(
 			(item) => item.phase === "execution" && item.status === "blocked",
-		)
-		.map((item) => item.id)
-		.sort(),
-	needsDecision: rms
-		.filter(
-			(item) =>
-				item.phase === "demand" && item.status === "needs-decision",
 		)
 		.map((item) => item.id)
 		.sort(),
