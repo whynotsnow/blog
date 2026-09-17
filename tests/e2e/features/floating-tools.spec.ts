@@ -363,85 +363,70 @@ test("floating tools controls music visibility while the player owns its present
 
 	const expandedTransition = await miniPlayer
 		.getByRole("button", { name: "展开音乐播放器" })
-		.evaluate(async (button) => {
-			const frames: Array<{
-				expandedClipPath: string | null;
-				miniOpacity: number | null;
-				toolsKeyframeCount: number | null;
-				toolsSwitchTop: number | null;
-				toolsTransitionDuration: number | null;
-			}> = [];
-			const startedAt = performance.now();
-			(button as HTMLElement).click();
+		.evaluate((button) => {
+			const tools = document.getElementById("floating-tools");
+			const toolsRail = tools?.querySelector<HTMLElement>(
+				".floating-tools__rail",
+			);
+			if (!tools || !toolsRail) return Promise.resolve(null);
 
-			await new Promise<void>((resolve) => {
-				const sample = (now: number) => {
+			return new Promise<{
+				expandedClipPath: string | null;
+				toolTransforms: number[];
+				toolsKeyframeCount: number;
+				toolsTransitionDuration: number;
+			} | null>((resolve) => {
+				const observer = new MutationObserver(() => {
+					if (tools.dataset.layoutMotion !== "running") return;
+					observer.disconnect();
+					window.clearTimeout(timeout);
+
+					const animation = toolsRail.getAnimations()[0];
+					const effect = animation?.effect as KeyframeEffect | null;
+					const keyframes = effect?.getKeyframes() ?? [];
+					const toolTransforms = keyframes.map((frame) => {
+						return typeof frame.transform === "string"
+							? new DOMMatrixReadOnly(frame.transform).m42
+							: 0;
+					});
 					const expandedState = document.querySelector<HTMLElement>(
 						".music-player__state--expanded",
 					);
-					const miniState = document.querySelector<HTMLElement>(
-						".music-player__state--mini",
-					);
-					const tools = document.getElementById("floating-tools");
-					const toolsSwitch = document.getElementById(
-						"floating-tools-switch",
-					);
-					const toolsRail = tools?.querySelector<HTMLElement>(
-						".floating-tools__rail",
-					);
-					const toolsAnimation = toolsRail?.getAnimations()[0];
-					const toolsEffect =
-						toolsAnimation?.effect as KeyframeEffect | null;
-					frames.push({
+					const result = {
 						expandedClipPath: expandedState
 							? getComputedStyle(expandedState).clipPath
 							: null,
-						miniOpacity: miniState
-							? Number(getComputedStyle(miniState).opacity)
-							: null,
-						toolsKeyframeCount:
-							toolsEffect?.getKeyframes().length ?? null,
-						toolsSwitchTop:
-							toolsSwitch?.getBoundingClientRect().top ?? null,
-						toolsTransitionDuration:
-							Number(toolsEffect?.getTiming().duration) || null,
-					});
-					if (now - startedAt >= 360) {
-						resolve();
-						return;
-					}
-					requestAnimationFrame(sample);
-				};
-				requestAnimationFrame(sample);
+						toolTransforms,
+						toolsKeyframeCount: keyframes.length,
+						toolsTransitionDuration: Number(
+							effect?.getTiming().duration,
+						),
+					};
+					animation?.pause();
+					animation?.finish();
+					resolve(result);
+				});
+				const timeout = window.setTimeout(() => {
+					observer.disconnect();
+					resolve(null);
+				}, 2_000);
+				observer.observe(tools, {
+					attributes: true,
+					attributeFilter: ["data-layout-motion"],
+				});
+				(button as HTMLElement).click();
 			});
-
-			return frames;
 		});
-	const expandedClipPaths = expandedTransition
-		.map(({ expandedClipPath }) => expandedClipPath)
-		.filter((value): value is string => value !== null);
-	const toolsSwitchTops = expandedTransition
-		.map(({ toolsSwitchTop }) => toolsSwitchTop)
-		.filter((value): value is number => value !== null);
-	expect(
-		expandedClipPaths.some((clipPath) => clipPath.includes("inset(")),
-	).toBe(true);
-	expect(
-		new Set(toolsSwitchTops.map((top) => top.toFixed(2))).size,
-	).toBeGreaterThanOrEqual(2);
-	expect(
-		Math.max(...toolsSwitchTops) - Math.min(...toolsSwitchTops),
-	).toBeGreaterThan(20);
-	expect(
-		expandedTransition.some(
-			({ toolsTransitionDuration }) => toolsTransitionDuration === 420,
-		),
-	).toBe(true);
-	expect(
-		expandedTransition.some(
-			({ toolsKeyframeCount }) => toolsKeyframeCount === 31,
-		),
-	).toBe(true);
+	expect(expandedTransition).not.toBeNull();
+	if (!expandedTransition) throw new Error("Missing player layout animation");
+	expect(expandedTransition.expandedClipPath).toContain("inset(");
+	expect(expandedTransition.toolsTransitionDuration).toBe(420);
+	expect(expandedTransition.toolsKeyframeCount).toBe(31);
+	expect(expandedTransition.toolTransforms).toHaveLength(31);
+	expect(Math.abs(expandedTransition.toolTransforms[0] ?? 0)).toBeGreaterThan(
+		20,
+	);
+	expect(expandedTransition.toolTransforms.at(-1)).toBe(0);
 
 	const panel = page.locator("#music-player-panel");
 	await expect(panel).toBeVisible();

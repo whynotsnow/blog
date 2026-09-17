@@ -264,9 +264,34 @@ test("category links use one smooth page-entry scroll", async ({ page }) => {
 	await useStoredPreference(page, "wallpaperMode", "banner");
 	await gotoPage(page, E2E_CATEGORY.path);
 	await waitForSwup(page);
-	await page.evaluate(() => window.scrollBy({ top: 500, behavior: "auto" }));
+	await waitForMainEntryAlignment(page);
 	const initialScrollHeight = await page.evaluate(
 		() => document.documentElement.scrollHeight,
+	);
+	const initialEntryPosition = await page.evaluate(() => {
+		const root = document.documentElement;
+		const previousScrollBehavior = root.style.scrollBehavior;
+		root.style.scrollBehavior = "auto";
+		const main = document.querySelector<HTMLElement>(".page-main-content");
+		const clearance = Number.parseFloat(
+			main ? getComputedStyle(main).scrollMarginBlockStart : "0",
+		);
+		const targetScrollTop = Math.max(
+			0,
+			window.scrollY +
+				(main?.getBoundingClientRect().top ?? 0) -
+				(Number.isFinite(clearance) ? clearance : 0),
+		);
+		window.scrollTo({
+			top: document.documentElement.scrollHeight,
+			behavior: "auto",
+		});
+		const scrollY = window.scrollY;
+		root.style.scrollBehavior = previousScrollBehavior;
+		return { scrollY, targetScrollTop };
+	});
+	expect(initialEntryPosition.scrollY).toBeGreaterThan(
+		initialEntryPosition.targetScrollTop,
 	);
 
 	await page.evaluate(() => {
