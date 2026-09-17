@@ -115,16 +115,18 @@ CI 失败、取消、超时或无法确认成功时，生产部署 job 不得进
 
 若业务需求同时涉及 `snow-base/api`，blog 侧只记录自己的 selected run、Vercel deployment、站点可访问性、关键静态路由和实际调用 API 的代表性链路；API 侧由 snow-base Admin 单独记录自己的 run 与 endpoint smoke。两侧可引用同一业务需求编号，但不共享部署成功状态。
 
-## GitHub Environment Secrets
+## GitHub Environment 配置
 
-GitHub repository 的 `production` environment 需要配置：
+GitHub repository 的 `production` environment 需要配置以下 secrets/variables：
 
-- `DEPLOY_APPROVAL_TOKEN`：来自 `snow-base` Admin 的 deployment service token。blog/site 使用 `deployments:request`、`deployments:verify` 和 `deployments:run-update`；该 token 不包含 Cloudflare、Worker、D1、R2 或 snow-base API 部署权限。`deployments:run-update` 仅用于回写 blog 自己的 Candidate Run 和 deployment run，不授予审批、API dispatch 或其他项目管理权限。
+- `DEPLOY_APPROVAL_TOKEN`（secret）：现有 `snow-base` deployment service token，继续用于 Candidate、部署请求/审批、artifact promotion 和 smoke evidence。此次 callback 迁移不轮换它，也不改变它已有 capability；run-update reporter 不再读取或接收这个 token。如果该 Credential 当前仍包含 `deployments:run-update`，该 capability 会保留到后续单独轮换，不代表本次已撤销。
+- `SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID`（variable）：Snow Admin 中专用于 Blog deployment run callback 的 Service Credential ID。该 Credential 只授予 `deployments:run-update`。
+- `SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET`（secret）：上述 Service Credential 的 exchange secret。Reporter 每次 callback 使用它向 `/api/v1/service/exchange/token` 申请单一 `deployments:run-update`、约 10 分钟有效的短效 token，然后调用 `/api/v1/deployments/runs/update`。
 - `VERCEL_TOKEN`：用于从 GitHub Actions 发布当前 Vercel 项目。
 - `VERCEL_ORG_ID`：Vercel org 或 team 标识。
 - `VERCEL_PROJECT_ID`：Vercel project 标识。
 
-`snow build CI` 的生产 jobs 会在发布前预检这些 secret 名称。缺少任一项时，workflow 会在审批和生产发布前失败，并只输出缺失的 secret 名称，不输出任何 secret 值。GitHub Actions artifact 和 candidate `expiresAt` 当前统一为 7 天；Admin 选择和 dispatch 必须在 candidate 过期前完成。
+`snow build CI` 的 selected-artifact job 会在请求/消费审批前预检这些 variable/secret 的存在和格式。缺少任一项时，workflow 会失败并只输出缺失或格式无效的变量/secret 名称，不输出任何 secret 值。exchange 响应还必须验证 `snow-service` principal、唯一 capability 和约 10 分钟 TTL；不符合时 fail closed。GitHub Actions artifact 和 candidate `expiresAt` 当前统一为 7 天；Admin 选择和 dispatch 必须在 candidate 过期前完成。
 
 不要把 token 明文、Access cookie/JWT、Authorization header、Vercel token、审批 token、完整带凭证 URL 或生产原始日志写入 Git、sidecar、issue、截图或聊天记录。若平台 token 无法做到严格项目级最小权限，必须通过 GitHub environment、禁用平台自动部署、短 TTL/轮换和审计记录降低风险。
 

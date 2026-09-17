@@ -198,14 +198,14 @@ describe("Vercel artifact workflow contract", () => {
 		);
 		expect(
 			workflow.match(new RegExp(deploymentApprovalAction, "gu")),
-		).toHaveLength(9);
+		).toHaveLength(8);
 		expect(workflow).toContain("operation: contract");
 		expect(workflow).toContain("operation: register-artifact");
 		expect(workflow).toContain("operation: candidate-callback");
 		expect(workflow).toContain("operation: request-approval");
 		expect(workflow).toContain("operation: wait-approval");
 		expect(workflow).toContain("operation: consume-approval");
-		expect(workflow).toContain("operation: deployment-callback");
+		expect(workflow).not.toContain("operation: deployment-callback");
 		expect(workflow).toContain("idempotency-key: ${{ inputs.request_id }}");
 		expect(workflow).toContain(
 			"approval-id: ${{ steps.request-approval.outputs.approval-id }}",
@@ -257,13 +257,17 @@ describe("Vercel artifact workflow contract", () => {
 			candidateJob.indexOf("operation: candidate-callback"),
 		).toBeGreaterThan(-1);
 		expect(
-			selectedJob.indexOf("phase: deployment_started"),
+			selectedJob.indexOf(
+				"DEPLOYMENT_CALLBACK_PHASE: deployment_started",
+			),
 		).toBeGreaterThan(
 			selectedJob.indexOf("Consume selected artifact approval"),
 		);
-		expect(selectedJob.indexOf("phase: deployment_started")).toBeLessThan(
-			selectedJob.indexOf("Deploy Vercel production"),
-		);
+		expect(
+			selectedJob.indexOf(
+				"DEPLOYMENT_CALLBACK_PHASE: deployment_started",
+			),
+		).toBeLessThan(selectedJob.indexOf("Deploy Vercel production"));
 		expect(selectedJob).toContain(
 			"node scripts/promote-deployment-artifact.mjs",
 		);
@@ -313,6 +317,70 @@ describe("Vercel artifact workflow contract", () => {
 			completionJob.indexOf("node scripts/production-smoke.mjs"),
 		).toBeLessThan(
 			completionJob.indexOf("node scripts/report-deployment-smoke.mjs"),
+		);
+	});
+
+	it("isolates run-update callbacks from the deployment approval token", () => {
+		const selectedJob = selectedJobSection();
+		const deploymentSecretPreflight = selectedJob.slice(
+			selectedJob.indexOf(
+				"            - name: Validate deployment secrets",
+			),
+			selectedJob.indexOf(
+				"            - name: Download selected GitHub artifact",
+			),
+		);
+		const startCallback = selectedJob.slice(
+			selectedJob.indexOf(
+				"            - name: Report deployment run in progress",
+			),
+			selectedJob.indexOf("            - name: Deploy Vercel production"),
+		);
+		const completionJobStart = workflow.indexOf(
+			"    report-selected-deployment-run-completion:",
+		);
+		const completionJob = workflow.slice(completionJobStart);
+		const completionCallback = completionJob.slice(
+			completionJob.indexOf(
+				"            - name: Report deployment run completion",
+			),
+			completionJob.indexOf(
+				"            - name: Run public production smoke",
+			),
+		);
+
+		for (const callbackStep of [startCallback, completionCallback]) {
+			expect(callbackStep).toContain(
+				"node scripts/report-deployment-run.mjs",
+			);
+			expect(callbackStep).toContain(
+				"SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}",
+			);
+			expect(callbackStep).toContain(
+				"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}",
+			);
+			expect(callbackStep).not.toContain("DEPLOY_APPROVAL_TOKEN");
+		}
+		expect(deploymentSecretPreflight).toContain(
+			"SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID",
+		);
+		expect(deploymentSecretPreflight).toContain(
+			"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET",
+		);
+		expect(deploymentSecretPreflight).toContain(
+			"grep -Eq '^[A-Za-z0-9_-]{43}$'",
+		);
+		expect(deploymentRunReporter).toContain(
+			"/api/v1/service/exchange/token",
+		);
+		expect(deploymentRunReporter).toContain(
+			"requestedCapabilities: [runUpdateCapability]",
+		);
+		expect(deploymentRunReporter).toContain(
+			"/api/v1/deployments/runs/update",
+		);
+		expect(workflow).toContain(
+			"token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}",
 		);
 	});
 
