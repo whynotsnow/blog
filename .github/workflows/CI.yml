@@ -789,6 +789,8 @@ jobs:
             - name: Validate deployment secrets
               env:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}
+                  SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}
                   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
                   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

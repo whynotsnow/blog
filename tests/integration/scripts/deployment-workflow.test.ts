@@ -365,7 +365,13 @@ describe("Vercel artifact workflow contract", () => {
 			"SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID",
 		);
 		expect(deploymentSecretPreflight).toContain(
+			"SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}",
+		);
+		expect(deploymentSecretPreflight).toContain(
 			"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET",
+		);
+		expect(deploymentSecretPreflight).toContain(
+			"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}",
 		);
 		expect(deploymentSecretPreflight).toContain(
 			"grep -Eq '^[A-Za-z0-9_-]{43}$'",
