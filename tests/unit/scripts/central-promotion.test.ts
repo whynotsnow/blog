@@ -79,7 +79,7 @@ function promotionEnv(
 	return {
 		...process.env,
 		DEPLOY_APPROVAL_API_BASE_URL: baseUrl,
-		DEPLOY_APPROVAL_WORKFLOW_MODE: "legacy",
+		DEPLOY_APPROVAL_WORKFLOW_MODE: "legacy-break-glass",
 		DEPLOY_APPROVAL_TOKEN: fixtureToken,
 		DEPLOY_APPROVAL_ARTIFACT_ID: "artifact-123",
 		DEPLOY_APPROVAL_ARTIFACT_DIGEST: `sha256:${"1".repeat(64)}`,
@@ -317,6 +317,97 @@ describe("multipart promotion client", () => {
 						stderr = String((error as { stderr?: string }).stderr);
 					}
 					expect(stderr).toContain("complete Service Exchange");
+					expect(stderr).not.toContain(fixtureToken);
+					expect(requestCount).toBe(0);
+				},
+			);
+		});
+	});
+
+	it("historical backfill fails closed when Exchange is missing, even with a legacy token", async () => {
+		await withArchive(async ({ archivePath, archiveDigest }) => {
+			let requestCount = 0;
+			await withServer(
+				() => {
+					requestCount += 1;
+					return {
+						status: 500,
+						body: JSON.stringify({ ok: false }),
+					};
+				},
+				async (baseUrl) => {
+					let stderr = "";
+					try {
+						await execFileAsync(
+							process.execPath,
+							["scripts/promote-deployment-artifact.mjs"],
+							{
+								cwd: process.cwd(),
+								env: promotionEnv(
+									baseUrl,
+									archivePath,
+									archiveDigest,
+									{
+										DEPLOY_APPROVAL_WORKFLOW_MODE:
+											"historical-backfill",
+										DEPLOY_APPROVAL_APPROVAL_ID: "",
+										DEPLOY_APPROVAL_PROMOTION_PURPOSE:
+											"historical-backfill",
+										DEPLOYMENT_CREDENTIAL_ID: "",
+										DEPLOYMENT_EXCHANGE_SECRET: "",
+									},
+								),
+								encoding: "utf8",
+							},
+						);
+					} catch (error) {
+						stderr = String((error as { stderr?: string }).stderr);
+					}
+					expect(stderr).toContain("complete Service Exchange");
+					expect(stderr).not.toContain(fixtureToken);
+					expect(requestCount).toBe(0);
+				},
+			);
+		});
+	});
+
+	it("rejects the old generic legacy mode without contacting the API", async () => {
+		await withArchive(async ({ archivePath, archiveDigest }) => {
+			let requestCount = 0;
+			await withServer(
+				() => {
+					requestCount += 1;
+					return {
+						status: 500,
+						body: JSON.stringify({ ok: false }),
+					};
+				},
+				async (baseUrl) => {
+					let stderr = "";
+					try {
+						await execFileAsync(
+							process.execPath,
+							["scripts/promote-deployment-artifact.mjs"],
+							{
+								cwd: process.cwd(),
+								env: promotionEnv(
+									baseUrl,
+									archivePath,
+									archiveDigest,
+									{
+										DEPLOY_APPROVAL_WORKFLOW_MODE: "legacy",
+										DEPLOYMENT_CREDENTIAL_ID: "",
+										DEPLOYMENT_EXCHANGE_SECRET: "",
+									},
+								),
+								encoding: "utf8",
+							},
+						);
+					} catch (error) {
+						stderr = String((error as { stderr?: string }).stderr);
+					}
+					expect(stderr).toContain("must be explicitly set to");
+					expect(stderr).toContain("legacy-break-glass");
 					expect(stderr).not.toContain(fixtureToken);
 					expect(requestCount).toBe(0);
 				},

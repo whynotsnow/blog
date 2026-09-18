@@ -30,21 +30,21 @@ function fail(message) {
 }
 
 if (
-	!/^(?:legacy|selected-artifact|historical-backfill)$/u.test(
+	!/^(?:legacy-break-glass|selected-artifact|historical-backfill)$/u.test(
 		workflowMode ?? "",
 	)
 )
 	fail(
-		"DEPLOY_APPROVAL_WORKFLOW_MODE must be explicitly set to legacy, selected-artifact, or historical-backfill",
+		"DEPLOY_APPROVAL_WORKFLOW_MODE must be explicitly set to legacy-break-glass, selected-artifact, or historical-backfill",
 	);
-if (workflowMode === "legacy") {
+if (workflowMode === "legacy-break-glass") {
 	if (!legacyToken)
 		fail(
-			"legacy promotion requires DEPLOY_APPROVAL_TOKEN; modern workflows must use Service Exchange",
+			"legacy-break-glass promotion requires DEPLOY_APPROVAL_TOKEN; modern workflows must use Service Exchange",
 		);
 } else if (!exchangeCredentialId || !exchangeSecret) {
 	fail(
-		"modern promotion requires complete Service Exchange configuration; legacy fallback requires explicit workflow mode=legacy",
+		"modern promotion requires complete Service Exchange configuration; legacy fallback requires explicit workflow mode=legacy-break-glass",
 	);
 }
 if (!artifactId || artifactId.length > 128) fail("invalid artifact id");
@@ -88,7 +88,7 @@ async function hashArchive(path) {
  */
 async function requestJson(path, init) {
 	const token =
-		workflowMode === "legacy"
+		workflowMode === "legacy-break-glass"
 			? legacyToken
 			: (
 					await exchangeServiceToken({

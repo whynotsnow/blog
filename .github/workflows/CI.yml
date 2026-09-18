@@ -11,14 +11,14 @@ on:
     workflow_dispatch:
         inputs:
             mode:
-                description: Admin path is candidate or selected-artifact; production is legacy break-glass
+                description: Admin path is candidate or selected-artifact; legacy-break-glass requires explicit opt-in
                 required: false
-                default: production
+                default: candidate
                 type: choice
                 options:
-                    - production
                     - candidate
                     - selected-artifact
+                    - legacy-break-glass
             project_slug:
                 description: Deployment project slug
                 required: false
@@ -66,7 +66,7 @@ on:
                 required: false
                 type: string
             break_glass_reason:
-                description: Required justification for legacy production mode
+                description: Required justification when mode is legacy-break-glass
                 required: false
                 type: string
 
@@ -526,7 +526,7 @@ jobs:
             - build-vercel-artifact
         if: >-
             github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
-            (inputs.mode == 'production' || inputs.mode == '')
+            inputs.mode == 'legacy-break-glass'
         runs-on: ubuntu-latest
         environment: production
         steps:
@@ -617,7 +617,7 @@ jobs:
             - name: Verify deployment approval
               env:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  DEPLOY_APPROVAL_WORKFLOW_MODE: legacy
+                  DEPLOY_APPROVAL_WORKFLOW_MODE: legacy-break-glass
                   DEPLOY_APPROVAL_PROJECT: blog
                   DEPLOY_APPROVAL_TARGET: site
                   DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}

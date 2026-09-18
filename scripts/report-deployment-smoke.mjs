@@ -23,13 +23,16 @@ function fail(message) {
 	process.exit(1);
 }
 
-if (!/^(?:legacy|selected-artifact)$/u.test(workflowMode ?? ""))
+if (!/^(?:legacy-break-glass|selected-artifact)$/u.test(workflowMode ?? ""))
 	fail(
-		"DEPLOY_APPROVAL_WORKFLOW_MODE 必须显式设置为 legacy 或 selected-artifact；旧 token 不得自动 fallback。",
+		"DEPLOY_APPROVAL_WORKFLOW_MODE 必须显式设置为 legacy-break-glass 或 selected-artifact；旧 token 不得自动 fallback。",
 	);
-if (workflowMode === "legacy" && !legacyToken)
+if (workflowMode === "legacy-break-glass" && !legacyToken)
 	fail("legacy smoke evidence 需要 DEPLOY_APPROVAL_TOKEN。");
-if (workflowMode !== "legacy" && (!exchangeCredentialId || !exchangeSecret))
+if (
+	workflowMode !== "legacy-break-glass" &&
+	(!exchangeCredentialId || !exchangeSecret)
+)
 	fail(
 		"selected-artifact smoke evidence 需要完整 Service Exchange 配置；缺失时不得回退旧 token。",
 	);
@@ -45,7 +48,7 @@ if (outcome === "failed" && !normalizedFailureCode)
 	fail("failed smoke evidence 必须提供 failureCode。");
 
 const token =
-	workflowMode === "legacy"
+	workflowMode === "legacy-break-glass"
 		? legacyToken
 		: (
 				await exchangeServiceToken({

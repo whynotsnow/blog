@@ -209,9 +209,9 @@ function approvalValidationSummary() {
 	return "CI validation completed before deployment approval.";
 }
 
-if (workflowMode !== "legacy") {
+if (workflowMode !== "legacy-break-glass") {
 	fail(
-		"verify-deployment-approval.mjs 只允许显式 DEPLOY_APPROVAL_WORKFLOW_MODE=legacy；selected-artifact 必须使用 exchange Credential 和 v2 approval Action。",
+		"verify-deployment-approval.mjs 只允许显式 DEPLOY_APPROVAL_WORKFLOW_MODE=legacy-break-glass；selected-artifact 必须使用 exchange Credential 和 v2 approval Action。",
 	);
 }
 

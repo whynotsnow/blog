@@ -8,6 +8,13 @@ const workflow = fs.readFileSync(
 	path.resolve(import.meta.dirname, "../../../.github/workflows/CI.yml"),
 	"utf8",
 );
+const backfillWorkflow = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../.github/workflows/backfill-vercel-artifacts.yml",
+	),
+	"utf8",
+);
 const canonicalWorkflowTarOptions = CANONICAL_GNU_TAR_OPTIONS.map((option) =>
 	option.includes(" ")
 		? `${option.slice(0, option.indexOf("=") + 1)}'${option.slice(option.indexOf("=") + 1)}'`
@@ -255,17 +262,55 @@ describe("Vercel artifact workflow contract", () => {
 			'outcome === "failed" && !normalizedFailureCode',
 		);
 		expect(approvalVerifier).toContain(
-			"DEPLOY_APPROVAL_WORKFLOW_MODE=legacy",
+			"DEPLOY_APPROVAL_WORKFLOW_MODE=legacy-break-glass",
+		);
+		expect(approvalVerifier).toContain(
+			'workflowMode !== "legacy-break-glass"',
 		);
 		expect(smokeEvidenceReporter).toContain(
-			"DEPLOY_APPROVAL_WORKFLOW_MODE 必须显式设置",
+			"DEPLOY_APPROVAL_WORKFLOW_MODE 必须显式设置为 legacy-break-glass",
 		);
 		expect(artifactPromotion).toContain(
-			"legacy fallback requires explicit workflow mode=legacy",
+			"legacy fallback requires explicit workflow mode=legacy-break-glass",
 		);
 		expect(smokeEvidenceReporter).toContain(
 			"succeeded smoke evidence 不得携带 failureCode",
 		);
+	});
+
+	it("defaults manual dispatch away from legacy and keeps backfill on modern exchange", () => {
+		const modeInput = workflow.slice(
+			workflow.indexOf("            mode:"),
+			workflow.indexOf("            project_slug:"),
+		);
+		const legacyJob = jobSection(
+			"deploy-production",
+			"register-site-candidate",
+		);
+		const backfillJob = backfillWorkflow.slice(
+			backfillWorkflow.indexOf("    backfill:"),
+		);
+
+		expect(modeInput).toContain("default: candidate");
+		expect(modeInput).toContain("- legacy-break-glass");
+		expect(modeInput).not.toContain("default: production");
+		expect(legacyJob).toContain("inputs.mode == 'legacy-break-glass'");
+		expect(legacyJob).not.toContain("inputs.mode == ''");
+		expect(legacyJob).toContain("break_glass_reason");
+		expect(legacyJob).toContain(
+			"DEPLOY_APPROVAL_WORKFLOW_MODE: legacy-break-glass",
+		);
+
+		expect(backfillJob).toContain("environment: production");
+		expect(backfillJob).toContain(
+			"DEPLOY_APPROVAL_WORKFLOW_MODE: historical-backfill",
+		);
+		expect(backfillJob).toContain(
+			"SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET",
+		);
+		expect(artifactPromotion).toContain("deployments:artifact-promote");
+		expect(backfillJob).not.toContain("DEPLOY_APPROVAL_TOKEN:");
+		expect(backfillJob).not.toContain("legacy-break-glass");
 	});
 
 	it("reports candidate completion after registration and deployment completion after Vercel", () => {
@@ -427,7 +472,7 @@ describe("Vercel artifact workflow contract", () => {
 			"DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}",
 		);
 		expect(legacyProductionJob).toContain(
-			"DEPLOY_APPROVAL_WORKFLOW_MODE: legacy",
+			"DEPLOY_APPROVAL_WORKFLOW_MODE: legacy-break-glass",
 		);
 		expect(workflow).toContain(
 			"SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID",
