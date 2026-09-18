@@ -1,10 +1,13 @@
 import { createHash } from "node:crypto";
 import { open, stat } from "node:fs/promises";
+import { exchangeServiceToken } from "./exchange-service-token.mjs";
 
 const apiBaseUrl = (
 	process.env.DEPLOY_APPROVAL_API_BASE_URL ?? "https://api.whynotsnow.com"
 ).replace(/\/+$/, "");
-const token = process.env.DEPLOY_APPROVAL_TOKEN;
+const legacyToken = process.env.DEPLOY_APPROVAL_TOKEN;
+const exchangeCredentialId = process.env.DEPLOYMENT_CREDENTIAL_ID;
+const exchangeSecret = process.env.DEPLOYMENT_EXCHANGE_SECRET;
 const artifactId = process.env.DEPLOY_APPROVAL_ARTIFACT_ID?.trim();
 const artifactDigest = process.env.DEPLOY_APPROVAL_ARTIFACT_DIGEST?.trim();
 const archivePath = process.env.DEPLOY_APPROVAL_ARCHIVE_PATH?.trim();
@@ -25,7 +28,8 @@ function fail(message) {
 	process.exit(1);
 }
 
-if (!token) fail("missing deployment approval token");
+if (!legacyToken && !exchangeCredentialId && !exchangeSecret)
+	fail("missing deployment approval token or service exchange configuration");
 if (!artifactId || artifactId.length > 128) fail("invalid artifact id");
 if (!artifactDigest || !digestPattern.test(artifactDigest))
 	fail("invalid artifact digest");
@@ -62,6 +66,21 @@ async function hashArchive(path) {
  * @param {RequestInit} init
  */
 async function requestJson(path, init) {
+	const token =
+		exchangeCredentialId || exchangeSecret
+			? (
+					await exchangeServiceToken({
+						env: {
+							...process.env,
+							DEPLOYMENT_CREDENTIAL_ID: exchangeCredentialId,
+							DEPLOYMENT_EXCHANGE_SECRET: exchangeSecret,
+							DEPLOYMENT_REQUESTED_CAPABILITIES:
+								"deployments:artifact-promote",
+						},
+						operationPrefix: "blog-deployment-artifact-promotion",
+					})
+				).accessToken
+			: legacyToken;
 	let response;
 	try {
 		response = await fetch(`${apiBaseUrl}${path}`, {

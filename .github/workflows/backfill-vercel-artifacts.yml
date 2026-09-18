@@ -89,8 +89,11 @@ jobs:
                   node-version: lts/*
             - name: Validate promotion credential
               env:
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-              run: test -n "$DEPLOY_APPROVAL_TOKEN"
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET }}
+              run: |
+                  test -n "$DEPLOYMENT_CREDENTIAL_ID"
+                  test -n "$DEPLOYMENT_EXCHANGE_SECRET"
             - name: Download exact legacy GitHub artifact
               uses: actions/download-artifact@v4
               with:
@@ -115,7 +118,8 @@ jobs:
             - name: Upload historical artifact to central R2 archive
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET }}
                   DEPLOY_APPROVAL_ARTIFACT_ID: ${{ matrix.artifactId }}
                   DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ matrix.artifactDigest }}
                   DEPLOY_APPROVAL_ARCHIVE_PATH: .canonical/vercel-output.tar.gz

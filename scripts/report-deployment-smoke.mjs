@@ -1,11 +1,15 @@
+import { exchangeServiceToken } from "./exchange-service-token.mjs";
+
 const apiBaseUrl = (
 	process.env.DEPLOY_APPROVAL_API_BASE_URL ??
 	process.env.SNOW_BASE_API_BASE_URL ??
 	"https://api.whynotsnow.com"
 ).replace(/\/+$/u, "");
-const token =
+const legacyToken =
 	process.env.DEPLOY_APPROVAL_TOKEN ??
 	process.env.SNOW_BASE_DEPLOY_APPROVAL_TOKEN;
+const exchangeCredentialId = process.env.DEPLOYMENT_CREDENTIAL_ID;
+const exchangeSecret = process.env.DEPLOYMENT_EXCHANGE_SECRET;
 const projectSlug = process.env.DEPLOY_APPROVAL_PROJECT ?? "blog";
 const target = process.env.DEPLOY_APPROVAL_TARGET ?? "site";
 const deploymentRunId = process.env.DEPLOYMENT_RUN_ID;
@@ -18,8 +22,8 @@ function fail(message) {
 	process.exit(1);
 }
 
-if (!token)
-	fail("缺少 DEPLOY_APPROVAL_TOKEN，无法写入 deployment smoke evidence。");
+if (!legacyToken && !exchangeCredentialId && !exchangeSecret)
+	fail("缺少 smoke evidence token 或 Service Exchange 配置。");
 if (projectSlug !== "blog") fail("blog smoke evidence 只允许 project=blog。");
 if (target !== "site") fail("blog smoke evidence 只允许 target=site。");
 if (!deploymentRunId?.trim())
@@ -31,6 +35,21 @@ if (outcome === "succeeded" && normalizedFailureCode)
 if (outcome === "failed" && !normalizedFailureCode)
 	fail("failed smoke evidence 必须提供 failureCode。");
 
+const token =
+	exchangeCredentialId || exchangeSecret
+		? (
+				await exchangeServiceToken({
+					env: {
+						...process.env,
+						DEPLOYMENT_CREDENTIAL_ID: exchangeCredentialId,
+						DEPLOYMENT_EXCHANGE_SECRET: exchangeSecret,
+						DEPLOYMENT_REQUESTED_CAPABILITIES:
+							"deployments:run-update",
+					},
+					operationPrefix: "blog-deployment-smoke-evidence",
+				})
+			).accessToken
+		: legacyToken;
 const response = await fetch(
 	`${apiBaseUrl}/api/v1/deployments/integration-evidence/smoke`,
 	{

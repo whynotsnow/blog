@@ -482,19 +482,33 @@ jobs:
                   test "$TARGET" = "site"
                   test -n "$REQUESTED_COMMIT_SHA"
                   test "$REQUESTED_COMMIT_SHA" = "$GITHUB_COMMIT_SHA"
+            - name: Exchange approval token for candidate contract
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
+                  DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:request,deployments:verify
+              run: node scripts/exchange-service-token.mjs
             - name: Preflight deployment approval contract
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
                   operation: contract
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  token: ${{ env.DEPLOYMENT_SERVICE_TOKEN }}
                   api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   project-slug: ${{ inputs.project_slug }}
                   target: ${{ inputs.target }}
+            - name: Exchange run-update token for Candidate callback
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}
+                  DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:run-update
+              run: node scripts/exchange-service-token.mjs
             - name: Report Candidate in progress
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
                   operation: candidate-callback
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  token: ${{ env.DEPLOYMENT_SERVICE_TOKEN }}
                   api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   project-slug: ${{ inputs.project_slug }}
                   target: ${{ inputs.target }}
@@ -673,12 +687,19 @@ jobs:
             - name: Prepare candidate artifact metadata
               id: candidate-artifact-meta
               run: echo "expires-at=$(date -u -d '+7 days' '+%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+            - name: Exchange approval token for Candidate registration
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
+                  DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:request
+              run: node scripts/exchange-service-token.mjs
             - name: Register site candidate artifact
               id: register
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
                   operation: register-artifact
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  token: ${{ env.DEPLOYMENT_SERVICE_TOKEN }}
                   api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   project-slug: blog
                   target: site
@@ -715,11 +736,18 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: lts/*
+            - name: Exchange run-update token for Candidate callback
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}
+                  DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:run-update
+              run: node scripts/exchange-service-token.mjs
             - name: Report Candidate completion
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
                   operation: candidate-callback
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  token: ${{ env.DEPLOYMENT_SERVICE_TOKEN }}
                   api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   project-slug: ${{ inputs.project_slug }}
                   target: ${{ inputs.target }}
@@ -770,11 +798,18 @@ jobs:
                   printf '%s' "$ARTIFACT_RUN_ID" | grep -Eq '^[0-9]+$'
                   printf '%s' "$ARTIFACT_GITHUB_ID" | grep -Eq '^[0-9]+$'
                   test -n "$ARTIFACT_NAME"
+            - name: Exchange approval token for selected contract
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
+                  DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:request,deployments:verify
+              run: node scripts/exchange-service-token.mjs
             - name: Preflight deployment approval contract
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
                   operation: contract
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  token: ${{ env.DEPLOYMENT_SERVICE_TOKEN }}
                   api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   project-slug: ${{ inputs.project_slug }}
                   target: ${{ inputs.target }}
@@ -791,6 +826,10 @@ jobs:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
                   SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}
                   SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}
+                  SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
+                  SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
+                  SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID }}
+                  SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET }}
                   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
                   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -815,6 +854,26 @@ jobs:
                     echo "Invalid production environment secret format: SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET"
                     exit 1
                   fi
+                  for name in SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID; do
+                    if [ -z "${!name}" ]; then
+                      echo "Missing required production environment variable: $name"
+                      exit 1
+                    fi
+                    if ! printf '%s' "${!name}" | grep -Eq '^[A-Za-z0-9_-]{1,128}$'; then
+                      echo "Invalid production environment variable format: $name"
+                      exit 1
+                    fi
+                  done
+                  for name in SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET; do
+                    if [ -z "${!name}" ]; then
+                      echo "Missing required production environment secret: $name"
+                      exit 1
+                    fi
+                    if ! printf '%s' "${!name}" | grep -Eq '^[A-Za-z0-9_-]{43}$'; then
+                      echo "Invalid production environment secret format: $name"
+                      exit 1
+                    fi
+                  done
                   if [ -z "$VERCEL_ORG_ID" ]; then
                     echo "Missing required production environment secret: VERCEL_ORG_ID"
                     exit 1
@@ -849,12 +908,19 @@ jobs:
               env:
                   EXPECTED_SOURCE_DIGEST: ${{ inputs.artifact_digest }}
               run: node scripts/verify-vercel-archive.mjs .artifact-download .vercel/output "$EXPECTED_SOURCE_DIGEST"
+            - name: Exchange approval token for selected approval request
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
+                  DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:request,deployments:verify
+              run: node scripts/exchange-service-token.mjs
             - name: Request or reuse selected artifact approval
               id: request-approval
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
                   operation: request-approval
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  token: ${{ env.DEPLOYMENT_SERVICE_TOKEN }}
                   api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   project-slug: blog
                   target: site
@@ -867,24 +933,25 @@ jobs:
                   change-summary: ${{ inputs.change_summary }}
                   validation-summary: ${{ inputs.validation_summary || 'selected blog/site artifact was downloaded and digest-verified before approval consumption.' }}
             - name: Wait for selected artifact approval
-              uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
-              with:
-                  operation: wait-approval
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
-                  api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  project-slug: blog
-                  target: site
-                  commit-sha: ${{ inputs.commit_sha }}
-                  request-id: ${{ steps.request-approval.outputs.approval-id }}
-                  artifact-id: ${{ inputs.artifact_id }}
-                  artifact-digest: ${{ inputs.artifact_digest }}
-                  wait-seconds: "900"
-                  poll-seconds: "15"
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
+                  DEPLOY_APPROVAL_PROJECT: blog
+                  DEPLOY_APPROVAL_TARGET: site
+                  DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha }}
+                  DEPLOY_APPROVAL_REQUEST_ID: ${{ steps.request-approval.outputs.approval-id }}
+                  DEPLOYMENT_ARTIFACT_ID: ${{ inputs.artifact_id }}
+                  DEPLOYMENT_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
+                  DEPLOY_APPROVAL_WAIT_SECONDS: "900"
+                  DEPLOY_APPROVAL_POLL_SECONDS: "15"
+              run: node scripts/wait-deployment-approval.mjs
             - name: Upload selected artifact to central R2 archive
               id: multipart-promotion
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET }}
                   DEPLOY_APPROVAL_ARTIFACT_ID: ${{ inputs.artifact_id }}
                   DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ inputs.artifact_digest }}
                   DEPLOY_APPROVAL_APPROVAL_ID: ${{ steps.request-approval.outputs.approval-id }}
@@ -893,11 +960,18 @@ jobs:
                   DEPLOY_APPROVAL_ARCHIVE_SIZE_BYTES: ${{ steps.verify-selected-archive.outputs.archive-size }}
                   DEPLOY_APPROVAL_PROMOTION_PURPOSE: selected-production
               run: node scripts/promote-deployment-artifact.mjs
+            - name: Exchange approval token for selected approval consumption
+              env:
+                  DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
+                  DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:request,deployments:verify
+              run: node scripts/exchange-service-token.mjs
             - name: Consume selected artifact approval
               uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac
               with:
                   operation: consume-approval
-                  token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  token: ${{ env.DEPLOYMENT_SERVICE_TOKEN }}
                   api-base-url: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   project-slug: blog
                   target: site
@@ -999,7 +1073,8 @@ jobs:
               if: always()
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}
+                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}
                   DEPLOY_APPROVAL_PROJECT: blog
                   DEPLOY_APPROVAL_TARGET: site
                   DEPLOYMENT_RUN_ID: ${{ steps.report-deployment-run.outputs.deployment-run-id }}

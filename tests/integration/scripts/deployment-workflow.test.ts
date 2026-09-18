@@ -23,6 +23,13 @@ const deploymentRunReporter = fs.readFileSync(
 	),
 	"utf8",
 );
+const serviceExchange = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../scripts/exchange-service-token.mjs",
+	),
+	"utf8",
+);
 const productionSmoke = fs.readFileSync(
 	path.resolve(import.meta.dirname, "../../../scripts/production-smoke.mjs"),
 	"utf8",
@@ -198,13 +205,13 @@ describe("Vercel artifact workflow contract", () => {
 		);
 		expect(
 			workflow.match(new RegExp(deploymentApprovalAction, "gu")),
-		).toHaveLength(8);
+		).toHaveLength(7);
 		expect(workflow).toContain("operation: contract");
 		expect(workflow).toContain("operation: register-artifact");
 		expect(workflow).toContain("operation: candidate-callback");
 		expect(workflow).toContain("operation: request-approval");
-		expect(workflow).toContain("operation: wait-approval");
 		expect(workflow).toContain("operation: consume-approval");
+		expect(workflow).toContain("scripts/wait-deployment-approval.mjs");
 		expect(workflow).not.toContain("operation: deployment-callback");
 		expect(workflow).toContain("idempotency-key: ${{ inputs.request_id }}");
 		expect(workflow).toContain(
@@ -322,6 +329,10 @@ describe("Vercel artifact workflow contract", () => {
 
 	it("isolates run-update callbacks from the deployment approval token", () => {
 		const selectedJob = selectedJobSection();
+		const legacyProductionJob = jobSection(
+			"deploy-production",
+			"register-site-candidate",
+		);
 		const deploymentSecretPreflight = selectedJob.slice(
 			selectedJob.indexOf(
 				"            - name: Validate deployment secrets",
@@ -376,18 +387,23 @@ describe("Vercel artifact workflow contract", () => {
 		expect(deploymentSecretPreflight).toContain(
 			"grep -Eq '^[A-Za-z0-9_-]{43}$'",
 		);
+		expect(serviceExchange).toContain("/api/v1/service/exchange/token");
 		expect(deploymentRunReporter).toContain(
-			"/api/v1/service/exchange/token",
-		);
-		expect(deploymentRunReporter).toContain(
-			"requestedCapabilities: [runUpdateCapability]",
+			"DEPLOYMENT_REQUESTED_CAPABILITIES: runUpdateCapability",
 		);
 		expect(deploymentRunReporter).toContain(
 			"/api/v1/deployments/runs/update",
 		);
-		expect(workflow).toContain(
-			"token: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}",
+		expect(legacyProductionJob).toContain(
+			"DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}",
 		);
+		expect(workflow).toContain(
+			"SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID",
+		);
+		expect(workflow).toContain(
+			"SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID",
+		);
+		expect(serviceExchange).toContain("DEPLOYMENT_REQUESTED_CAPABILITIES");
 	});
 
 	it("normalizes direct and nested artifact roots into .vercel/output", () => {

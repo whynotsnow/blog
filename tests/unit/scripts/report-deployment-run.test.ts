@@ -127,7 +127,7 @@ describe("deployment run Service Exchange callback", () => {
 				fetchImpl,
 				now: () => issuedAtMs,
 			}),
-		).rejects.toThrow("expected authority and token contract");
+		).rejects.toThrow("Service exchange capabilities were unexpected.");
 		expect(requestCount).toBe(1);
 	});
 
@@ -147,7 +147,7 @@ describe("deployment run Service Exchange callback", () => {
 				fetchImpl,
 				now: () => issuedAtMs,
 			}),
-		).rejects.toThrow("expected authority and token contract");
+		).rejects.toThrow("Service exchange token lifetime was unexpected.");
 	});
 
 	it("does not fall back to the legacy approval token when Service Exchange configuration is missing", async () => {
