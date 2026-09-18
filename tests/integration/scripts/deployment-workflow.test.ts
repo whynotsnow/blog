@@ -41,6 +41,20 @@ const smokeEvidenceReporter = fs.readFileSync(
 	),
 	"utf8",
 );
+const approvalVerifier = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../scripts/verify-deployment-approval.mjs",
+	),
+	"utf8",
+);
+const artifactPromotion = fs.readFileSync(
+	path.resolve(
+		import.meta.dirname,
+		"../../../scripts/promote-deployment-artifact.mjs",
+	),
+	"utf8",
+);
 
 function jobSection(jobName: string, nextJobName: string) {
 	const start = workflow.indexOf(`    ${jobName}:`);
@@ -240,6 +254,15 @@ describe("Vercel artifact workflow contract", () => {
 		expect(smokeEvidenceReporter).toContain(
 			'outcome === "failed" && !normalizedFailureCode',
 		);
+		expect(approvalVerifier).toContain(
+			"DEPLOY_APPROVAL_WORKFLOW_MODE=legacy",
+		);
+		expect(smokeEvidenceReporter).toContain(
+			"DEPLOY_APPROVAL_WORKFLOW_MODE 必须显式设置",
+		);
+		expect(artifactPromotion).toContain(
+			"legacy fallback requires explicit workflow mode=legacy",
+		);
 		expect(smokeEvidenceReporter).toContain(
 			"succeeded smoke evidence 不得携带 failureCode",
 		);
@@ -294,6 +317,9 @@ describe("Vercel artifact workflow contract", () => {
 		);
 		expect(selectedJob).toContain(
 			"DEPLOY_APPROVAL_PROMOTION_PURPOSE: selected-production",
+		);
+		expect(selectedJob).toContain(
+			"DEPLOY_APPROVAL_WORKFLOW_MODE: selected-artifact",
 		);
 		expect(selectedJob).toContain(
 			"DEPLOY_APPROVAL_ARCHIVE_PATH: .artifact-download/vercel-output.tar.gz",
@@ -384,6 +410,9 @@ describe("Vercel artifact workflow contract", () => {
 		expect(deploymentSecretPreflight).toContain(
 			"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}",
 		);
+		expect(deploymentSecretPreflight).not.toContain(
+			"DEPLOY_APPROVAL_TOKEN",
+		);
 		expect(deploymentSecretPreflight).toContain(
 			"grep -Eq '^[A-Za-z0-9_-]{43}$'",
 		);
@@ -396,6 +425,9 @@ describe("Vercel artifact workflow contract", () => {
 		);
 		expect(legacyProductionJob).toContain(
 			"DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}",
+		);
+		expect(legacyProductionJob).toContain(
+			"DEPLOY_APPROVAL_WORKFLOW_MODE: legacy",
 		);
 		expect(workflow).toContain(
 			"SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID",

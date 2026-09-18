@@ -617,6 +617,7 @@ jobs:
             - name: Verify deployment approval
               env:
                   DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
+                  DEPLOY_APPROVAL_WORKFLOW_MODE: legacy
                   DEPLOY_APPROVAL_PROJECT: blog
                   DEPLOY_APPROVAL_TARGET: site
                   DEPLOY_APPROVAL_COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
@@ -823,7 +824,6 @@ jobs:
                   corepack prepare pnpm@10.22.0 --activate
             - name: Validate deployment secrets
               env:
-                  DEPLOY_APPROVAL_TOKEN: ${{ secrets.DEPLOY_APPROVAL_TOKEN }}
                   SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}
                   SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}
                   SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
@@ -834,10 +834,6 @@ jobs:
                   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: |
-                  if [ -z "$DEPLOY_APPROVAL_TOKEN" ]; then
-                    echo "Missing required production environment secret: DEPLOY_APPROVAL_TOKEN"
-                    exit 1
-                  fi
                   if [ -z "$SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID" ]; then
                     echo "Missing required production environment variable: SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID"
                     exit 1
@@ -950,6 +946,7 @@ jobs:
               id: multipart-promotion
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_WORKFLOW_MODE: selected-artifact
                   DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID }}
                   DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET }}
                   DEPLOY_APPROVAL_ARTIFACT_ID: ${{ inputs.artifact_id }}
@@ -1073,6 +1070,7 @@ jobs:
               if: always()
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
+                  DEPLOY_APPROVAL_WORKFLOW_MODE: selected-artifact
                   DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}
                   DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}
                   DEPLOY_APPROVAL_PROJECT: blog

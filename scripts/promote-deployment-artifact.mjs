@@ -5,6 +5,7 @@ import { exchangeServiceToken } from "./exchange-service-token.mjs";
 const apiBaseUrl = (
 	process.env.DEPLOY_APPROVAL_API_BASE_URL ?? "https://api.whynotsnow.com"
 ).replace(/\/+$/, "");
+const workflowMode = process.env.DEPLOY_APPROVAL_WORKFLOW_MODE;
 const legacyToken = process.env.DEPLOY_APPROVAL_TOKEN;
 const exchangeCredentialId = process.env.DEPLOYMENT_CREDENTIAL_ID;
 const exchangeSecret = process.env.DEPLOYMENT_EXCHANGE_SECRET;
@@ -28,8 +29,24 @@ function fail(message) {
 	process.exit(1);
 }
 
-if (!legacyToken && !exchangeCredentialId && !exchangeSecret)
-	fail("missing deployment approval token or service exchange configuration");
+if (
+	!/^(?:legacy|selected-artifact|historical-backfill)$/u.test(
+		workflowMode ?? "",
+	)
+)
+	fail(
+		"DEPLOY_APPROVAL_WORKFLOW_MODE must be explicitly set to legacy, selected-artifact, or historical-backfill",
+	);
+if (workflowMode === "legacy") {
+	if (!legacyToken)
+		fail(
+			"legacy promotion requires DEPLOY_APPROVAL_TOKEN; modern workflows must use Service Exchange",
+		);
+} else if (!exchangeCredentialId || !exchangeSecret) {
+	fail(
+		"modern promotion requires complete Service Exchange configuration; legacy fallback requires explicit workflow mode=legacy",
+	);
+}
 if (!artifactId || artifactId.length > 128) fail("invalid artifact id");
 if (!artifactDigest || !digestPattern.test(artifactDigest))
 	fail("invalid artifact digest");
@@ -40,6 +57,10 @@ if (!Number.isSafeInteger(archiveSizeBytes) || archiveSizeBytes <= 0)
 	fail("invalid archive size");
 if (purpose !== "selected-production" && purpose !== "historical-backfill")
 	fail("invalid promotion purpose");
+if (workflowMode === "selected-artifact" && purpose !== "selected-production")
+	fail("selected-artifact promotion requires selected-production purpose");
+if (workflowMode === "historical-backfill" && purpose !== "historical-backfill")
+	fail("historical-backfill mode requires historical-backfill purpose");
 if (purpose === "selected-production" && !approvalId)
 	fail("selected production requires an approval id");
 if (purpose === "historical-backfill" && approvalId)
@@ -67,8 +88,9 @@ async function hashArchive(path) {
  */
 async function requestJson(path, init) {
 	const token =
-		exchangeCredentialId || exchangeSecret
-			? (
+		workflowMode === "legacy"
+			? legacyToken
+			: (
 					await exchangeServiceToken({
 						env: {
 							...process.env,
@@ -79,8 +101,7 @@ async function requestJson(path, init) {
 						},
 						operationPrefix: "blog-deployment-artifact-promotion",
 					})
-				).accessToken
-			: legacyToken;
+				).accessToken;
 	let response;
 	try {
 		response = await fetch(`${apiBaseUrl}${path}`, {

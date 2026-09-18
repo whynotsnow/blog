@@ -79,6 +79,7 @@ function promotionEnv(
 	return {
 		...process.env,
 		DEPLOY_APPROVAL_API_BASE_URL: baseUrl,
+		DEPLOY_APPROVAL_WORKFLOW_MODE: "legacy",
 		DEPLOY_APPROVAL_TOKEN: fixtureToken,
 		DEPLOY_APPROVAL_ARTIFACT_ID: "artifact-123",
 		DEPLOY_APPROVAL_ARTIFACT_DIGEST: `sha256:${"1".repeat(64)}`,
@@ -273,6 +274,51 @@ describe("multipart promotion client", () => {
 					}
 					expect(stderr).toContain("artifact_identity_mismatch");
 					expect(stderr).not.toContain(fixtureToken);
+				},
+			);
+		});
+	});
+
+	it("does not fall back to the legacy token without explicit legacy mode", async () => {
+		await withArchive(async ({ archivePath, archiveDigest }) => {
+			let requestCount = 0;
+			await withServer(
+				() => {
+					requestCount += 1;
+					return {
+						status: 500,
+						body: JSON.stringify({ ok: false }),
+					};
+				},
+				async (baseUrl) => {
+					let stderr = "";
+					try {
+						await execFileAsync(
+							process.execPath,
+							["scripts/promote-deployment-artifact.mjs"],
+							{
+								cwd: process.cwd(),
+								env: promotionEnv(
+									baseUrl,
+									archivePath,
+									archiveDigest,
+									{
+										DEPLOY_APPROVAL_WORKFLOW_MODE:
+											"selected-artifact",
+										DEPLOY_APPROVAL_TOKEN: fixtureToken,
+										DEPLOYMENT_CREDENTIAL_ID: "",
+										DEPLOYMENT_EXCHANGE_SECRET: "",
+									},
+								),
+								encoding: "utf8",
+							},
+						);
+					} catch (error) {
+						stderr = String((error as { stderr?: string }).stderr);
+					}
+					expect(stderr).toContain("complete Service Exchange");
+					expect(stderr).not.toContain(fixtureToken);
+					expect(requestCount).toBe(0);
 				},
 			);
 		});

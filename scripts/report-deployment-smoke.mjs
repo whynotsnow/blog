@@ -5,6 +5,7 @@ const apiBaseUrl = (
 	process.env.SNOW_BASE_API_BASE_URL ??
 	"https://api.whynotsnow.com"
 ).replace(/\/+$/u, "");
+const workflowMode = process.env.DEPLOY_APPROVAL_WORKFLOW_MODE;
 const legacyToken =
 	process.env.DEPLOY_APPROVAL_TOKEN ??
 	process.env.SNOW_BASE_DEPLOY_APPROVAL_TOKEN;
@@ -22,8 +23,16 @@ function fail(message) {
 	process.exit(1);
 }
 
-if (!legacyToken && !exchangeCredentialId && !exchangeSecret)
-	fail("缺少 smoke evidence token 或 Service Exchange 配置。");
+if (!/^(?:legacy|selected-artifact)$/u.test(workflowMode ?? ""))
+	fail(
+		"DEPLOY_APPROVAL_WORKFLOW_MODE 必须显式设置为 legacy 或 selected-artifact；旧 token 不得自动 fallback。",
+	);
+if (workflowMode === "legacy" && !legacyToken)
+	fail("legacy smoke evidence 需要 DEPLOY_APPROVAL_TOKEN。");
+if (workflowMode !== "legacy" && (!exchangeCredentialId || !exchangeSecret))
+	fail(
+		"selected-artifact smoke evidence 需要完整 Service Exchange 配置；缺失时不得回退旧 token。",
+	);
 if (projectSlug !== "blog") fail("blog smoke evidence 只允许 project=blog。");
 if (target !== "site") fail("blog smoke evidence 只允许 target=site。");
 if (!deploymentRunId?.trim())
@@ -36,8 +45,9 @@ if (outcome === "failed" && !normalizedFailureCode)
 	fail("failed smoke evidence 必须提供 failureCode。");
 
 const token =
-	exchangeCredentialId || exchangeSecret
-		? (
+	workflowMode === "legacy"
+		? legacyToken
+		: (
 				await exchangeServiceToken({
 					env: {
 						...process.env,
@@ -48,8 +58,7 @@ const token =
 					},
 					operationPrefix: "blog-deployment-smoke-evidence",
 				})
-			).accessToken
-		: legacyToken;
+			).accessToken;
 const response = await fetch(
 	`${apiBaseUrl}/api/v1/deployments/integration-evidence/smoke`,
 	{

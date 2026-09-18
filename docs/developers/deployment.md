@@ -119,7 +119,7 @@ CI 失败、取消、超时或无法确认成功时，生产部署 job 不得进
 
 GitHub repository 的 `production` environment 需要配置以下 secrets/variables：
 
-- `DEPLOY_APPROVAL_TOKEN`（secret）：现有 legacy/break-glass deployment service token。普通 Candidate、selected-artifact、artifact promotion、smoke evidence 和 backfill 路径已改用下列独立 exchange Credential；该 token 在 rollback window 内保留，不在本次迁移中删除或撤销。legacy `production` job 仍显式读取它，直到完成最后一次旧 token 引用审计、rollback 验证、迁移后 smoke 和 owner 确认。
+- `DEPLOY_APPROVAL_TOKEN`（secret）：现有 legacy/break-glass deployment service token。普通 Candidate、selected-artifact、artifact promotion、smoke evidence 和 backfill 路径已改用下列独立 exchange Credential；selected-artifact 不再读取或校验该 token。该 token 在 rollback window 内保留，不在本次迁移中删除或撤销。只有 `mode=production` 的人工 legacy job 才能通过显式 `DEPLOY_APPROVAL_WORKFLOW_MODE=legacy` 使用它；该 job 仍要求非空 `break_glass_reason`、`production` Environment gate 和 owner approval，直到 rollback 验证、迁移后 smoke 与 owner 确认完成。
 - `SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID`（variable）：Snow Admin 中 `blog-production-deployment-approval` Service Credential ID。该 Credential 只授予 `deployments:request` 和 `deployments:verify`，用于 contract、artifact registration、approval request/status 和 approval consume。
 - `SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET`（secret）：上述 approval Credential 的 exchange secret。workflow 在每个短操作前重新换取约 10 分钟有效的 Bearer token；轮询 approval 时也按次轮换，避免 15 分钟等待跨越 token TTL。
 - `SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID`（variable）：Snow Admin 中专用于 Blog deployment run callback 的 Service Credential ID。该 Credential 只授予 `deployments:run-update`。
@@ -130,7 +130,7 @@ GitHub repository 的 `production` environment 需要配置以下 secrets/variab
 - `VERCEL_ORG_ID`：Vercel org 或 team 标识。
 - `VERCEL_PROJECT_ID`：Vercel project 标识。
 
-`snow build CI` 的 selected-artifact job 会在请求/消费审批前预检这些 variable/secret 的存在和格式。缺少任一项时，workflow 会失败并只输出缺失或格式无效的变量/secret 名称，不输出任何 secret 值。exchange 响应还必须验证 `snow-service` principal、唯一 capability 和约 10 分钟 TTL；不符合时 fail closed。GitHub Actions artifact 和 candidate `expiresAt` 当前统一为 7 天；Admin 选择和 dispatch 必须在 candidate 过期前完成。
+`snow build CI` 的 selected-artifact job 会在请求/消费审批前预检 modern exchange Credential、exchange secret 和 Vercel secret 的存在和格式；legacy `DEPLOY_APPROVAL_TOKEN` 不在该 preflight 范围内。缺少任一 modern 项时，workflow 会失败并只输出缺失或格式无效的变量/secret 名称，不输出任何 secret 值。exchange 响应还必须验证 `snow-service` principal、唯一 capability 和约 10 分钟 TTL；不符合时 fail closed。GitHub Actions artifact 和 candidate `expiresAt` 当前统一为 7 天；Admin 选择和 dispatch 必须在 candidate 过期前完成。
 
 不要把 token 明文、Access cookie/JWT、Authorization header、Vercel token、审批 token、完整带凭证 URL 或生产原始日志写入 Git、sidecar、issue、截图或聊天记录。GitHub Actions artifact 下载只使用 `GITHUB_TOKEN`，不向 Blog Credential 增加 `deployments:artifact-download`。若平台 token 无法做到严格项目级最小权限，必须通过 GitHub environment、禁用平台自动部署、短 TTL/轮换和审计记录降低风险。
 
@@ -256,7 +256,12 @@ GNU tar 时，archive fixture 会使用 deterministic portable ustar writer 复�
 fallback 不会生成生产 Candidate，也不属于生产 digest contract。
 
 保留的 legacy/break-glass `production` job 才使用
-`node scripts/verify-deployment-approval.mjs` 兼容旧接口；它不是 selected-artifact 的常规入口。
+`node scripts/verify-deployment-approval.mjs` 兼容旧接口，并显式设置
+`DEPLOY_APPROVAL_WORKFLOW_MODE=legacy`；它不是 selected-artifact 的常规入口。
+`promote-deployment-artifact.mjs` 与 `report-deployment-smoke.mjs` 的旧 token fallback 同样只在显式
+`legacy` mode 下可用；selected-artifact 和 historical-backfill 必须提供完整的 exchange Credential 配置，
+缺失时 fail closed，不得静默回退旧 token。旧 token 只能作为 owner 记录
+`break_glass_reason` 后的人工 rollback 手段，不能由 modern workflow 自动 fallback。
 受控 workflow 不依赖 `ignoreCommand` 的自定义放行变量；它通过 Vercel CLI 的 prebuilt deploy 通道
 发布已构建产物。
 

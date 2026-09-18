@@ -18,7 +18,7 @@ const requestSource =
 	process.env.DEPLOY_APPROVAL_REQUEST_SOURCE ??
 	process.env.SNOW_BASE_DEPLOY_REQUEST_SOURCE ??
 	"github-actions";
-const workflowMode = process.env.DEPLOY_APPROVAL_WORKFLOW_MODE ?? "legacy";
+const workflowMode = process.env.DEPLOY_APPROVAL_WORKFLOW_MODE;
 const requestId = process.env.DEPLOY_APPROVAL_REQUEST_ID;
 const requestUrl =
 	process.env.DEPLOY_APPROVAL_REQUEST_URL ??
@@ -209,6 +209,12 @@ function approvalValidationSummary() {
 	return "CI validation completed before deployment approval.";
 }
 
+if (workflowMode !== "legacy") {
+	fail(
+		"verify-deployment-approval.mjs 只允许显式 DEPLOY_APPROVAL_WORKFLOW_MODE=legacy；selected-artifact 必须使用 exchange Credential 和 v2 approval Action。",
+	);
+}
+
 if (!approvalToken) {
 	fail(
 		"缺少 DEPLOY_APPROVAL_TOKEN。请在 GitHub production Environment secret 中配置部署审批 token；SNOW_BASE_DEPLOY_APPROVAL_TOKEN 仅作为兼容别名。",
@@ -240,24 +246,6 @@ if (!Number.isFinite(waitSeconds) || waitSeconds < 1 || waitSeconds > 1800) {
 if (!Number.isFinite(pollSeconds) || pollSeconds < 5 || pollSeconds > 60) {
 	fail(
 		"DEPLOY_APPROVAL_POLL_SECONDS 必须是 5 到 60 之间的秒数；SNOW_BASE_DEPLOY_APPROVAL_POLL_SECONDS 仅作为兼容别名。",
-	);
-}
-
-if (!/^(?:legacy|selected-artifact)$/u.test(workflowMode)) {
-	fail("DEPLOY_APPROVAL_WORKFLOW_MODE 只能是 legacy 或 selected-artifact。");
-}
-
-const isSelectedArtifactMode = workflowMode === "selected-artifact";
-
-if (isSelectedArtifactMode && (!providedArtifactId || !artifactDigest)) {
-	fail(
-		"selected-artifact 必须提供 snow-base v2 artifact id 和 artifact digest，不能退回旧版审批流程。",
-	);
-}
-
-if (isSelectedArtifactMode && !requestId?.trim()) {
-	fail(
-		"selected-artifact 必须提供 snow-base request id，用于审批幂等和 workflow 对账。",
 	);
 }
 
@@ -305,11 +293,7 @@ if (artifactType && artifactDigest && !deploymentArtifact) {
 				: undefined,
 	});
 
-	if (artifactResult.response.status === 404 && isSelectedArtifactMode) {
-		fail(
-			"部署产物登记接口不可用，selected-artifact 必须使用 snow-base v2 artifact contract。",
-		);
-	} else if (artifactResult.response.status === 404) {
+	if (artifactResult.response.status === 404) {
 		console.log("部署产物登记接口暂不可用，将保留 v1.1 兼容审批流程。");
 	} else if (
 		!artifactResult.response.ok ||
@@ -352,11 +336,7 @@ const requestResult = await postJson(
 );
 let approvalId;
 
-if (requestResult.response.status === 404 && isSelectedArtifactMode) {
-	fail(
-		"部署审批请求接口不可用，selected-artifact 必须使用 snow-base v2 artifact-bound contract。",
-	);
-} else if (requestResult.response.status === 404) {
+if (requestResult.response.status === 404) {
 	console.log(
 		"部署审批自动请求接口暂不可用，将回退到旧版 verify-only 校验流程。",
 	);

@@ -37,6 +37,9 @@ describe("historical artifact backfill workflow contract", () => {
 			"DEPLOY_APPROVAL_PROMOTION_PURPOSE: historical-backfill",
 		);
 		expect(workflow).toContain(
+			"DEPLOY_APPROVAL_WORKFLOW_MODE: historical-backfill",
+		);
+		expect(workflow).toContain(
 			"node scripts/promote-deployment-artifact.mjs",
 		);
 		expect(
