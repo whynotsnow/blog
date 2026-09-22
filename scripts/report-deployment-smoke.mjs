@@ -63,7 +63,7 @@ const token =
 				})
 			).accessToken;
 const response = await fetch(
-	`${apiBaseUrl}/api/v1/deployments/integration-evidence/smoke`,
+	`${apiBaseUrl}/api/v1/deployments/runs/${encodeURIComponent(deploymentRunId)}/smoke`,
 	{
 		method: "POST",
 		headers: {
@@ -72,9 +72,6 @@ const response = await fetch(
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({
-			projectSlug,
-			target,
-			deploymentRunId,
 			outcome,
 			...(outcome === "failed"
 				? { failureCode: normalizedFailureCode }

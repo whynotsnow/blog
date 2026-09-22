@@ -252,7 +252,7 @@ describe("Vercel artifact workflow contract", () => {
 		expect(productionSmoke).toContain("public_smoke_marker_missing");
 		expect(productionSmoke).toContain("public_smoke_request_failed");
 		expect(smokeEvidenceReporter).toContain(
-			"/api/v1/deployments/integration-evidence/smoke",
+			"/api/v1/deployments/runs/${encodeURIComponent(deploymentRunId)}/smoke",
 		);
 		expect(smokeEvidenceReporter).toContain("deploymentRunId");
 		expect(smokeEvidenceReporter).toContain(

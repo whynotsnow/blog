@@ -70,7 +70,7 @@ workflow dispatch 的 `mode` 有三种，手动 dispatch 默认选 `candidate`�
 
 `candidate` 和 `selected-artifact` 是由控制面调用的内部 workflow mode，不是用户必须按顺序手工执行的两个发布步骤。一次 Admin deployment intent 会在控制面内部复用或创建 candidate、绑定 artifact、等待 owner approval，再 dispatch selected-artifact。两种 mode 都 fail closed 校验 `blog/site` 的 project/target、exact commit、GitHub artifact identity 和 digest；selected-artifact 会 checkout Admin 指定的 `commit_sha`，而不是当前 workflow 事件的默认 branch HEAD。blog workflow 不接受 API、D1、R2 或 Worker Version 输入，也不 dispatch `snow-base/api` workflow。
 
-candidate workflow 会在验证阶段回报 `in_progress`，在 artifact 登记后回报 `completed`；部署 workflow 会在 Vercel deploy 前由固定 SHA 的公开 deployment approval Action 回报 deployment run `in_progress`，部署完成后由 `scripts/report-deployment-run.mjs` 调用 `/api/v1/deployments/runs/update`，只接受响应中的精确 deployment run ID 并输出给后续 smoke。成功部署后使用该 ID 执行 `/` 和 `/robots.txt` 公开 smoke，再调用 `/api/v1/deployments/integration-evidence/smoke` 写入 run-bound evidence；smoke 或 evidence 失败时 workflow 失败。除 deployment run ID 外，这些 contract preflight、artifact registration、Candidate callback 和 selected-artifact approval request/wait/consume 都由固定 SHA 的公开 deployment approval Action 承接。每次回报都传递 request id、project、target、commit、GitHub run URL，以及 candidate/deployment artifact 的精确 id 和 digest；不得使用 request id 或 GitHub workflow run id 推导 deploymentRunId。
+candidate workflow 会在验证阶段回报 `in_progress`，在 artifact 登记后回报 `completed`；部署 workflow 会在 Vercel deploy 前由固定 SHA 的公开 deployment approval Action 回报 deployment run `in_progress`，部署完成后由 `scripts/report-deployment-run.mjs` 调用 `/api/v1/deployments/runs/update`，只接受响应中的精确 deployment run ID 并输出给后续 smoke。成功部署后使用该 ID 执行 `/` 和 `/robots.txt` 公开 smoke，再调用 `/api/v1/deployments/runs/:deploymentRunId/smoke` 写入 run-bound evidence；smoke 或 evidence 失败时 workflow 失败。除 deployment run ID 外，这些 contract preflight、artifact registration、Candidate callback 和 selected-artifact approval request/wait/consume 都由固定 SHA 的公开 deployment approval Action 承接。每次回报都传递 request id、project、target、commit、GitHub run URL，以及 candidate/deployment artifact 的精确 id 和 digest；不得使用 request id 或 GitHub workflow run id 推导 deploymentRunId。
 
 若一次业务需求同时修改 blog 与 `snow-base/api`，两者仍由 snow-base Admin 分别发起、审批、dispatch、验证和记录。可以在需求或审计记录中引用同一个业务编号，但 blog workflow 不实现联合 manifest、联合 approval、组件消费或 partial-success 状态，也不因此获得 API 部署权限。
 
@@ -92,7 +92,7 @@ candidate workflow 会在验证阶段回报 `in_progress`，在 artifact 登记�
 12. 部署完成后由 workflow 回写 `/api/v1/deployments/runs/update`，只接受响应中的精确
     `data.id` 作为 `deploymentRunId`；没有该 ID 时不得继续后续 smoke。
 13. 仅在 Vercel 部署成功后访问生产站点首页和 `/robots.txt`，再将成功或带脱敏
-    `failureCode` 的失败结果写入 `/api/v1/deployments/integration-evidence/smoke`。smoke 或 evidence
+    `failureCode` 的失败结果写入 `/api/v1/deployments/runs/:deploymentRunId/smoke`。smoke 或 evidence
     回写失败时 workflow 失败，不报告成功。成功 evidence 不携带 `failureCode`；真实 smoke 失败使用
     `public_smoke_http_status`、`public_smoke_marker_missing` 或 `public_smoke_request_failed`，跳过使用
     `smoke_skipped`，deployment workflow 或 deployment run 回写失败使用 `deployment_workflow_failed`。
