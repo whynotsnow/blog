@@ -1,7 +1,8 @@
 import { appendFileSync } from "node:fs";
 
 const defaultApiBaseUrl = "https://api.whynotsnow.com";
-const tokenLifetimeSeconds = 10 * 60;
+const tokenLifetimeSeconds = 15 * 60;
+const legacyTokenLifetimeSeconds = 10 * 60;
 
 function requiredValue(env, name) {
 	const value = env[name];
@@ -102,9 +103,15 @@ function assertTokenResponse(body, operationId, capabilities, nowSeconds) {
 		throw new Error("Service exchange expiry was missing.");
 	}
 	const lifetime = body.expiresAt - nowSeconds;
+	const acceptedLifetimes = [
+		tokenLifetimeSeconds,
+		legacyTokenLifetimeSeconds,
+	];
 	if (
-		lifetime < tokenLifetimeSeconds - 60 ||
-		lifetime > tokenLifetimeSeconds + 60
+		!acceptedLifetimes.some(
+			(expected) =>
+				lifetime >= expected - 60 && lifetime <= expected + 60,
+		)
 	) {
 		throw new Error("Service exchange token lifetime was unexpected.");
 	}

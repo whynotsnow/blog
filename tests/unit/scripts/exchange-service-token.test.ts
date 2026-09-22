@@ -18,7 +18,7 @@ function environment() {
 }
 
 describe("generic deployment Service Exchange helper", () => {
-	it("requests only the sorted capabilities and validates the short-lived token", async () => {
+	it("requests only the sorted capabilities and validates the current token lifetime", async () => {
 		const fetchImpl: typeof fetch = async (_input, init) => {
 			const body = JSON.parse(String(init?.body));
 			return Response.json({
@@ -27,7 +27,7 @@ describe("generic deployment Service Exchange helper", () => {
 				accessToken,
 				principal: { namespace: "snow-service" },
 				capabilities: ["deployments:request", "deployments:verify"],
-				expiresAt: 1_600,
+				expiresAt: 1_900,
 			});
 		};
 
@@ -42,7 +42,7 @@ describe("generic deployment Service Exchange helper", () => {
 			accessToken,
 			apiBaseUrl,
 			capabilities: ["deployments:request", "deployments:verify"],
-			expiresAt: 1_600,
+			expiresAt: 1_900,
 		});
 	});
 

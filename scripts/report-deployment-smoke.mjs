@@ -18,6 +18,10 @@ const outcome = process.env.DEPLOYMENT_SMOKE_OUTCOME;
 const failureCode = process.env.DEPLOYMENT_SMOKE_FAILURE_CODE;
 const normalizedFailureCode = failureCode?.trim();
 
+/**
+ * @param {string} message
+ * @returns {never}
+ */
 function fail(message) {
 	console.error(message);
 	process.exit(1);
