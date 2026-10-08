@@ -30,10 +30,10 @@ const deploymentRunReporter = fs.readFileSync(
 	),
 	"utf8",
 );
-const serviceExchange = fs.readFileSync(
+const oauthTokenClient = fs.readFileSync(
 	path.resolve(
 		import.meta.dirname,
-		"../../../scripts/exchange-service-token.mjs",
+		"../../../scripts/oauth-client-token.mjs",
 	),
 	"utf8",
 );
@@ -278,7 +278,7 @@ describe("Vercel artifact workflow contract", () => {
 		);
 	});
 
-	it("defaults manual dispatch away from legacy and keeps backfill on modern exchange", () => {
+	it("defaults manual dispatch away from legacy and keeps backfill on OAuth Client Credentials", () => {
 		const modeInput = workflow.slice(
 			workflow.indexOf("            mode:"),
 			workflow.indexOf("            project_slug:"),
@@ -306,7 +306,7 @@ describe("Vercel artifact workflow contract", () => {
 			"DEPLOY_APPROVAL_WORKFLOW_MODE: historical-backfill",
 		);
 		expect(backfillJob).toContain(
-			"SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET",
+			"SNOW_BASE_DEPLOYMENT_PROMOTION_CLIENT_SECRET",
 		);
 		expect(artifactPromotion).toContain("deployments:artifact-promote");
 		expect(backfillJob).not.toContain("DEPLOY_APPROVAL_TOKEN:");
@@ -436,24 +436,27 @@ describe("Vercel artifact workflow contract", () => {
 				"node scripts/report-deployment-run.mjs",
 			);
 			expect(callbackStep).toContain(
-				"SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}",
+				"SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID }}",
 			);
 			expect(callbackStep).toContain(
-				"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}",
+				"SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET }}",
 			);
 			expect(callbackStep).not.toContain("DEPLOY_APPROVAL_TOKEN");
 		}
 		expect(deploymentSecretPreflight).toContain(
-			"SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID",
+			"SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID",
 		);
 		expect(deploymentSecretPreflight).toContain(
-			"SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID }}",
+			"SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID }}",
 		);
 		expect(deploymentSecretPreflight).toContain(
-			"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET",
+			"SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET",
 		);
 		expect(deploymentSecretPreflight).toContain(
-			"SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET }}",
+			"SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET }}",
+		);
+		expect(deploymentSecretPreflight).toContain(
+			"Deployment OAuth Client IDs must be distinct across run, approval, and promotion roles",
 		);
 		expect(deploymentSecretPreflight).not.toContain(
 			"DEPLOY_APPROVAL_TOKEN",
@@ -461,9 +464,9 @@ describe("Vercel artifact workflow contract", () => {
 		expect(deploymentSecretPreflight).toContain(
 			"grep -Eq '^[A-Za-z0-9_-]{43}$'",
 		);
-		expect(serviceExchange).toContain("/api/v1/service/exchange/token");
+		expect(oauthTokenClient).toContain("/api/v1/oauth/token");
 		expect(deploymentRunReporter).toContain(
-			"DEPLOYMENT_REQUESTED_CAPABILITIES: runUpdateCapability",
+			"DEPLOYMENT_OAUTH_SCOPES: runUpdateCapability",
 		);
 		expect(deploymentRunReporter).toContain(
 			"/api/v1/deployments/runs/update",
@@ -474,13 +477,9 @@ describe("Vercel artifact workflow contract", () => {
 		expect(legacyProductionJob).toContain(
 			"DEPLOY_APPROVAL_WORKFLOW_MODE: legacy-break-glass",
 		);
-		expect(workflow).toContain(
-			"SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID",
-		);
-		expect(workflow).toContain(
-			"SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID",
-		);
-		expect(serviceExchange).toContain("DEPLOYMENT_REQUESTED_CAPABILITIES");
+		expect(workflow).toContain("SNOW_BASE_DEPLOYMENT_APPROVAL_CLIENT_ID");
+		expect(workflow).toContain("SNOW_BASE_DEPLOYMENT_PROMOTION_CLIENT_ID");
+		expect(oauthTokenClient).toContain("DEPLOYMENT_OAUTH_SCOPES");
 	});
 
 	it("normalizes direct and nested artifact roots into .vercel/output", () => {

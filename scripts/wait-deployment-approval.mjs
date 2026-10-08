@@ -1,4 +1,4 @@
-import { exchangeServiceToken } from "./exchange-service-token.mjs";
+import { requestOAuthClientToken } from "./oauth-client-token.mjs";
 
 function fail(message) {
 	throw new Error(message);
@@ -73,17 +73,17 @@ export async function waitForDeploymentApproval({
 	const safeRequestId = requestId ?? "";
 	const deadline = now() + waitSeconds * 1000;
 	while (now() <= deadline) {
-		const exchange = await exchangeServiceToken({
+		const oauthToken = await requestOAuthClientToken({
 			env: {
 				...env,
-				DEPLOYMENT_CREDENTIAL_ID: env.DEPLOYMENT_CREDENTIAL_ID,
-				DEPLOYMENT_EXCHANGE_SECRET: env.DEPLOYMENT_EXCHANGE_SECRET,
-				DEPLOYMENT_REQUESTED_CAPABILITIES:
+				DEPLOYMENT_OAUTH_CLIENT_ID: env.DEPLOYMENT_OAUTH_CLIENT_ID,
+				DEPLOYMENT_OAUTH_CLIENT_SECRET:
+					env.DEPLOYMENT_OAUTH_CLIENT_SECRET,
+				DEPLOYMENT_OAUTH_SCOPES:
 					"deployments:request,deployments:verify",
 			},
 			fetchImpl,
 			now,
-			operationPrefix: "blog-deployment-approval-wait",
 		});
 		const response = await fetchImpl(
 			`${apiBaseUrl}/api/v1/deployments/requests/${encodeURIComponent(safeRequestId)}`,
@@ -93,7 +93,7 @@ export async function waitForDeploymentApproval({
 				redirect: "manual",
 				headers: {
 					Accept: "application/json",
-					Authorization: `Bearer ${exchange.accessToken}`,
+					Authorization: `Bearer ${oauthToken.accessToken}`,
 				},
 			},
 		);

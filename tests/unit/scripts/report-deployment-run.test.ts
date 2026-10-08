@@ -2,16 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 import { reportDeploymentRun } from "../../../scripts/report-deployment-run.mjs";
 
 const apiBaseUrl = "https://api.example.test";
-const credentialId = "cred_blog_deployment_run";
-const exchangeSecret = "S".repeat(43);
+const clientId = "cli_blog_deployment_run";
+const clientSecret = "S".repeat(43);
 const accessToken = "T".repeat(43);
 const issuedAtMs = 1_000_000;
 
 function environment(overrides: Record<string, string | undefined> = {}) {
 	return {
 		DEPLOY_APPROVAL_API_BASE_URL: apiBaseUrl,
-		SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID: credentialId,
-		SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: exchangeSecret,
+		SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID: clientId,
+		SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET: clientSecret,
 		DEPLOY_APPROVAL_PROJECT: "blog",
 		DEPLOY_APPROVAL_TARGET: "site",
 		DEPLOY_APPROVAL_COMMIT_SHA: "a".repeat(40),
@@ -27,33 +27,23 @@ function environment(overrides: Record<string, string | undefined> = {}) {
 	};
 }
 
-function exchangeResult(
-	operationId: string,
-	overrides: Record<string, unknown> = {},
-) {
+function oauthResult(overrides: Record<string, unknown> = {}) {
 	return {
-		operationId,
-		tokenType: "Bearer",
-		accessToken,
-		principal: { namespace: "snow-service" },
-		capabilities: ["deployments:run-update"],
-		expiresAt: issuedAtMs / 1000 + 600,
+		access_token: accessToken,
+		token_type: "Bearer",
+		expires_in: 900,
+		scope: "deployments:run-update",
 		...overrides,
 	};
 }
 
-describe("deployment run Service Exchange callback", () => {
+describe("deployment run OAuth Client Credentials callback", () => {
 	it("uses one short-lived run-update token and returns the exact run ID", async () => {
 		const calls: Array<{ url: string; init: RequestInit }> = [];
 		const fetchImpl: typeof fetch = async (input, init) => {
 			const call = { url: String(input), init: init ?? {} };
 			calls.push(call);
-			if (calls.length === 1) {
-				const body = JSON.parse(String(call.init.body));
-				return Response.json(
-					exchangeResult(body.exchangeRequest.operationId),
-				);
-			}
+			if (calls.length === 1) return Response.json(oauthResult());
 			return Response.json({ ok: true, data: { id: "run_0123456789" } });
 		};
 		const output: string[] = [];
@@ -72,23 +62,11 @@ describe("deployment run Service Exchange callback", () => {
 
 		expect(deploymentRunId).toBe("run_0123456789");
 		expect(calls).toHaveLength(2);
-		expect(calls[0]?.url).toBe(
-			`${apiBaseUrl}/api/v1/service/exchange/token`,
-		);
-		expect(new Headers(calls[0]?.init.headers).get("authorization")).toBe(
-			`Snow-Service-Exchange ${exchangeSecret}`,
-		);
-		const exchangeBody = JSON.parse(String(calls[0]?.init.body));
-		expect(exchangeBody.exchangeRequest).toMatchObject({
-			credentialId,
-			purpose: "api-token",
-			requestedCapabilities: ["deployments:run-update"],
-			issuedAt: 1000,
-			expiresAt: 1060,
-		});
-		expect(exchangeBody.exchangeRequest.operationId).toMatch(
-			/^blog-deployment-run-/u,
-		);
+		expect(calls[0]?.url).toBe(`${apiBaseUrl}/api/v1/oauth/token`);
+		const oauthBody = new URLSearchParams(String(calls[0]?.init.body));
+		expect(oauthBody.get("grant_type")).toBe("client_credentials");
+		expect(oauthBody.get("resource")).toBe("snow-public-api");
+		expect(oauthBody.get("scope")).toBe("deployments:run-update");
 		expect(calls[1]?.url).toBe(
 			`${apiBaseUrl}/api/v1/deployments/runs/update`,
 		);
@@ -106,17 +84,13 @@ describe("deployment run Service Exchange callback", () => {
 		]);
 	});
 
-	it("fails closed when the exchange response grants broader authority", async () => {
+	it("fails closed when the OAuth response grants broader authority", async () => {
 		let requestCount = 0;
-		const fetchImpl: typeof fetch = async (_input, init) => {
+		const fetchImpl: typeof fetch = async () => {
 			requestCount += 1;
-			const body = JSON.parse(String(init?.body));
 			return Response.json(
-				exchangeResult(body.exchangeRequest.operationId, {
-					capabilities: [
-						"deployments:run-update",
-						"deployments:request",
-					],
+				oauthResult({
+					scope: "deployments:request deployments:run-update",
 				}),
 			);
 		};
@@ -127,19 +101,13 @@ describe("deployment run Service Exchange callback", () => {
 				fetchImpl,
 				now: () => issuedAtMs,
 			}),
-		).rejects.toThrow("Service exchange capabilities were unexpected.");
+		).rejects.toThrow("OAuth token scopes were unexpected.");
 		expect(requestCount).toBe(1);
 	});
 
-	it("fails closed when the exchanged token lifetime is outside contract", async () => {
-		const fetchImpl: typeof fetch = async (_input, init) => {
-			const body = JSON.parse(String(init?.body));
-			return Response.json(
-				exchangeResult(body.exchangeRequest.operationId, {
-					expiresAt: issuedAtMs / 1000 + 1200,
-				}),
-			);
-		};
+	it("fails closed when the OAuth token lifetime is outside contract", async () => {
+		const fetchImpl: typeof fetch = async () =>
+			Response.json(oauthResult({ expires_in: 1200 }));
 
 		await expect(
 			reportDeploymentRun({
@@ -147,22 +115,22 @@ describe("deployment run Service Exchange callback", () => {
 				fetchImpl,
 				now: () => issuedAtMs,
 			}),
-		).rejects.toThrow("Service exchange token lifetime was unexpected.");
+		).rejects.toThrow("OAuth token lifetime was unexpected.");
 	});
 
-	it("does not fall back to the legacy approval token when Service Exchange configuration is missing", async () => {
+	it("does not fall back to the legacy approval token when OAuth Client Credentials configuration is missing", async () => {
 		const fetchImpl = vi.fn<typeof fetch>();
 
 		await expect(
 			reportDeploymentRun({
 				env: environment({
-					SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET: undefined,
+					SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET: undefined,
 					DEPLOY_APPROVAL_TOKEN:
 						"legacy-approval-token-must-not-be-used",
 				}),
 				fetchImpl,
 			}),
-		).rejects.toThrow("SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET");
+		).rejects.toThrow("SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET");
 		expect(fetchImpl).not.toHaveBeenCalled();
 	});
 });

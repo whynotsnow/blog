@@ -1,14 +1,14 @@
 import { createHash } from "node:crypto";
 import { open, stat } from "node:fs/promises";
-import { exchangeServiceToken } from "./exchange-service-token.mjs";
+import { requestOAuthClientToken } from "./oauth-client-token.mjs";
 
 const apiBaseUrl = (
 	process.env.DEPLOY_APPROVAL_API_BASE_URL ?? "https://api.whynotsnow.com"
 ).replace(/\/+$/, "");
 const workflowMode = process.env.DEPLOY_APPROVAL_WORKFLOW_MODE;
 const legacyToken = process.env.DEPLOY_APPROVAL_TOKEN;
-const exchangeCredentialId = process.env.DEPLOYMENT_CREDENTIAL_ID;
-const exchangeSecret = process.env.DEPLOYMENT_EXCHANGE_SECRET;
+const oauthClientId = process.env.DEPLOYMENT_OAUTH_CLIENT_ID;
+const oauthClientSecret = process.env.DEPLOYMENT_OAUTH_CLIENT_SECRET;
 const artifactId = process.env.DEPLOY_APPROVAL_ARTIFACT_ID?.trim();
 const artifactDigest = process.env.DEPLOY_APPROVAL_ARTIFACT_DIGEST?.trim();
 const archivePath = process.env.DEPLOY_APPROVAL_ARCHIVE_PATH?.trim();
@@ -40,11 +40,11 @@ if (
 if (workflowMode === "legacy-break-glass") {
 	if (!legacyToken)
 		fail(
-			"legacy-break-glass promotion requires DEPLOY_APPROVAL_TOKEN; modern workflows must use Service Exchange",
+			"legacy-break-glass promotion requires DEPLOY_APPROVAL_TOKEN; modern workflows must use OAuth Client Credentials",
 		);
-} else if (!exchangeCredentialId || !exchangeSecret) {
+} else if (!oauthClientId || !oauthClientSecret) {
 	fail(
-		"modern promotion requires complete Service Exchange configuration; legacy fallback requires explicit workflow mode=legacy-break-glass",
+		"modern promotion requires complete OAuth Client Credentials configuration; legacy fallback requires explicit workflow mode=legacy-break-glass",
 	);
 }
 if (!artifactId || artifactId.length > 128) fail("invalid artifact id");
@@ -91,15 +91,14 @@ async function requestJson(path, init) {
 		workflowMode === "legacy-break-glass"
 			? legacyToken
 			: (
-					await exchangeServiceToken({
+					await requestOAuthClientToken({
 						env: {
 							...process.env,
-							DEPLOYMENT_CREDENTIAL_ID: exchangeCredentialId,
-							DEPLOYMENT_EXCHANGE_SECRET: exchangeSecret,
-							DEPLOYMENT_REQUESTED_CAPABILITIES:
+							DEPLOYMENT_OAUTH_CLIENT_ID: oauthClientId,
+							DEPLOYMENT_OAUTH_CLIENT_SECRET: oauthClientSecret,
+							DEPLOYMENT_OAUTH_SCOPES:
 								"deployments:artifact-promote",
 						},
-						operationPrefix: "blog-deployment-artifact-promotion",
 					})
 				).accessToken;
 	let response;

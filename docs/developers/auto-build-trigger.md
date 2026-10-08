@@ -60,12 +60,12 @@ jobs:
     digest="sha256:$(tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --mode=0644 --format=gnu -cf - -C .vercel output | sha256sum | awk '{print $1}')"
     echo "DEPLOY_APPROVAL_ARTIFACT_DIGEST=${digest}" >> "$GITHUB_ENV"
 
-- name: Exchange approval credential
+- name: Request OAuth approval token
   env:
-    DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CREDENTIAL_ID }}
-    DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_EXCHANGE_SECRET }}
-    DEPLOYMENT_REQUESTED_CAPABILITIES: deployments:request,deployments:verify
-  run: node scripts/exchange-service-token.mjs
+    DEPLOYMENT_OAUTH_CLIENT_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_APPROVAL_CLIENT_ID }}
+    DEPLOYMENT_OAUTH_CLIENT_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_APPROVAL_CLIENT_SECRET }}
+    DEPLOYMENT_OAUTH_SCOPES: deployments:request,deployments:verify
+  run: node scripts/oauth-client-token.mjs
 
 - name: Preflight deployment approval contract
   uses: whynotsnow/snow-base-deployment-approval-action@76c3396eaa0635ef8de2c8668b77d939a292cbac

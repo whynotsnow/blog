@@ -87,13 +87,13 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: lts/*
-            - name: Validate promotion credential
+            - name: Validate promotion OAuth Client
               env:
-                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID }}
-                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET }}
+                  DEPLOYMENT_OAUTH_CLIENT_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CLIENT_ID }}
+                  DEPLOYMENT_OAUTH_CLIENT_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_CLIENT_SECRET }}
               run: |
-                  test -n "$DEPLOYMENT_CREDENTIAL_ID"
-                  test -n "$DEPLOYMENT_EXCHANGE_SECRET"
+                  test -n "$DEPLOYMENT_OAUTH_CLIENT_ID"
+                  test -n "$DEPLOYMENT_OAUTH_CLIENT_SECRET"
             - name: Download exact legacy GitHub artifact
               uses: actions/download-artifact@v4
               with:
@@ -119,8 +119,8 @@ jobs:
               env:
                   DEPLOY_APPROVAL_API_BASE_URL: ${{ vars.DEPLOY_APPROVAL_API_BASE_URL || 'https://api.whynotsnow.com' }}
                   DEPLOY_APPROVAL_WORKFLOW_MODE: historical-backfill
-                  DEPLOYMENT_CREDENTIAL_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CREDENTIAL_ID }}
-                  DEPLOYMENT_EXCHANGE_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_EXCHANGE_SECRET }}
+                  DEPLOYMENT_OAUTH_CLIENT_ID: ${{ vars.SNOW_BASE_DEPLOYMENT_PROMOTION_CLIENT_ID }}
+                  DEPLOYMENT_OAUTH_CLIENT_SECRET: ${{ secrets.SNOW_BASE_DEPLOYMENT_PROMOTION_CLIENT_SECRET }}
                   DEPLOY_APPROVAL_ARTIFACT_ID: ${{ matrix.artifactId }}
                   DEPLOY_APPROVAL_ARTIFACT_DIGEST: ${{ matrix.artifactDigest }}
                   DEPLOY_APPROVAL_ARCHIVE_PATH: .canonical/vercel-output.tar.gz

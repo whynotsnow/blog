@@ -1,4 +1,4 @@
-import { exchangeServiceToken } from "./exchange-service-token.mjs";
+import { requestOAuthClientToken } from "./oauth-client-token.mjs";
 
 const apiBaseUrl = (
 	process.env.DEPLOY_APPROVAL_API_BASE_URL ??
@@ -9,8 +9,8 @@ const workflowMode = process.env.DEPLOY_APPROVAL_WORKFLOW_MODE;
 const legacyToken =
 	process.env.DEPLOY_APPROVAL_TOKEN ??
 	process.env.SNOW_BASE_DEPLOY_APPROVAL_TOKEN;
-const exchangeCredentialId = process.env.DEPLOYMENT_CREDENTIAL_ID;
-const exchangeSecret = process.env.DEPLOYMENT_EXCHANGE_SECRET;
+const oauthClientId = process.env.DEPLOYMENT_OAUTH_CLIENT_ID;
+const oauthClientSecret = process.env.DEPLOYMENT_OAUTH_CLIENT_SECRET;
 const projectSlug = process.env.DEPLOY_APPROVAL_PROJECT ?? "blog";
 const target = process.env.DEPLOY_APPROVAL_TARGET ?? "site";
 const deploymentRunId = process.env.DEPLOYMENT_RUN_ID;
@@ -35,10 +35,10 @@ if (workflowMode === "legacy-break-glass" && !legacyToken)
 	fail("legacy smoke evidence 需要 DEPLOY_APPROVAL_TOKEN。");
 if (
 	workflowMode !== "legacy-break-glass" &&
-	(!exchangeCredentialId || !exchangeSecret)
+	(!oauthClientId || !oauthClientSecret)
 )
 	fail(
-		"selected-artifact smoke evidence 需要完整 Service Exchange 配置；缺失时不得回退旧 token。",
+		"selected-artifact smoke evidence 需要完整 OAuth Client Credentials 配置；缺失时不得回退旧 token。",
 	);
 if (projectSlug !== "blog") fail("blog smoke evidence 只允许 project=blog。");
 if (target !== "site") fail("blog smoke evidence 只允许 target=site。");
@@ -55,15 +55,13 @@ const token =
 	workflowMode === "legacy-break-glass"
 		? legacyToken
 		: (
-				await exchangeServiceToken({
+				await requestOAuthClientToken({
 					env: {
 						...process.env,
-						DEPLOYMENT_CREDENTIAL_ID: exchangeCredentialId,
-						DEPLOYMENT_EXCHANGE_SECRET: exchangeSecret,
-						DEPLOYMENT_REQUESTED_CAPABILITIES:
-							"deployments:run-update",
+						DEPLOYMENT_OAUTH_CLIENT_ID: oauthClientId,
+						DEPLOYMENT_OAUTH_CLIENT_SECRET: oauthClientSecret,
+						DEPLOYMENT_OAUTH_SCOPES: "deployments:run-update",
 					},
-					operationPrefix: "blog-deployment-smoke-evidence",
 				})
 			).accessToken;
 const response = await fetch(

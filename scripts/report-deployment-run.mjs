@@ -1,5 +1,5 @@
 import { appendFile } from "node:fs/promises";
-import { exchangeServiceToken } from "./exchange-service-token.mjs";
+import { requestOAuthClientToken } from "./oauth-client-token.mjs";
 
 const runUpdateCapability = "deployments:run-update";
 
@@ -87,38 +87,36 @@ export async function reportDeploymentRun({
 	appendOutput = appendFile,
 } = {}) {
 	const callback = validateCallback(env);
-	if (!env.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID) {
+	if (!env.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID) {
 		throw new Error(
-			"Missing required configuration: SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID.",
+			"Missing required configuration: SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID.",
 		);
 	}
-	if (!env.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET) {
+	if (!env.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET) {
 		throw new Error(
-			"Missing required configuration: SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET.",
+			"Missing required configuration: SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET.",
 		);
 	}
-	const exchange = await exchangeServiceToken({
+	const oauthToken = await requestOAuthClientToken({
 		env: {
 			...env,
-			DEPLOYMENT_CREDENTIAL_ID:
-				env.SNOW_BASE_DEPLOYMENT_RUN_CREDENTIAL_ID,
-			DEPLOYMENT_EXCHANGE_SECRET:
-				env.SNOW_BASE_DEPLOYMENT_RUN_EXCHANGE_SECRET,
-			DEPLOYMENT_REQUESTED_CAPABILITIES: runUpdateCapability,
+			DEPLOYMENT_OAUTH_CLIENT_ID: env.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_ID,
+			DEPLOYMENT_OAUTH_CLIENT_SECRET:
+				env.SNOW_BASE_DEPLOYMENT_RUN_CLIENT_SECRET,
+			DEPLOYMENT_OAUTH_SCOPES: runUpdateCapability,
 		},
 		fetchImpl,
 		now,
-		operationPrefix: "blog-deployment-run",
 	});
 
 	const response = await requestJson(
 		fetchImpl,
-		`${exchange.apiBaseUrl}/api/v1/deployments/runs/update`,
+		`${oauthToken.apiBaseUrl}/api/v1/deployments/runs/update`,
 		{
 			method: "POST",
 			headers: {
 				Accept: "application/json",
-				Authorization: `Bearer ${exchange.accessToken}`,
+				Authorization: `Bearer ${oauthToken.accessToken}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({

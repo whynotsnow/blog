@@ -4,8 +4,8 @@ import { waitForDeploymentApproval } from "../../../scripts/wait-deployment-appr
 const nowMs = 1_000_000;
 const environment = {
 	DEPLOY_APPROVAL_API_BASE_URL: "https://api.example.test",
-	DEPLOYMENT_CREDENTIAL_ID: "cred_blog_approval",
-	DEPLOYMENT_EXCHANGE_SECRET: "S".repeat(43),
+	DEPLOYMENT_OAUTH_CLIENT_ID: "cli_blog_approval",
+	DEPLOYMENT_OAUTH_CLIENT_SECRET: "S".repeat(43),
 	DEPLOY_APPROVAL_PROJECT: "blog",
 	DEPLOY_APPROVAL_TARGET: "site",
 	DEPLOY_APPROVAL_COMMIT_SHA: "a".repeat(40),
@@ -17,19 +17,16 @@ const environment = {
 };
 
 describe("deployment approval waiter", () => {
-	it("re-exchanges a token before reading the exact approval identity", async () => {
+	it("requests a fresh token before reading the exact approval identity", async () => {
 		const calls: string[] = [];
-		const fetchImpl: typeof fetch = async (input, init) => {
+		const fetchImpl: typeof fetch = async (input, _init) => {
 			calls.push(String(input));
 			if (calls.length === 1) {
-				const body = JSON.parse(String(init?.body));
 				return Response.json({
-					operationId: body.exchangeRequest.operationId,
-					tokenType: "Bearer",
-					accessToken: "T".repeat(43),
-					principal: { namespace: "snow-service" },
-					capabilities: ["deployments:request", "deployments:verify"],
-					expiresAt: 1_600,
+					access_token: "T".repeat(43),
+					token_type: "Bearer",
+					expires_in: 900,
+					scope: "deployments:request deployments:verify",
 				});
 			}
 			return Response.json({
@@ -55,7 +52,7 @@ describe("deployment approval waiter", () => {
 
 		expect(approval.status).toBe("approved");
 		expect(calls).toEqual([
-			"https://api.example.test/api/v1/service/exchange/token",
+			"https://api.example.test/api/v1/oauth/token",
 			"https://api.example.test/api/v1/deployments/requests/approval_request_123",
 		]);
 	});

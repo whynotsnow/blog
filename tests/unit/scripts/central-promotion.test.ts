@@ -306,8 +306,8 @@ describe("multipart promotion client", () => {
 										DEPLOY_APPROVAL_WORKFLOW_MODE:
 											"selected-artifact",
 										DEPLOY_APPROVAL_TOKEN: fixtureToken,
-										DEPLOYMENT_CREDENTIAL_ID: "",
-										DEPLOYMENT_EXCHANGE_SECRET: "",
+										DEPLOYMENT_OAUTH_CLIENT_ID: "",
+										DEPLOYMENT_OAUTH_CLIENT_SECRET: "",
 									},
 								),
 								encoding: "utf8",
@@ -316,7 +316,9 @@ describe("multipart promotion client", () => {
 					} catch (error) {
 						stderr = String((error as { stderr?: string }).stderr);
 					}
-					expect(stderr).toContain("complete Service Exchange");
+					expect(stderr).toContain(
+						"complete OAuth Client Credentials",
+					);
 					expect(stderr).not.toContain(fixtureToken);
 					expect(requestCount).toBe(0);
 				},
@@ -324,7 +326,7 @@ describe("multipart promotion client", () => {
 		});
 	});
 
-	it("historical backfill fails closed when Exchange is missing, even with a legacy token", async () => {
+	it("historical backfill fails closed when OAuth Client configuration is missing, even with a legacy token", async () => {
 		await withArchive(async ({ archivePath, archiveDigest }) => {
 			let requestCount = 0;
 			await withServer(
@@ -353,8 +355,8 @@ describe("multipart promotion client", () => {
 										DEPLOY_APPROVAL_APPROVAL_ID: "",
 										DEPLOY_APPROVAL_PROMOTION_PURPOSE:
 											"historical-backfill",
-										DEPLOYMENT_CREDENTIAL_ID: "",
-										DEPLOYMENT_EXCHANGE_SECRET: "",
+										DEPLOYMENT_OAUTH_CLIENT_ID: "",
+										DEPLOYMENT_OAUTH_CLIENT_SECRET: "",
 									},
 								),
 								encoding: "utf8",
@@ -363,7 +365,9 @@ describe("multipart promotion client", () => {
 					} catch (error) {
 						stderr = String((error as { stderr?: string }).stderr);
 					}
-					expect(stderr).toContain("complete Service Exchange");
+					expect(stderr).toContain(
+						"complete OAuth Client Credentials",
+					);
 					expect(stderr).not.toContain(fixtureToken);
 					expect(requestCount).toBe(0);
 				},
@@ -396,8 +400,8 @@ describe("multipart promotion client", () => {
 									archiveDigest,
 									{
 										DEPLOY_APPROVAL_WORKFLOW_MODE: "legacy",
-										DEPLOYMENT_CREDENTIAL_ID: "",
-										DEPLOYMENT_EXCHANGE_SECRET: "",
+										DEPLOYMENT_OAUTH_CLIENT_ID: "",
+										DEPLOYMENT_OAUTH_CLIENT_SECRET: "",
 									},
 								),
 								encoding: "utf8",
